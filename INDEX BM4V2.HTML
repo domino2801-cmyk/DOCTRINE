@@ -230,6 +230,9 @@
             cursor: pointer;
             flex-grow: 1;
         }
+        .dossier-item .dossier-text {
+            flex-grow: 1;
+        }
         .dossier-item input[type="checkbox"] {
             transform: scale(1.1);
             cursor: pointer;
@@ -556,96 +559,96 @@
         <div style="margin-bottom: 25px;">
             <p><strong>2.1. Les Piliers de l'Armée de Terre de Combat</strong></p>
             
-            <!-- BIBLIOTHÈQUE INTERACTIVE AVEC CASES À COCHER -->
+            <!-- BIBLIOTHÈQUE DOCUMENTAIRE -->
             <ul class="dossier-list" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
                 <!-- Les Livres Doctrinaux -->
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="livre_bleu"> <span>📖 Livre Bleu</span></label>
-                    <a href="https://drive.google.com/file/d/1KGibhhHIvUKC9GK7k2w9dP951v6U0pBo/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">📖 Livre Bleu</span>
+                    <a href="https://drive.google.com/file/d/1KGibhhHIvUKC9GK7k2w9dP951v6U0pBo/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="livre_kaki"> <span>📖 Livre Kaki</span></label>
-                    <a href="https://drive.google.com/file/d/1zwor2qxaXEnAEclXZWPkGAnhmTrLOuGC/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">📖 Livre Kaki</span>
+                    <a href="https://drive.google.com/file/d/1zwor2qxaXEnAEclXZWPkGAnhmTrLOuGC/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="livre_orange"> <span>📖 Livre Orange</span></label>
-                    <a href="https://drive.google.com/file/d/1ZXpGDg_TKCyR7mShZF4TShTZiExOFOZb/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">📖 Livre Orange</span>
+                    <a href="https://drive.google.com/file/d/1ZXpGDg_TKCyR7mShZF4TShTZiExOFOZb/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="livre_vert"> <span>📖 Livre Vert</span></label>
-                    <a href="https://drive.google.com/file/d/1lIGo_OGepIK-9jlVz7gMi_howRUCCDXK/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">📖 Livre Vert</span>
+                    <a href="https://drive.google.com/file/d/1lIGo_OGepIK-9jlVz7gMi_howRUCCDXK/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="livre_marron"> <span>📖 Livre Marron</span></label>
-                    <a href="https://drive.google.com/file/d/1hiyxT_gZDZDnGGv1JQHE4_MSjERCNNyu/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">📖 Livre Marron</span>
+                    <a href="https://drive.google.com/file/d/1hiyxT_gZDZDnGGv1JQHE4_MSjERCNNyu/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 
                 <!-- Doctrine et Ordre de Bataille -->
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="atc"> <span>🎖️ Armée de Terre de Combat</span></label>
-                    <a href="https://drive.google.com/file/d/1FUo1UjxBko605PznglG4p8WlSMt7lynM/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">🎖️ Armée de Terre de Combat</span>
+                    <a href="https://drive.google.com/file/d/1FUo1UjxBko605PznglG4p8WlSMt7lynM/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="corps_armee"> <span>🛡️ Le Corps d'Armée</span></label>
-                    <a href="https://drive.google.com/file/d/1O5Zcv7lkHjNbc7YirAgO0pURtCZFH1SC/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">🛡️ Le Corps d'Armée</span>
+                    <a href="https://drive.google.com/file/d/1O5Zcv7lkHjNbc7YirAgO0pURtCZFH1SC/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="brigades"> <span>⚔️ Les Brigades de Combat</span></label>
-                    <a href="https://drive.google.com/file/d/1ZuTDXLbGwkU0qdbE03gANzJy-sDRopdK/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">⚔️ Les Brigades de Combat</span>
+                    <a href="https://drive.google.com/file/d/1ZuTDXLbGwkU0qdbE03gANzJy-sDRopdK/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="implantation"> <span>🗺️ Implantation unités</span></label>
-                    <a href="https://docs.google.com/spreadsheets/d/1Zl8V1REv3iBQNLe_a-a5CW-Po4V4v6B2/edit?usp=drive_link&ouid=114661661981713627862&rtpof=true&sd=true" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">🗺️ Implantation unités</span>
+                    <a href="https://docs.google.com/spreadsheets/d/1Zl8V1REv3iBQNLe_a-a5CW-Po4V4v6B2/edit?usp=drive_link&ouid=114661661981713627862&rtpof=true&sd=true" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="missions"> <span>📋 Les Missions de l'Armée de Terre</span></label>
-                    <a href="https://drive.google.com/file/d/1wCcUC5QRDKTahk7tggYYPQDUBwVZRjmp/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">📋 Les Missions de l'Armée de Terre</span>
+                    <a href="https://drive.google.com/file/d/1wCcUC5QRDKTahk7tggYYPQDUBwVZRjmp/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 
                 <!-- Commandement et Stratégie -->
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="cmd_intention"> <span>🗣️Commandement par Intention</span></label>
-                    <a href="https://drive.google.com/file/d/1KagOnctoMickVYwVQ63pEE80m1w2IBxx/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">🗣️ Commandement par Intention</span>
+                    <a href="https://drive.google.com/file/d/1KagOnctoMickVYwVQ63pEE80m1w2IBxx/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="exercice_cmd"> <span>⭐ L'Exercice du Commandement</span></label>
-                    <a href="https://drive.google.com/file/d/1AUG8c5Z0dpCzWBZ7_uGkMG3j3FwbckBt/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">⭐ L'Exercice du Commandement</span>
+                    <a href="https://drive.google.com/file/d/1AUG8c5Z0dpCzWBZ7_uGkMG3j3FwbckBt/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="enjeux_2025"> <span>🌍 Grands Enjeux de Défense 2025</span></label>
-                    <a href="https://drive.google.com/file/d/1D-CS157u5_gtPDMasHjOngTAtipy3x8U/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">🌍 Grands Enjeux de Défense 2025</span>
+                    <a href="https://drive.google.com/file/d/1D-CS157u5_gtPDMasHjOngTAtipy3x8U/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="rns_2025"> <span>🧭 Revue Nationale Stratégique 2025</span></label>
-                    <a href="https://drive.google.com/file/d/1So1qT1PGX5d1AjhqO1ROA64kNlKpqjgk/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">🧭 Revue Nationale Stratégique 2025</span>
+                    <a href="https://drive.google.com/file/d/1So1qT1PGX5d1AjhqO1ROA64kNlKpqjgk/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="lpm"> <span>📜 LPM 2024-2030</span></label>
-                    <a href="https://drive.google.com/file/d/1yshmQmCLPlmhCJD_QUNsOg0rP6cDDaPu/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">📜 LPM 2024-2030</span>
+                    <a href="https://drive.google.com/file/d/1yshmQmCLPlmhCJD_QUNsOg0rP6cDDaPu/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 
                 <!-- Chiffres, Matériels et Ressources Humaines -->
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="chiffres_2025"> <span>📊 Chiffres Clés 2025</span></label>
-                    <a href="https://drive.google.com/file/d/142Ul9ZIuOI5QFpje-w-CpyPg6a0rhI2r/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">📊 Chiffres Clés 2025</span>
+                    <a href="https://drive.google.com/file/d/142Ul9ZIuOI5QFpje-w-CpyPg6a0rhI2r/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="materiels"> <span>🚜 Matériels Majeurs</span></label>
-                    <a href="https://drive.google.com/file/d/1h9U_i6VtMYsh871tiPrflrso3ySfq0CG/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">🚜 Matériels Majeurs</span>
+                    <a href="https://drive.google.com/file/d/1h9U_i6VtMYsh871tiPrflrso3ySfq0CG/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="reserve"> <span>🤝 La Réserve</span></label>
-                    <a href="https://drive.google.com/file/d/1PPHvvnScW_bIX2crVxZyOfzB18SW2EOs/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">🤝 La Réserve</span>
+                    <a href="https://drive.google.com/file/d/1PPHvvnScW_bIX2crVxZyOfzB18SW2EOs/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="soff"> <span>📍 Points de Repère SOFF</span></label>
-                    <a href="https://drive.google.com/file/d/1mUtFJHrJAqaSHYbKs3amgJLje7r2apMP/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">📍 Points de Repère SOFF</span>
+                    <a href="https://drive.google.com/file/d/1mUtFJHrJAqaSHYbKs3amgJLje7r2apMP/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
                 
                 <!-- Jeunesse et Résilience territoriale -->
                 <li class="dossier-item">
-                    <label><input type="checkbox" data-lecture="jeunesse"> <span>🌱 Info (SMA, SMV, SNU)</span></label>
-                    <a href="https://drive.google.com/file/d/1CAPnK0qWonYFdpq0lVMLidmIyc_T_72V/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    <span class="dossier-text">🌱 Info (SMA, SMV, SNU)</span>
+                    <a href="https://drive.google.com/file/d/1CAPnK0qWonYFdpq0lVMLidmIyc_T_72V/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="doc-link">Ouvrir</a>
                 </li>
             </ul>
         </div>
@@ -1053,19 +1056,6 @@
         });
 
         updateModuleLockUI();
-
-        const checkboxesM2 = document.querySelectorAll('.dossier-item input[data-lecture]');
-        checkboxesM2.forEach(box => {
-            const id = box.getAttribute('data-lecture');
-            box.checked = localStorage.getItem('lecture-' + id) === 'true';
-            if (box.checked) { box.closest('.dossier-item').classList.add('completed'); }
-
-            box.addEventListener('change', function() {
-                const parent = this.closest('.dossier-item');
-                parent.classList.toggle('completed', this.checked);
-                localStorage.setItem('lecture-' + id, this.checked);
-            });
-        });
 
         const checkboxesM3 = document.querySelectorAll('.dossier-item input[data-dossier]');
         function updateProgressM3() {
