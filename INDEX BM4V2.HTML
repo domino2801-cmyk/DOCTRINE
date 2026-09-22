@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corpus de Préparation au BM4 - Édition 2027</title>
+    <style>
+        :root {
+            --primary-blue: #0b2240;
+            --accent-red: #a82025;
+            --bg-light: #f4f6f9;
+            --text-dark: #333333;
+            --white: #ffffff;
+            --overlay: rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Application de la page fixe non scrolable globalement */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        .main-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--accent-red);
+            flex-shrink: 0;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        header p {
+            margin: 5px 0 0 0;
+            font-style: italic;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        nav {
+            background-color: var(--white);
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        nav button {
+            background: none;
+            border: none;
+            color: var(--primary-blue);
+            font-weight: bold;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        nav button:hover:not(:disabled) {
+            background-color: var(--primary-blue);
+            color: var(--white);
+        }
+        
+        nav button:disabled {
+            color: #94a3b8;
+            cursor: not-allowed;
+            opacity: 0.5;
+            background-color: #e2e8f0;
+        }
+
+        .content-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .lock-warning {
+            background-color: #fef2f2;
+            color: var(--accent-red);
+            border: 1px solid #fca5a5;
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: block;
+            text-align: center;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .preface-section {
+            background-color: var(--white);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            max-width: 900px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .preface-box {
+            background-color: #f9f9f9;
+            border-left: 4px solid var(--primary-blue);
+            padding: 15px 20px;
+            font-style: italic;
+        }
+        
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--overlay);
+            overflow-y: auto;
+        }
+        .modal-content {
+            background-color: var(--white);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 850px;
+            width: 85%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+            animation: fadeIn 0.25s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+        .close-btn:hover {
+            color: var(--accent-red);
+        }
+        h2 {
+            color: var(--primary-blue);
+            border-bottom: 2px solid var(--accent-red);
+            padding-bottom: 6px;
+            margin-top: 0;
+        }
+
+        .progress-container {
+            background-color: #eee;
+            border-radius: 4px;
+            margin: 15px 0;
+            position: relative;
+            height: 20px;
+            width: 100%;
+        }
+        .progress-bar {
+            background-color: #4cd137;
+            height: 100%;
+            width: 0%;
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 0;
+            left: 0;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #333;
+            line-height: 20px;
+        }
+
+        .dossier-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 0;
+            list-style: none;
+        }
+        .dossier-item {
+            background: var(--bg-light);
+            padding: 10px 12px;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-red);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        .dossier-item label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+        .dossier-item input[type="checkbox"] {
+            transform: scale(1.1);
+            cursor: pointer;
+        }
+        .dossier-item.completed {
+            opacity: 0.5;
+            background-color: #cbd5e1;
+            border-left-color: #94a3b8;
+        }
+        .dossier-item.completed span {
+            text-decoration: line-through;
+        }
+        .stars {
+            color: #ffb400;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .doc-link {
+            font-size: 0.8rem;
+            background-color: var(--primary-blue);
+            color: var(--white);
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .doc-link:hover {
+            background-color: var(--accent-red);
+        }
+        .btn-link {
+            display: inline-block;
+            background-color: var(--accent-red);
+            color: var(--white);
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        .btn-link:hover {
+            background-color: #821619;
+        }
+        .card-pro {
+            border: 2px solid var(--primary-blue);
+            padding: 15px;
+            max-width: 450px;
+            margin: 20px 0;
+            background: #fafafa;
+            font-size: 0.95rem;
+        }
+        
+        .validation-box {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f8fafc;
+            border: 2px dashed var(--primary-blue);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: bold;
+            width: 100%;
+            box-sizing: border-box;
+        }
+   
+
+        /* PATCH UNIVERSAL */
+        * {
+            box-sizing: border-box;
+        }
+        img, video {
+            max-width: 100%;
+            height: auto;
+        }
+        .modal {
+            overflow-y: auto;
+        }
+
+        /* RESPONSIVE TABLETTE */
+        @media (max-width: 1024px) {
+            nav ul {
+                gap: 8px;
+            }
+            nav button {
+                font-size: 0.8rem;
+                padding: 7px 10px;
+            }
+            .dossier-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* RESPONSIVE MOBILE */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.3rem;
+            }
+            .content-container {
+                padding: 12px;
+            }
+            .preface-section,
+            .modal-content {
+                width: 92%;
+                padding: 18px;
+            }
+            .dossier-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .dossier-item label {
+                width: 100%;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+
+<div class="main-wrapper">
+    <header>
+        <h1>Corpus de Préparation au BM4</h1>
+
+    </header>
+
+    <nav>
+        <ul>
+            <li><button id="btn-mod1" onclick="openModal('module1')">Mod. 1 : Institutionnel</button></li>
+            <li><button id="btn-mod2" onclick="openModal('module2')">Mod. 2 : Doctrine</button></li>
+            <li><button id="btn-mod3" onclick="openModal('module3')">Mod. 3 : Rédaction</button></li>
+            <li><button id="btn-mod4" onclick="openModal('module4')">Mod. 4 : Corrections</button></li>
+            <li><button id="btn-mod5" onclick="openModal('module5')">Mod. 5 : QCM</button></li>
+            <li><button id="btn-mod6" onclick="openModal('module6')">Mod. 6 : Admission</button></li>
+        </ul>
+    </nav>
+
+
+    <div class="content-container">
+        <div id="lockWarning" class="lock-warning" style="display: block;">
+            ⚠️ Veuillez valider le module 1 pour débloquer les modules suivants.
+        </div>
+
+        <section class="preface-section">
+            <h2>PREFACE - Le mot du concepteur</h2>
+            <div class="preface-box">
+                <p>À l’heure où la complexité géopolitique globale impose à nos armées un changement d'échelle et nous confronte à l’Hypothèse d’Engagement Majeur (HEM), l’excellence du corps des sous-officiers supérieurs n’est plus une option. Elle est le pivot sur lequel repose la résilience de nos forces et l’efficacité du commandement par intention.</p>
+                <p>Le Brevet Militaire de 4e niveau ne représente pas seulement un concours, il est le grand filtre académique destiné à sélectionner l'élite de l'encadrement de l'Armée de Terre, le vivier exclusif des futurs Majors et des Officiers des rangs. Réussir cette épreuve exige bien plus que de simples révisions de dernière minute, il impose une planification rigoureuse, une force d'analyse méthodique et une préparation physique sans faille.</p>
+                <p>Ce recueil a été conçu comme un véritable couteau suisse de la préparation. À travers ses fiches méthodologiques, ses études de cas pratiques et ses entraînements intensifs, il vous astreint à développer le triptyque essentiel du futur Major :</p>
+                <ul>
+                    <li><strong>La rigueur analytique</strong>, pour extraire la substance tactique de dossiers complexes sous forte contrainte de temps.</li>
+                    <li><strong>La précision doctrinale</strong>, indispensable pour dompter la mécanique exigeante du QCM et maîtriser notre environnement de combat.</li>
+                    <li><strong>La puissance personnelle</strong>, afin de défendre avec clarté votre parcours devant le jury et de maintenir un haut niveau d'exigence physique.</li>
+                </ul>
+                <p>Le chemin vers les sommets de l’encadrement et des responsabilités exige de l’humilité face au savoir, de la discipline dans l’effort et de la clarté dans la restitution. Ce document est votre feuille de route, votre plan de campagne. Appropriez-vous ses concepts, testez vos limites réglementaires, et rappelez-vous toujours la règle d’or de notre réussite commune :</p>
+                <p style="text-align: center; font-size: 1.1rem; color: var(--accent-red);"><strong>« Le Brevet Militaire de 4e niveau ne se tente pas, il se planifie. »</strong></p>
+                <p>Bon travail, bonne révision et succès à tous.</p>
+                <p style="text-align: right; margin-top: 20px;"><em>Major Dominique<br>Lauréat du BM4 2025 spécialité « RHL »</em></p>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- MODALE 1 -->
+<div id="modal-module1" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('module1')">&times;</button>
+        <h2>MODULE 1 : LE CADRE INSTITUTIONNEL & RETEX</h2>
+        <ul style="list-style: none; padding-left: 0;">
+            <!-- SECTION 1.1 -->
+            <li style="margin-bottom: 25px;">
+                <div class="dossier-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <strong>1.1. Présentation du BM4</strong>
+                    <a href="https://drive.google.com/file/d/17hnQWzMtkR7j6oVbCwbr7rcQRcMgaWIE/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </div>
+                <ul style="padding-left: 20px;">
+                    <li>Guide stratégique et opérationnel pour la planification, la préparation et la réussite du Brevet Militaire de 4ème niveau.</li>
+                </ul>
+            </li>
+            
+            <!-- SECTION 1.2 AVEC LES 4 ONGLETS RETEX -->
+            <li>
+                <div class="dossier-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <strong>1.2. Rapport du Jury d'Examen</strong>
+                    <div style="display: flex; gap: 5px;">
+                        <a href="https://drive.google.com/file/d/1NTokt0W6_EfUxgC6jHrC0kjZe2pr1mNu/view?usp=drive_link" target="_blank" class="doc-link" style="background-color: #555;">2023</a>
+                        <a href="https://drive.google.com/file/d/1avqwK8RYtifPxRm5IJst6vp2bThdusMu/view?usp=drive_link" target="_blank" class="doc-link" style="background-color: #555;">2024</a>
+                        <a href="https://drive.google.com/file/d/1EYf-cJLYYcpaQtyXI39UClwfXZe6nSxy/view?usp=drive_link" target="_blank" class="doc-link" style="background-color: #555;">2025</a>
+                        <a href="https://drive.google.com/" target="_blank" class="doc-link">2026</a>
+                    </div>
+                </div>
+                <ul style="padding-left: 20px;">
+                    <li>Bilan statistique des sessions précédentes « Admissibilité / Admission ».</li>
+                    <li>Les écueils rédhibitoires identifiés par le jury (Fiche de synthèse & Oral).</li>
+                    <li>Les attentes du commandement et l'ADN du futur Major.</li>
+                </ul>
+            </li>
+        </ul>
+        <!-- Bloc de validation de lecture obligatoire -->
+        <div style="margin-top: 30px; padding: 15px; background-color: #f8fafc; border: 2px dashed #0b2240; border-radius: 6px; display: flex; align-items: center; gap: 12px; font-weight: bold; width: 100%; box-sizing: border-box;">
+            <input type="checkbox" id="chkModule1Valid" style="transform: scale(1.3); cursor: pointer;">
+            <label for="chkModule1Valid" style="cursor: pointer; color: #0b2240; font-size: 0.95rem;">
+                ⚠️ Veuillez cocher "J'ai lu l'ensemble de ce module" pour accéder aux suivants.
+            </label>
+    </div>
+
+
+<!-- FENÊTRES SUPERPOSÉES -->
+
+<!-- MODALE 2 -->
+<div id="modal-module2" class="modal">
+    <div class="modal-content" style="max-width: 850px;">
+        <button class="close-btn" onclick="closeModal('module2')">&times;</button>
+        <h2>MODULE 2 : BASE DOCUMENTAIRE & CADRE DOCTRINAL</h2>
+        
+        <div style="margin-bottom: 25px;">
+            <p><strong>2.1. Les Piliers de l'Armée de Terre de Combat</strong></p>
+            
+            <!-- BIBLIOTHÈQUE INTERACTIVE AVEC CASES À COCHER -->
+            <ul class="dossier-list" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
+                <!-- Les Livres Doctrinaux -->
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="livre_bleu"> <span>📖 Livre Bleu</span></label>
+                    <a href="https://drive.google.com/file/d/1KGibhhHIvUKC9GK7k2w9dP951v6U0pBo/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="livre_kaki"> <span>📖 Livre Kaki</span></label>
+                    <a href="https://drive.google.com/file/d/1zwor2qxaXEnAEclXZWPkGAnhmTrLOuGC/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="livre_orange"> <span>📖 Livre Orange</span></label>
+                    <a href="https://drive.google.com/file/d/1ZXpGDg_TKCyR7mShZF4TShTZiExOFOZb/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="livre_vert"> <span>📖 Livre Vert</span></label>
+                    <a href="https://drive.google.com/file/d/1lIGo_OGepIK-9jlVz7gMi_howRUCCDXK/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="livre_marron"> <span>📖 Livre Marron</span></label>
+                    <a href="https://drive.google.com/file/d/1hiyxT_gZDZDnGGv1JQHE4_MSjERCNNyu/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                
+                <!-- Doctrine et Ordre de Bataille -->
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="atc"> <span>🎖️ Armée de Terre de Combat</span></label>
+                    <a href="https://drive.google.com/file/d/1FUo1UjxBko605PznglG4p8WlSMt7lynM/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="corps_armee"> <span>🛡️ Le Corps d'Armée</span></label>
+                    <a href="https://drive.google.com/file/d/1O5Zcv7lkHjNbc7YirAgO0pURtCZFH1SC/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="brigades"> <span>⚔️ Les Brigades de Combat</span></label>
+                    <a href="https://drive.google.com/file/d/1ZuTDXLbGwkU0qdbE03gANzJy-sDRopdK/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="implantation"> <span>🗺️ Implantation ATC (Carte)</span></label>
+                    <a href="https://docs.google.com/spreadsheets/d/1Zl8V1REv3iBQNLe_a-a5CW-Po4V4v6B2/edit?usp=drive_link&ouid=114661661981713627862&rtpof=true&sd=true" target="_blank" class="doc-link">Drive</a>
+                </li>
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="missions"> <span>📋 Les Missions de l'Armée de Terre</span></label>
+                    <a href="https://drive.google.com/file/d/1wCcUC5QRDKTahk7tggYYPQDUBwVZRjmp/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                
+                <!-- Commandement et Stratégie -->
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="cmd_intention"> <span>🗣️ Le Commandement par Intention</span></label>
+                    <a href="https://drive.google.com/file/d/1KagOnctoMickVYwVQ63pEE80m1w2IBxx/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="exercice_cmd"> <span>⭐ L'Exercice du Commandement</span></label>
+                    <a href="https://drive.google.com/file/d/1AUG8c5Z0dpCzWBZ7_uGkMG3j3FwbckBt/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="enjeux_2025"> <span>🌍 Grands Enjeux de Défense 2025</span></label>
+                    <a href="https://drive.google.com/file/d/1D-CS157u5_gtPDMasHjOngTAtipy3x8U/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="rns_2025"> <span>🧭 Revue Nationale Stratégique 2025</span></label>
+                    <a href="https://drive.google.com/file/d/1So1qT1PGX5d1AjhqO1ROA64kNlKpqjgk/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="lpm"> <span>📜 LPM 2024-2030</span></label>
+                    <a href="https://drive.google.com/file/d/1yshmQmCLPlmhCJD_QUNsOg0rP6cDDaPu/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                
+                <!-- Chiffres, Matériels et Ressources Humaines -->
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="chiffres_2025"> <span>📊 Chiffres Clés 2025</span></label>
+                    <a href="https://drive.google.com/file/d/142Ul9ZIuOI5QFpje-w-CpyPg6a0rhI2r/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="materiels"> <span>🚜 Matériels Majeurs</span></label>
+                    <a href="https://drive.google.com/file/d/1h9U_i6VtMYsh871tiPrflrso3ySfq0CG/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="reserve"> <span>🤝 La Réserve</span></label>
+                    <a href="https://drive.google.com/file/d/1PPHvvnScW_bIX2crVxZyOfzB18SW2EOs/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="soff"> <span>📍 Points de Repère SOFF</span></label>
+                    <a href="https://drive.google.com/file/d/1mUtFJHrJAqaSHYbKs3amgJLje7r2apMP/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+                
+                <!-- Jeunesse et Résilience territoriale -->
+                <li class="dossier-item">
+                    <label><input type="checkbox" data-lecture="jeunesse"> <span>🌱 Info (SMA, SMV, SNU)</span></label>
+                    <a href="https://drive.google.com/file/d/1CAPnK0qWonYFdpq0lVMLidmIyc_T_72V/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                </li>
+            </ul>
+        </div>
+
+        <div>
+            <p><strong>2.2. Référentiels Méthodologiques</strong></p>
+            <ul style="list-style: none; padding-left: 0;">
+                <li style="margin-bottom: 10px;">
+                    <div class="dossier-item" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>📝 La Fiche type État-Major : Règles d'or de la neutralité et de la concision</span>
+                        <a href="https://drive.google.com/file/d/1utq1-TQPjo7u06JCXSUwkCOx0BUKJGwF/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                    </div>
+                </li>
+                <li>
+                    <div class="dossier-item" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>📊 La Fiche Support : L'art de cartographier sa future présentation</span>
+                        <a href="https://drive.google.com/file/d/1bBU1tVmsDlqOytDa5cntRUmcvP1mQ2mv/view?usp=drive_link" target="_blank" class="doc-link">Drive</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+
+
+<div id="modal-module3" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('module3')">&times;</button>
+        <h2>MODULE 3 : EXERCICES DE RÉDACTION</h2>
+        <p><strong>3.1. Exercices Thématiques Gradués (De 1 à 4 étoiles) :</strong></p>
+        
+        <div class="progress-container">
+            <div id="progBar" class="progress-bar"></div>
+            <div id="progText" class="progress-text">Avancement : 0%</div>
+        </div>
+
+        <ul class="dossier-list">
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="1"> <span>Dossier 1 : Vie et lumières</span></label>
+                <div><span class="stars">★</span><a href="https://drive.google.com/drive/folders/1l6qZIdK6QVPHfVoGuCrkoJV5QGkVGcI_?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="2"> <span>Dossier 2 : Poste de Cdt 7e BB</span></label>
+                <div><span class="stars">★★</span><a href="https://drive.google.com/drive/folders/1N2a49fE6JNu-59Hxa15Be99vr5BavI8E?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="3"> <span>Dossier 3 : Armes Salle d'Honneur</span></label>
+                <div><span class="stars">★★</span><a href="https://drive.google.com/drive/folders/11dhk9Y611V1i3ChYOWRvx09-9SLilVnJ?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="4"> <span>Dossier 4 : Thémis</span></label>
+                <div><span class="stars">★★★★</span><a href="https://drive.google.com/drive/folders/1qGUmuf4JsK-9TNmD7tAXyO2QEKDiE2ZW?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="5"> <span>Dossier 5 : PMS Opérationnel</span></label>
+                <div><span class="stars">★★★</span><a href="https://drive.google.com/drive/folders/12IBiJtiry-On0pON_0iuoJ59Pt_6AYS1?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="6"> <span>Dossier 6 : SMA</span></label>
+                <div><span class="stars">★★★</span><a href="https://drive.google.com/drive/folders/1tBRI8hjbNM-eVAgjVb9LjNK3hSuyQyAA?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="7"> <span>Dossier 7 : Toulaud Air Sport</span></label>
+                <div><span class="stars">★★★</span><a href="https://drive.google.com/drive/folders/1vGE8GLEFHoX3_DjozDBR3x8ujArRV2a5?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="8"> <span>Dossier 8 : Opération Sentinelle</span></label>
+                <div><span class="stars">★★★</span><a href="https://drive.google.com/drive/folders/1drUZgFsAX7tRadB-FaxuDJ1EKXC9AonL?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="9"> <span>Dossier 9 : ARMADA</span></label>
+                <div><span class="stars">★★</span><a href="https://drive.google.com/drive/folders/1Fn6pmTs981S3VrTwLtNCAj2j5_d7pDtH?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="10"> <span>Dossier 10 : Infrastructures</span></label>
+                <div><span class="stars">★★</span><a href="https://drive.google.com/drive/folders/1_w3RI1xmAN0FCZeCEeVRXcRqvFi7ek_6?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="11"> <span>Dossier 11 : Camp du Ruchard</span></label>
+                <div><span class="stars">★★★★</span><a href="https://drive.google.com/drive/folders/1-m1qvnV4JvY6gm-dIPYno5xA-Qfc04IG?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="12"> <span>Dossier 12 : Service national</span></label>
+                <div><span class="stars">★★★</span><a href="https://drive.google.com/drive/folders/1cSmdKJJnmXXekUfSfeZZQ_OqZ-L5stbB?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="13"> <span>Dossier 13 : Désinformation</span></label>
+                <div><span class="stars">★★★★</span><a href="https://drive.google.com/drive/folders/1iNMbYPCNSgiVVr2kS1y6tufkgogeucIw?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="14"> <span>Dossier 14 : Begles Moissac</span></label>
+                <div><span class="stars">★★★</span><a href="https://drive.google.com/drive/folders/1l0UcOA2jECtTlVzTKjsolP_CFRw_dkSA?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="15"> <span>Dossier 15 : Economie de guerre</span></label>
+                <div><span class="stars">★★★</span><a href="https://drive.google.com/drive/folders/1GVRpJ3TnpXSxBD9PLoUtaZ1A5BRsN-d_?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-dossier="16"> <span>Dossier 16 : Drone</span></label>
+                <div><span class="stars">★★★</span><a href="https://drive.google.com/drive/folders/13VVCZiKzxgW8Rldm1i2addC868scJELl?usp=drive_link" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+        </ul>
+        <p><strong>3.2. Fiche Outil de Rédaction</strong></p>
+        <ul>
+            <li>Gabarits, feuille d’examen vierge.</li>
+        </ul>
+    </div>
+</div>
+
+<!-- MODALE 4 -->
+<div id="modal-module4" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('module4')">&times;</button>
+        <h2>MODULE 4 : PROPOSITIONS DE CORRECTION (L'ANALYSE)</h2>
+        <ul>
+            <li><strong>4.1. Grilles d'Évaluation & Analyses Méthodologiques</strong>
+                <ul>
+                    <li>Décryptage de la commande et extraction des faits (Dossiers 1 à 16).</li>
+                </ul>
+            </li>
+        </ul>
+
+        <p><strong>4.2. Corrigés Types (Modèles conformes de Fiches de Synthèse et Supports Oraux) :</strong></p>
+        
+        <!-- SECONDE BARRE DE PROGRESSION POUR LE MODULE 4 -->
+        <div class="progress-container">
+            <div id="progBarMod4" class="progress-bar" style="background-color: #3498db;"></div>
+            <div id="progTextMod4" class="progress-text">Avancement Corrigés : 0%</div>
+        </div>
+
+        <ul class="dossier-list" id="corrigeList">
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="1"> <span>Corrigé 1 : Vie et lumières</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="2"> <span>Corrigé 2 : Poste de Cdt 7e BB</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="3"> <span>Corrigé 3 : Armes Salle d'Honneur</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="4"> <span>Corrigé 4 : Thémis</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="5"> <span>Corrigé 5 : PMS Opérationnel</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="6"> <span>Corrigé 6 : SMA</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="7"> <span>Corrigé 7 : Toulaud Air Sport</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="8"> <span>Corrigé 8 : Opération Sentinelle</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="9"> <span>Corrigé 9 : ARMADA</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="10"> <span>Corrigé 10 : Infrastructures</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="11"> <span>Corrigé 11 : Camp du Ruchard</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="12"> <span>Corrigé 12 : Service national</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="13"> <span>Corrigé 13 : Désinformation</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="14"> <span>Corrigé 14 : Begles Moissac</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="15"> <span>Corrigé 15 : Economie de guerre</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+            <li class="dossier-item">
+                <label><input type="checkbox" data-corrige="16"> <span>Corrigé 16 : Drone</span></label>
+                <div><a href="https://drive.google.com/" target="_blank" class="doc-link">Drive</a></div>
+            </li>
+        </ul>
+    </div>
+</div>
+
+</div>
+
+<div id="modal-module5" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('module5')">&times;</button>
+        <h2>MODULE 5 : ENTRAÎNEMENT INTENSIF AU QCM DOCTRINAL</h2>
+        <ul>
+            <li><strong>5.1. Banque de Questions (1 000 questions / 20 séries)</strong>
+                <ul>
+                    <li>QCM papier : Enjeux stratégiques, budgets et LPM 2024-2030...</li>
+                </ul>
+            </li>
+            <li><strong>5.2. Logiciel « question pour un major »</strong>
+                <ul>
+                    <li>Fonctionne sur tout support tablette, ordinateur, téléphone.</li>
+                </ul>
+            </li>
+        </ul>
+        <div style="text-align: center; margin-top: 15px;">
+            <a href="https://Qcm-major.fr" class="btn-link" target="_blank" rel="noopener">Accéder à : https://Qcm-major.fr</a>
+        </div>
+    </div>
+</div>
+
+<div id="modal-module6" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('module6')">&times;</button>
+        <h2>MODULE 6 : PRÉPARATION À L'ADMISSION (L'ORAL & SPORT)</h2>
+        <ul>
+            <li><strong>6.1. Ingénierie du Grand Oral</strong>
+                <ul>
+                    <li>Méthode de rédaction du CV réglementaire d'une page.</li>
+                    <li>La construction de vos motivations à devenir « Major ».</li>
+                </ul>
+            </li>
+            <li><strong>6.2. Questions généralistes / 6.3. Questions de spécialité</strong></li>
+        </ul>
+
+        <div class="card-pro">
+            <h3>Major Dominique DELEMOTTE</h3>
+            Directeur d'exploitation<br>
+            GSC de PHALSBOURG / Pôle SARREBOURG / DIEUZE<br>
+            <a href="mailto:dominique.delemotte@intradef.gouv.fr" style="color: var(--accent-red); font-weight: bold;">dominique.delemotte@intradef.gouv.fr</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const module1Key = 'module1_validated';
+    const modulesToLock = ['btn-mod2', 'btn-mod3', 'btn-mod4', 'btn-mod5', 'btn-mod6'];
+
+    function getModule1State() {
+        try {
+            return localStorage.getItem(module1Key) === 'true';
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function setModule1State(value) {
+        try {
+            localStorage.setItem(module1Key, String(value));
+        } catch (error) {
+            // localStorage may be unavailable in some contexts; ignore safely
+        }
+    }
+
+    function updateModuleLockUI() {
+        const checkbox = document.getElementById('chkModule1Valid');
+        const lockWarning = document.getElementById('lockWarning');
+        const isUnlocked = checkbox ? checkbox.checked : false;
+
+        modulesToLock.forEach(id => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            btn.disabled = !isUnlocked;
+            btn.style.opacity = isUnlocked ? '1' : '0.5';
+            btn.style.cursor = isUnlocked ? 'pointer' : 'not-allowed';
+            btn.style.backgroundColor = isUnlocked ? '' : '#e2e8f0';
+            btn.style.color = isUnlocked ? '' : '#94a3b8';
+        });
+
+        if (lockWarning) {
+            lockWarning.style.display = isUnlocked ? 'none' : 'block';
+        }
+    }
+
+    function openModal(id) {
+        const checkbox = document.getElementById('chkModule1Valid');
+        const isUnlocked = checkbox ? checkbox.checked : false;
+
+        if (id === 'module1' || isUnlocked || getModule1State()) {
+            const modal = document.getElementById('modal-' + id);
+            if (modal) {
+                modal.style.display = 'block';
+            }
+        } else {
+            alert("Veuillez cocher « J'ai lu l'ensemble du module » pour accéder aux suivants.");
+        }
+    }
+
+    function closeModal(id) {
+        const modal = document.getElementById('modal-' + id);
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    window.onclick = function (event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkbox = document.getElementById('chkModule1Valid');
+        if (checkbox) {
+            checkbox.checked = getModule1State();
+            checkbox.addEventListener('change', function() {
+                setModule1State(this.checked);
+                updateModuleLockUI();
+            });
+        }
+
+        modulesToLock.forEach(id => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            btn.addEventListener('click', function(e) {
+                if (this.disabled) {
+                    alert("Veuillez cocher j'ai lu l'ensemble du module pour accéder au suivant");
+                    e.stopPropagation();
+                }
+            });
+        });
+
+        updateModuleLockUI();
+
+        const checkboxesM2 = document.querySelectorAll('.dossier-item input[data-lecture]');
+        checkboxesM2.forEach(box => {
+            const id = box.getAttribute('data-lecture');
+            box.checked = localStorage.getItem('lecture-' + id) === 'true';
+            if (box.checked) { box.closest('.dossier-item').classList.add('completed'); }
+
+            box.addEventListener('change', function() {
+                const parent = this.closest('.dossier-item');
+                parent.classList.toggle('completed', this.checked);
+                localStorage.setItem('lecture-' + id, this.checked);
+            });
+        });
+
+        const checkboxesM3 = document.querySelectorAll('.dossier-item input[data-dossier]');
+        function updateProgressM3() {
+            const checkedCount = document.querySelectorAll('.dossier-item input[data-dossier]:checked').length;
+            const percentage = Math.round((checkedCount / checkboxesM3.length) * 100) || 0;
+            const progBar = document.getElementById('progBar');
+            const progText = document.getElementById('progText');
+            if (progBar) progBar.style.width = percentage + '%';
+            if (progText) progText.innerText = 'Avancement Exercices : ' + percentage + '%';
+        }
+
+        checkboxesM3.forEach(box => {
+            const id = box.getAttribute('data-dossier');
+            box.checked = localStorage.getItem('dossier-' + id) === 'true';
+            if (box.checked) { box.closest('.dossier-item').classList.add('completed'); }
+
+            box.addEventListener('change', function() {
+                const parent = this.closest('.dossier-item');
+                parent.classList.toggle('completed', this.checked);
+                localStorage.setItem('dossier-' + id, this.checked);
+                updateProgressM3();
+            });
+        });
+
+        const checkboxesM4 = document.querySelectorAll('.dossier-item input[data-corrige]');
+        function updateProgressM4() {
+            const checkedCountM4 = document.querySelectorAll('.dossier-item input[data-corrige]:checked').length;
+            const percentageM4 = Math.round((checkedCountM4 / checkboxesM4.length) * 100) || 0;
+            const progBarMod4 = document.getElementById('progBarMod4');
+            const progTextMod4 = document.getElementById('progTextMod4');
+            if (progBarMod4) progBarMod4.style.width = percentageM4 + '%';
+            if (progTextMod4) progTextMod4.innerText = 'Avancement Corrigés : ' + percentageM4 + '%';
+        }
+
+        checkboxesM4.forEach(box => {
+            const id = box.getAttribute('data-corrige');
+            box.checked = localStorage.getItem('corrige-' + id) === 'true';
+            if (box.checked) { box.closest('.dossier-item').classList.add('completed'); }
+
+            box.addEventListener('change', function() {
+                const parent = this.closest('.dossier-item');
+                parent.classList.toggle('completed', this.checked);
+                localStorage.setItem('corrige-' + id, this.checked);
+                updateProgressM4();
+            });
+        });
+
+        updateProgressM3();
+        updateProgressM4();
+    });
+</script>
+</body>
+</html>
