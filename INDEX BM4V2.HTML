@@ -437,10 +437,12 @@
             <label for="chkModule1Valid" style="cursor: pointer; color: #0b2240; font-size: 0.95rem;">
                 ⚠️ Veuillez cocher "J'ai lu l'ensemble de ce module" pour accéder aux suivants.
             </label>
+            </div>
+        </div>
     </div>
 
 
-<!-- FENÊTRES SUPERPOSÉES -->
+    <!-- FENÊTRES SUPERPOSÉES -->
 
 <!-- MODALE 2 -->
 <div id="modal-module2" class="modal">
@@ -562,6 +564,8 @@
                 </li>
             </ul>
         </div>
+    </div>
+</div>
 
 
 
@@ -809,7 +813,7 @@
     function updateModuleLockUI() {
         const checkbox = document.getElementById('chkModule1Valid');
         const lockWarning = document.getElementById('lockWarning');
-        const isUnlocked = checkbox ? checkbox.checked : false;
+        const isUnlocked = checkbox ? checkbox.checked : getModule1State();
 
         modulesToLock.forEach(id => {
             const btn = document.getElementById(id);
@@ -828,9 +832,9 @@
 
     function openModal(id) {
         const checkbox = document.getElementById('chkModule1Valid');
-        const isUnlocked = checkbox ? checkbox.checked : false;
+        const isUnlocked = checkbox?.checked || getModule1State();
 
-        if (id === 'module1' || isUnlocked || getModule1State()) {
+        if (id === 'module1' || isUnlocked) {
             const modal = document.getElementById('modal-' + id);
             if (modal) {
                 modal.style.display = 'block';
