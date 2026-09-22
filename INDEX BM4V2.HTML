@@ -14,12 +14,13 @@
             --overlay: rgba(0, 0, 0, 0.5);
         }
         
-        /* Application de la page fixe non scrolable globalement */
+        /* Base globale */
         html, body {
             margin: 0;
             padding: 0;
-            height: 100%;
-            overflow: hidden;
+            min-height: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-light);
             color: var(--text-dark);
@@ -28,7 +29,7 @@
         .main-wrapper {
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            min-height: 100vh;
         }
 
         header {
@@ -54,7 +55,7 @@
 
         nav {
             background-color: var(--white);
-            padding: 10px;
+            padding: 10px 16px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             flex-shrink: 0;
         }
@@ -66,7 +67,11 @@
             justify-content: center;
             flex-wrap: wrap;
             gap: 10px;
+            width: 100%;
+            max-width: 1200px;
+            margin-inline: auto;
         }
+        nav li { display: flex; }
         nav button {
             background: none;
             border: none;
@@ -77,6 +82,8 @@
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.3s ease;
+            line-height: 1.25;
+            white-space: normal;
         }
         nav button:hover:not(:disabled) {
             background-color: var(--primary-blue);
@@ -97,6 +104,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 12px;
         }
         
         .lock-warning {
@@ -141,17 +152,20 @@
             height: 100%;
             background-color: var(--overlay);
             overflow-y: auto;
+            padding: 20px 12px;
         }
         .modal-content {
             background-color: var(--white);
-            margin: 5% auto;
+            margin: 24px auto;
             padding: 30px;
             border-radius: 8px;
             max-width: 850px;
-            width: 85%;
+            width: min(850px, 100%);
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             position: relative;
             animation: fadeIn 0.25s ease;
+            max-height: calc(100dvh - 48px);
+            overflow-y: auto;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-15px); }
@@ -207,10 +221,11 @@
 
         .dossier-list {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
             padding: 0;
             list-style: none;
+            width: 100%;
         }
         .dossier-item {
             background: var(--bg-light);
@@ -222,6 +237,8 @@
             align-items: center;
             font-size: 0.95rem;
             transition: all 0.3s ease;
+            gap: 10px;
+            min-width: 0;
         }
         .dossier-item label {
             display: flex;
@@ -229,9 +246,11 @@
             gap: 10px;
             cursor: pointer;
             flex-grow: 1;
+            min-width: 0;
         }
         .dossier-item .dossier-text {
             flex-grow: 1;
+            overflow-wrap: anywhere;
         }
         .dossier-item input[type="checkbox"] {
             transform: scale(1.1);
@@ -369,6 +388,8 @@
     font-weight: 500;
     text-align: center;
     min-width: 60px; /* Force tous les boutons à avoir exactement la même taille */
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .doc-link:hover {
@@ -383,6 +404,8 @@
     border-left: 4px solid var(--accent-red, #dc3545); 
     border-radius: 0 8px 8px 0;
     line-height: 1.6;
+    width: 100%;
+    max-width: 100%;
 }
 
 .card-pro h3 {
@@ -415,6 +438,9 @@
 
         /* RESPONSIVE TABLETTE */
         @media (max-width: 1024px) {
+            .content-container {
+                padding: 16px;
+            }
             nav ul {
                 gap: 8px;
             }
@@ -423,30 +449,100 @@
                 padding: 7px 10px;
             }
             .dossier-list {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr !important;
+            }
+            .modal-content {
+                padding: 24px;
+            }
+            .module-2-grid {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             }
         }
 
         /* RESPONSIVE MOBILE */
         @media (max-width: 768px) {
+            header {
+                padding: 12px 14px;
+            }
             header h1 {
                 font-size: 1.3rem;
+            }
+            nav {
+                padding: 8px 10px;
+            }
+            nav ul {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            nav li {
+                width: 100%;
+            }
+            nav button {
+                width: 100%;
+                text-align: left;
+                font-size: 0.9rem;
             }
             .content-container {
                 padding: 12px;
             }
             .preface-section,
             .modal-content {
-                width: 92%;
+                width: 100%;
                 padding: 18px;
+            }
+            .modal {
+                padding: 12px 8px;
+            }
+            .modal-content {
+                margin: 8px auto;
+                max-height: calc(100dvh - 16px);
+            }
+            .close-btn {
+                top: 8px;
+                right: 12px;
+                font-size: 1.8rem;
             }
             .dossier-item {
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: stretch;
                 gap: 8px;
             }
             .dossier-item label {
                 width: 100%;
+            }
+            .dossier-item > div {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .align-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .row-text {
+                padding-right: 0;
+            }
+            .validation-box {
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            h2 {
+                font-size: 1.05rem;
+            }
+            .preface-box {
+                padding: 12px;
+            }
+            .btn-link {
+                width: 100%;
+                text-align: center;
             }
         }
     </style>
