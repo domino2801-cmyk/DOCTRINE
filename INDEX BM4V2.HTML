@@ -132,23 +132,26 @@
         }
         
         .modal {
-            display: none; 
+            display: none;
             position: fixed;
             z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
+            top: 5vh;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(920px, 92vw);
+            max-height: 88vh;
+            padding: 12px;
             background-color: var(--overlay);
+            border-radius: 12px;
             overflow-y: auto;
         }
         .modal-content {
             background-color: var(--white);
-            margin: 5% auto;
+            margin: 0;
             padding: 30px;
             border-radius: 8px;
-            max-width: 850px;
-            width: 85%;
+            max-width: none;
+            width: 100%;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             position: relative;
             animation: fadeIn 0.25s ease;
@@ -835,11 +838,31 @@
         }
     }
 
+    const modalBaseZIndex = 1000;
+    let currentModalZIndex = modalBaseZIndex;
+    let modalOffsetIndex = 0;
+
+    function bringModalToFront(modal) {
+        currentModalZIndex += 1;
+        modal.style.zIndex = String(currentModalZIndex); // z-index dynamique pour la dernière fenêtre active
+    }
+
+    function positionModal(modal) {
+        const offset = (modalOffsetIndex % 5) * 18;
+        modal.style.top = `calc(5vh + ${offset}px)`;
+        modal.style.left = `calc(50% + ${offset}px)`;
+        modalOffsetIndex += 1;
+    }
+
     function openModal(id) {
         if (id === 'module1' || isModule1Unlocked()) {
             const modal = document.getElementById('modal-' + id);
             if (modal) {
-                modal.style.display = 'block';
+                if (modal.style.display !== 'block') {
+                    positionModal(modal);
+                    modal.style.display = 'block';
+                }
+                bringModalToFront(modal);
             }
         } else {
             alert("Veuillez cocher « J'ai lu l'ensemble du module » pour accéder aux suivants.");
@@ -848,18 +871,34 @@
 
     function closeModal(id) {
         const modal = document.getElementById('modal-' + id);
+
+        if (id === 'module1') {
+            const checkbox = document.getElementById('chkModule1Valid');
+            if (checkbox && !checkbox.checked) {
+                checkbox.checked = true;
+                setModule1State(true); // la fermeture du module 1 valide aussi son accès suivant
+                updateModuleLockUI();
+            }
+        }
+
         if (modal) {
             modal.style.display = 'none';
         }
     }
 
-    window.onclick = function (event) {
-        if (event.target.classList.contains('modal')) {
-            event.target.style.display = 'none';
-        }
-    };
-
     document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('mousedown', function() {
+                bringModalToFront(this);
+            });
+
+            modal.addEventListener('click', function(event) {
+                if (event.target === this) {
+                    closeModal(this.id.replace('modal-', ''));
+                }
+            });
+        });
+
         const checkbox = document.getElementById('chkModule1Valid');
         if (checkbox) {
             checkbox.checked = getModule1State();
