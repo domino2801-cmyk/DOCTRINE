@@ -2,7 +2,17 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Le Couteau Suisse du candidat BM4 : préparation doctrinale, rédaction, corrections, QCM et admission dans une application installable en français.">
+    <meta name="theme-color" content="#0b2240">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Couteau Suisse BM4">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Corpus de Préparation au BM4 - Édition 2027</title>
     <style>
         :root {
@@ -124,6 +134,59 @@
             max-width: 900px;
             width: 100%;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .app-utility-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .install-button {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 999px;
+            background-color: var(--accent-red);
+            color: var(--white);
+            padding: 10px 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+        }
+
+        .install-button:hover {
+            background-color: #821619;
+        }
+
+        .install-button.is-visible,
+        .status-chip.is-visible {
+            display: inline-flex;
+        }
+
+        .status-chip {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            min-height: 40px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background-color: #eff6ff;
+            color: var(--primary-blue);
+            border: 1px solid #bfdbfe;
+        }
+
+        .status-chip.is-offline {
+            background-color: #fff7ed;
+            color: #9a3412;
+            border-color: #fdba74;
         }
 
         .preface-section {
@@ -486,6 +549,14 @@
             .content-container {
                 padding: 12px;
             }
+            .app-utility-bar {
+                justify-content: stretch;
+            }
+            .install-button,
+            .status-chip {
+                width: 100%;
+                justify-content: center;
+            }
             .preface-section,
             .modal-content {
                 width: 100%;
@@ -573,6 +644,11 @@
     <div class="content-container">
         <div id="lockWarning" class="lock-warning" style="display: block;">
             ⚠️ Veuillez valider le module 1 pour débloquer les modules suivants.
+        </div>
+        <div class="app-utility-bar" aria-label="Fonctions de l'application">
+            <button id="installAppButton" class="install-button" type="button" hidden>Installer l’application</button>
+            <div id="networkStatus" class="status-chip" role="status" aria-live="polite" hidden></div>
+            <div id="appUpdateStatus" class="status-chip" role="status" aria-live="polite" hidden></div>
         </div>
 
 <section class="preface-section">
@@ -1068,6 +1144,8 @@
 <script>
     const module1Key = 'module1_validated';
     const modulesToLock = ['btn-mod2', 'btn-mod3', 'btn-mod4', 'btn-mod5', 'btn-mod6'];
+    let deferredInstallPrompt = null;
+    let networkStatusTimer = null;
 
     function getModule1State() {
         try {
@@ -1137,6 +1215,145 @@
             event.target.style.display = 'none';
         }
     };
+
+    function showStatusChip(element, message, options = {}) {
+        if (!element) return;
+
+        element.textContent = message;
+        element.hidden = false;
+        element.classList.add('is-visible');
+        element.classList.toggle('is-offline', Boolean(options.offline));
+    }
+
+    function hideStatusChip(element) {
+        if (!element) return;
+
+        element.hidden = true;
+        element.textContent = '';
+        element.classList.remove('is-visible', 'is-offline');
+    }
+
+    function isStandaloneMode() {
+        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
+
+    function updateInstallButtonVisibility() {
+        const installButton = document.getElementById('installAppButton');
+        if (!installButton) return;
+
+        const shouldShow = Boolean(deferredInstallPrompt) && !isStandaloneMode();
+        installButton.hidden = !shouldShow;
+        installButton.classList.toggle('is-visible', shouldShow);
+    }
+
+    function updateNetworkStatus(announceOnline = false) {
+        const networkStatus = document.getElementById('networkStatus');
+        if (!networkStatus) return;
+
+        window.clearTimeout(networkStatusTimer);
+
+        if (navigator.onLine === false) {
+            showStatusChip(networkStatus, 'Mode hors ligne : les liens externes nécessitent Internet.', { offline: true });
+            return;
+        }
+
+        if (announceOnline) {
+            showStatusChip(networkStatus, 'Connexion rétablie.', { offline: false });
+            networkStatusTimer = window.setTimeout(() => hideStatusChip(networkStatus), 3000);
+            return;
+        }
+
+        hideStatusChip(networkStatus);
+    }
+
+    function canRegisterServiceWorker() {
+        if (!('serviceWorker' in navigator)) {
+            return false;
+        }
+
+        if (window.isSecureContext) {
+            return true;
+        }
+
+        return /^(localhost|127(?:\.\d{1,3}){3}|\[::1\])$/.test(window.location.hostname);
+    }
+
+    function bindInstallPromptHandlers() {
+        const installButton = document.getElementById('installAppButton');
+        const appUpdateStatus = document.getElementById('appUpdateStatus');
+
+        window.addEventListener('beforeinstallprompt', function(event) {
+            event.preventDefault();
+            deferredInstallPrompt = event;
+            updateInstallButtonVisibility();
+        });
+
+        window.addEventListener('appinstalled', function() {
+            deferredInstallPrompt = null;
+            updateInstallButtonVisibility();
+            showStatusChip(appUpdateStatus, 'Application installée avec succès.');
+            window.setTimeout(() => hideStatusChip(appUpdateStatus), 3500);
+        });
+
+        if (!installButton) return;
+
+        installButton.addEventListener('click', async function() {
+            if (!deferredInstallPrompt) {
+                return;
+            }
+
+            deferredInstallPrompt.prompt();
+
+            try {
+                await deferredInstallPrompt.userChoice;
+            } finally {
+                deferredInstallPrompt = null;
+                updateInstallButtonVisibility();
+            }
+        });
+
+        updateInstallButtonVisibility();
+    }
+
+    async function registerAppServiceWorker() {
+        const appUpdateStatus = document.getElementById('appUpdateStatus');
+
+        if (!canRegisterServiceWorker()) {
+            return;
+        }
+
+        try {
+            const serviceWorkerUrl = new URL('sw.js', window.location.href);
+            const serviceWorkerScope = new URL('./', window.location.href).pathname;
+            const registration = await navigator.serviceWorker.register(serviceWorkerUrl.href, { scope: serviceWorkerScope });
+            const notifyUpdateReady = function() {
+                showStatusChip(appUpdateStatus, 'Une mise à jour locale est prête. Fermez puis rouvrez l’application.');
+            };
+
+            if (registration.waiting) {
+                notifyUpdateReady();
+            }
+
+            registration.addEventListener('updatefound', function() {
+                const installingWorker = registration.installing;
+                if (!installingWorker) return;
+
+                installingWorker.addEventListener('statechange', function() {
+                    if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        notifyUpdateReady();
+                    }
+                });
+            });
+
+            navigator.serviceWorker.ready.then(function(readyRegistration) {
+                readyRegistration.update().catch(function() {
+                    // Ignore update polling errors safely
+                });
+            });
+        } catch (error) {
+            console.warn('Service worker non enregistré :', error);
+        }
+    }
 
     document.addEventListener('DOMContentLoaded', function() {
         const checkbox = document.getElementById('chkModule1Valid');
@@ -1209,6 +1426,15 @@
 
         updateProgressM3();
         updateProgressM4();
+        bindInstallPromptHandlers();
+        updateNetworkStatus();
+        window.addEventListener('offline', function() {
+            updateNetworkStatus(false);
+        });
+        window.addEventListener('online', function() {
+            updateNetworkStatus(true);
+        });
+        registerAppServiceWorker();
     });
 </script>
 </body>
