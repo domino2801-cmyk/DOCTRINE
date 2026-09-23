@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Icône Le Couteau Suisse du candidat BM4</title>
+  <desc id="desc">Carré bleu avec croix blanche et étiquette BM4 rouge.</desc>
+  <rect width="512" height="512" rx="96" fill="#0b2240"/>
+  <rect x="96" y="96" width="320" height="320" rx="40" fill="#14355f" stroke="#ffffff" stroke-width="16"/>
+  <rect x="236" y="140" width="40" height="232" rx="18" fill="#ffffff"/>
+  <rect x="140" y="236" width="232" height="40" rx="18" fill="#ffffff"/>
+  <rect x="120" y="344" width="272" height="72" rx="24" fill="#a82025"/>
+  <text x="256" y="392" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="64" font-weight="700" fill="#ffffff">BM4</text>
+</svg>
