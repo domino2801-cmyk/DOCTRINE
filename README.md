@@ -11,10 +11,13 @@ L’application HTML `INDEX BM4V2.HTML` est désormais installable comme Progres
 
 ## Installation GitHub Pages
 
-1. activer GitHub Pages sur la branche publiée du dépôt
-2. ouvrir l’URL HTTPS publiée de `INDEX BM4V2.HTML`
-3. laisser le navigateur charger une première fois la page en ligne
-4. utiliser le bouton **Installer l’application** quand le navigateur le propose
+URL attendue : **https://domino2801-cmyk.github.io/DOCTRINE/**
+
+1. dans **Settings > Pages**, vérifier que la **Source** est définie sur **GitHub Actions** (si GitHub Pages n’est pas encore activé)
+2. pousser sur la branche `main` pour déclencher le workflow de déploiement
+3. ouvrir l’URL HTTPS publiée de `INDEX BM4V2.HTML`
+4. laisser le navigateur charger une première fois la page en ligne
+5. utiliser le bouton **Installer l’application** quand le navigateur le propose
 
 ## Limites hors ligne
 
