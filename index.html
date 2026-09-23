@@ -2,14 +2,164 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0; url=./INDEX%20BM4V2.HTML" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DOCTRINE</title>
-    <script>
-      window.location.replace('./INDEX%20BM4V2.HTML');
-    </script>
+    <meta name="theme-color" content="#0b2240" />
+    <title>DOCTRINE | BM4</title>
+    <style>
+      :root {
+        --navy: #0b2240;
+        --red: #a82025;
+        --bg: #f3f6fb;
+        --text: #1d2430;
+        --muted: #526075;
+        --card: #ffffff;
+        --shadow: rgba(11, 34, 64, 0.12);
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);
+        color: var(--text);
+      }
+
+      .shell {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      .card {
+        width: min(760px, 100%);
+        background: var(--card);
+        border-radius: 18px;
+        box-shadow: 0 18px 50px var(--shadow);
+        border: 1px solid rgba(11, 34, 64, 0.08);
+        overflow: hidden;
+      }
+
+      .header {
+        background: var(--navy);
+        color: white;
+        padding: 22px 30px;
+        border-bottom: 5px solid var(--red);
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: clamp(1.6rem, 4vw, 2.4rem);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .content {
+        padding: 30px;
+      }
+
+      .badge {
+        display: inline-block;
+        background: rgba(168, 32, 37, 0.08);
+        color: var(--red);
+        border: 1px solid rgba(168, 32, 37, 0.18);
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      h2 {
+        margin: 18px 0 12px;
+        color: var(--navy);
+        font-size: clamp(1.4rem, 3vw, 2rem);
+      }
+
+      p {
+        margin: 0 0 16px;
+        color: var(--muted);
+        line-height: 1.7;
+        font-size: 1.04rem;
+      }
+
+      .actions {
+        margin-top: 24px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 22px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .button:hover {
+        transform: translateY(-1px);
+      }
+
+      .button.primary {
+        background: var(--red);
+        color: white;
+        box-shadow: 0 12px 24px rgba(168, 32, 37, 0.22);
+      }
+
+      .button.secondary {
+        background: #edf3ff;
+        color: var(--navy);
+        border: 1px solid rgba(11, 34, 64, 0.1);
+      }
+
+      .meta {
+        margin-top: 26px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(11, 34, 64, 0.08);
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      @media (max-width: 600px) {
+        .content { padding: 22px 18px 26px; }
+        .header { padding: 18px 20px; }
+        .actions { flex-direction: column; }
+        .button { width: 100%; }
+      }
+    </style>
   </head>
   <body>
-    <p>Redirection vers la page principale…</p>
+    <div class="shell">
+      <main class="card" aria-label="Page d'accueil DOCTRINE">
+        <header class="header">
+          <h1>DOCTRINE</h1>
+        </header>
+
+        <div class="content">
+          <span class="badge">BM4</span>
+          <h2>Le couteau suisse du candidat</h2>
+
+          <p>
+            Cette page d'accueil GitHub Pages est bien servie à la racine du site.
+            L'application principale est disponible sur la page dédiée du projet.
+          </p>
+
+          <div class="actions">
+            <a class="button primary" href="./INDEX%20BM4V2.HTML">Ouvrir l'application</a>
+            <a class="button secondary" href="./README.md">Voir la documentation</a>
+          </div>
+
+          <div class="meta">
+            GitHub Pages • Déploiement correct • Point d'entrée racine valide
+          </div>
+        </div>
+      </main>
+    </div>
   </body>
 </html>
