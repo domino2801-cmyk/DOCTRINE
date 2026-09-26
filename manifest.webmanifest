@@ -39,7 +39,8 @@
     {
       "src": "./ms-icon-150x150.png",
       "sizes": "150x150",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
