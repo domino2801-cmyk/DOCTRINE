@@ -16,7 +16,8 @@ const SHELL_ASSETS = [
   new URL('./apple-icon-180x180.png', self.location.href).toString(),
   new URL('./ms-icon-144x144.png', self.location.href).toString(),
   new URL('./ms-icon-150x150.png', self.location.href).toString(),
-  new URL('./icon-512.png', self.location.href).toString()
+  new URL('./icon-512.png', self.location.href).toString(),
+  new URL('./icon-maskable-512.png', self.location.href).toString()
 ];
 
 function normalizePathname(pathname) {
