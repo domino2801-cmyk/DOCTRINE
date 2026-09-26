@@ -43,12 +43,6 @@
       "purpose": "any"
     },
     {
-      "src": "./ms-icon-150x150.png",
-      "sizes": "150x150",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
       "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
