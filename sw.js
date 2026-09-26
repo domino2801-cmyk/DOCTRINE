@@ -32,7 +32,9 @@ function getNavigationFallback(requestUrl) {
     return APP_SHELL_URL;
   }
 
-  return LANDING_PAGE_URL;
+  // Keep the root landing page separate offline; all other in-scope navigations
+  // continue to resolve to the BM4 application shell.
+  return APP_SHELL_URL;
 }
 
 self.addEventListener('install', event => {
