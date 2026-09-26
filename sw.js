@@ -8,6 +8,7 @@ const SHELL_ASSETS = [
   APP_SHELL_URL,
   LANDING_PAGE_URL,
   new URL('./manifest.webmanifest', self.location.href).toString(),
+  new URL('./icon.svg', self.location.href).toString(),
   new URL('./favicon.ico', self.location.href).toString(),
   new URL('./android-icon-144x144.png', self.location.href).toString(),
   new URL('./android-icon-192x192.png', self.location.href).toString(),
