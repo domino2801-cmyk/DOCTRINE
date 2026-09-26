@@ -7,15 +7,7 @@ const SCOPE_PATHNAME = new URL('./', self.location.href).pathname;
 const SHELL_ASSETS = [
   APP_SHELL_URL,
   LANDING_PAGE_URL,
-  new URL('./manifest.webmanifest', self.location.href).toString(),
-  new URL('./icon.svg', self.location.href).toString(),
-  new URL('./android-icon-144x144.png', self.location.href).toString(),
-  new URL('./favicon.ico', self.location.href).toString(),
-  new URL('./android-icon-192x192.png', self.location.href).toString(),
-  new URL('./apple-icon-144x144.png', self.location.href).toString(),
-  new URL('./apple-icon-152x152.png', self.location.href).toString(),
-  new URL('./icon-512.png', self.location.href).toString(),
-  new URL('./icon-maskable-512.png', self.location.href).toString()
+  new URL('./manifest.webmanifest', self.location.href).toString()
 ];
 
 function normalizePathname(pathname) {
