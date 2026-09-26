@@ -5,8 +5,8 @@
 L’application HTML `INDEX BM4V2.HTML` est désormais installable comme Progressive Web App sur un hébergement statique compatible HTTPS, y compris GitHub Pages pour ce dépôt.
 
 - le manifeste `manifest.webmanifest` utilise des chemins relatifs pour fonctionner à la racine ou sous `/DOCTRINE/`
-- le service worker `sw.js` met en cache le shell local (HTML, manifeste et icônes) après une première visite en ligne
-- les points d’entrée `index.html` et `INDEX BM4V2.HTML` partagent désormais la même iconographie « couteau suisse » (`icons/icon.svg`, PNG PWA et `favicon.ico`) pour conserver un rendu cohérent sur desktop, mobile et en mode installable
+- le service worker `sw.js` met en cache le shell local (HTML, manifeste et icônes PWA) après une première visite en ligne
+- les icônes PWA (`icons/icon.svg`, `icon-192.png`, `icon-512.png`) restent dédiées à l’installation de l’application
 - les liens externes Google Drive et `https://Qcm-major.fr` restent des ressources réseau et ne sont pas préchargés ni mis en cache
 - en cas de mise à jour du service worker, un message indique qu’il faut fermer puis rouvrir l’application pour récupérer la nouvelle version
 

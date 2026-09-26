@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bm4-shell-v2';
+const CACHE_NAME = 'bm4-shell-v4';
 const APP_SHELL_URL = new URL('./INDEX%20BM4V2.HTML', self.location.href).toString();
 const LANDING_PAGE_URL = new URL('./index.html', self.location.href).toString();
 const APP_SHELL_PATHNAME = new URL(APP_SHELL_URL).pathname;
@@ -8,11 +8,9 @@ const SHELL_ASSETS = [
   APP_SHELL_URL,
   LANDING_PAGE_URL,
   new URL('./manifest.webmanifest', self.location.href).toString(),
-  new URL('./favicon.ico', self.location.href).toString(),
   new URL('./icons/icon.svg', self.location.href).toString(),
   new URL('./icons/icon-192.png', self.location.href).toString(),
-  new URL('./icons/icon-512.png', self.location.href).toString(),
-  new URL('./icons/apple-touch-icon.png', self.location.href).toString()
+  new URL('./icons/icon-512.png', self.location.href).toString()
 ];
 
 function normalizePathname(pathname) {

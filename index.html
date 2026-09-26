@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b2240" />
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
-    <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png" />
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <title>DOCTRINE | BM4</title>
     <style>
       :root {
@@ -58,13 +54,6 @@
         gap: 16px;
       }
 
-      .brand-mark {
-        width: clamp(58px, 12vw, 76px);
-        height: auto;
-        flex: 0 0 auto;
-        filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.18));
-      }
-
       .header h1 {
         margin: 0;
         font-size: clamp(1.6rem, 4vw, 2.4rem);
@@ -79,13 +68,6 @@
       .hero-heading {
         display: flex;
         align-items: center;
-        gap: 14px;
-      }
-
-      .hero-heading-icon {
-        width: 48px;
-        height: 48px;
-        flex: 0 0 auto;
       }
 
       .badge {
@@ -160,7 +142,6 @@
         .content { padding: 22px 18px 26px; }
         .header { padding: 18px 20px; }
         .brand-header { align-items: flex-start; }
-        .brand-mark { width: 56px; }
         .hero-heading { align-items: flex-start; }
         .actions { flex-direction: column; }
         .button { width: 100%; }
@@ -172,7 +153,6 @@
       <main class="card" aria-label="Page d'accueil DOCTRINE">
         <header class="header">
           <div class="brand-header">
-            <img class="brand-mark" src="icons/icon.svg" alt="" aria-hidden="true" />
             <h1>DOCTRINE</h1>
           </div>
         </header>
@@ -180,7 +160,6 @@
         <div class="content">
           <span class="badge">BM4</span>
           <div class="hero-heading">
-            <img class="hero-heading-icon" src="icons/icon.svg" alt="" aria-hidden="true" />
             <h2>Le couteau suisse du candidat</h2>
           </div>
 
@@ -189,7 +168,7 @@
           </div>
 
           <div class="meta">
-            Icône d’application synchronisée sur desktop, mobile et installation PWA.
+            Application disponible sur desktop, mobile et installation PWA.
           </div>
         </div>
       </main>
