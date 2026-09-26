@@ -13,6 +13,12 @@
   "categories": ["education", "productivity"],
   "icons": [
     {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
       "src": "./android-icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
