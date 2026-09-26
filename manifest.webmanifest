@@ -13,12 +13,6 @@
   "categories": ["education", "productivity"],
   "icons": [
     {
-      "src": "./icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
       "src": "./android-icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
@@ -31,16 +25,21 @@
       "purpose": "any"
     },
     {
-      "src": "./icon-512.png",
-      "sizes": "512x512",
+      "src": "./apple-icon-152x152.png",
+      "sizes": "152x152",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-maskable-512.png",
-      "sizes": "512x512",
+      "src": "./apple-icon-180x180.png",
+      "sizes": "180x180",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "./ms-icon-150x150.png",
+      "sizes": "150x150",
+      "type": "image/png"
     }
   ]
 }
