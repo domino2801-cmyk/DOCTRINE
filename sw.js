@@ -32,7 +32,7 @@ function getNavigationFallback(requestUrl) {
     return APP_SHELL_URL;
   }
 
-  return APP_SHELL_URL;
+  return LANDING_PAGE_URL;
 }
 
 self.addEventListener('install', event => {
