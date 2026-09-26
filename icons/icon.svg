@@ -1,10 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title id="title">Icône Le Couteau Suisse du candidat BM4</title>
-  <desc id="desc">Carré bleu avec croix blanche et étiquette BM4 rouge.</desc>
+  <title id="title">Icône couteau suisse DOCTRINE BM4</title>
+  <desc id="desc">Carré bleu marine contenant un couteau suisse rouge avec lame et outils déployés.</desc>
   <rect width="512" height="512" rx="96" fill="#0b2240"/>
-  <rect x="96" y="96" width="320" height="320" rx="40" fill="#14355f" stroke="#ffffff" stroke-width="16"/>
-  <rect x="236" y="140" width="40" height="232" rx="18" fill="#ffffff"/>
-  <rect x="140" y="236" width="232" height="40" rx="18" fill="#ffffff"/>
-  <rect x="120" y="344" width="272" height="72" rx="24" fill="#a82025"/>
-  <text x="256" y="392" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="64" font-weight="700" fill="#ffffff">BM4</text>
+  <rect x="64" y="64" width="384" height="384" rx="80" fill="none" stroke="#ffffff" stroke-opacity="0.15" stroke-width="4"/>
+  <path d="M130 274 212 94 252 120 204 286 Z" fill="#f5f7fb" stroke="#bcc7d8" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M182 200 226 132" fill="none" stroke="#dce4ef" stroke-width="8" stroke-linecap="round"/>
+  <path d="M284 280 340 152 370 168 320 292 Z" fill="#e7edf6" stroke="#bcc7d8" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M300 239c0-35 29-65 65-65 19 0 37 8 49 21" fill="none" stroke="#d8e0eb" stroke-width="16" stroke-linecap="round"/>
+  <path d="M326 235c0-21 18-39 39-39 12 0 22 5 30 13" fill="none" stroke="#d8e0eb" stroke-width="14" stroke-linecap="round"/>
+  <g transform="rotate(-12 256 326)">
+    <rect x="112" y="268" width="288" height="116" rx="40" fill="#a82025" stroke="#ffffff" stroke-width="10"/>
+    <rect x="132" y="304" width="252" height="46" rx="24" fill="#821619"/>
+  </g>
+  <circle cx="176" cy="334" r="28" fill="#ffffff"/>
+  <rect x="169" y="314" width="14" height="40" rx="5" fill="#a82025"/>
+  <rect x="156" y="327" width="40" height="14" rx="5" fill="#a82025"/>
+  <g>
+    <circle cx="252" cy="332" r="12" fill="#ffffff"/>
+    <circle cx="252" cy="332" r="5" fill="#14355f"/>
+    <circle cx="328" cy="316" r="12" fill="#ffffff"/>
+    <circle cx="328" cy="316" r="5" fill="#14355f"/>
+  </g>
 </svg>

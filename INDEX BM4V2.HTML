@@ -12,6 +12,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
     <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Corpus de Préparation au BM4 - Édition 2027</title>
     <style>
@@ -49,6 +50,19 @@
             text-align: center;
             border-bottom: 4px solid var(--accent-red);
             flex-shrink: 0;
+        }
+        .brand-header {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .brand-icon {
+            width: clamp(56px, 8vw, 72px);
+            height: auto;
+            flex: 0 0 auto;
+            filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.18));
         }
         header h1 {
             margin: 0;
@@ -98,6 +112,11 @@
         nav button:hover:not(:disabled) {
             background-color: var(--primary-blue);
             color: var(--white);
+        }
+        nav button.is-active {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.18);
         }
         
         nav button:disabled {
@@ -527,6 +546,12 @@
             header {
                 padding: 12px 14px;
             }
+            .brand-header {
+                gap: 10px;
+            }
+            .brand-icon {
+                width: 52px;
+            }
             header h1 {
                 font-size: 1.3rem;
             }
@@ -625,18 +650,21 @@
 
 <div class="main-wrapper">
     <header>
-        <h1>Le " Couteau Suisse " du candidat BM4</h1>
+        <div class="brand-header">
+            <img class="brand-icon" src="icons/icon.svg" alt="" aria-hidden="true">
+            <h1>Le " Couteau Suisse " du candidat BM4</h1>
+        </div>
 
     </header>
 
     <nav>
         <ul>
-            <li><button id="btn-mod1" onclick="openModal('module1')">Mod. 1 : Institutionnel</button></li>
-            <li><button id="btn-mod2" onclick="openModal('module2')">Mod. 2 : Doctrine</button></li>
-            <li><button id="btn-mod3" onclick="openModal('module3')">Mod. 3 : Rédaction</button></li>
-            <li><button id="btn-mod4" onclick="openModal('module4')">Mod. 4 : Corrections</button></li>
-            <li><button id="btn-mod5" onclick="openModal('module5')">Mod. 5 : QCM</button></li>
-            <li><button id="btn-mod6" onclick="openModal('module6')">Mod. 6 : Admission</button></li>
+            <li><button id="btn-mod1" type="button" aria-haspopup="dialog" aria-controls="modal-module1" aria-expanded="false" onclick="openModal('module1')">Mod. 1 : Institutionnel</button></li>
+            <li><button id="btn-mod2" type="button" aria-haspopup="dialog" aria-controls="modal-module2" aria-expanded="false" onclick="openModal('module2')">Mod. 2 : Doctrine</button></li>
+            <li><button id="btn-mod3" type="button" aria-haspopup="dialog" aria-controls="modal-module3" aria-expanded="false" onclick="openModal('module3')">Mod. 3 : Rédaction</button></li>
+            <li><button id="btn-mod4" type="button" aria-haspopup="dialog" aria-controls="modal-module4" aria-expanded="false" onclick="openModal('module4')">Mod. 4 : Corrections</button></li>
+            <li><button id="btn-mod5" type="button" aria-haspopup="dialog" aria-controls="modal-module5" aria-expanded="false" onclick="openModal('module5')">Mod. 5 : QCM</button></li>
+            <li><button id="btn-mod6" type="button" aria-haspopup="dialog" aria-controls="modal-module6" aria-expanded="false" onclick="openModal('module6')">Mod. 6 : Admission</button></li>
         </ul>
     </nav>
 
@@ -646,7 +674,7 @@
             ⚠️ Veuillez valider le module 1 pour débloquer les modules suivants.
         </div>
         <div class="app-utility-bar" aria-label="Fonctions de l'application">
-            <button id="installAppButton" class="install-button" type="button" hidden>Installer l’application</button>
+            <button id="installAppButton" class="install-button" type="button" aria-label="Installer l’application sur cet appareil" title="Installer l’application sur cet appareil" hidden>Installer l’application</button>
             <div id="networkStatus" class="status-chip" role="status" aria-live="polite" hidden></div>
             <div id="appUpdateStatus" class="status-chip" role="status" aria-live="polite" hidden></div>
         </div>
@@ -675,10 +703,10 @@
 </div>
 
 <!-- MODALE 1 -->
-<div id="modal-module1" class="modal">
+<div id="modal-module1" class="modal" role="dialog" aria-modal="true" aria-labelledby="module1-title">
     <div class="modal-content">
-        <button class="close-btn" onclick="closeModal('module1')">&times;</button>
-        <h2>MODULE 1 : LE CADRE INSTITUTIONNEL & RETEX</h2>
+        <button class="close-btn" type="button" aria-label="Fermer le module 1" title="Fermer le module 1" onclick="closeModal('module1')">&times;</button>
+        <h2 id="module1-title">MODULE 1 : LE CADRE INSTITUTIONNEL & RETEX</h2>
         <ul style="list-style: none; padding-left: 0;">
             <!-- SECTION 1.1 -->
             <li style="margin-bottom: 25px;">
@@ -723,10 +751,10 @@
 <!-- FENÊTRES SUPERPOSÉES -->
 
 <!-- MODALE 2 -->
-<div id="modal-module2" class="modal">
+<div id="modal-module2" class="modal" role="dialog" aria-modal="true" aria-labelledby="module2-title">
     <div class="modal-content" style="max-width: 850px;">
-        <button class="close-btn" onclick="closeModal('module2')">&times;</button>
-        <h2>MODULE 2 : BASE DOCUMENTAIRE & CADRE DOCTRINAL</h2>
+        <button class="close-btn" type="button" aria-label="Fermer le module 2" title="Fermer le module 2" onclick="closeModal('module2')">&times;</button>
+        <h2 id="module2-title">MODULE 2 : BASE DOCUMENTAIRE & CADRE DOCTRINAL</h2>
         
         <div style="margin-bottom: 25px;">
             <p><strong>2.1. Les Piliers de l'Armée de Terre de Combat</strong></p>
@@ -845,10 +873,10 @@
     </div>
 </div>
 
-<div id="modal-module3" class="modal">
+<div id="modal-module3" class="modal" role="dialog" aria-modal="true" aria-labelledby="module3-title">
     <div class="modal-content">
-        <button class="close-btn" onclick="closeModal('module3')">&times;</button>
-        <h2>MODULE 3 : EXERCICES DE RÉDACTION</h2>
+        <button class="close-btn" type="button" aria-label="Fermer le module 3" title="Fermer le module 3" onclick="closeModal('module3')">&times;</button>
+        <h2 id="module3-title">MODULE 3 : EXERCICES DE RÉDACTION</h2>
         <p><strong>3.1. Exercices Thématiques Gradués (De 1 à 4 étoiles) :</strong></p>
         
         <div class="progress-container">
@@ -932,10 +960,10 @@
 </div>
 
 <!-- MODALE 4 -->
-<div id="modal-module4" class="modal">
+<div id="modal-module4" class="modal" role="dialog" aria-modal="true" aria-labelledby="module4-title">
     <div class="modal-content">
-        <button class="close-btn" onclick="closeModal('module4')">&times;</button>
-        <h2>MODULE 4 : PROPOSITIONS DE CORRECTION (L'ANALYSE)</h2>
+        <button class="close-btn" type="button" aria-label="Fermer le module 4" title="Fermer le module 4" onclick="closeModal('module4')">&times;</button>
+        <h2 id="module4-title">MODULE 4 : PROPOSITIONS DE CORRECTION (L'ANALYSE)</h2>
         <ul>
             <li><strong>4.1. Grilles d'Évaluation & Analyses Méthodologiques</strong>
                 <ul>
@@ -1023,10 +1051,10 @@
     </div>
 </div>
 
-<div id="modal-module5" class="modal">
+<div id="modal-module5" class="modal" role="dialog" aria-modal="true" aria-labelledby="module5-title">
     <div class="modal-content">
-        <button class="close-btn" onclick="closeModal('module5')">&times;</button>
-        <h2>MODULE 5 : ENTRAÎNEMENT INTENSIF AU QCM DOCTRINAL</h2>
+        <button class="close-btn" type="button" aria-label="Fermer le module 5" title="Fermer le module 5" onclick="closeModal('module5')">&times;</button>
+        <h2 id="module5-title">MODULE 5 : ENTRAÎNEMENT INTENSIF AU QCM DOCTRINAL</h2>
         <ul>
             <li><strong>5.1. Banque de Questions (1 000 questions / 20 séries)</strong>
                 <ul>
@@ -1050,10 +1078,10 @@
     </div>
 </div>
 
-<div id="modal-module6" class="modal">
+<div id="modal-module6" class="modal" role="dialog" aria-modal="true" aria-labelledby="module6-title">
     <div class="modal-content">
-        <button class="close-btn" onclick="closeModal('module6')">&times;</button>
-        <h2>MODULE 6 : PRÉPARATION À L'ADMISSION (L'ORAL &amp; SPORT)</h2>
+        <button class="close-btn" type="button" aria-label="Fermer le module 6" title="Fermer le module 6" onclick="closeModal('module6')">&times;</button>
+        <h2 id="module6-title">MODULE 6 : PRÉPARATION À L'ADMISSION (L'ORAL &amp; SPORT)</h2>
         
         <ul class="modal-list">
             <!-- SECTION 6.1 -->
@@ -1144,8 +1172,26 @@
 <script>
     const module1Key = 'module1_validated';
     const modulesToLock = ['btn-mod2', 'btn-mod3', 'btn-mod4', 'btn-mod5', 'btn-mod6'];
+    const moduleButtonMap = {
+        module1: 'btn-mod1',
+        module2: 'btn-mod2',
+        module3: 'btn-mod3',
+        module4: 'btn-mod4',
+        module5: 'btn-mod5',
+        module6: 'btn-mod6'
+    };
     let deferredInstallPrompt = null;
     let networkStatusTimer = null;
+
+    function setActiveModuleButton(id) {
+        Object.entries(moduleButtonMap).forEach(([moduleId, buttonId]) => {
+            const button = document.getElementById(buttonId);
+            if (!button) return;
+            const isActive = moduleId === id;
+            button.classList.toggle('is-active', isActive);
+            button.setAttribute('aria-expanded', String(isActive));
+        });
+    }
 
     function getModule1State() {
         try {
@@ -1197,6 +1243,7 @@
             const modal = document.getElementById('modal-' + id);
             if (modal) {
                 modal.style.display = 'block';
+                setActiveModuleButton(id);
             }
         } else {
             alert("Veuillez cocher « J'ai lu l'ensemble du module » pour accéder aux suivants.");
@@ -1208,11 +1255,13 @@
         if (modal) {
             modal.style.display = 'none';
         }
+        setActiveModuleButton(null);
     }
 
     window.onclick = function (event) {
         if (event.target.classList.contains('modal')) {
             event.target.style.display = 'none';
+            setActiveModuleButton(null);
         }
     };
 

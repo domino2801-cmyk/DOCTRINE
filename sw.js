@@ -1,12 +1,41 @@
-const CACHE_NAME = 'bm4-shell-v1';
+const CACHE_NAME = 'bm4-shell-v2';
+const APP_SHELL_URL = new URL('./INDEX%20BM4V2.HTML', self.location.href).toString();
+const LANDING_PAGE_URL = new URL('./index.html', self.location.href).toString();
+const APP_SHELL_PATHNAME = new URL(APP_SHELL_URL).pathname;
+const LANDING_PAGE_PATHNAME = new URL(LANDING_PAGE_URL).pathname;
+const SCOPE_PATHNAME = new URL('./', self.location.href).pathname;
 const SHELL_ASSETS = [
-  new URL('./INDEX%20BM4V2.HTML', self.location.href).toString(),
+  APP_SHELL_URL,
+  LANDING_PAGE_URL,
   new URL('./manifest.webmanifest', self.location.href).toString(),
+  new URL('./favicon.ico', self.location.href).toString(),
   new URL('./icons/icon.svg', self.location.href).toString(),
   new URL('./icons/icon-192.png', self.location.href).toString(),
   new URL('./icons/icon-512.png', self.location.href).toString(),
   new URL('./icons/apple-touch-icon.png', self.location.href).toString()
 ];
+
+function normalizePathname(pathname) {
+  return pathname.endsWith('/') && pathname !== '/' ? pathname.slice(0, -1) : pathname;
+}
+
+function getNavigationFallback(requestUrl) {
+  const pathname = normalizePathname(requestUrl.pathname);
+  if (
+    pathname === normalizePathname(LANDING_PAGE_PATHNAME) ||
+    pathname === normalizePathname(SCOPE_PATHNAME)
+  ) {
+    return LANDING_PAGE_URL;
+  }
+
+  if (pathname === normalizePathname(APP_SHELL_PATHNAME)) {
+    return APP_SHELL_URL;
+  }
+
+  // Keep the root landing page separate offline; all other in-scope navigations
+  // continue to resolve to the BM4 application shell.
+  return APP_SHELL_URL;
+}
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -44,7 +73,7 @@ self.addEventListener('fetch', event => {
         cache.put(request, networkResponse.clone());
         return networkResponse;
       } catch (error) {
-        return (await caches.match(request)) || (await caches.match(SHELL_ASSETS[0]));
+        return (await caches.match(request)) || (await caches.match(getNavigationFallback(requestUrl)));
       }
     })());
     return;
