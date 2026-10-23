@@ -46,6 +46,25 @@ html.auth-locked body { background: radial-gradient(circle at 50% 30%, #1b2733 0
     color: #1d2430;
 }
 #auth-gate input:focus { outline: 2px solid #0b2240; outline-offset: 1px; background: #fff; }
+#auth-gate .auth-password-field { position: relative; }
+#auth-gate .auth-password-field input { padding-right: 92px; }
+#auth-gate .auth-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #0b2240;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+#auth-gate .auth-password-toggle:hover { background: #e9eef5; }
+#auth-gate .auth-password-toggle:focus-visible { outline: 2px solid #0b2240; }
 #auth-gate .auth-message { min-height: 1.4em; margin: 12px 0 0; font-weight: 600; font-size: 0.88rem; color: #a82025; }
 #auth-gate button[type="submit"] {
     width: 100%;

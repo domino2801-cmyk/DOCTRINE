@@ -119,7 +119,10 @@
             '<label for="auth-email">Adresse email</label>' +
             '<input id="auth-email" type="email" autocomplete="username" inputmode="email" required>' +
             '<label for="auth-mdp">Mot de passe</label>' +
+            '<div class="auth-password-field">' +
             '<input id="auth-mdp" type="password" autocomplete="current-password" required>' +
+            '<button id="auth-toggle-password" class="auth-password-toggle" type="button" aria-controls="auth-mdp" aria-pressed="false">Afficher</button>' +
+            '</div>' +
             '<p class="auth-message" id="auth-message" role="alert" aria-live="assertive"></p>' +
             '<button type="submit" id="auth-submit">Se connecter</button>' +
             '</form>' +
@@ -133,6 +136,13 @@
         bouton = gate.querySelector('#auth-submit');
         pied = gate.querySelector('#auth-pied');
         form.addEventListener('submit', soumettre);
+        gate.querySelector('#auth-toggle-password').addEventListener('click', function () {
+            var champ = gate.querySelector('#auth-mdp');
+            var afficher = champ.type === 'password';
+            champ.type = afficher ? 'text' : 'password';
+            this.textContent = afficher ? 'Masquer' : 'Afficher';
+            this.setAttribute('aria-pressed', String(afficher));
+        });
     }
 
     function montrerFormulaire() {

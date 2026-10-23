@@ -221,6 +221,77 @@
             padding: 15px 20px;
             font-style: italic;
         }
+        .study-dashboard {
+            width: 100%;
+            max-width: 900px;
+            padding: 20px 22px;
+            border: 1px solid #d9e0e8;
+            border-radius: 10px;
+            background: #fff;
+        }
+        .study-dashboard-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .study-dashboard h2 {
+            margin: 0 0 5px;
+            padding: 0;
+            border: 0;
+            font-size: 1.25rem;
+        }
+        .study-dashboard-heading p,
+        .study-progress-text {
+            margin: 0;
+            color: #526075;
+            font-size: 0.9rem;
+        }
+        .resume-button {
+            flex: 0 0 auto;
+            padding: 11px 16px;
+            border: 0;
+            border-radius: 7px;
+            background: var(--primary-blue);
+            color: #fff;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .resume-button:hover { background: #17395f; }
+        .resume-button:focus-visible { outline: 2px solid var(--accent-red); outline-offset: 3px; }
+        .study-progress-label {
+            display: block;
+            margin-top: 18px;
+            color: #263445;
+            font-size: 0.88rem;
+            font-weight: 700;
+        }
+        #overallProgress {
+            display: block;
+            width: 100%;
+            height: 10px;
+            margin: 8px 0 6px;
+            accent-color: #256044;
+        }
+        .study-progress-text { font-size: 0.82rem; }
+        .preface-section {
+            max-width: 900px;
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid #d9e0e8;
+            border-radius: 8px;
+            background: #fff;
+        }
+        .preface-section summary {
+            color: var(--primary-blue);
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .preface-section .preface-box {
+            margin-top: 14px;
+            padding: 12px 16px;
+        }
 
         .modal {
             display: none;
@@ -235,35 +306,18 @@
             padding: 20px 12px;
         }
         .modal-content {
+            --modal-padding: 30px;
             background-color: var(--white);
             margin: 24px auto;
-            padding: 30px;
+            padding: var(--modal-padding);
             border-radius: 8px;
             max-width: 850px;
             width: min(850px, 100%);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border: 1px solid #d9e0e8;
+            box-shadow: 0 4px 16px rgba(11, 34, 64, 0.12);
             position: relative;
-            animation: fadeIn 0.25s ease;
             max-height: calc(100dvh - 48px);
             overflow-y: auto;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 2rem;
-            font-weight: bold;
-            color: #aaa;
-            cursor: pointer;
-            border: none;
-            background: none;
-        }
-        .close-btn:hover {
-            color: var(--accent-red);
         }
         h2 {
             color: var(--primary-blue);
@@ -271,6 +325,48 @@
             padding-bottom: 6px;
             margin-top: 0;
         }
+        .modal-toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: calc(var(--modal-padding) * -1) calc(var(--modal-padding) * -1) 18px;
+            padding: 12px var(--modal-padding);
+            background: #fff;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .modal-toolbar > span {
+            color: #526075;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+        }
+        .modal-return-btn {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            background: #fff;
+            color: var(--primary-blue);
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .modal-return-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+        .modal-return-btn:focus-visible { outline: 2px solid var(--primary-blue); outline-offset: 2px; }
+        .modal-content > h2 { line-height: 1.35; }
+        .mod-body {
+            max-width: 72ch;
+            margin-inline: auto;
+            color: #263445;
+            font-size: 0.98rem;
+            line-height: 1.65;
+        }
+        .mod-body p { margin-block: 0.7em; }
+        .mod-body li { line-height: 1.6; }
+        .mod-body .dossier-item { box-shadow: none; }
 
         .progress-container {
             background-color: #eee;
@@ -461,6 +557,7 @@
             }
             .modal-content {
                 padding: 24px;
+                --modal-padding: 24px;
             }
         }
 
@@ -503,9 +600,19 @@
                 justify-content: center;
             }
             .preface-section,
-            .modal-content {
+            .modal-content,
+            .study-dashboard {
                 width: 100%;
                 padding: 18px;
+                --modal-padding: 18px;
+            }
+            .study-dashboard-heading {
+                align-items: stretch;
+                flex-direction: column;
+                gap: 14px;
+            }
+            .resume-button {
+                width: 100%;
             }
             .modal {
                 padding: 12px 8px;
@@ -514,11 +621,8 @@
                 margin: 8px auto;
                 max-height: calc(100dvh - 16px);
             }
-            .close-btn {
-                top: 8px;
-                right: 12px;
-                font-size: 1.8rem;
-            }
+            .modal-toolbar { gap: 8px; }
+            .modal-return-btn { padding: 7px 9px; font-size: 0.85rem; }
             .dossier-item {
                 flex-direction: column;
                 align-items: stretch;
@@ -556,6 +660,7 @@
                 width: 100%;
                 text-align: center;
             }
+            .modal-content > h2 { padding-right: 0; }
         }
 
     </style>
@@ -604,7 +709,7 @@
 
     </header>
 
-    <nav>
+    <nav aria-label="Modules de préparation BM4">
         <ul>
             <li><button id="btn-mod1" type="button" aria-haspopup="dialog" aria-controls="modal-module1" aria-expanded="false" onclick="openModal('module1')">Mod. 1 : Institutionnel</button></li>
             <li><button id="btn-mod2" type="button" aria-haspopup="dialog" aria-controls="modal-module2" aria-expanded="false" onclick="openModal('module2')">Mod. 2 : Doctrine</button></li>
@@ -626,8 +731,21 @@
             <div id="appUpdateStatus" class="status-chip" role="status" aria-live="polite" hidden></div>
         </div>
 
-<section class="preface-section">
-    <h2>PRÉFACE</h2>
+        <section class="study-dashboard" aria-labelledby="study-dashboard-title">
+            <div class="study-dashboard-heading">
+                <div>
+                    <h2 id="study-dashboard-title">Votre progression</h2>
+                    <p id="resumeModuleDescription">Reprenez votre préparation là où vous l’avez laissée.</p>
+                </div>
+                <button id="resumeModuleButton" class="resume-button" type="button" onclick="resumeLastModule()">Commencer le module 1</button>
+            </div>
+            <label class="study-progress-label" for="overallProgress">Dossiers et corrigés consultés</label>
+            <progress id="overallProgress" max="1" value="0"></progress>
+            <p id="overallProgressText" class="study-progress-text" role="status" aria-live="polite">0 élément consulté</p>
+        </section>
+
+<details class="preface-section">
+    <summary>À propos du corpus</summary>
     <div class="preface-box">
                 <p>Le Brevet Militaire de 4e niveau ne représente pas seulement un concours, il est le grand filtre académique destiné à sélectionner l'élite de l'encadrement de l'Armée de Terre, le vivier exclusif des futurs Majors et des Officiers des rangs. Réussir cette épreuve exige bien plus que de simples révisions de dernière minute, il impose une planification rigoureuse, une force d'analyse méthodique et une préparation physique sans faille.</p>
                 <p>Ce recueil a été conçu comme un véritable couteau suisse de la préparation. À travers ses fiches méthodologiques, ses études de cas pratiques et ses entraînements intensifs, il vous astreint à développer le triptyque essentiel du futur Major :</p>
@@ -642,16 +760,14 @@
                 <p style="text-align: right; margin-top: 20px;"><em>Major Dominique<br>Lauréat du BM4 2025 spécialité « RHL »</em></p>
 
     </div>
-</section>
-            </div>
-        </section>
-    </div>
+</details>
+</div>
 </div>
 
 <!-- MODALE 1 -->
 <div id="modal-module1" class="modal" role="dialog" aria-modal="true" aria-labelledby="module1-title">
     <div class="modal-content">
-        <button class="close-btn" type="button" aria-label="Fermer le module 1" title="Fermer le module 1" onclick="closeModal('module1')">&times;</button>
+        <div class="modal-toolbar"><span>MODULE 1</span><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module1')">← Tous les modules</button></div>
         <h2 id="module1-title">MODULE 1 : LE CADRE INSTITUTIONNEL & RETEX</h2>
 <div class="mod-body" data-mod="1">
         <ul style="list-style: none; padding-left: 0;">
@@ -701,7 +817,7 @@
 <!-- MODALE 2 -->
 <div id="modal-module2" class="modal" role="dialog" aria-modal="true" aria-labelledby="module2-title">
     <div class="modal-content" style="max-width: 850px;">
-        <button class="close-btn" type="button" aria-label="Fermer le module 2" title="Fermer le module 2" onclick="closeModal('module2')">&times;</button>
+        <div class="modal-toolbar"><span>MODULE 2</span><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module2')">← Tous les modules</button></div>
         <h2 id="module2-title">MODULE 2 : BASE DOCUMENTAIRE & CADRE DOCTRINAL</h2>
 <div class="mod-body" data-mod="2">
 
@@ -829,7 +945,7 @@
 
 <div id="modal-module3" class="modal" role="dialog" aria-modal="true" aria-labelledby="module3-title">
     <div class="modal-content">
-        <button class="close-btn" type="button" aria-label="Fermer le module 3" title="Fermer le module 3" onclick="closeModal('module3')">&times;</button>
+        <div class="modal-toolbar"><span>MODULE 3</span><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module3')">← Tous les modules</button></div>
         <h2 id="module3-title">MODULE 3 : EXERCICES DE RÉDACTION</h2>
 <div class="mod-body" data-mod="3">
         <p><strong>3.1. Exercices Thématiques Gradués (De 1 à 4 étoiles) :</strong></p>
@@ -918,7 +1034,7 @@
 <!-- MODALE 4 -->
 <div id="modal-module4" class="modal" role="dialog" aria-modal="true" aria-labelledby="module4-title">
     <div class="modal-content">
-        <button class="close-btn" type="button" aria-label="Fermer le module 4" title="Fermer le module 4" onclick="closeModal('module4')">&times;</button>
+        <div class="modal-toolbar"><span>MODULE 4</span><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module4')">← Tous les modules</button></div>
         <h2 id="module4-title">MODULE 4 : PROPOSITIONS DE CORRECTION (L'ANALYSE)</h2>
 <div class="mod-body" data-mod="4">
         <ul>
@@ -1011,7 +1127,7 @@
 
 <div id="modal-module5" class="modal" role="dialog" aria-modal="true" aria-labelledby="module5-title">
     <div class="modal-content">
-        <button class="close-btn" type="button" aria-label="Fermer le module 5" title="Fermer le module 5" onclick="closeModal('module5')">&times;</button>
+        <div class="modal-toolbar"><span>MODULE 5</span><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module5')">← Tous les modules</button></div>
         <h2 id="module5-title">MODULE 5 : ENTRAÎNEMENT INTENSIF AU QCM DOCTRINAL</h2>
 <div class="mod-body" data-mod="5">
         <ul>
@@ -1040,7 +1156,7 @@
 
 <div id="modal-module6" class="modal" role="dialog" aria-modal="true" aria-labelledby="module6-title">
     <div class="modal-content">
-        <button class="close-btn" type="button" aria-label="Fermer le module 6" title="Fermer le module 6" onclick="closeModal('module6')">&times;</button>
+        <div class="modal-toolbar"><span>MODULE 6</span><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module6')">← Tous les modules</button></div>
         <h2 id="module6-title">MODULE 6 : PRÉPARATION À L'ADMISSION (L'ORAL &amp; SPORT)</h2>
 <div class="mod-body" data-mod="6">
 
@@ -1133,6 +1249,7 @@
 
 <script>
     const module1Key = 'module1_validated';
+    const lastModuleKey = 'bm4-last-module';
     const modulesToLock = ['btn-mod2', 'btn-mod3', 'btn-mod4', 'btn-mod5', 'btn-mod6'];
     const moduleButtonMap = {
         module1: 'btn-mod1',
@@ -1198,6 +1315,7 @@
         if (lockWarning) {
             lockWarning.style.display = isUnlocked ? 'none' : 'block';
         }
+        updateResumeModule(getLastModule());
     }
 
     function openModal(id) {
@@ -1206,10 +1324,44 @@
             if (modal) {
                 modal.style.display = 'block';
                 setActiveModuleButton(id);
+                try {
+                    localStorage.setItem(lastModuleKey, id);
+                } catch (error) {
+                    console.warn('La reprise du dernier module ne peut pas être mémorisée.', error);
+                }
+                updateResumeModule(id);
             }
         } else {
             alert("Veuillez cocher « J'ai lu l'ensemble du module » pour accéder aux suivants.");
         }
+    }
+
+    function getLastModule() {
+        try {
+            const id = localStorage.getItem(lastModuleKey);
+            return Object.prototype.hasOwnProperty.call(moduleButtonMap, id) ? id : 'module1';
+        } catch (error) {
+            return 'module1';
+        }
+    }
+
+    function updateResumeModule(id) {
+        const button = document.getElementById('resumeModuleButton');
+        const description = document.getElementById('resumeModuleDescription');
+        if (!button || !description) return;
+        const number = id.replace('module', '');
+        button.textContent = id === 'module1' && !getModule1State()
+            ? 'Commencer le module 1'
+            : 'Reprendre le module ' + number;
+        description.textContent = id === 'module1' && !getModule1State()
+            ? 'Commencez par le module 1 pour débloquer la suite.'
+            : 'Votre dernier module consulté : module ' + number + '.';
+    }
+
+    function resumeLastModule() {
+        let id = getLastModule();
+        if (id !== 'module1' && !isModule1Unlocked()) id = 'module1';
+        openModal(id);
     }
 
     function closeModal(id) {
@@ -1218,14 +1370,23 @@
             modal.style.display = 'none';
         }
         setActiveModuleButton(null);
+        const opener = document.getElementById(moduleButtonMap[id]);
+        if (opener) opener.focus();
     }
 
     window.onclick = function (event) {
         if (event.target.classList.contains('modal')) {
-            event.target.style.display = 'none';
-            setActiveModuleButton(null);
+            closeModal(event.target.id.replace('modal-', ''));
         }
     };
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key !== 'Escape') return;
+        const modal = Array.from(document.querySelectorAll('.modal')).find(function (item) {
+            return item.style.display === 'block';
+        });
+        if (modal) closeModal(modal.id.replace('modal-', ''));
+    });
 
     function showStatusChip(element, message, options = {}) {
         if (!element) return;
@@ -1405,6 +1566,18 @@
                 if (bar) bar.style.width = pct + '%';
                 if (txt) txt.innerText = c[4] + pct + '%';
             });
+            const suivi = document.querySelectorAll('.dossier-item input[data-dossier], .dossier-item input[data-corrige]');
+            const consultes = Array.from(suivi).filter(function (box) { return box.checked; }).length;
+            const progress = document.getElementById('overallProgress');
+            const progressText = document.getElementById('overallProgressText');
+            if (progress) {
+                progress.max = suivi.length || 1;
+                progress.value = consultes;
+            }
+            if (progressText) {
+                progressText.textContent = consultes + ' / ' + suivi.length + ' éléments consultés';
+            }
+            updateResumeModule(getLastModule());
         }
         window.bm4RefreshProgress = refreshProgress;
 

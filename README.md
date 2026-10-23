@@ -33,12 +33,15 @@ L’accès à l’application demande une connexion avec les identifiants QCM-MA
 
 - compte valide et email confirmé : accès immédiat, sans nouvelle inscription, et session conservée (jeton de rafraîchissement) ;
 - compte inexistant ou mot de passe incorrect : accès refusé avec un lien pour créer le compte sur QCM-MAJOR.FR ;
+- l’écran permet d’afficher ou de masquer le mot de passe saisi ;
 - la clé Supabase « publishable » est publique par conception ; le filtre protège l’interface, mais ne chiffre pas les fichiers d’un site statique (les liens Drive publics restent accessibles à qui les connaît) ;
 - pour un autre projet Supabase, modifier `SUPABASE_URL` et `SUPABASE_KEY` dans `auth/auth.js`.
 
 ## PWA
 
 La page `index.html` est l’entrée unique du site et de la PWA. Après le splash et la connexion, l’application BM4 s’affiche directement. L’ancienne URL `INDEX BM4V2.HTML` redirige vers cette page.
+
+La page d’application affiche le dernier module consulté et le suivi des dossiers et corrigés cochés, conservés localement sur l’appareil. Chaque module propose le même retour à la liste des modules.
 
 - la PWA démarre sur `index.html` et reste installable sur un hébergement statique compatible HTTPS, y compris GitHub Pages pour ce dépôt
 - le manifeste `manifest.webmanifest` utilise des chemins relatifs pour fonctionner à la racine ou sous `/DOCTRINE/`
