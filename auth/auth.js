@@ -113,7 +113,7 @@
         gate.innerHTML =
             '<div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="auth-titre">' +
             '<h1 id="auth-titre">Connexion</h1>' +
-            '<p class="auth-intro">Utilisez vos identifiants <strong>Questions pour un major</strong> (ceux de QCM-MAJOR.FR).</p>' +
+            '<p class="auth-intro">Utilisez vos identifiants QCM-MAJOR.FR.</p>' +
             '<p class="auth-etat" id="auth-etat">Vérification de votre session…</p>' +
             '<form id="auth-form" novalidate hidden>' +
             '<label for="auth-email">Adresse email</label>' +
@@ -125,7 +125,7 @@
             '</form>' +
             '<p class="auth-pied" id="auth-pied" hidden>Pas encore de compte ? ' +
             '<a href="' + SIGNUP_URL + '" target="_blank" rel="noopener">Créez-le sur QCM-MAJOR.FR</a>' +
-            ' puis revenez ici avec les mêmes identifiants. Aucune nouvelle inscription n’est nécessaire sur DOCTRINE.</p>' +
+            ' puis revenez ici avec les mêmes identifiants. Aucune nouvelle inscription n’est nécessaire.</p>' +
             '</div>';
         document.body.appendChild(gate);
         form = gate.querySelector('#auth-form');

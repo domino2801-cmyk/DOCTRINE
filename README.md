@@ -3,8 +3,8 @@
 ## Structure du dépôt
 
 ```
-index.html               page d’accueil
-INDEX BM4V2.HTML         application (start_url de la PWA)
+index.html               application BM4 (entrée unique du site et de la PWA)
+INDEX BM4V2.HTML         ancienne URL conservée par redirection
 manifest.webmanifest     manifeste PWA
 sw.js                    service worker (doit rester à la racine : portée)
 favicon.ico
@@ -29,7 +29,7 @@ Le rôle lu côté navigateur n’affiche que l’interface : les écritures son
 
 ## Connexion
 
-L’accès à l’accueil et à l’application demande une connexion avec les **identifiants « Questions pour un major »** (compte QCM-MAJOR.FR, vérifié auprès du même projet Supabase).
+L’accès à l’application demande une connexion avec les identifiants QCM-MAJOR.FR, vérifiés auprès du même projet Supabase.
 
 - compte valide et email confirmé : accès immédiat, sans nouvelle inscription, et session conservée (jeton de rafraîchissement) ;
 - compte inexistant ou mot de passe incorrect : accès refusé avec un lien pour créer le compte sur QCM-MAJOR.FR ;
@@ -38,14 +38,15 @@ L’accès à l’accueil et à l’application demande une connexion avec les *
 
 ## PWA
 
-L’application HTML `INDEX BM4V2.HTML` est désormais installable comme Progressive Web App sur un hébergement statique compatible HTTPS, y compris GitHub Pages pour ce dépôt.
+La page `index.html` est l’entrée unique du site et de la PWA. Après le splash et la connexion, l’application BM4 s’affiche directement. L’ancienne URL `INDEX BM4V2.HTML` redirige vers cette page.
 
+- la PWA démarre sur `index.html` et reste installable sur un hébergement statique compatible HTTPS, y compris GitHub Pages pour ce dépôt
 - le manifeste `manifest.webmanifest` utilise des chemins relatifs pour fonctionner à la racine ou sous `/DOCTRINE/`
 - le service worker `sw.js` met en cache dès l’installation le shell local (HTML, manifeste), les icônes du dossier `icons/` et `favicon.ico`
 - ces icônes locales servent à l’onglet du navigateur, à l’installation PWA et au raccourci mobile
 - les liens externes Google Drive et `https://Qcm-major.fr` restent des ressources réseau et ne sont pas préchargés ni mis en cache
 - en cas de mise à jour du service worker, un message indique qu’il faut fermer puis rouvrir l’application pour récupérer la nouvelle version
-- au démarrage, `INDEX BM4V2.HTML` affiche un splash animé « Couteau Suisse BM4 » (dossier `splash/`, précaché par le service worker) : environ 6 s, une fois par session, fermable d’un toucher et désactivé si `prefers-reduced-motion` est actif
+- au démarrage, `index.html` affiche un splash animé « Couteau Suisse BM4 » (dossier `splash/`, précaché par le service worker) : environ 6 s, une fois par session, fermable d’un toucher et désactivé si `prefers-reduced-motion` est actif
 
 ## Installation GitHub Pages
 
@@ -53,7 +54,7 @@ URL attendue : **https://domino2801-cmyk.github.io/DOCTRINE/**
 
 1. dans **Settings > Pages**, vérifier que la **Source** est définie sur **GitHub Actions** (si GitHub Pages n’est pas encore activé)
 2. pousser sur la branche `main` pour déclencher le workflow de déploiement
-3. ouvrir l’URL HTTPS publiée de `INDEX BM4V2.HTML`
+3. ouvrir l’URL HTTPS publiée du site ; l’application démarre après la connexion
 4. laisser le navigateur charger une première fois la page en ligne
 5. utiliser le bouton **Installer l’application** quand le navigateur le propose
 

@@ -30,21 +30,21 @@
 
     var SVG = 'http://www.w3.org/2000/svg';
     var grad = splash.querySelector('.graduations');
-    for (var i = 0; i < 72; i++) {
+    for (var i = 0; i < 144; i++) {
         var l = document.createElementNS(SVG, 'line');
         l.setAttribute('y1', -90);
-        l.setAttribute('y2', i % 6 === 0 ? -80 : -85);
-        l.setAttribute('transform', 'rotate(' + i * 5 + ')');
+        l.setAttribute('y2', i % 12 === 0 ? -79 : i % 4 === 0 ? -83 : -86);
+        l.setAttribute('transform', 'rotate(' + i * 2.5 + ')');
         grad.appendChild(l);
     }
 
     var PIVOT = { x: 250, y: 340 };
     var outils = [
-        { a: 42, len: 285, t: 0.6 },
-        { a: 120, len: 229, t: 1.3 },
-        { a: 76, len: 239, t: 2.0 },
-        { a: -42, len: 252, t: 2.7 },
-        { a: -86, len: 239, t: 3.4 }
+        { a: 140, len: 229, t: 0.6 },
+        { a: 100, len: 239, t: 1.3 },
+        { a: 180, len: 285, t: 2.0, sparkDelay: 1.1 },
+        { a: 220, len: 252, t: 2.7 },
+        { a: 260, len: 239, t: 3.4 }
     ];
     var zone = splash.querySelector('.etincelles');
     function etincelles(x, y) {
@@ -69,7 +69,7 @@
         var r = o.a * Math.PI / 180;
         var x = PIVOT.x - Math.sin(r) * o.len;
         var y = PIVOT.y + Math.cos(r) * o.len;
-        setTimeout(function () { etincelles(x, y); }, (o.t + 0.55) * 1000);
+        setTimeout(function () { etincelles(x, y); }, (o.t + (o.sparkDelay || 0.55)) * 1000);
     });
 
     splash.addEventListener('click', fermer);

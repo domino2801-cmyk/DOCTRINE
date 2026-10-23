@@ -1,11 +1,11 @@
 {
-  "id": "./INDEX%20BM4V2.HTML",
+  "id": "./index.html",
   "name": "Le Couteau Suisse du candidat BM4",
   "short_name": "Couteau BM4",
   "description": "Application de préparation BM4 avec accès rapide aux modules, checklists et documents de travail.",
   "lang": "fr",
   "dir": "ltr",
-  "start_url": "./INDEX%20BM4V2.HTML",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f4f6f9",
