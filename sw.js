@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bm4-shell-v9';
+const CACHE_NAME = 'bm4-shell-v10';
 const APP_SHELL_URL = new URL('./INDEX%20BM4V2.HTML', self.location.href).toString();
 const LANDING_PAGE_URL = new URL('./index.html', self.location.href).toString();
 const APP_SHELL_PATHNAME = new URL(APP_SHELL_URL).pathname;
@@ -8,17 +8,11 @@ const SHELL_ASSETS = [
   APP_SHELL_URL,
   LANDING_PAGE_URL,
   new URL('./manifest.webmanifest', self.location.href).toString(),
-  new URL('./icon.svg', self.location.href).toString(),
   new URL('./favicon.ico', self.location.href).toString(),
-  new URL('./android-icon-144x144.png', self.location.href).toString(),
-  new URL('./android-icon-192x192.png', self.location.href).toString(),
-  new URL('./apple-icon.png', self.location.href).toString(),
-  new URL('./apple-icon-152x152.png', self.location.href).toString(),
-  new URL('./apple-icon-180x180.png', self.location.href).toString(),
-  new URL('./ms-icon-144x144.png', self.location.href).toString(),
-  new URL('./ms-icon-150x150.png', self.location.href).toString(),
-  new URL('./icon-512.png', self.location.href).toString(),
-  new URL('./icon-maskable-512.png', self.location.href).toString(),
+  new URL('./icons/icon-192.png', self.location.href).toString(),
+  new URL('./icons/apple-touch-icon.png', self.location.href).toString(),
+  new URL('./icons/icon-512.png', self.location.href).toString(),
+  new URL('./icons/icon-maskable-512.png', self.location.href).toString(),
   new URL('./splash/splash.css', self.location.href).toString(),
   new URL('./splash/splash.js', self.location.href).toString(),
   new URL('./splash/black-ops-one.ttf', self.location.href).toString(),
