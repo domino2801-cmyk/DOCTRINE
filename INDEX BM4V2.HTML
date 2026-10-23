@@ -14,6 +14,10 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="stylesheet" href="splash/splash.css">
+    <link rel="stylesheet" href="auth/auth.css">
+    <link rel="stylesheet" href="admin/admin.css">
+    <script src="auth/auth.js"></script>
+    <script src="admin/admin.js" defer></script>
     <title>Corpus de Préparation au BM4 - Édition 2027</title>
     <style>
         :root {
@@ -647,6 +651,7 @@
     <div class="modal-content">
         <button class="close-btn" type="button" aria-label="Fermer le module 1" title="Fermer le module 1" onclick="closeModal('module1')">&times;</button>
         <h2 id="module1-title">MODULE 1 : LE CADRE INSTITUTIONNEL & RETEX</h2>
+<div class="mod-body" data-mod="1">
         <ul style="list-style: none; padding-left: 0;">
             <!-- SECTION 1.1 -->
             <li style="margin-bottom: 25px;">
@@ -677,7 +682,8 @@
                 </ul>
             </li>
         </ul>
-        <!-- Bloc de validation de lecture obligatoire -->
+        
+</div><!-- /mod-body --><!-- Bloc de validation de lecture obligatoire -->
         <div style="margin-top: 30px; padding: 15px; background-color: #f8fafc; border: 2px dashed #0b2240; border-radius: 6px; display: flex; align-items: center; gap: 12px; font-weight: bold; width: 100%; box-sizing: border-box;">
             <input type="checkbox" id="chkModule1Valid" style="transform: scale(1.3); cursor: pointer;">
             <label for="chkModule1Valid" style="cursor: pointer; color: #0b2240; font-size: 0.95rem;">
@@ -695,6 +701,7 @@
     <div class="modal-content" style="max-width: 850px;">
         <button class="close-btn" type="button" aria-label="Fermer le module 2" title="Fermer le module 2" onclick="closeModal('module2')">&times;</button>
         <h2 id="module2-title">MODULE 2 : BASE DOCUMENTAIRE & CADRE DOCTRINAL</h2>
+<div class="mod-body" data-mod="2">
         
         <div style="margin-bottom: 25px;">
             <p><strong>2.1. Les Piliers de l'Armée de Terre de Combat</strong></p>
@@ -814,6 +821,7 @@
                 </li>
             </ul>
         </div>
+</div><!-- /mod-body -->
     </div>
 </div>
 
@@ -821,6 +829,7 @@
     <div class="modal-content">
         <button class="close-btn" type="button" aria-label="Fermer le module 3" title="Fermer le module 3" onclick="closeModal('module3')">&times;</button>
         <h2 id="module3-title">MODULE 3 : EXERCICES DE RÉDACTION</h2>
+<div class="mod-body" data-mod="3">
         <p><strong>3.1. Exercices Thématiques Gradués (De 1 à 4 étoiles) :</strong></p>
         
         <div class="progress-container">
@@ -900,6 +909,7 @@
 <a href="https://drive.google.com/drive/folders/1tEkPvduUqHmaYklivfqSC4i72k5a9bwK?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
 
         </ul>
+</div><!-- /mod-body -->
     </div>
 </div>
 
@@ -908,6 +918,7 @@
     <div class="modal-content">
         <button class="close-btn" type="button" aria-label="Fermer le module 4" title="Fermer le module 4" onclick="closeModal('module4')">&times;</button>
         <h2 id="module4-title">MODULE 4 : PROPOSITIONS DE CORRECTION (L'ANALYSE)</h2>
+<div class="mod-body" data-mod="4">
         <ul>
             <li><strong>4.1. Grilles d'Évaluation & Analyses Méthodologiques</strong>
                 <ul>
@@ -992,6 +1003,7 @@
                 <div><a href="https://drive.google.com/drive/folders/1JkJHooL7jbmHRf9a3l3gwrZw-BeP83zV?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a></div>
             </li>
         </ul>
+</div><!-- /mod-body -->
     </div>
 </div>
 
@@ -999,6 +1011,7 @@
     <div class="modal-content">
         <button class="close-btn" type="button" aria-label="Fermer le module 5" title="Fermer le module 5" onclick="closeModal('module5')">&times;</button>
         <h2 id="module5-title">MODULE 5 : ENTRAÎNEMENT INTENSIF AU QCM DOCTRINAL</h2>
+<div class="mod-body" data-mod="5">
         <ul>
             <li><strong>5.1. Banque de Questions (1 000 questions / 20 séries)</strong>
                 <ul>
@@ -1019,6 +1032,7 @@
         <div style="text-align: center; margin-top: 15px;">
             <a href="https://Qcm-major.fr" class="btn-link" target="_blank" rel="noopener">Accéder à : https://Qcm-major.fr</a>
         </div>
+</div><!-- /mod-body -->
     </div>
 </div>
 
@@ -1026,6 +1040,7 @@
     <div class="modal-content">
         <button class="close-btn" type="button" aria-label="Fermer le module 6" title="Fermer le module 6" onclick="closeModal('module6')">&times;</button>
         <h2 id="module6-title">MODULE 6 : PRÉPARATION À L'ADMISSION (L'ORAL &amp; SPORT)</h2>
+<div class="mod-body" data-mod="6">
         
         <ul class="modal-list">
             <!-- SECTION 6.1 -->
@@ -1107,6 +1122,7 @@
                 </div>
             </li>
         </ul>
+</div><!-- /mod-body -->
 
     </div>
 </div>
@@ -1371,54 +1387,35 @@
 
         updateModuleLockUI();
 
-        const checkboxesM3 = document.querySelectorAll('.dossier-item input[data-dossier]');
-        function updateProgressM3() {
-            const checkedCount = document.querySelectorAll('.dossier-item input[data-dossier]:checked').length;
-            const percentage = Math.round((checkedCount / checkboxesM3.length) * 100) || 0;
-            const progBar = document.getElementById('progBar');
-            const progText = document.getElementById('progText');
-            if (progBar) progBar.style.width = percentage + '%';
-            if (progText) progText.innerText = 'Avancement Exercices : ' + percentage + '%';
-        }
-
-        checkboxesM3.forEach(box => {
-            const id = box.getAttribute('data-dossier');
-            box.checked = localStorage.getItem('dossier-' + id) === 'true';
-            if (box.checked) { box.closest('.dossier-item').classList.add('completed'); }
-
-            box.addEventListener('change', function() {
-                const parent = this.closest('.dossier-item');
-                parent.classList.toggle('completed', this.checked);
-                localStorage.setItem('dossier-' + id, this.checked);
-                updateProgressM3();
+        function refreshProgress() {
+            [['data-dossier', 'dossier-', 'progBar', 'progText', 'Avancement Exercices : '],
+             ['data-corrige', 'corrige-', 'progBarMod4', 'progTextMod4', 'Avancement Corrigés : ']].forEach(function(c) {
+                const boxes = document.querySelectorAll('.dossier-item input[' + c[0] + ']');
+                let done = 0;
+                boxes.forEach(function(box) {
+                    box.checked = localStorage.getItem(c[1] + box.getAttribute(c[0])) === 'true';
+                    box.closest('.dossier-item').classList.toggle('completed', box.checked);
+                    if (box.checked) done++;
+                });
+                const pct = Math.round((done / boxes.length) * 100) || 0;
+                const bar = document.getElementById(c[2]);
+                const txt = document.getElementById(c[3]);
+                if (bar) bar.style.width = pct + '%';
+                if (txt) txt.innerText = c[4] + pct + '%';
             });
+        }
+        window.bm4RefreshProgress = refreshProgress;
+
+        document.addEventListener('change', function(e) {
+            const box = e.target;
+            if (!box.matches || !box.matches('.dossier-item input[data-dossier], .dossier-item input[data-corrige]')) return;
+            const attr = box.hasAttribute('data-dossier') ? 'data-dossier' : 'data-corrige';
+            const prefix = attr === 'data-dossier' ? 'dossier-' : 'corrige-';
+            localStorage.setItem(prefix + box.getAttribute(attr), box.checked);
+            refreshProgress();
         });
 
-        const checkboxesM4 = document.querySelectorAll('.dossier-item input[data-corrige]');
-        function updateProgressM4() {
-            const checkedCountM4 = document.querySelectorAll('.dossier-item input[data-corrige]:checked').length;
-            const percentageM4 = Math.round((checkedCountM4 / checkboxesM4.length) * 100) || 0;
-            const progBarMod4 = document.getElementById('progBarMod4');
-            const progTextMod4 = document.getElementById('progTextMod4');
-            if (progBarMod4) progBarMod4.style.width = percentageM4 + '%';
-            if (progTextMod4) progTextMod4.innerText = 'Avancement Corrigés : ' + percentageM4 + '%';
-        }
-
-        checkboxesM4.forEach(box => {
-            const id = box.getAttribute('data-corrige');
-            box.checked = localStorage.getItem('corrige-' + id) === 'true';
-            if (box.checked) { box.closest('.dossier-item').classList.add('completed'); }
-
-            box.addEventListener('change', function() {
-                const parent = this.closest('.dossier-item');
-                parent.classList.toggle('completed', this.checked);
-                localStorage.setItem('corrige-' + id, this.checked);
-                updateProgressM4();
-            });
-        });
-
-        updateProgressM3();
-        updateProgressM4();
+        refreshProgress();
         bindInstallPromptHandlers();
         updateNetworkStatus();
         window.addEventListener('offline', function() {

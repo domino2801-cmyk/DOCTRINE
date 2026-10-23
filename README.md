@@ -10,8 +10,31 @@ sw.js                    service worker (doit rester à la racine : portée)
 favicon.ico
 icons/                   icônes PWA (192, 512, maskable, apple-touch)
 splash/                  splash animé (CSS, JS, images, police)
+auth/                    écran de connexion (Supabase, comptes QCM-MAJOR.FR)
+admin/                   interface administrateur (édition des modules)
+supabase/                script SQL de la table doctrine_content
 .github/workflows/       déploiement GitHub Pages
 ```
+
+## Interface administrateur
+
+Un compte administrateur voit le bouton **« ✏️ Mode admin »** (en bas à gauche). Il permet, dans les 6 modules : modifier les textes, changer le libellé et l’URL de chaque lien (🔗), supprimer, déplacer, dupliquer, et ajouter rubriques, sous-rubriques et liens. « Enregistrer » publie pour tous les utilisateurs ; « Valeurs d’origine » restaure le module.
+
+Mise en place (une seule fois) :
+1. exécuter `supabase/doctrine-content.sql` dans Supabase > SQL Editor ;
+2. donner le rôle au compte : `app_metadata` = `{"role": "admin"}` (ou `{"bm4_admin": true}`), comme sur QCM-MAJOR.FR.
+
+Le rôle lu côté navigateur n’affiche que l’interface : les écritures sont autorisées ou refusées par les règles RLS de la table. Le contenu enregistré est assaini (scripts, `on*`, URL `javascript:` retirés). Sans table ou hors ligne, le contenu d’origine du HTML est affiché.
+
+
+## Connexion
+
+L’accès à l’accueil et à l’application demande une connexion avec les **identifiants « Questions pour un major »** (compte QCM-MAJOR.FR, vérifié auprès du même projet Supabase).
+
+- compte valide et email confirmé : accès immédiat, sans nouvelle inscription, et session conservée (jeton de rafraîchissement) ;
+- compte inexistant ou mot de passe incorrect : accès refusé avec un lien pour créer le compte sur QCM-MAJOR.FR ;
+- la clé Supabase « publishable » est publique par conception ; le filtre protège l’interface, mais ne chiffre pas les fichiers d’un site statique (les liens Drive publics restent accessibles à qui les connaît) ;
+- pour un autre projet Supabase, modifier `SUPABASE_URL` et `SUPABASE_KEY` dans `auth/auth.js`.
 
 ## PWA
 
