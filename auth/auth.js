@@ -148,6 +148,7 @@
         root.classList.remove('auth-locked');
         if (gate) gate.hidden = true;
         ajouterDeconnexion(s);
+        document.dispatchEvent(new CustomEvent('doctrine:login'));
     }
 
     function verrouiller() {
@@ -196,6 +197,7 @@
         if (pastille) pastille.remove();
         if (s && s.access_token) appel('/logout', { jeton: s.access_token }).catch(function () {});
         verrouiller();
+        document.dispatchEvent(new CustomEvent('doctrine:logout'));
     }
 
     function ajouterDeconnexion(s) {
@@ -208,6 +210,23 @@
         b.addEventListener('click', deconnecter);
         document.body.appendChild(b);
     }
+
+    // Rôle lu dans le JWT pour l'affichage uniquement : seule la RLS Supabase fait foi.
+    function estAdmin(jeton) {
+        try {
+            var p = jeton.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+            var meta = JSON.parse(decodeURIComponent(escape(atob(p)))).app_metadata || {};
+            return meta.role === 'admin' || meta.bm4_admin === true || meta.bm4_admin === 'true' || meta.bm4_admin === 1 || meta.bm4_admin === '1';
+        } catch (e) { return false; }
+    }
+
+    window.DoctrineAuth = {
+        url: SUPABASE_URL,
+        key: SUPABASE_KEY,
+        jeton: function () { return verifier().then(function (s) { return s ? s.access_token : null; }); },
+        estAdmin: function () { var s = lire(); return !!(s && s.access_token && estAdmin(s.access_token)); },
+        email: function () { var s = lire(); return s ? s.email : ''; }
+    };
 
     function demarrer() {
         construire();

@@ -1,0 +1,43 @@
+#adm-toggle {
+    position: fixed; left: 12px; bottom: 12px; z-index: 9000;
+    background: #0b2240; color: #e5c158; border: 1px solid #e5c158; border-radius: 20px;
+    padding: 8px 14px; font: 600 13px/1 'Helvetica Neue', Arial, sans-serif; cursor: pointer;
+}
+#adm-toggle[hidden] { display: none; }
+body.adm-on #adm-toggle { background: #e5c158; color: #0b2240; }
+
+.adm-bar {
+    position: sticky; top: 0; z-index: 5; display: none; flex-wrap: wrap; gap: 6px;
+    padding: 8px; margin: 0 0 12px; background: #fff8dc; border: 2px solid #e5c158; border-radius: 6px;
+    font: 13px 'Helvetica Neue', Arial, sans-serif;
+}
+body.adm-on .adm-bar { display: flex; }
+.adm-bar button, .adm-row-tools button {
+    border: 1px solid #0b2240; background: #fff; color: #0b2240; border-radius: 4px;
+    padding: 4px 8px; font-size: 12px; cursor: pointer;
+}
+.adm-bar button.adm-save { background: #0b2240; color: #e5c158; }
+.adm-bar button.adm-danger, .adm-row-tools button.adm-danger { color: #b3261e; border-color: #b3261e; }
+.adm-state { flex-basis: 100%; font-size: 12px; color: #444; }
+.adm-state.err { color: #b3261e; font-weight: 600; }
+
+.adm-row-tools { display: none; gap: 3px; margin-left: 6px; flex-wrap: wrap; }
+body.adm-on .adm-row-tools { display: inline-flex; }
+body.adm-on .mod-body [contenteditable="true"] { outline: 1px dashed rgba(11,34,64,.35); outline-offset: 2px; }
+body.adm-on .mod-body a { pointer-events: none; }
+body.adm-on .adm-row-tools, body.adm-on .adm-row-tools * { pointer-events: auto; }
+
+#adm-dialog {
+    position: fixed; inset: 0; z-index: 9500; display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.55); padding: 16px;
+}
+#adm-dialog[hidden] { display: none; }
+#adm-dialog form {
+    background: #fff; border-radius: 8px; padding: 18px; width: 100%; max-width: 420px;
+    font: 14px 'Helvetica Neue', Arial, sans-serif; color: #0b2240;
+}
+#adm-dialog label { display: block; margin: 10px 0 4px; font-weight: 600; }
+#adm-dialog input { width: 100%; padding: 8px; border: 1px solid #99a; border-radius: 4px; font-size: 14px; }
+#adm-dialog .adm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+#adm-dialog button { padding: 8px 14px; border-radius: 4px; border: 1px solid #0b2240; background: #fff; cursor: pointer; }
+#adm-dialog button[type="submit"] { background: #0b2240; color: #e5c158; }
