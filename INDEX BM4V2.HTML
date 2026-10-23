@@ -16,6 +16,7 @@
     <link rel="apple-touch-icon" href="apple-icon.png">
     <link rel="apple-touch-icon" sizes="152x152" href="apple-icon-152x152.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-icon-180x180.png">
+    <link rel="stylesheet" href="splash/splash.css">
     <title>Corpus de Préparation au BM4 - Édition 2027</title>
     <style>
         :root {
@@ -639,6 +640,36 @@
 </head>
 
 <body>
+
+<div id="splash" role="presentation" aria-hidden="true">
+    <div class="stage">
+        <svg class="boussole-fond" viewBox="-100 -100 200 200" aria-hidden="true">
+            <g fill="none" stroke="#e5c158" stroke-width="0.6">
+                <circle r="96"/><circle r="90" stroke-width="0.3"/><circle r="62" stroke-dasharray="1.5 3"/>
+                <circle r="38" stroke-width="0.4"/>
+                <g class="graduations" stroke-width="0.5"></g>
+            </g>
+            <path d="M0 -92 L7 0 L0 92 L-7 0 Z" fill="#e5c158" opacity="0.55"/>
+            <path d="M-92 0 L0 -7 L92 0 L0 7 Z" fill="#e5c158" opacity="0.35"/>
+            <path d="M0 -70 L4 -4 L70 0 L4 4 L0 70 L-4 4 L-70 0 L-4 -4 Z" transform="rotate(45)" fill="#e5c158" opacity="0.4"/>
+        </svg>
+        <img src="splash/lame.png" class="outil lame" alt="">
+        <img src="splash/boussole.png" class="outil boussole" alt="">
+        <img src="splash/cle.png" class="outil cle" alt="">
+        <img src="splash/scie.png" class="outil scie" alt="">
+        <img src="splash/regle.png" class="outil regle" alt="">
+        <div class="manche">
+            <img src="splash/manche.png" alt="">
+            <span class="reflet"></span>
+        </div>
+        <div class="etincelles"></div>
+        <div class="ui-loader">
+            <div class="titre-app">COUTEAU SUISSE BM4</div>
+            <div class="barre-chargement"><div class="progression"></div></div>
+        </div>
+    </div>
+</div>
+<script src="splash/splash.js"></script>
 
 
 <div class="main-wrapper">

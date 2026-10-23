@@ -9,6 +9,7 @@ L’application HTML `INDEX BM4V2.HTML` est désormais installable comme Progres
 - ces icônes locales servent à l’onglet du navigateur, à l’installation PWA et au raccourci mobile
 - les liens externes Google Drive et `https://Qcm-major.fr` restent des ressources réseau et ne sont pas préchargés ni mis en cache
 - en cas de mise à jour du service worker, un message indique qu’il faut fermer puis rouvrir l’application pour récupérer la nouvelle version
+- au démarrage, `INDEX BM4V2.HTML` affiche un splash animé « Couteau Suisse BM4 » (dossier `splash/`, précaché par le service worker) : environ 6 s, une fois par session, fermable d’un toucher et désactivé si `prefers-reduced-motion` est actif
 
 ## Installation GitHub Pages
 

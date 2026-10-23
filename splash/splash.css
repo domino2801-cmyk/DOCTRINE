@@ -1,0 +1,156 @@
+@font-face {
+    font-family: 'Black Ops One';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('black-ops-one.ttf') format('truetype');
+}
+
+#splash {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: radial-gradient(circle at 50% 40%, #1e252b 0%, #0d1013 100%);
+    transition: opacity 0.6s ease;
+}
+#splash.splash-fin { opacity: 0; pointer-events: none; }
+#splash *, #splash *::before, #splash *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Scène en unités fixes (500x800), mise à l'échelle par --s */
+#splash .stage {
+    --s: 1;
+    --px: 340px;
+    position: relative;
+    flex: none;
+    width: 500px;
+    height: 800px;
+    transform: scale(var(--s));
+    transform-origin: center;
+}
+
+#splash .outil {
+    position: absolute;
+    top: var(--px);
+    z-index: 1;
+    transform-origin: 50% 0;
+    transform: rotate(180deg);
+    filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.55));
+    animation: splash-ouvrir 0.7s var(--delai) cubic-bezier(0.34, 1.35, 0.64, 1) both;
+}
+#splash .lame     { --a: 42deg;  --delai: 0.6s; width: 59px; left: calc(250px - 29px); }
+#splash .boussole { --a: 120deg; --delai: 1.3s; width: 83px; left: calc(250px - 41px); }
+#splash .cle      { --a: 76deg;  --delai: 2.0s; width: 64px; left: calc(250px - 32px); }
+#splash .scie     { --a: -42deg; --delai: 2.7s; width: 44px; left: calc(250px - 22px); }
+#splash .regle    { --a: -86deg; --delai: 3.4s; width: 50px; left: calc(250px - 25px); }
+
+#splash .manche {
+    position: absolute;
+    z-index: 5;
+    left: 175px;
+    top: 20px;
+    width: 150px;
+    filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.65)) drop-shadow(0 18px 18px rgba(0, 0, 0, 0.5));
+    transform: scale(0);
+    animation: splash-apparition 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+#splash .manche img { display: block; width: 100%; filter: blur(1.2px) saturate(0.95); }
+#splash .manche::after {
+    content: "";
+    position: absolute;
+    left: -22%;
+    right: -22%;
+    bottom: -14%;
+    height: 32%;
+    background: radial-gradient(ellipse at 50% 35%, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.7) 40%, transparent 75%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+#splash .reflet {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(1px 3px 3px 1px round 30px 30px 26px 26px);
+    background: linear-gradient(105deg, transparent 42%, rgba(255, 246, 205, 0.5) 50%, transparent 58%) 100% 0 / 250% 100% no-repeat;
+    animation: splash-balayage 1.1s 4.4s ease-in-out forwards;
+    pointer-events: none;
+}
+
+#splash .boussole-fond {
+    position: absolute;
+    left: 50%;
+    top: 330px;
+    width: 600px;
+    height: 600px;
+    margin: -300px 0 0 -300px;
+    opacity: 0.09;
+    z-index: 0;
+    animation: splash-tourne 90s linear infinite;
+}
+
+#splash .etincelles { position: absolute; inset: 0; z-index: 8; pointer-events: none; }
+#splash .etincelles i {
+    position: absolute;
+    margin: -2px 0 0 -2px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff8d0 0%, #e5c158 60%, #a87a1f 100%);
+    box-shadow: 0 0 6px 2px rgba(229, 193, 88, 0.8);
+}
+
+#splash .ui-loader {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 690px;
+    text-align: center;
+    z-index: 6;
+}
+#splash .titre-app {
+    font-family: 'Black Ops One', Impact, 'Arial Black', sans-serif;
+    font-size: 30px;
+    letter-spacing: 3px;
+    font-weight: 400;
+    background:
+        linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.95) 50%, transparent 60%) 130% 0 / 60% 100% no-repeat,
+        linear-gradient(180deg, #fff1b8 0%, #e5c158 45%, #a87a1f 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.7));
+    opacity: 0;
+    animation: splash-fondu 0.8s 0.3s ease-out forwards, splash-balayageTitre 1.1s 4.4s ease-in-out forwards;
+}
+#splash .barre-chargement {
+    width: 300px;
+    height: 10px;
+    margin: 26px auto 0;
+    background: #05070a;
+    border: 1px solid rgba(229, 193, 88, 0.35);
+    border-radius: 999px;
+    overflow: hidden;
+}
+#splash .progression {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #d32f2f, #ff4a3d);
+    box-shadow: 0 0 8px #d32f2f;
+    animation: splash-barre 4.2s 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes splash-ouvrir { 0% { transform: rotate(180deg); } 100% { transform: rotate(var(--a)); } }
+@keyframes splash-apparition { 100% { transform: scale(1); } }
+@keyframes splash-balayage { 100% { background-position: 0% 0; } }
+@keyframes splash-tourne { 100% { transform: rotate(360deg); } }
+@keyframes splash-balayageTitre {
+    from { background-position: 130% 0, 0 0; }
+    to   { background-position: -130% 0, 0 0; }
+}
+@keyframes splash-fondu { 100% { opacity: 1; } }
+@keyframes splash-barre { 100% { width: 100%; } }
+
+@media (prefers-reduced-motion: reduce) {
+    #splash .boussole-fond { animation: none; }
+}

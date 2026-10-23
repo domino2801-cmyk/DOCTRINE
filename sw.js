@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bm4-shell-v7';
+const CACHE_NAME = 'bm4-shell-v8';
 const APP_SHELL_URL = new URL('./INDEX%20BM4V2.HTML', self.location.href).toString();
 const LANDING_PAGE_URL = new URL('./index.html', self.location.href).toString();
 const APP_SHELL_PATHNAME = new URL(APP_SHELL_URL).pathname;
@@ -18,7 +18,16 @@ const SHELL_ASSETS = [
   new URL('./ms-icon-144x144.png', self.location.href).toString(),
   new URL('./ms-icon-150x150.png', self.location.href).toString(),
   new URL('./icon-512.png', self.location.href).toString(),
-  new URL('./icon-maskable-512.png', self.location.href).toString()
+  new URL('./icon-maskable-512.png', self.location.href).toString(),
+  new URL('./splash/splash.css', self.location.href).toString(),
+  new URL('./splash/splash.js', self.location.href).toString(),
+  new URL('./splash/black-ops-one.ttf', self.location.href).toString(),
+  new URL('./splash/manche.png', self.location.href).toString(),
+  new URL('./splash/lame.png', self.location.href).toString(),
+  new URL('./splash/boussole.png', self.location.href).toString(),
+  new URL('./splash/cle.png', self.location.href).toString(),
+  new URL('./splash/scie.png', self.location.href).toString(),
+  new URL('./splash/regle.png', self.location.href).toString()
 ];
 
 function normalizePathname(pathname) {
