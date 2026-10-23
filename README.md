@@ -10,8 +10,18 @@ sw.js                    service worker (doit rester à la racine : portée)
 favicon.ico
 icons/                   icônes PWA (192, 512, maskable, apple-touch)
 splash/                  splash animé (CSS, JS, images, police)
+auth/                    écran de connexion (Supabase, comptes QCM-MAJOR.FR)
 .github/workflows/       déploiement GitHub Pages
 ```
+
+## Connexion
+
+L’accès à l’accueil et à l’application demande une connexion avec les **identifiants « Questions pour un major »** (compte QCM-MAJOR.FR, vérifié auprès du même projet Supabase).
+
+- compte valide et email confirmé : accès immédiat, sans nouvelle inscription, et session conservée (jeton de rafraîchissement) ;
+- compte inexistant ou mot de passe incorrect : accès refusé avec un lien pour créer le compte sur QCM-MAJOR.FR ;
+- la clé Supabase « publishable » est publique par conception ; le filtre protège l’interface, mais ne chiffre pas les fichiers d’un site statique (les liens Drive publics restent accessibles à qui les connaît) ;
+- pour un autre projet Supabase, modifier `SUPABASE_URL` et `SUPABASE_KEY` dans `auth/auth.js`.
 
 ## PWA
 

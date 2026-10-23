@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bm4-shell-v10';
+const CACHE_NAME = 'bm4-shell-v11';
 const APP_SHELL_URL = new URL('./INDEX%20BM4V2.HTML', self.location.href).toString();
 const LANDING_PAGE_URL = new URL('./index.html', self.location.href).toString();
 const APP_SHELL_PATHNAME = new URL(APP_SHELL_URL).pathname;
@@ -21,7 +21,9 @@ const SHELL_ASSETS = [
   new URL('./splash/boussole.png', self.location.href).toString(),
   new URL('./splash/cle.png', self.location.href).toString(),
   new URL('./splash/scie.png', self.location.href).toString(),
-  new URL('./splash/regle.png', self.location.href).toString()
+  new URL('./splash/regle.png', self.location.href).toString(),
+  new URL('./auth/auth.css', self.location.href).toString(),
+  new URL('./auth/auth.js', self.location.href).toString()
 ];
 
 function normalizePathname(pathname) {
