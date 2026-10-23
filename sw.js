@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bm4-shell-v8';
+const CACHE_NAME = 'bm4-shell-v9';
 const APP_SHELL_URL = new URL('./INDEX%20BM4V2.HTML', self.location.href).toString();
 const LANDING_PAGE_URL = new URL('./index.html', self.location.href).toString();
 const APP_SHELL_PATHNAME = new URL(APP_SHELL_URL).pathname;
