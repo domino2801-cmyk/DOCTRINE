@@ -631,16 +631,31 @@
             .dossier-item label {
                 width: 100%;
             }
-            .mod-body[data-mod="2"] .dossier-item {
+            .mod-body[data-mod="2"] .dossier-item,
+            .mod-body[data-mod="3"] .dossier-item,
+            .mod-body[data-mod="4"] .dossier-item {
                 flex-direction: row;
                 align-items: center;
                 gap: 10px;
             }
-            .mod-body[data-mod="2"] .dossier-item > .doc-link {
+            .mod-body[data-mod="2"] .dossier-item > .doc-link,
+            .mod-body[data-mod="3"] .dossier-item .doc-link,
+            .mod-body[data-mod="4"] .dossier-item .doc-link {
                 flex-shrink: 0;
                 margin-left: auto;
                 font-size: 0.72rem;
                 padding: 3px 8px;
+            }
+            .mod-body[data-mod="3"] .dossier-item label > span:last-child,
+            .mod-body[data-mod="4"] .dossier-item label > span:last-child {
+                min-width: 0;
+                overflow-wrap: anywhere;
+            }
+            .mod-body[data-mod="3"] .dossier-item > div,
+            .mod-body[data-mod="4"] .dossier-item > div {
+                width: auto;
+                flex-shrink: 0;
+                flex-wrap: nowrap;
             }
             .dossier-item > div {
                 width: 100%;
