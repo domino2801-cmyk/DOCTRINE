@@ -366,9 +366,9 @@
         var carte = element('div', 'adm-views-card');
         var entete = element('header', 'adm-views-header');
         var titres = element('div');
-        titres.appendChild(element('h2', '', 'Historique des ouvertures'));
+        titres.appendChild(element('h2', '', 'Historique des consultations et téléchargements'));
         titres.lastChild.id = 'adm-views-title';
-        titres.appendChild(element('p', '', 'Chaque ligne correspond à un clic sur un document externe, pas à une preuve de lecture.'));
+        titres.appendChild(element('p', '', 'Les téléchargements correspondent à un clic sur un lien identifié comme téléchargement ; leur réussite ne peut pas être confirmée.'));
         var actions = element('div', 'adm-views-actions');
         suiviActualiser = element('button', 'adm-views-close', 'Actualiser');
         suiviActualiser.type = 'button';
@@ -388,7 +388,7 @@
         suiviRecherche = document.createElement('input');
         suiviRecherche.type = 'search';
         suiviRecherche.placeholder = 'Filtrer les événements chargés par candidat, module ou document';
-        suiviRecherche.setAttribute('aria-label', 'Filtrer les consultations affichées');
+        suiviRecherche.setAttribute('aria-label', 'Filtrer les événements affichés');
         suiviRecherche.addEventListener('input', afficherConsultations);
         suiviEtat = element('p', 'adm-views-status', 'Chargement de l’historique…');
         suiviEtat.setAttribute('role', 'status');
@@ -397,7 +397,7 @@
         var tableau = document.createElement('table');
         var thead = document.createElement('thead');
         var ligneEntete = document.createElement('tr');
-        ['Candidat', 'Module', 'Document', 'Ouverture'].forEach(function(titre) {
+        ['Candidat', 'Module', 'Document', 'Action', 'Date'].forEach(function(titre) {
             ligneEntete.appendChild(element('th', '', titre));
         });
         thead.appendChild(ligneEntete);
@@ -425,7 +425,7 @@
         if (!suiviBody) return;
         var terme = suiviRecherche.value.trim().toLocaleLowerCase();
         var lignes = consultations.filter(function(ligne) {
-            return [ligne.candidate_email, 'module ' + ligne.module_id, ligne.document_title, ligne.document_url]
+            return [ligne.candidate_email, 'module ' + ligne.module_id, ligne.document_title, ligne.document_url, ligne.event_type]
                 .join(' ').toLocaleLowerCase().indexOf(terme) !== -1;
         });
         suiviBody.replaceChildren();
@@ -449,6 +449,7 @@
             }
             if (link.href) documentCell.appendChild(link);
             tr.appendChild(documentCell);
+            tr.appendChild(element('td', '', ligne.event_type === 'download' ? 'Téléchargement (clic)' : 'Ouverture'));
             var date = new Date(ligne.opened_at);
             tr.appendChild(element('td', '', isNaN(date.getTime()) ? '' : date.toLocaleString('fr-FR')));
             suiviBody.appendChild(tr);
@@ -461,8 +462,8 @@
         if (!auth() || !auth().estAdmin() || consultationsCompletes) return;
         suiviPlus.disabled = true;
         if (suiviActualiser) suiviActualiser.disabled = true;
-        suiviEtat.textContent = 'Chargement des ouvertures…';
-        var chemin = 'doctrine_document_views?select=candidate_email,module_id,document_title,document_url,opened_at' +
+        suiviEtat.textContent = 'Chargement de l’historique…';
+        var chemin = 'doctrine_document_views?select=candidate_email,module_id,document_title,document_url,event_type,opened_at' +
             '&order=opened_at.desc&limit=' + TAILLE_PAGE_CONSULTATIONS + '&offset=' + consultationsOffset;
         api(chemin).then(function(lignes) {
             consultations = consultations.concat(lignes);
@@ -472,7 +473,7 @@
             suiviPlus.disabled = false;
             if (suiviActualiser) suiviActualiser.disabled = false;
             afficherConsultations();
-            if (!consultations.length) suiviEtat.textContent = 'Aucune ouverture enregistrée pour le moment.';
+            if (!consultations.length) suiviEtat.textContent = 'Aucun événement enregistré pour le moment.';
         }).catch(function(err) {
             suiviPlus.disabled = false;
             if (suiviActualiser) suiviActualiser.disabled = false;
@@ -519,6 +520,18 @@
         statut.timer = window.setTimeout(function() { statut.hidden = true; }, 8000);
     }
 
+    function estLienTelechargement(link) {
+        var libelle = [
+            link.textContent,
+            link.getAttribute('aria-label'),
+            link.getAttribute('title')
+        ].join(' ').toLowerCase();
+        if (typeof libelle.normalize === 'function') {
+            libelle = libelle.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        }
+        return link.hasAttribute('download') || /telecharg|download/.test(libelle);
+    }
+
     function enregistrerOuverture(event) {
         if (document.body.classList.contains('adm-on') || (auth() && auth().estAdmin())) return;
         var target = event.target;
@@ -537,12 +550,14 @@
         var ligne = link.closest('.dossier-item');
         var libelle = ligne && ligne.querySelector('label span:last-child');
         var titre = (libelle && libelle.textContent.trim()) || link.textContent.trim() || url.hostname;
+        var typeEvenement = estLienTelechargement(link) ? 'download' : 'open';
         api('doctrine_document_views', {
             methode: 'POST',
             corps: [{
                 module_id: module.getAttribute('data-mod'),
                 document_title: titre.slice(0, 300),
-                document_url: url.origin + url.pathname
+                document_url: url.origin + url.pathname,
+                event_type: typeEvenement
             }],
             prefer: 'return=minimal',
             keepalive: true
