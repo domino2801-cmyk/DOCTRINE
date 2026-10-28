@@ -9,6 +9,7 @@ manifest.webmanifest     manifeste PWA
 sw.js                    service worker (doit rester à la racine : portée)
 favicon.ico
 icons/                   icônes PWA (192, 512, maskable, apple-touch)
+viewer/                  visionneuse intégrée des documents Google Drive
 splash/                  splash animé (CSS, JS, images, police)
 auth/                    écran de connexion (Supabase, comptes QCM-MAJOR.FR)
 admin/                   interface administrateur (édition des modules)
@@ -52,6 +53,7 @@ La page d’application affiche le dernier module consulté et le suivi détaill
 - le manifeste `manifest.webmanifest` utilise des chemins relatifs pour fonctionner à la racine ou sous `/DOCTRINE/`
 - le service worker `sw.js` met en cache dès l’installation le shell local (HTML, manifeste), les icônes du dossier `icons/` et `favicon.ico`
 - ces icônes locales servent à l’onglet du navigateur, à l’installation PWA et au raccourci mobile
+- les liens Google Drive (fichiers et dossiers) des modules s'ouvrent dans une visionneuse intégrée (aperçu `/preview`, bouton « Fermer » ou Échap) au lieu de quitter l'application ; le clic reste enregistré dans le suivi. Le fichier doit être partagé en lecture (« toute personne disposant du lien »). Ctrl/⌘/Maj+clic ouvre toujours Drive
 - les liens externes Google Drive et `https://Qcm-major.fr` restent des ressources réseau et ne sont pas préchargés ni mis en cache
 - en cas de mise à jour du service worker, un message indique qu’il faut fermer puis rouvrir l’application pour récupérer la nouvelle version
 - au démarrage, `index.html` affiche un splash animé « Couteau Suisse BM4 » (dossier `splash/`, précaché par le service worker) : environ 6 s, une fois par session, fermable d’un toucher et désactivé si `prefers-reduced-motion` est actif

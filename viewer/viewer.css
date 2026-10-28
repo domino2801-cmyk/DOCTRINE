@@ -1,0 +1,19 @@
+#doc-viewer {
+    position: fixed; inset: 0; z-index: 9300; display: flex; flex-direction: column;
+    background: rgba(0, 0, 0, .75); padding: max(8px, env(safe-area-inset-top)) 8px 8px;
+}
+#doc-viewer[hidden] { display: none; }
+#doc-viewer .dv-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 8px 12px; background: #0b2240; color: #e5c158; border-radius: 8px 8px 0 0;
+    font: 600 14px 'Helvetica Neue', Arial, sans-serif;
+}
+#doc-viewer .dv-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#doc-viewer .dv-close {
+    flex: none; padding: 7px 14px; border: 1px solid #e5c158; border-radius: 5px;
+    background: transparent; color: #e5c158; font: inherit; cursor: pointer;
+}
+#doc-viewer .dv-frame { position: relative; flex: 1; min-height: 0; background: #fff; border-radius: 0 0 8px 8px; overflow: hidden; }
+#doc-viewer iframe { width: 100%; height: 100%; border: 0; }
+/* Masque le bouton « ouvrir dans une nouvelle fenêtre » de l'aperçu Drive. */
+#doc-viewer .dv-shield { position: absolute; top: 0; right: 0; width: 64px; height: 64px; }
