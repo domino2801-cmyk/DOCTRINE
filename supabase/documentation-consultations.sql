@@ -1,4 +1,4 @@
--- DOCTRINE : journal des ouvertures de documents par candidat.
+-- DOCTRINE : journal des ouvertures et clics de téléchargement par candidat.
 -- À exécuter une fois dans Supabase > SQL Editor (projet de QCM-MAJOR.FR).
 -- Les candidats peuvent ajouter leurs propres événements ; seuls les admins
 -- peuvent lire le journal. L'identité et la date sont fixées côté base.
@@ -10,8 +10,14 @@ create table if not exists public.doctrine_document_views (
     module_id       text not null check (module_id ~ '^[1-6]$'),
     document_title  text not null check (length(document_title) between 1 and 300),
     document_url    text not null check (length(document_url) <= 2048 and document_url ~ '^https?://'),
+    event_type      text not null default 'open' check (event_type in ('open', 'download')),
     opened_at       timestamptz not null default now()
 );
+
+-- Compatibilité avec les installations ayant déjà créé la table.
+alter table public.doctrine_document_views
+    add column if not exists event_type text not null default 'open'
+    check (event_type in ('open', 'download'));
 
 create index if not exists doctrine_document_views_opened_at_idx
     on public.doctrine_document_views (opened_at desc);
