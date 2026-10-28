@@ -337,28 +337,41 @@
             gap: 12px;
             margin: calc(var(--modal-padding) * -1) calc(var(--modal-padding) * -1) 18px;
             padding: 12px var(--modal-padding);
-            background: #fff;
-            border-bottom: 1px solid #e2e8f0;
+            background: linear-gradient(135deg, var(--primary-blue), #16396a);
+            border-bottom: 3px solid var(--accent-red);
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 4px 12px rgba(11, 34, 64, 0.25);
         }
         .modal-toolbar > span {
-            color: #526075;
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--accent-red);
         }
         .modal-return-btn {
-            padding: 8px 12px;
-            border: 1px solid #cbd5e1;
+            padding: 8px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.55);
             border-radius: 7px;
-            background: #fff;
-            color: var(--primary-blue);
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
             font: inherit;
             font-weight: 700;
             cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease;
         }
-        .modal-return-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
-        .modal-return-btn:focus-visible { outline: 2px solid var(--primary-blue); outline-offset: 2px; }
-        .modal-content > h2 { line-height: 1.35; }
+        .modal-return-btn:hover { background: #fff; color: var(--primary-blue); }
+        .modal-return-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+        .modal-content > h2 {
+            line-height: 1.35;
+            padding: 12px 14px;
+            background: #f4f7fb;
+            border-left: 5px solid var(--accent-red);
+            border-bottom: 2px solid #d9e0e8;
+            border-radius: 0 6px 6px 0;
+        }
         .mod-body {
             max-width: 72ch;
             margin-inline: auto;
