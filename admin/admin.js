@@ -550,13 +550,17 @@
         var ligne = link.closest('.dossier-item');
         var libelle = ligne && ligne.querySelector('label span:last-child');
         var titre = (libelle && libelle.textContent.trim()) || link.textContent.trim() || url.hostname;
-        var typeEvenement = estLienTelechargement(link) ? 'download' : 'open';
+        enregistrerEvenement(module.getAttribute('data-mod'), titre, url.origin + url.pathname,
+            estLienTelechargement(link) ? 'download' : 'open');
+    }
+
+    function enregistrerEvenement(moduleId, titre, adresse, typeEvenement) {
         api('doctrine_document_views', {
             methode: 'POST',
             corps: [{
-                module_id: module.getAttribute('data-mod'),
-                document_title: titre.slice(0, 300),
-                document_url: url.origin + url.pathname,
+                module_id: moduleId,
+                document_title: String(titre).slice(0, 300),
+                document_url: adresse,
                 event_type: typeEvenement
             }],
             prefer: 'return=minimal',
@@ -565,6 +569,13 @@
             console.error('Échec de l’enregistrement de cette ouverture de document.', err);
             afficherErreurSuivi('Ouverture non enregistrée dans le suivi : ' + messageErreur(err, 'doctrine_document_views'));
         });
+    }
+
+    function enregistrerTelechargement(event) {
+        var d = event.detail || {};
+        if (document.body.classList.contains('adm-on') || (auth() && auth().estAdmin())) return;
+        if (!/^[1-6]$/.test(d.module || '') || !/^https?:\/\//.test(d.url || '') || !d.title) return;
+        enregistrerEvenement(d.module, d.title, d.url, 'download');
     }
 
     function montrerBouton() {
@@ -601,6 +612,7 @@
             if (suiviDialogue) fermerSuivi();
         });
         document.addEventListener('click', enregistrerOuverture);
+        document.addEventListener('doctrine:download', enregistrerTelechargement);
         if (auth() && auth().estAdmin() && !document.documentElement.classList.contains('auth-locked')) {
             montrerBouton();
             charger();

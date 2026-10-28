@@ -9,6 +9,8 @@ manifest.webmanifest     manifeste PWA
 sw.js                    service worker (doit rester à la racine : portée)
 favicon.ico
 icons/                   icônes PWA (192, 512, maskable, apple-touch)
+viewer/                  visionneuse intégrée des documents Google Drive
+supabase/functions/      fonction drive-proxy (accès privé à Drive)
 splash/                  splash animé (CSS, JS, images, police)
 auth/                    écran de connexion (Supabase, comptes QCM-MAJOR.FR)
 admin/                   interface administrateur (édition des modules)
@@ -32,6 +34,18 @@ Le bouton **« 📊 Suivi des consultations »** du compte administrateur affich
 Les contrôles automatiques s’exécutent sur les pull requests vers `main` et avant chaque déploiement : ils vérifient la syntaxe JavaScript ainsi que la présence des ressources locales référencées par les pages, le manifeste PWA et le service worker.
 
 
+## Proxy Google Drive (visionneuse sécurisée)
+
+La fonction `supabase/functions/drive-proxy` vérifie la session du candidat, lit le fichier avec un compte de service Google et le renvoie à l'application : les fichiers Drive peuvent alors rester **privés**. Google Docs/Sheets/Slides sont convertis en PDF ; les dossiers sont listés dans la visionneuse.
+
+Mise en place (une seule fois) :
+1. Google Cloud : créer un projet, activer **Google Drive API**, créer un **compte de service** et télécharger sa clé JSON ;
+2. dans Drive, partager en lecture le dossier racine des documents avec l'adresse e-mail du compte de service, puis repasser les fichiers publics en accès « Restreint » ;
+3. `supabase secrets set GOOGLE_SERVICE_ACCOUNT_JSON="$(cat cle.json)"` ;
+4. `supabase functions deploy drive-proxy`.
+
+Tant que la fonction n'est pas déployée, la visionneuse se rabat sur l'aperçu Drive (fichiers publics requis, pas de téléchargement, dossiers non pris en charge). Les identifiants Drive restent présents dans le HTML : ils ne donnent accès à rien une fois les fichiers privés.
+
 ## Connexion
 
 L’accès à l’application demande une connexion avec les identifiants QCM-MAJOR.FR, vérifiés auprès du même projet Supabase.
@@ -52,6 +66,7 @@ La page d’application affiche le dernier module consulté et le suivi détaill
 - le manifeste `manifest.webmanifest` utilise des chemins relatifs pour fonctionner à la racine ou sous `/DOCTRINE/`
 - le service worker `sw.js` met en cache dès l’installation le shell local (HTML, manifeste), les icônes du dossier `icons/` et `favicon.ico`
 - ces icônes locales servent à l’onglet du navigateur, à l’installation PWA et au raccourci mobile
+- les liens Google Drive (fichiers et dossiers) des modules s'ouvrent dans une visionneuse intégrée avec bouton **⬇ Télécharger** (le téléchargement est enregistré dans le suivi admin) ; le candidat n'ouvre jamais Drive (Ctrl/⌘/Maj+clic mis à part). Voir « Proxy Google Drive » ci-dessous
 - les liens externes Google Drive et `https://Qcm-major.fr` restent des ressources réseau et ne sont pas préchargés ni mis en cache
 - en cas de mise à jour du service worker, un message indique qu’il faut fermer puis rouvrir l’application pour récupérer la nouvelle version
 - au démarrage, `index.html` affiche un splash animé « Couteau Suisse BM4 » (dossier `splash/`, précaché par le service worker) : environ 6 s, une fois par session, fermable d’un toucher et désactivé si `prefers-reduced-motion` est actif
