@@ -121,9 +121,78 @@
         });
     }
 
+    var PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+    var PDFJS_SRI = 'sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e';
+    var chargementPdfjs = null;
+
+    function tactile() {
+        return !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    }
+
+    function chargerPdfjs() {
+        if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+        if (!chargementPdfjs) {
+            chargementPdfjs = new Promise(function (resolve, reject) {
+                var s = document.createElement('script');
+                s.src = PDFJS + 'pdf.min.js';
+                s.integrity = PDFJS_SRI;
+                s.crossOrigin = 'anonymous';
+                s.onload = function () {
+                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + 'pdf.worker.min.js';
+                    resolve(window.pdfjsLib);
+                };
+                s.onerror = function () { chargementPdfjs = null; reject(new Error('pdfjs')); };
+                document.head.appendChild(s);
+            });
+        }
+        return chargementPdfjs;
+    }
+
+    // Safari/Chrome mobiles n'affichent pas un PDF dans une iframe : rendu page par page.
+    function montrerPdfMobile(src) {
+        var numero = requete;
+        message('Chargement du document…');
+        chargerPdfjs().then(function (pdfjs) {
+            return pdfjs.getDocument(src).promise;
+        }).then(function (pdf) {
+            if (numero !== requete) return pdf.destroy();
+            var pages = element('div', 'dv-pages');
+            corps.replaceChildren(pages);
+            var largeur = Math.max(corps.clientWidth - 16, 200);
+            var ratio = Math.min(window.devicePixelRatio || 1, 2);
+            var suite = Promise.resolve();
+            for (var i = 1; i <= pdf.numPages; i++) {
+                suite = suite.then(function (n) {
+                    return function () {
+                        if (numero !== requete) return;
+                        return pdf.getPage(n).then(function (page) {
+                            var base = page.getViewport({ scale: 1 });
+                            var vue = page.getViewport({ scale: (largeur / base.width) * ratio });
+                            var canvas = element('canvas', 'dv-page');
+                            canvas.width = Math.floor(vue.width);
+                            canvas.height = Math.floor(vue.height);
+                            canvas.style.width = largeur + 'px';
+                            pages.appendChild(canvas);
+                            return page.render({ canvasContext: canvas.getContext('2d'), viewport: vue }).promise;
+                        });
+                    };
+                }(i));
+            }
+            return suite;
+        }).catch(function () {
+            if (numero !== requete) return;
+            var lien = element('a', 'dv-btn dv-open-tab', 'Ouvrir le PDF dans un nouvel onglet');
+            lien.href = src;
+            lien.target = '_blank';
+            lien.rel = 'noopener';
+            corps.replaceChildren(lien);
+        });
+    }
+
     function montrer(type, src) {
         var noeud;
         if (type === 'application/pdf') {
+            if (tactile()) return montrerPdfMobile(src);
             noeud = element('iframe', 'dv-frame');
             noeud.title = 'Document';
         } else if (type.indexOf('image/') === 0) {
