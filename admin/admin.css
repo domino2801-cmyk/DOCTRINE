@@ -40,6 +40,12 @@ body.adm-on #adm-toggle { background: #e5c158; color: #0b2240; }
 .adm-views th { position: sticky; top: 0; background: #f2f5f8; }
 .adm-views td:last-child, .adm-views th:last-child { white-space: nowrap; }
 .adm-views a { color: #0b4b83; overflow-wrap: anywhere; }
+.adm-views-name {
+    padding: 0; border: 0; background: none; color: #0b4b83; font: inherit; font-weight: 700;
+    text-decoration: underline; cursor: pointer; text-align: left; overflow-wrap: anywhere;
+}
+.adm-views-name:hover { color: #0b2240; }
+.adm-views > .adm-views-card > .adm-views-close { margin-bottom: 10px; }
 .adm-views-more { margin-top: 12px; }
 .adm-views-more:disabled { opacity: .6; cursor: wait; }
 .document-view-status {
