@@ -1,0 +1,27 @@
+name: Sync Google Drive to Supabase
+
+on:
+  workflow_dispatch:
+    inputs:
+      folder_id:
+        description: ID du dossier Drive racine
+        default: 1sW8roMVuKV_9gdnbBE3im3Wl506_s6UQ
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/sync-drive.mjs
+        env:
+          DRIVE_ROOT_FOLDER_ID: ${{ inputs.folder_id }}
+          SUPABASE_PROJECT_REF: beodiemzrunqjkvylffn
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
