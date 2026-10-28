@@ -12,7 +12,7 @@ icons/                   icônes PWA (192, 512, maskable, apple-touch)
 splash/                  splash animé (CSS, JS, images, police)
 auth/                    écran de connexion (Supabase, comptes QCM-MAJOR.FR)
 admin/                   interface administrateur (édition des modules)
-supabase/                script SQL de la table doctrine_content
+supabase/                scripts SQL pour le contenu et le suivi des consultations
 .github/workflows/       déploiement GitHub Pages
 ```
 
@@ -22,9 +22,12 @@ Un compte administrateur voit le bouton **« ✏️ Mode admin »** (en bas à g
 
 Mise en place (une seule fois) :
 1. exécuter `supabase/doctrine-content.sql` dans Supabase > SQL Editor ;
-2. donner le rôle au compte : `app_metadata` = `{"role": "admin"}` (ou `{"bm4_admin": true}`), comme sur QCM-MAJOR.FR.
+2. exécuter `supabase/documentation-consultations.sql` dans Supabase > SQL Editor pour activer le journal des ouvertures ;
+3. donner le rôle au compte : `app_metadata` = `{"role": "admin"}` (ou `{"bm4_admin": true}`), comme sur QCM-MAJOR.FR.
 
 Le rôle lu côté navigateur n’affiche que l’interface : les écritures sont autorisées ou refusées par les règles RLS de la table. Le contenu enregistré est assaini (scripts, `on*`, URL `javascript:` retirés). Sans table ou hors ligne, le contenu d’origine du HTML est affiché.
+
+Le bouton **« 📊 Suivi des consultations »** du compte administrateur affiche l’historique des clics sur les liens externes des modules, avec le candidat connecté, le module, le document et la date/heure. Les lignes sont enregistrées dans Supabase ; chaque candidat ne peut ajouter que ses propres événements et seuls les administrateurs peuvent lire l’historique. Il s’agit d’un suivi des ouvertures de liens, pas d’une preuve que le document a été lu. Les événements sont conservés sans durée d’expiration automatique.
 
 
 ## Connexion
@@ -41,7 +44,7 @@ L’accès à l’application demande une connexion avec les identifiants QCM-MA
 
 La page `index.html` est l’entrée unique du site et de la PWA. Après le splash et la connexion, l’application BM4 s’affiche directement. L’ancienne URL `INDEX BM4V2.HTML` redirige vers cette page.
 
-La page d’application affiche le dernier module consulté et le suivi des dossiers et corrigés cochés, conservés localement sur l’appareil. Chaque module propose le même retour à la liste des modules.
+La page d’application affiche le dernier module consulté et le suivi détaillé des dossiers et corrigés, conservé localement sur l’appareil. Le journal des ouvertures de documents est, lui, centralisé dans Supabase pour l’administration. Chaque module propose le même retour à la liste des modules.
 
 - la PWA démarre sur `index.html` et reste installable sur un hébergement statique compatible HTTPS, y compris GitHub Pages pour ce dépôt
 - le manifeste `manifest.webmanifest` utilise des chemins relatifs pour fonctionner à la racine ou sous `/DOCTRINE/`

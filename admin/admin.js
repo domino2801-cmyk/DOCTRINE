@@ -12,6 +12,17 @@
     var courant = {};
     var adminActif = false;
     var bouton;
+    var suiviBouton;
+    var suiviDialogue;
+    var suiviBody;
+    var suiviEtat;
+    var suiviRecherche;
+    var suiviActualiser;
+    var suiviPlus;
+    var consultations = [];
+    var consultationsOffset = 0;
+    var consultationsCompletes = false;
+    var TAILLE_PAGE_CONSULTATIONS = 500;
     var dialogue;
 
     var TAGS_INTERDITS = 'script,iframe,object,embed,link,meta,base,form,style,svg,math,frame,frameset,applet';
@@ -87,7 +98,8 @@
             return fetch(auth().url + '/rest/v1/' + chemin, {
                 method: (options && options.methode) || 'GET',
                 headers: h,
-                body: options && options.corps ? JSON.stringify(options.corps) : undefined
+                body: options && options.corps ? JSON.stringify(options.corps) : undefined,
+                keepalive: !!(options && options.keepalive)
             });
         }).then(function (r) {
             if (r.ok) return r.status === 204 ? [] : r.json().catch(function () { return []; });
@@ -104,8 +116,13 @@
         }).catch(function () { /* table absente ou hors ligne : cache puis contenu d'origine */ });
     }
 
-    function messageErreur(err) {
-        if (err.code === 'PGRST205' || err.status === 404) return 'Table absente : exécutez supabase/doctrine-content.sql dans Supabase.';
+    function messageErreur(err, table) {
+        if (err.code === 'PGRST205' || err.status === 404) {
+            var script = table === 'doctrine_document_views'
+                ? 'documentation-consultations.sql'
+                : 'doctrine-content.sql';
+            return 'Table absente : exécutez supabase/' + script + ' dans Supabase.';
+        }
         if (err.status === 401 || err.status === 403 || err.code === '42501') return 'Droits insuffisants : compte non administrateur.';
         if (!navigator.onLine || err instanceof TypeError) return 'Hors ligne : enregistrement impossible.';
         return 'Erreur : ' + err.message;
@@ -330,6 +347,211 @@
         });
     }
 
+    function element(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text) node.textContent = text;
+        return node;
+    }
+
+    function construireSuivi() {
+        if (suiviDialogue) return;
+        suiviDialogue = element('section', 'adm-views');
+        suiviDialogue.id = 'adm-views';
+        suiviDialogue.hidden = true;
+        suiviDialogue.setAttribute('role', 'dialog');
+        suiviDialogue.setAttribute('aria-modal', 'true');
+        suiviDialogue.setAttribute('aria-labelledby', 'adm-views-title');
+
+        var carte = element('div', 'adm-views-card');
+        var entete = element('header', 'adm-views-header');
+        var titres = element('div');
+        titres.appendChild(element('h2', '', 'Historique des ouvertures'));
+        titres.lastChild.id = 'adm-views-title';
+        titres.appendChild(element('p', '', 'Chaque ligne correspond à un clic sur un document externe, pas à une preuve de lecture.'));
+        var actions = element('div', 'adm-views-actions');
+        suiviActualiser = element('button', 'adm-views-close', 'Actualiser');
+        suiviActualiser.type = 'button';
+        suiviActualiser.addEventListener('click', function() {
+            consultations = [];
+            consultationsOffset = 0;
+            consultationsCompletes = false;
+            suiviPlus.hidden = true;
+            chargerConsultations();
+        });
+        var fermer = element('button', 'adm-views-close', 'Fermer');
+        fermer.type = 'button';
+        fermer.addEventListener('click', fermerSuivi);
+        actions.append(suiviActualiser, fermer);
+        entete.append(titres, actions);
+
+        suiviRecherche = document.createElement('input');
+        suiviRecherche.type = 'search';
+        suiviRecherche.placeholder = 'Filtrer les événements chargés par candidat, module ou document';
+        suiviRecherche.setAttribute('aria-label', 'Filtrer les consultations affichées');
+        suiviRecherche.addEventListener('input', afficherConsultations);
+        suiviEtat = element('p', 'adm-views-status', 'Chargement de l’historique…');
+        suiviEtat.setAttribute('role', 'status');
+
+        var tableauWrap = element('div', 'adm-views-table-wrap');
+        var tableau = document.createElement('table');
+        var thead = document.createElement('thead');
+        var ligneEntete = document.createElement('tr');
+        ['Candidat', 'Module', 'Document', 'Ouverture'].forEach(function(titre) {
+            ligneEntete.appendChild(element('th', '', titre));
+        });
+        thead.appendChild(ligneEntete);
+        suiviBody = document.createElement('tbody');
+        tableau.append(thead, suiviBody);
+        tableauWrap.appendChild(tableau);
+
+        suiviPlus = element('button', 'adm-views-more', 'Charger les ouvertures précédentes');
+        suiviPlus.type = 'button';
+        suiviPlus.hidden = true;
+        suiviPlus.addEventListener('click', chargerConsultations);
+
+        carte.append(entete, suiviRecherche, suiviEtat, tableauWrap, suiviPlus);
+        suiviDialogue.appendChild(carte);
+        suiviDialogue.addEventListener('click', function(event) {
+            if (event.target === suiviDialogue) fermerSuivi();
+        });
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && !suiviDialogue.hidden) fermerSuivi();
+        });
+        document.body.appendChild(suiviDialogue);
+    }
+
+    function afficherConsultations() {
+        if (!suiviBody) return;
+        var terme = suiviRecherche.value.trim().toLocaleLowerCase();
+        var lignes = consultations.filter(function(ligne) {
+            return [ligne.candidate_email, 'module ' + ligne.module_id, ligne.document_title, ligne.document_url]
+                .join(' ').toLocaleLowerCase().indexOf(terme) !== -1;
+        });
+        suiviBody.replaceChildren();
+        lignes.forEach(function(ligne) {
+            var tr = document.createElement('tr');
+            tr.appendChild(element('td', '', ligne.candidate_email));
+            tr.appendChild(element('td', '', 'Module ' + ligne.module_id));
+            var documentCell = document.createElement('td');
+            var link = element('a', '', ligne.document_title);
+            try {
+                var url = new URL(ligne.document_url);
+                if (url.protocol === 'https:' || url.protocol === 'http:') {
+                    link.href = url.href;
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                } else {
+                    documentCell.textContent = ligne.document_title;
+                }
+            } catch (error) {
+                documentCell.textContent = ligne.document_title;
+            }
+            if (link.href) documentCell.appendChild(link);
+            tr.appendChild(documentCell);
+            var date = new Date(ligne.opened_at);
+            tr.appendChild(element('td', '', isNaN(date.getTime()) ? '' : date.toLocaleString('fr-FR')));
+            suiviBody.appendChild(tr);
+        });
+        suiviEtat.textContent = lignes.length + ' événement(s) affiché(s), parmi ' + consultations.length +
+            ' chargé(s). Le filtre porte sur les événements chargés.';
+    }
+
+    function chargerConsultations() {
+        if (!auth() || !auth().estAdmin() || consultationsCompletes) return;
+        suiviPlus.disabled = true;
+        if (suiviActualiser) suiviActualiser.disabled = true;
+        suiviEtat.textContent = 'Chargement des ouvertures…';
+        var chemin = 'doctrine_document_views?select=candidate_email,module_id,document_title,document_url,opened_at' +
+            '&order=opened_at.desc&limit=' + TAILLE_PAGE_CONSULTATIONS + '&offset=' + consultationsOffset;
+        api(chemin).then(function(lignes) {
+            consultations = consultations.concat(lignes);
+            consultationsOffset += lignes.length;
+            consultationsCompletes = lignes.length < TAILLE_PAGE_CONSULTATIONS;
+            suiviPlus.hidden = consultationsCompletes;
+            suiviPlus.disabled = false;
+            if (suiviActualiser) suiviActualiser.disabled = false;
+            afficherConsultations();
+            if (!consultations.length) suiviEtat.textContent = 'Aucune ouverture enregistrée pour le moment.';
+        }).catch(function(err) {
+            suiviPlus.disabled = false;
+            if (suiviActualiser) suiviActualiser.disabled = false;
+            suiviEtat.textContent = 'Impossible de charger l’historique : ' + messageErreur(err, 'doctrine_document_views');
+        });
+    }
+
+    function ouvrirSuivi() {
+        construireSuivi();
+        suiviDialogue.hidden = false;
+        suiviRecherche.focus();
+        if (!consultations.length && !consultationsCompletes) chargerConsultations();
+    }
+
+    function fermerSuivi() {
+        if (suiviDialogue) suiviDialogue.hidden = true;
+        if (suiviBouton) suiviBouton.focus();
+    }
+
+    function montrerSuiviBouton() {
+        if (!auth() || !auth().estAdmin()) return;
+        if (!suiviBouton) {
+            suiviBouton = element('button', '', '📊 Suivi des consultations');
+            suiviBouton.id = 'adm-views-toggle';
+            suiviBouton.type = 'button';
+            suiviBouton.addEventListener('click', ouvrirSuivi);
+            document.body.appendChild(suiviBouton);
+        }
+        suiviBouton.hidden = false;
+    }
+
+    function afficherErreurSuivi(message) {
+        var statut = document.getElementById('document-view-status');
+        if (!statut) {
+            statut = element('p', 'document-view-status');
+            statut.id = 'document-view-status';
+            statut.setAttribute('role', 'status');
+            statut.setAttribute('aria-live', 'polite');
+            document.body.appendChild(statut);
+        }
+        statut.textContent = message;
+        statut.hidden = false;
+        window.clearTimeout(statut.timer);
+        statut.timer = window.setTimeout(function() { statut.hidden = true; }, 8000);
+    }
+
+    function enregistrerOuverture(event) {
+        if (document.body.classList.contains('adm-on') || (auth() && auth().estAdmin())) return;
+        var target = event.target;
+        if (!target || typeof target.closest !== 'function') return;
+        var link = target.closest('.mod-body a[href]');
+        if (!link) return;
+        var module = link.closest('.mod-body[data-mod]');
+        if (!module) return;
+        var url;
+        try {
+            url = new URL(link.href);
+            if ((url.protocol !== 'https:' && url.protocol !== 'http:') || url.origin === window.location.origin) return;
+        } catch (error) {
+            return;
+        }
+        var ligne = link.closest('.dossier-item');
+        var libelle = ligne && ligne.querySelector('label span:last-child');
+        var titre = (libelle && libelle.textContent.trim()) || link.textContent.trim() || url.hostname;
+        api('doctrine_document_views', {
+            methode: 'POST',
+            corps: [{
+                module_id: module.getAttribute('data-mod'),
+                document_title: titre.slice(0, 300),
+                document_url: url.origin + url.pathname
+            }],
+            prefer: 'return=minimal',
+            keepalive: true
+        }).catch(function(err) {
+            console.error('Échec de l’enregistrement de cette ouverture de document.', err);
+            afficherErreurSuivi('Ouverture non enregistrée dans le suivi : ' + messageErreur(err, 'doctrine_document_views'));
+        });
+    }
+
     function montrerBouton() {
         if (!auth() || !auth().estAdmin()) return;
         if (!bouton) {
@@ -343,6 +565,7 @@
             document.body.appendChild(bouton);
         }
         bouton.hidden = false;
+        montrerSuiviBouton();
     }
 
     function init() {
@@ -359,7 +582,10 @@
         document.addEventListener('doctrine:logout', function () {
             if (adminActif) quitter(true);
             if (bouton) bouton.hidden = true;
+            if (suiviBouton) suiviBouton.hidden = true;
+            if (suiviDialogue) fermerSuivi();
         });
+        document.addEventListener('click', enregistrerOuverture);
         if (auth() && auth().estAdmin() && !document.documentElement.classList.contains('auth-locked')) {
             montrerBouton();
             charger();

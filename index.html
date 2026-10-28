@@ -432,12 +432,48 @@
             transform: scale(1.1);
             cursor: pointer;
         }
-        .dossier-item.completed {
-            opacity: 0.5;
-            background-color: #cbd5e1;
-            border-left-color: #94a3b8;
+        .dossier-list .dossier-item.study-tracked-item {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
         }
-        .dossier-item.completed span {
+        .dossier-tracking-controls {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #d9e0e8;
+        }
+        .dossier-tracking-field {
+            display: grid;
+            gap: 3px;
+            color: #526075;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .dossier-tracking-field select,
+        .dossier-tracking-field input {
+            width: 100%;
+            min-width: 0;
+            padding: 6px 7px;
+            border: 1px solid #aeb9c6;
+            border-radius: 4px;
+            background: #fff;
+            color: #263445;
+            font: inherit;
+            font-size: 0.8rem;
+        }
+        .dossier-tracking-field select:focus-visible,
+        .dossier-tracking-field input:focus-visible {
+            outline: 2px solid var(--primary-blue);
+            outline-offset: 2px;
+        }
+        .dossier-item.completed {
+            background-color: #e3ebe6;
+            border-left-color: #256044;
+        }
+        .dossier-item.completed > label span {
             text-decoration: line-through;
         }
         .stars {
@@ -657,6 +693,14 @@
                 flex-shrink: 0;
                 flex-wrap: nowrap;
             }
+            .dossier-list .dossier-item > .dossier-tracking-controls {
+                display: grid;
+                width: 100%;
+                justify-content: stretch;
+                align-items: start;
+                gap: 8px;
+                grid-template-columns: 1fr;
+            }
             .dossier-item > div {
                 width: 100%;
                 display: flex;
@@ -765,9 +809,9 @@
                 </div>
                 <button id="resumeModuleButton" class="resume-button" type="button" onclick="resumeLastModule()">Commencer le module 1</button>
             </div>
-            <label class="study-progress-label" for="overallProgress">Dossiers et corrigés consultés</label>
+            <label class="study-progress-label" for="overallProgress">Dossiers et corrigés commencés</label>
             <progress id="overallProgress" max="1" value="0"></progress>
-            <p id="overallProgressText" class="study-progress-text" role="status" aria-live="polite">0 élément consulté</p>
+            <p id="overallProgressText" class="study-progress-text" role="status" aria-live="polite">0 / 32 commencés · 0 maîtrisés · 0 à revoir · 0 en cours · 0 confiance faible</p>
         </section>
 
 <details class="preface-section">
@@ -1576,44 +1620,194 @@
 
         updateModuleLockUI();
 
+        const studyStatuses = [
+            ['todo', 'À faire'],
+            ['in-progress', 'En cours'],
+            ['review', 'À revoir'],
+            ['mastered', 'Maîtrisé']
+        ];
+        const confidenceLevels = [
+            ['', 'Non évaluée'],
+            ['low', 'Faible'],
+            ['medium', 'Moyenne'],
+            ['high', 'Élevée']
+        ];
+        const studyGroups = [
+            { attr: 'data-dossier', kind: 'dossier', legacyPrefix: 'dossier-', bar: 'progBar', text: 'progText', label: 'Avancement exercices : ' },
+            { attr: 'data-corrige', kind: 'corrige', legacyPrefix: 'corrige-', bar: 'progBarMod4', text: 'progTextMod4', label: 'Avancement corrigés : ' }
+        ];
+
+        function studyStorageKey(kind, id, field) {
+            return 'bm4-study-' + kind + '-' + id + '-' + field;
+        }
+
+        function readStudyValue(key) {
+            try {
+                return localStorage.getItem(key);
+            } catch (error) {
+                console.warn('Le suivi des révisions ne peut pas être lu.', error);
+                return null;
+            }
+        }
+
+        function saveStudyValue(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch (error) {
+                console.warn('Le suivi des révisions ne peut pas être enregistré.', error);
+            }
+        }
+
+        function localDateValue() {
+            const now = new Date();
+            return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                String(now.getDate()).padStart(2, '0');
+        }
+
+        function addTrackingField(container, labelText, control, resourceName) {
+            const label = document.createElement('label');
+            const caption = document.createElement('span');
+            label.className = 'dossier-tracking-field';
+            caption.textContent = labelText;
+            control.setAttribute('aria-label', labelText + ' — ' + resourceName);
+            label.append(caption, control);
+            container.appendChild(label);
+        }
+
+        function ensureStudyControls(box, group) {
+            const row = box.closest('.dossier-item');
+            if (!row) return null;
+            const id = box.getAttribute(group.attr);
+            const statusKey = studyStorageKey(group.kind, id, 'status');
+            let status = readStudyValue(statusKey);
+            if (!studyStatuses.some(function(option) { return option[0] === status; })) {
+                status = readStudyValue(group.legacyPrefix + id) === 'true' ? 'review' : 'todo';
+                saveStudyValue(statusKey, status);
+            }
+
+            const resourceName = row.querySelector('label')?.textContent.trim() || group.kind + ' ' + id;
+            row.classList.add('study-tracked-item');
+            row.classList.remove('study-status-todo', 'study-status-in-progress', 'study-status-review', 'study-status-mastered');
+            row.classList.add('study-status-' + status);
+            row.classList.toggle('completed', status === 'mastered');
+            box.checked = status !== 'todo';
+            box.hidden = true;
+            if (box.parentElement !== row) row.appendChild(box);
+
+            let controls = row.querySelector('.dossier-tracking-controls');
+            if (!controls) {
+                controls = document.createElement('div');
+                controls.className = 'dossier-tracking-controls adm-ui';
+
+                const statusSelect = document.createElement('select');
+                statusSelect.dataset.studyStatus = '';
+                studyStatuses.forEach(function(option) {
+                    const element = document.createElement('option');
+                    element.value = option[0];
+                    element.textContent = option[1];
+                    statusSelect.appendChild(element);
+                });
+                addTrackingField(controls, 'État', statusSelect, resourceName);
+
+                const confidenceSelect = document.createElement('select');
+                confidenceSelect.dataset.studyConfidence = '';
+                confidenceLevels.forEach(function(option) {
+                    const element = document.createElement('option');
+                    element.value = option[0];
+                    element.textContent = option[1];
+                    confidenceSelect.appendChild(element);
+                });
+                addTrackingField(controls, 'Confiance', confidenceSelect, resourceName);
+
+                const reviewDate = document.createElement('input');
+                reviewDate.type = 'date';
+                reviewDate.dataset.studyDate = '';
+                reviewDate.max = localDateValue();
+                addTrackingField(controls, 'Dernière révision', reviewDate, resourceName);
+                row.appendChild(controls);
+            }
+
+            const statusSelect = controls.querySelector('[data-study-status]');
+            const confidenceSelect = controls.querySelector('[data-study-confidence]');
+            const reviewDate = controls.querySelector('[data-study-date]');
+            if (statusSelect) statusSelect.value = status;
+            if (confidenceSelect) confidenceSelect.value = readStudyValue(studyStorageKey(group.kind, id, 'confidence')) || '';
+            if (reviewDate) reviewDate.value = readStudyValue(studyStorageKey(group.kind, id, 'date')) || '';
+            return { status: status, id: id, group: group };
+        }
+
         function refreshProgress() {
-            [['data-dossier', 'dossier-', 'progBar', 'progText', 'Avancement Exercices : '],
-             ['data-corrige', 'corrige-', 'progBarMod4', 'progTextMod4', 'Avancement Corrigés : ']].forEach(function(c) {
-                const boxes = document.querySelectorAll('.dossier-item input[' + c[0] + ']');
+            const allItems = [];
+            studyGroups.forEach(function(group) {
+                const boxes = document.querySelectorAll('.dossier-item input[' + group.attr + ']');
                 let done = 0;
                 boxes.forEach(function(box) {
-                    box.checked = localStorage.getItem(c[1] + box.getAttribute(c[0])) === 'true';
-                    box.closest('.dossier-item').classList.toggle('completed', box.checked);
-                    if (box.checked) done++;
+                    const item = ensureStudyControls(box, group);
+                    if (!item) return;
+                    allItems.push(item);
+                    if (item.status !== 'todo') done++;
                 });
                 const pct = Math.round((done / boxes.length) * 100) || 0;
-                const bar = document.getElementById(c[2]);
-                const txt = document.getElementById(c[3]);
+                const bar = document.getElementById(group.bar);
+                const txt = document.getElementById(group.text);
                 if (bar) bar.style.width = pct + '%';
-                if (txt) txt.innerText = c[4] + pct + '%';
+                if (txt) txt.innerText = group.label + pct + '%';
             });
-            const suivi = document.querySelectorAll('.dossier-item input[data-dossier], .dossier-item input[data-corrige]');
-            const consultes = Array.from(suivi).filter(function (box) { return box.checked; }).length;
+            const consultes = allItems.filter(function(item) { return item.status !== 'todo'; }).length;
+            const maitrises = allItems.filter(function(item) { return item.status === 'mastered'; }).length;
+            const aRevoir = allItems.filter(function(item) { return item.status === 'review'; }).length;
+            const enCours = allItems.filter(function(item) { return item.status === 'in-progress'; }).length;
+            const confianceFaible = allItems.filter(function(item) {
+                return readStudyValue(studyStorageKey(item.group.kind, item.id, 'confidence')) === 'low';
+            }).length;
             const progress = document.getElementById('overallProgress');
             const progressText = document.getElementById('overallProgressText');
             if (progress) {
-                progress.max = suivi.length || 1;
+                progress.max = allItems.length || 1;
                 progress.value = consultes;
             }
             if (progressText) {
-                progressText.textContent = consultes + ' / ' + suivi.length + ' éléments consultés';
+                progressText.textContent = consultes + ' / ' + allItems.length + ' commencés · ' +
+                    maitrises + ' maîtrisés · ' + aRevoir + ' à revoir · ' + enCours + ' en cours · ' +
+                    confianceFaible + ' confiance faible';
             }
             updateResumeModule(getLastModule());
         }
         window.bm4RefreshProgress = refreshProgress;
 
         document.addEventListener('change', function(e) {
-            const box = e.target;
-            if (!box.matches || !box.matches('.dossier-item input[data-dossier], .dossier-item input[data-corrige]')) return;
-            const attr = box.hasAttribute('data-dossier') ? 'data-dossier' : 'data-corrige';
-            const prefix = attr === 'data-dossier' ? 'dossier-' : 'corrige-';
-            localStorage.setItem(prefix + box.getAttribute(attr), box.checked);
-            refreshProgress();
+            const target = e.target;
+            if (!target.matches) return;
+            const row = target.closest('.dossier-item');
+            if (!row) return;
+            const box = row.querySelector('input[data-dossier], input[data-corrige]');
+            if (!box) return;
+            const group = studyGroups.find(function(candidate) { return box.hasAttribute(candidate.attr); });
+            if (!group) return;
+            const id = box.getAttribute(group.attr);
+
+            if (target.matches('[data-study-status]')) {
+                const status = studyStatuses.some(function(option) { return option[0] === target.value; }) ? target.value : 'todo';
+                saveStudyValue(studyStorageKey(group.kind, id, 'status'), status);
+                box.checked = status !== 'todo';
+                saveStudyValue(group.legacyPrefix + id, String(box.checked));
+                const reviewDate = row.querySelector('[data-study-date]');
+                if (status !== 'todo' && reviewDate) {
+                    reviewDate.value = localDateValue();
+                    saveStudyValue(studyStorageKey(group.kind, id, 'date'), reviewDate.value);
+                }
+                refreshProgress();
+            } else if (target.matches('[data-study-confidence]')) {
+                saveStudyValue(studyStorageKey(group.kind, id, 'confidence'), target.value);
+                refreshProgress();
+            } else if (target.matches('[data-study-date]')) {
+                saveStudyValue(studyStorageKey(group.kind, id, 'date'), target.value);
+            } else if (target === box) {
+                const status = box.checked ? 'review' : 'todo';
+                saveStudyValue(studyStorageKey(group.kind, id, 'status'), status);
+                saveStudyValue(group.legacyPrefix + id, String(box.checked));
+                refreshProgress();
+            }
         });
 
         refreshProgress();
