@@ -22,12 +22,14 @@ Un compte administrateur voit le bouton **« ✏️ Mode admin »** (en bas à g
 
 Mise en place (une seule fois) :
 1. exécuter `supabase/doctrine-content.sql` dans Supabase > SQL Editor ;
-2. exécuter `supabase/documentation-consultations.sql` dans Supabase > SQL Editor pour activer le journal des ouvertures ;
+2. exécuter `supabase/documentation-consultations.sql` dans Supabase > SQL Editor pour activer le journal des ouvertures et sa purge automatique ;
 3. donner le rôle au compte : `app_metadata` = `{"role": "admin"}` (ou `{"bm4_admin": true}`), comme sur QCM-MAJOR.FR.
 
 Le rôle lu côté navigateur n’affiche que l’interface : les écritures sont autorisées ou refusées par les règles RLS de la table. Le contenu enregistré est assaini (scripts, `on*`, URL `javascript:` retirés). Sans table ou hors ligne, le contenu d’origine du HTML est affiché.
 
-Le bouton **« 📊 Suivi des consultations »** du compte administrateur affiche l’historique des clics sur les liens externes des modules, avec le candidat connecté, le module, le document et la date/heure. Les lignes sont enregistrées dans Supabase ; chaque candidat ne peut ajouter que ses propres événements et seuls les administrateurs peuvent lire l’historique. Il s’agit d’un suivi des ouvertures de liens, pas d’une preuve que le document a été lu. Les événements sont conservés sans durée d’expiration automatique.
+Le bouton **« 📊 Suivi des consultations »** du compte administrateur affiche l’historique des clics sur les liens externes des modules, avec le candidat connecté, le module, le document et la date/heure. Les lignes sont enregistrées dans Supabase ; chaque candidat ne peut ajouter que ses propres événements et seuls les administrateurs peuvent lire l’historique. Il s’agit d’un suivi des ouvertures de liens, pas d’une preuve que le document a été lu. Une tâche Supabase supprime quotidiennement les événements datant de plus de 12 mois ; elle est créée par le script SQL ci-dessus.
+
+Les contrôles automatiques s’exécutent sur les pull requests vers `main` et avant chaque déploiement : ils vérifient la syntaxe JavaScript ainsi que la présence des ressources locales référencées par les pages, le manifeste PWA et le service worker.
 
 
 ## Connexion
