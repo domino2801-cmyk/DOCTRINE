@@ -58,3 +58,17 @@ create trigger doctrine_document_views_set_identity
 
 grant insert, select on public.doctrine_document_views to authenticated;
 grant usage, select on sequence public.doctrine_document_views_id_seq to authenticated;
+
+-- Purge quotidienne des événements de plus de 12 mois.
+create extension if not exists pg_cron with schema pg_catalog;
+
+select cron.unschedule(jobid)
+from cron.job
+where jobname = 'doctrine_document_views_retention';
+
+select cron.schedule(
+    'doctrine_document_views_retention',
+    '17 3 * * *',
+    $job$delete from public.doctrine_document_views
+         where opened_at < now() - interval '12 months'$job$
+);
