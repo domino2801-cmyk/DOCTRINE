@@ -2084,19 +2084,26 @@ body.adm-on .specialty-admin-picker {
             return other && value ? other : null;
         }
 
+        function isAdminAccount() {
+            return !!(window.DoctrineAuth && window.DoctrineAuth.estAdmin());
+        }
+
         function refreshSpecialtyRows() {
             ensureSpecialtyPicker();
             if (!specialtyMessage) return;
             const adminMode = document.body.classList.contains('adm-on');
+            const administrator = adminMode || isAdminAccount();
             const matchingRow = rowForSpecialty(adminMode ? adminSelectedSpecialty : candidateSpecialty);
             specialtyRows.forEach(function(row) {
-                row.hidden = row !== matchingRow;
+                row.hidden = administrator ? (!adminMode || row !== matchingRow) : row !== matchingRow;
             });
             specialtyMessage.textContent = adminMode
                 ? matchingRow
                     ? ''
                     : 'Sélectionnez une spécialité pour gérer sa ressource.'
-                : matchingRow
+                : administrator
+                    ? 'Activez le mode admin pour gérer les spécialités.'
+                    : matchingRow
                     ? ''
                     : candidateSpecialty
                         ? 'Aucune ressource de spécialité ne correspond à votre profil.'
@@ -2110,6 +2117,11 @@ body.adm-on .specialty-admin-picker {
 
         function loadCandidateSpecialty() {
             const requestId = ++specialtyRequestId;
+            if (isAdminAccount()) {
+                candidateSpecialty = '';
+                refreshSpecialtyRows();
+                return;
+            }
             candidateSpecialty = '';
             specialtyRows.forEach(function(row) { row.hidden = true; });
             specialtyMessage.textContent = 'Chargement de votre spécialité…';
@@ -2117,9 +2129,11 @@ body.adm-on .specialty-admin-picker {
                 if (requestId === specialtyRequestId) setCandidateSpecialty(specialty);
             }).catch(function(error) {
                 if (requestId !== specialtyRequestId) return;
-                specialtyMessage.textContent = document.body.classList.contains('adm-on')
-                    ? 'Mode administrateur : toutes les spécialités sont visibles.'
-                    : 'Impossible de charger votre spécialité. Réessayez en vous reconnectant.';
+                if (isAdminAccount()) {
+                    refreshSpecialtyRows();
+                } else {
+                    specialtyMessage.textContent = 'Impossible de charger votre spécialité. Réessayez en vous reconnectant.';
+                }
                 console.error('Échec du chargement de la spécialité du candidat :', error);
             });
         }
