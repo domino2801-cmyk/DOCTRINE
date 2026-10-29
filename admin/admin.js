@@ -23,6 +23,7 @@
     var suiviTitre;
     var suiviEntete;
     var suiviCandidat = null;
+    var suiviCandidatNom = '';
     var consultations = [];
     var consultationsOffset = 0;
     var consultationsCompletes = false;
@@ -395,6 +396,7 @@
         suiviRetour.hidden = true;
         suiviRetour.addEventListener('click', function() {
             suiviCandidat = null;
+            suiviCandidatNom = '';
             suiviRecherche.value = '';
             afficherConsultations();
         });
@@ -439,14 +441,25 @@
     function definirEntetes(titres) {
         suiviEntete.replaceChildren();
         titres.forEach(function(titre) { suiviEntete.appendChild(element('th', '', titre)); });
+        suiviEntete.closest('table').classList.toggle('adm-views-candidates', suiviCandidat === null);
+    }
+
+    function identifiantCandidat(ligne) {
+        if (ligne.user_id) return 'id:' + ligne.user_id;
+        var email = String(ligne.candidate_email || '').trim().toLocaleLowerCase();
+        return email ? 'email:' + email : 'email:(inconnu)';
     }
 
     function afficherCandidats() {
         var terme = suiviRecherche.value.trim().toLocaleLowerCase();
-        var parCandidat = {};
+        var parCandidat = Object.create(null);
         consultations.forEach(function(ligne) {
             var email = ligne.candidate_email || '(inconnu)';
-            var c = parCandidat[email] || (parCandidat[email] = { email: email, ouvertures: 0, telechargements: 0, derniere: ligne.opened_at });
+            var cle = identifiantCandidat(ligne);
+            var c = parCandidat[cle] || (parCandidat[cle] = {
+                key: cle, email: email, ouvertures: 0, telechargements: 0, derniere: ligne.opened_at
+            });
+            if (c.email === '(inconnu)' && email !== '(inconnu)') c.email = email;
             if (ligne.event_type === 'download') c.telechargements++; else c.ouvertures++;
             if (new Date(ligne.opened_at) > new Date(c.derniere)) c.derniere = ligne.opened_at;
         });
@@ -466,13 +479,20 @@
             bouton.type = 'button';
             bouton.title = 'Voir les consultations de ce candidat';
             bouton.addEventListener('click', function() {
-                suiviCandidat = c.email;
+                suiviCandidat = c.key;
+                suiviCandidatNom = c.email;
                 suiviRecherche.value = '';
                 afficherConsultations();
             });
             cellule.appendChild(bouton);
-            tr.append(cellule, element('td', '', String(c.ouvertures)), element('td', '', String(c.telechargements)),
-                element('td', '', formaterDate(c.derniere)));
+            cellule.setAttribute('data-label', 'Candidat');
+            var ouvertures = element('td', '', String(c.ouvertures));
+            ouvertures.setAttribute('data-label', 'Ouvertures');
+            var telechargements = element('td', '', String(c.telechargements));
+            telechargements.setAttribute('data-label', 'Téléchargements');
+            var derniere = element('td', '', formaterDate(c.derniere));
+            derniere.setAttribute('data-label', 'Dernière activité');
+            tr.append(cellule, ouvertures, telechargements, derniere);
             suiviBody.appendChild(tr);
         });
         suiviEtat.textContent = candidats.length + ' candidat(s) affiché(s) (' + consultations.length +
@@ -484,12 +504,12 @@
         if (suiviCandidat === null) return afficherCandidats();
         var terme = suiviRecherche.value.trim().toLocaleLowerCase();
         var lignes = consultations.filter(function(ligne) {
-            if ((ligne.candidate_email || '(inconnu)') !== suiviCandidat) return false;
+            if (identifiantCandidat(ligne) !== suiviCandidat) return false;
             return ['module ' + ligne.module_id, ligne.document_title, ligne.document_url, ligne.event_type]
                 .join(' ').toLocaleLowerCase().indexOf(terme) !== -1;
         });
         suiviRetour.hidden = false;
-        suiviTitre.textContent = 'Consultations de ' + suiviCandidat;
+        suiviTitre.textContent = 'Consultations de ' + suiviCandidatNom;
         suiviRecherche.placeholder = 'Filtrer par module ou document';
         definirEntetes(['Module', 'Document', 'Action', 'Date']);
         suiviBody.replaceChildren();
@@ -525,7 +545,7 @@
         suiviPlus.disabled = true;
         if (suiviActualiser) suiviActualiser.disabled = true;
         suiviEtat.textContent = 'Chargement de l’historique…';
-        var chemin = 'doctrine_document_views?select=candidate_email,module_id,document_title,document_url,event_type,opened_at' +
+        var chemin = 'doctrine_document_views?select=user_id,candidate_email,module_id,document_title,document_url,event_type,opened_at' +
             '&order=opened_at.desc&limit=' + TAILLE_PAGE_CONSULTATIONS + '&offset=' + consultationsOffset;
         api(chemin).then(function(lignes) {
             consultations = consultations.concat(lignes);
@@ -546,6 +566,7 @@
     function ouvrirSuivi() {
         construireSuivi();
         suiviCandidat = null;
+        suiviCandidatNom = '';
         suiviRecherche.value = '';
         afficherConsultations();
         suiviDialogue.hidden = false;

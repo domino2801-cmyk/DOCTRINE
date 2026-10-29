@@ -98,4 +98,22 @@ body.adm-on .adm-row-tools, body.adm-on .adm-row-tools * { pointer-events: auto;
     .adm-views-header { flex-direction: column; }
     .adm-views-actions { align-self: flex-end; }
     .adm-views th, .adm-views td { padding: 7px; }
+    .adm-views table.adm-views-candidates,
+    .adm-views table.adm-views-candidates tbody { display: block; }
+    .adm-views table.adm-views-candidates thead { display: none; }
+    .adm-views table.adm-views-candidates tr {
+        display: block; margin: 0 0 10px; padding: 4px 8px;
+        border: 1px solid #d9e0e8; border-radius: 6px;
+    }
+    .adm-views table.adm-views-candidates td {
+        display: flex; justify-content: space-between; gap: 12px;
+        border-bottom: 1px solid #edf0f3; white-space: normal;
+    }
+    .adm-views table.adm-views-candidates td:last-child { border-bottom: 0; }
+    .adm-views table.adm-views-candidates td::before {
+        flex: 0 0 38%; color: #526075; font-weight: 600; content: attr(data-label);
+    }
+    .adm-views table.adm-views-candidates .adm-views-name {
+        min-width: 0; overflow-wrap: anywhere; text-align: right;
+    }
 }
