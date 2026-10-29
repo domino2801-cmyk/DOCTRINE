@@ -1,15 +1,15 @@
 {
   "id": "./index.html",
-  "name": "Le Couteau Suisse du candidat BM4",
-  "short_name": "Couteau BM4",
-  "description": "Application de préparation BM4 avec accès rapide aux modules, checklists et documents de travail.",
+  "name": "ARMOIRE NUMERIQUE DE CAMPAGNE",
+  "short_name": "ANC",
+  "description": "Armoire numérique de campagne : ressources, outils et documents accessibles sur tous vos appareils.",
   "lang": "fr",
   "dir": "ltr",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f4f6f9",
-  "theme_color": "#0b2240",
+  "background_color": "#797d66",
+  "theme_color": "#797d66",
   "categories": ["education", "productivity"],
   "icons": [
     {

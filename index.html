@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="Le Couteau Suisse du candidat BM4 : préparation doctrinale, rédaction, corrections, QCM et admission dans une application installable en français.">
-    <meta name="theme-color" content="#0b2240">
+    <meta name="description" content="Armoire numérique de campagne : ressources, outils et documents accessibles sur tous vos appareils.">
+    <meta name="theme-color" content="#797d66">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Couteau Suisse BM4">
+    <meta name="apple-mobile-web-app-title" content="ANC">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -1037,34 +1037,10 @@ body.admin-account .specialty-admin-picker {
 <body>
 
 <div id="splash" role="presentation" aria-hidden="true">
-    <div class="stage">
-        <svg class="boussole-fond" viewBox="-100 -100 200 200" aria-hidden="true">
-            <g fill="none" stroke="#e5c158" stroke-width="0.6">
-                <circle r="96"/><circle r="90" stroke-width="0.3"/>
-                <circle r="82" stroke-width="0.35" stroke-dasharray="0.8 2.4"/>
-                <circle r="62" stroke-dasharray="1.5 3"/><circle r="50" stroke-width="0.35" stroke-dasharray="0.7 2.5"/>
-                <circle r="38" stroke-width="0.4"/><circle r="8" stroke-width="0.5"/>
-                <g class="graduations" stroke-width="0.5"></g>
-            </g>
-            <path d="M0 -92 L7 0 L0 92 L-7 0 Z" fill="#e5c158" opacity="0.55"/>
-            <path d="M-92 0 L0 -7 L92 0 L0 7 Z" fill="#e5c158" opacity="0.35"/>
-            <path d="M0 -70 L4 -4 L70 0 L4 4 L0 70 L-4 4 L-70 0 L-4 -4 Z" transform="rotate(45)" fill="#e5c158" opacity="0.4"/>
-        </svg>
-        <img src="splash/boussole.png" class="outil boussole" alt="">
-        <img src="splash/cle.png" class="outil cle" alt="">
-        <img src="splash/lame.png" class="outil lame" alt="">
-        <img src="splash/scie.png" class="outil scie" alt="">
-        <img src="splash/regle.png" class="outil regle" alt="">
-        <div class="manche">
-            <img src="splash/manche.png" alt="">
-            <span class="reflet"></span>
-        </div>
-        <div class="etincelles"></div>
-        <div class="ui-loader">
-            <div class="titre-app">COUTEAU SUISSE BM4</div>
-            <div class="barre-chargement"><div class="progression"></div></div>
-        </div>
-    </div>
+    <picture class="splash-art">
+        <source media="(max-width: 700px), (orientation: portrait)" srcset="splash/anc-splash-mobile.jpg">
+        <img src="splash/anc-splash.jpg" alt="">
+    </picture>
 </div>
 <script src="splash/splash.js"></script>
 

@@ -3,75 +3,26 @@
     if (!splash) return;
 
     var DUREE_MS = 5800;
-    var reduit = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var reduit = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var dejaVu = false;
-    try { dejaVu = sessionStorage.getItem('bm4-splash') === '1'; } catch (e) {}
+    try { dejaVu = sessionStorage.getItem('anc-splash') === '1'; } catch (e) {}
 
     function fermer() {
         if (!splash.parentNode) return;
         splash.classList.add('splash-fin');
-        setTimeout(function () { if (splash.parentNode) splash.parentNode.removeChild(splash); }, 700);
+        setTimeout(function () {
+            if (splash.parentNode) splash.parentNode.removeChild(splash);
+        }, 700);
         document.documentElement.style.overflow = '';
     }
 
     if (dejaVu || reduit) {
-        splash.parentNode.removeChild(splash);
+        splash.remove();
         return;
     }
-    try { sessionStorage.setItem('bm4-splash', '1'); } catch (e) {}
+
+    try { sessionStorage.setItem('anc-splash', '1'); } catch (e) {}
     document.documentElement.style.overflow = 'hidden';
-
-    var stage = splash.querySelector('.stage');
-    function fit() {
-        stage.style.setProperty('--s', Math.min(innerWidth / 500, innerHeight / 800));
-    }
-    fit();
-    addEventListener('resize', fit);
-
-    var SVG = 'http://www.w3.org/2000/svg';
-    var grad = splash.querySelector('.graduations');
-    for (var i = 0; i < 144; i++) {
-        var l = document.createElementNS(SVG, 'line');
-        l.setAttribute('y1', -90);
-        l.setAttribute('y2', i % 12 === 0 ? -79 : i % 4 === 0 ? -83 : -86);
-        l.setAttribute('transform', 'rotate(' + i * 2.5 + ')');
-        grad.appendChild(l);
-    }
-
-    var PIVOT = { x: 250, y: 340 };
-    var outils = [
-        { a: 140, len: 229, t: 0.6 },
-        { a: 100, len: 239, t: 1.3 },
-        { a: 180, len: 285, t: 2.0, sparkDelay: 1.1 },
-        { a: 220, len: 252, t: 2.7 },
-        { a: 260, len: 239, t: 3.4 }
-    ];
-    var zone = splash.querySelector('.etincelles');
-    function etincelles(x, y) {
-        if (!splash.parentNode) return;
-        for (var i = 0; i < 16; i++) {
-            var p = document.createElement('i');
-            zone.appendChild(p);
-            p.style.left = x + 'px';
-            p.style.top = y + 'px';
-            var ang = Math.random() * Math.PI * 2;
-            var d = 20 + Math.random() * 45;
-            var taille = 2 + Math.random() * 3;
-            p.style.width = p.style.height = taille + 'px';
-            p.animate([
-                { transform: 'translate(0,0) scale(1)', opacity: 1 },
-                { transform: 'translate(' + Math.cos(ang) * d + 'px,' + (Math.sin(ang) * d + 14) + 'px) scale(0)', opacity: 0 }
-            ], { duration: 600 + Math.random() * 500, easing: 'cubic-bezier(0.2,0.7,0.3,1)' })
-                .onfinish = (function (el) { return function () { el.remove(); }; })(p);
-        }
-    }
-    outils.forEach(function (o) {
-        var r = o.a * Math.PI / 180;
-        var x = PIVOT.x - Math.sin(r) * o.len;
-        var y = PIVOT.y + Math.cos(r) * o.len;
-        setTimeout(function () { etincelles(x, y); }, (o.t + (o.sparkDelay || 0.55)) * 1000);
-    });
-
-    splash.addEventListener('click', fermer);
+    splash.addEventListener('click', fermer, { once: true });
     setTimeout(fermer, DUREE_MS);
 })();
