@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bm4-shell-v24';
+const CACHE_NAME = 'bm4-shell-v25';
 const APP_SHELL_URL = new URL('./index.html', self.location.href).toString();
 const LEGACY_APP_URL = new URL('./INDEX%20BM4V2.HTML', self.location.href).toString();
 const SHELL_ASSETS = [
@@ -32,6 +32,7 @@ function getNavigationFallback() {
 }
 
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL_ASSETS))
   );
