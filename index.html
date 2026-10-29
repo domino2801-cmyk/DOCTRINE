@@ -1842,16 +1842,14 @@
 
         const studyStatuses = [
             ['todo', 'À faire'],
-            ['in-progress', 'En cours'],
-            ['review', 'À revoir'],
-            ['mastered', 'Maîtrisé']
+            ['mastered', 'Fait']
         ];
         const corrigeStatuses = [
             ['todo', 'Non lu'],
             ['mastered', 'Lu']
         ];
         const studyGroups = [
-            { attr: 'data-dossier', kind: 'dossier', legacyPrefix: 'dossier-', statuses: studyStatuses, checkedStatus: 'review', bar: 'progBar', text: 'progText', label: 'Avancement exercices : ' },
+            { attr: 'data-dossier', kind: 'dossier', legacyPrefix: 'dossier-', statuses: studyStatuses, checkedStatus: 'mastered', bar: 'progBar', text: 'progText', label: 'Avancement exercices : ' },
             { attr: 'data-corrige', kind: 'corrige', legacyPrefix: 'corrige-', statuses: corrigeStatuses, checkedStatus: 'mastered', bar: 'progBarMod4', text: 'progTextMod4', label: 'Avancement corrigés : ' }
         ];
 
