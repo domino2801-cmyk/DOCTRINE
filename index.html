@@ -1240,7 +1240,8 @@
                 <p id="correctionFileName" aria-live="polite">Aucun fichier sélectionné.</p>
                 <button type="submit">Transmettre ma fiche</button>
             </form>
-            <p id="correctionGateStatus" role="status" aria-live="polite"></p>
+            <p class="correction-warning" style="color:#c0392b;font-weight:bold;">Avant de transmettre votre fiche, indiquez « Fait » dans l’état de ce dossier au module 3.</p>
+            <p id="correctionGateStatus" style="color:#c0392b;" role="status" aria-live="polite"></p>
         </section>
 
         <!-- SECONDE BARRE DE PROGRESSION POUR LE MODULE 4 -->
@@ -1872,6 +1873,12 @@
                     fileInput.click();
                 });
             }
+            if (dossierSelect) {
+                ['focus', 'mousedown'].forEach(function(evt) {
+                    dossierSelect.addEventListener(evt, updateCorrectionDossierOptions);
+                });
+            }
+            document.querySelector('.mod-body[data-mod="3"]')?.addEventListener('change', updateCorrectionDossierOptions);
             if (dossierSelect && fileInput && fileName) {
                 dossierSelect.addEventListener('change', function() {
                     fileInput.value = '';
