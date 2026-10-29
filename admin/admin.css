@@ -65,6 +65,10 @@ body.adm-on .adm-bar { display: flex; }
     border: 1px solid #0b2240; background: #fff; color: #0b2240; border-radius: 4px;
     padding: 4px 8px; font-size: 12px; cursor: pointer;
 }
+.adm-row-tools select {
+    border: 1px solid #0b2240; background: #fff; color: #0b2240; border-radius: 4px;
+    padding: 3px 4px; font-size: 12px; cursor: pointer;
+}
 .adm-bar button.adm-save { background: #0b2240; color: #e5c158; }
 .adm-bar button.adm-danger, .adm-row-tools button.adm-danger { color: #b3261e; border-color: #b3261e; }
 .adm-state { flex-basis: 100%; font-size: 12px; color: #444; }
