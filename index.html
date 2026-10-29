@@ -1240,7 +1240,6 @@
                 <p id="correctionFileName" aria-live="polite">Aucun fichier sélectionné.</p>
                 <button type="submit">Transmettre ma fiche</button>
             </form>
-            <p class="correction-warning" style="color:#c0392b;font-weight:bold;">Avant de transmettre votre fiche, indiquez « Fait » dans l’état de ce dossier au module 3.</p>
             <p id="correctionGateStatus" style="color:#c0392b;" role="status" aria-live="polite"></p>
         </section>
 
@@ -1504,6 +1503,19 @@
         updateCorrectionAccess();
     }
 
+    function resetCorrectionGate() {
+        const dossierSelect = document.getElementById('correctionDossier');
+        const fileInput = document.getElementById('correctionFile');
+        const fileName = document.getElementById('correctionFileName');
+        const status = document.getElementById('correctionGateStatus');
+        if (dossierSelect) dossierSelect.value = '';
+        if (fileInput) fileInput.value = '';
+        if (fileName) fileName.textContent = 'Aucun fichier sélectionné.';
+        if (status) status.textContent = '';
+        correctionsUnlocked = false;
+        updateCorrectionAccess();
+    }
+
     function setActiveModuleButton(id) {
         Object.entries(moduleButtonMap).forEach(([moduleId, buttonId]) => {
             const button = document.getElementById(buttonId);
@@ -1594,7 +1606,7 @@
             document.querySelectorAll('.modal').forEach(function(item) {
                 if (item !== modal) item.style.display = 'none';
             });
-            if (id === 'module4') updateCorrectionAccess();
+            if (id === 'module4') resetCorrectionGate();
             modal.style.display = 'block';
             const position = moduleScrollPositions.get(modal.id);
             const content = modal.querySelector('.modal-content');
@@ -1861,12 +1873,6 @@
                     if (!dossierSelect.value) {
                         if (status) status.textContent = 'Choisissez d’abord un dossier du module 3.';
                         dossierSelect.focus();
-                        return;
-                    }
-                    const dossierRow = document.querySelector('.mod-body[data-mod="3"] input[data-dossier="' + dossierSelect.value + '"]')?.closest('.dossier-item');
-                    const dossierState = dossierRow?.querySelector('[data-study-status]')?.value;
-                    if (dossierState !== 'mastered') {
-                        if (status) status.textContent = 'Avant de transmettre votre fiche, indiquez « Fait » dans l’état de ce dossier au module 3.';
                         return;
                     }
                     if (status) status.textContent = '';
