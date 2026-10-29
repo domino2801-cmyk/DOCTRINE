@@ -570,6 +570,80 @@
             font-weight: bold;
             margin-right: 5px;
         }
+        .dossier-difficulty-filter {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+            color: #526075;
+            font-size: 0.9rem;
+        }
+        .dossier-difficulty-filter select {
+            padding: 7px 9px;
+            border: 1px solid #aeb9c6;
+            border-radius: 4px;
+            background: #fff;
+            color: #263445;
+            font: inherit;
+        }
+        .dossier-difficulty-filter select:focus-visible {
+            outline: 2px solid var(--primary-blue);
+            outline-offset: 2px;
+        }
+        .difficulty-scale {
+            margin: 8px 0 12px;
+            color: #526075;
+            font-size: 0.9rem;
+        }
+        .difficulty-scale summary {
+            width: fit-content;
+            color: var(--primary-blue);
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .difficulty-scale ul {
+            display: grid;
+            gap: 4px;
+            margin: 8px 0 0;
+            padding-left: 1.25rem;
+        }
+        .dossier-recommendation {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px 12px;
+            margin: 12px 0;
+            padding: 10px 12px;
+            border-left: 3px solid var(--primary-blue);
+            border-radius: 4px;
+            background: var(--bg-light);
+        }
+        .dossier-recommendation p {
+            margin: 0;
+            flex: 1 1 16rem;
+        }
+        .dossier-recommendation button {
+            padding: 7px 10px;
+            border: 0;
+            border-radius: 4px;
+            background: var(--primary-blue);
+            color: var(--white);
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .dossier-recommendation button:focus-visible {
+            outline: 2px solid var(--primary-blue);
+            outline-offset: 2px;
+        }
+        #studyDossierList > .dossier-item[hidden] {
+            display: none !important;
+        }
+        #studyDossierList > .dossier-item.recommended-highlight {
+            outline: 3px solid var(--primary-blue);
+            outline-offset: 2px;
+        }
         .doc-link {
             font-size: 0.8rem;
             background-color: var(--primary-blue);
@@ -1128,12 +1202,38 @@
 <div class="mod-body" data-mod="3">
         <p><strong>3.1. Exercices Thématiques Gradués (De 1 à 4 étoiles) :</strong></p>
 
+        <div class="dossier-difficulty-filter">
+            <label for="dossierDifficultyFilter">Filtrer par difficulté :</label>
+            <select id="dossierDifficultyFilter">
+                <option value="">Toutes les difficultés</option>
+                <option value="1">1 étoile</option>
+                <option value="2">2 étoiles</option>
+                <option value="3">3 étoiles</option>
+                <option value="4">4 étoiles</option>
+            </select>
+            <span id="dossierFilterCount" role="status" aria-live="polite"></span>
+        </div>
+        <details class="difficulty-scale">
+            <summary>Comprendre l’échelle des étoiles</summary>
+            <ul>
+                <li><span class="stars">★</span> Initiation : se familiariser avec l’exercice et sa méthode.</li>
+                <li><span class="stars">★★</span> Bases : appliquer la méthode à un sujet accessible.</li>
+                <li><span class="stars">★★★</span> Approfondissement : mobiliser plusieurs éléments et structurer une analyse.</li>
+                <li><span class="stars">★★★★</span> Défi : traiter un sujet plus exigeant avec davantage d’autonomie et de synthèse.</li>
+            </ul>
+            <p>Cette échelle est indicative : le nombre d’étoiles exprime une difficulté croissante, pas une note.</p>
+        </details>
+        <div class="dossier-recommendation">
+            <p id="recommendedDossierText" role="status" aria-live="polite">Chargement du parcours conseillé…</p>
+            <button id="showRecommendedDossier" type="button" hidden>Voir ce dossier</button>
+        </div>
+
         <div class="progress-container">
             <div id="progBar" class="progress-bar"></div>
             <div id="progText" class="progress-text">Avancement : 0%</div>
         </div>
 
-        <ul class="dossier-list">
+        <ul class="dossier-list" id="studyDossierList">
             <li class="dossier-item">
                 <label><input type="checkbox" data-dossier="1"> <span>Dossier 1 : Vie et lumières</span></label>
                 <div><span class="stars">★</span><a href="https://drive.google.com/drive/folders/1l6qZIdK6QVPHfVoGuCrkoJV5QGkVGcI_?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a></div>
@@ -1987,6 +2087,58 @@
             }
         }
 
+        function filterDossiersByDifficulty() {
+            const list = document.getElementById('studyDossierList');
+            const filter = document.getElementById('dossierDifficultyFilter');
+            const count = document.getElementById('dossierFilterCount');
+            if (!list || !filter || !count) return;
+
+            let visible = 0;
+            list.querySelectorAll(':scope > .dossier-item').forEach(function(row) {
+                const stars = row.querySelector('.stars')?.textContent.match(/★/g)?.length || 0;
+                const matches = !filter.value || stars === Number(filter.value);
+                row.hidden = !matches;
+                if (matches) visible++;
+            });
+            count.textContent = visible + (visible === 1 ? ' dossier affiché' : ' dossiers affichés');
+        }
+
+        function updateRecommendedDossier() {
+            const list = document.getElementById('studyDossierList');
+            const text = document.getElementById('recommendedDossierText');
+            const button = document.getElementById('showRecommendedDossier');
+            if (!list || !text || !button) return;
+
+            const next = Array.from(list.querySelectorAll(':scope > .dossier-item'))
+                .map(function(row, order) {
+                    return {
+                        row: row,
+                        order: order,
+                        stars: row.querySelector('.stars')?.textContent.match(/★/g)?.length || 0
+                    };
+                })
+                .filter(function(item) {
+                    return item.row.querySelector('[data-study-status]')?.value !== 'mastered';
+                })
+                .sort(function(a, b) {
+                    return a.stars - b.stars || a.order - b.order;
+                });
+            const nextItem = next[0];
+            if (!nextItem) {
+                text.textContent = 'Parcours conseillé terminé : tous les dossiers sont marqués « Fait ».';
+                button.hidden = true;
+                delete button.dataset.dossierId;
+                return;
+            }
+
+            const name = nextItem.row.querySelector('label > span')?.textContent.trim() || 'Dossier';
+            const stars = nextItem.stars;
+            text.textContent = 'Prochain dossier conseillé : ' + name + ' — ' +
+                stars + (stars === 1 ? ' étoile.' : ' étoiles.');
+            button.hidden = false;
+            button.dataset.dossierId = nextItem.row.querySelector('input[data-dossier]')?.getAttribute('data-dossier') || '';
+        }
+
         function addTrackingField(container, labelText, control, resourceName) {
             const label = document.createElement('label');
             const caption = document.createElement('span');
@@ -2074,9 +2226,31 @@
                 progressText.textContent = consultes + ' / ' + allItems.length + ' commencés · ' +
                     maitrises + ' maîtrisés · ' + aRevoir + ' à revoir · ' + enCours + ' en cours';
             }
+            updateRecommendedDossier();
             updateResumeModule(getLastModule());
         }
         window.bm4RefreshProgress = refreshProgress;
+
+        document.getElementById('dossierDifficultyFilter')?.addEventListener('change', filterDossiersByDifficulty);
+        filterDossiersByDifficulty();
+        document.getElementById('showRecommendedDossier')?.addEventListener('click', function() {
+            const id = this.dataset.dossierId;
+            const row = id && document.querySelector('#studyDossierList input[data-dossier="' + id + '"]')?.closest('.dossier-item');
+            if (!row) return;
+
+            const filter = document.getElementById('dossierDifficultyFilter');
+            if (filter) {
+                filter.value = '';
+                filterDossiersByDifficulty();
+            }
+            row.tabIndex = -1;
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            row.focus({ preventScroll: true });
+            row.classList.add('recommended-highlight');
+            window.setTimeout(function() {
+                row.classList.remove('recommended-highlight');
+            }, 2200);
+        });
 
         document.addEventListener('change', function(e) {
             const target = e.target;
