@@ -826,7 +826,7 @@
             </div>
             <label class="study-progress-label" for="overallProgress">Dossiers et corrigés commencés</label>
             <progress id="overallProgress" max="1" value="0"></progress>
-            <p id="overallProgressText" class="study-progress-text" role="status" aria-live="polite">0 / 32 commencés · 0 maîtrisés · 0 à revoir · 0 en cours · 0 confiance faible</p>
+            <p id="overallProgressText" class="study-progress-text" role="status" aria-live="polite">0 / 32 commencés · 0 maîtrisés · 0 à revoir · 0 en cours</p>
         </section>
 
 <details class="preface-section">
@@ -1650,12 +1650,6 @@
             ['review', 'À revoir'],
             ['mastered', 'Maîtrisé']
         ];
-        const confidenceLevels = [
-            ['', 'Non évaluée'],
-            ['low', 'Faible'],
-            ['medium', 'Moyenne'],
-            ['high', 'Élevée']
-        ];
         const studyGroups = [
             { attr: 'data-dossier', kind: 'dossier', legacyPrefix: 'dossier-', bar: 'progBar', text: 'progText', label: 'Avancement exercices : ' },
             { attr: 'data-corrige', kind: 'corrige', legacyPrefix: 'corrige-', bar: 'progBarMod4', text: 'progTextMod4', label: 'Avancement corrigés : ' }
@@ -1680,12 +1674,6 @@
             } catch (error) {
                 console.warn('Le suivi des révisions ne peut pas être enregistré.', error);
             }
-        }
-
-        function localDateValue() {
-            const now = new Date();
-            return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' +
-                String(now.getDate()).padStart(2, '0');
         }
 
         function addTrackingField(container, labelText, control, resourceName) {
@@ -1733,30 +1721,11 @@
                 });
                 addTrackingField(controls, 'État', statusSelect, resourceName);
 
-                const confidenceSelect = document.createElement('select');
-                confidenceSelect.dataset.studyConfidence = '';
-                confidenceLevels.forEach(function(option) {
-                    const element = document.createElement('option');
-                    element.value = option[0];
-                    element.textContent = option[1];
-                    confidenceSelect.appendChild(element);
-                });
-                addTrackingField(controls, 'Confiance', confidenceSelect, resourceName);
-
-                const reviewDate = document.createElement('input');
-                reviewDate.type = 'date';
-                reviewDate.dataset.studyDate = '';
-                reviewDate.max = localDateValue();
-                addTrackingField(controls, 'Dernière révision', reviewDate, resourceName);
                 row.appendChild(controls);
             }
 
             const statusSelect = controls.querySelector('[data-study-status]');
-            const confidenceSelect = controls.querySelector('[data-study-confidence]');
-            const reviewDate = controls.querySelector('[data-study-date]');
             if (statusSelect) statusSelect.value = status;
-            if (confidenceSelect) confidenceSelect.value = readStudyValue(studyStorageKey(group.kind, id, 'confidence')) || '';
-            if (reviewDate) reviewDate.value = readStudyValue(studyStorageKey(group.kind, id, 'date')) || '';
             return { status: status, id: id, group: group };
         }
 
@@ -1781,9 +1750,6 @@
             const maitrises = allItems.filter(function(item) { return item.status === 'mastered'; }).length;
             const aRevoir = allItems.filter(function(item) { return item.status === 'review'; }).length;
             const enCours = allItems.filter(function(item) { return item.status === 'in-progress'; }).length;
-            const confianceFaible = allItems.filter(function(item) {
-                return readStudyValue(studyStorageKey(item.group.kind, item.id, 'confidence')) === 'low';
-            }).length;
             const progress = document.getElementById('overallProgress');
             const progressText = document.getElementById('overallProgressText');
             if (progress) {
@@ -1792,8 +1758,7 @@
             }
             if (progressText) {
                 progressText.textContent = consultes + ' / ' + allItems.length + ' commencés · ' +
-                    maitrises + ' maîtrisés · ' + aRevoir + ' à revoir · ' + enCours + ' en cours · ' +
-                    confianceFaible + ' confiance faible';
+                    maitrises + ' maîtrisés · ' + aRevoir + ' à revoir · ' + enCours + ' en cours';
             }
             updateResumeModule(getLastModule());
         }
@@ -1815,17 +1780,7 @@
                 saveStudyValue(studyStorageKey(group.kind, id, 'status'), status);
                 box.checked = status !== 'todo';
                 saveStudyValue(group.legacyPrefix + id, String(box.checked));
-                const reviewDate = row.querySelector('[data-study-date]');
-                if (status !== 'todo' && reviewDate) {
-                    reviewDate.value = localDateValue();
-                    saveStudyValue(studyStorageKey(group.kind, id, 'date'), reviewDate.value);
-                }
                 refreshProgress();
-            } else if (target.matches('[data-study-confidence]')) {
-                saveStudyValue(studyStorageKey(group.kind, id, 'confidence'), target.value);
-                refreshProgress();
-            } else if (target.matches('[data-study-date]')) {
-                saveStudyValue(studyStorageKey(group.kind, id, 'date'), target.value);
             } else if (target === box) {
                 const status = box.checked ? 'review' : 'todo';
                 saveStudyValue(studyStorageKey(group.kind, id, 'status'), status);
