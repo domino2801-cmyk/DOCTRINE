@@ -1787,6 +1787,8 @@
                     fileName.textContent = fileInput.files && fileInput.files[0]
                         ? fileInput.files[0].name
                         : 'Aucun fichier sélectionné.';
+                    correctionsUnlocked = false;
+                    updateCorrectionAccess();
                 });
             }
             correctionUploadForm.addEventListener('submit', function(event) {
