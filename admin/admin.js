@@ -162,6 +162,16 @@
         var correctionGate = n === '4' && el.querySelector('#correctionGate');
         if (correctionGate) correctionGate.remove();
         el.innerHTML = assainir(n === '6' ? assurerSpecialitesModule6(html) : html);
+        if (n === '4') {
+            el.querySelectorAll('li').forEach(function (ligne) {
+                var texte = ligne.querySelector(':scope > span');
+                if (texte && texte.textContent.trim() === 'Décryptage de la commande et extraction des faits (Dossiers 1 à 16).') {
+                    var liste = ligne.parentElement;
+                    ligne.remove();
+                    if (liste && !liste.querySelector('li')) liste.remove();
+                }
+            });
+        }
         if (n === '3') assurerOutilsEtude(el);
         if (correctionGate) {
             var storedGate = el.querySelector('#correctionGate');
