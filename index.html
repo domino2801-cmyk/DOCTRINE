@@ -304,13 +304,13 @@
             width: 100%;
             height: 100%;
             background-color: var(--overlay);
-            overflow-y: auto;
-            padding: 20px 12px;
+            overflow: visible;
+            padding: 0 12px;
         }
         .modal-content {
             --modal-padding: 30px;
             background-color: var(--white);
-            margin: 24px auto;
+            margin: 82px auto 20px;
             padding: var(--modal-padding);
             border-radius: 8px;
             max-width: 850px;
@@ -318,7 +318,7 @@
             border: 1px solid #d9e0e8;
             box-shadow: 0 4px 16px rgba(11, 34, 64, 0.12);
             position: relative;
-            max-height: calc(100dvh - 48px);
+            max-height: calc(100dvh - 112px);
             overflow-y: auto;
         }
         h2 {
@@ -328,19 +328,27 @@
             margin-top: 0;
         }
         .modal-toolbar {
-            position: sticky;
-            top: 0;
-            z-index: 2;
+            position: fixed;
+            top: 12px;
+            left: 50%;
+            z-index: 1100;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            margin: calc(var(--modal-padding) * -1) calc(var(--modal-padding) * -1) 18px;
-            padding: 12px var(--modal-padding);
+            width: min(850px, calc(100% - 24px));
+            margin: 0;
+            padding: 12px 18px;
+            transform: translateX(-50%);
             background: linear-gradient(135deg, var(--primary-blue), #16396a);
             border-bottom: 3px solid var(--accent-red);
-            border-radius: 8px 8px 0 0;
+            border-radius: 8px;
             box-shadow: 0 4px 12px rgba(11, 34, 64, 0.25);
+        }
+        .module-nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         .modal-toolbar > span {
             color: #fff;
@@ -362,6 +370,19 @@
             cursor: pointer;
             transition: background 0.15s ease, color 0.15s ease;
         }
+        .module-nav-button {
+            padding: 8px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 7px;
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .module-nav-button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.2); }
+        .module-nav-button:disabled { opacity: 0.45; cursor: not-allowed; }
+        .module-nav-button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
         .modal-return-btn:hover { background: #fff; color: var(--primary-blue); }
         .modal-return-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
         .modal-content > h2 {
@@ -718,15 +739,24 @@
             .resume-button {
                 width: 100%;
             }
-            .modal {
-                padding: 12px 8px;
-            }
+            .modal { padding: 0 8px; }
             .modal-content {
-                margin: 8px auto;
-                max-height: calc(100dvh - 16px);
+                margin: 8px auto 100px;
+                max-height: calc(100dvh - 108px);
             }
-            .modal-toolbar { gap: 8px; }
-            .modal-return-btn { padding: 7px 9px; font-size: 0.85rem; }
+            .modal-toolbar {
+                top: auto;
+                bottom: max(8px, env(safe-area-inset-bottom));
+                left: 8px;
+                width: calc(100% - 16px);
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 10px 12px;
+                transform: none;
+            }
+            .module-nav-controls { gap: 5px; }
+            .module-nav-button,
+            .modal-return-btn { padding: 7px 8px; font-size: 0.78rem; }
             .dossier-item {
                 flex-direction: column;
                 align-items: stretch;
@@ -914,8 +944,8 @@
 
 <!-- MODALE 1 -->
 <div id="modal-module1" class="modal" role="dialog" aria-modal="true" aria-labelledby="module1-title">
+    <div class="modal-toolbar"><span>MODULE 1</span><div class="module-nav-controls" aria-label="Navigation entre les modules"><button class="module-nav-button module-nav-previous" type="button" aria-label="Module précédent" title="Module précédent" onclick="navigateModule('module1')">‹ <span>Précédent</span></button><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module1')">Tous les modules</button><button class="module-nav-button module-nav-next" type="button" aria-label="Module suivant" title="Module suivant" onclick="navigateModule('module2')"><span>Suivant</span> ›</button></div></div>
     <div class="modal-content">
-        <div class="modal-toolbar"><span>MODULE 1</span><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module1')">← Tous les modules</button></div>
         <h2 id="module1-title">MODULE 1 : LE CADRE INSTITUTIONNEL & RETEX</h2>
 <div class="mod-body" data-mod="1">
         <ul style="list-style: none; padding-left: 0;">
@@ -964,8 +994,8 @@
 
 <!-- MODALE 2 -->
 <div id="modal-module2" class="modal" role="dialog" aria-modal="true" aria-labelledby="module2-title">
+    <div class="modal-toolbar"><span>MODULE 2</span><div class="module-nav-controls" aria-label="Navigation entre les modules"><button class="module-nav-button module-nav-previous" type="button" aria-label="Module précédent" title="Module précédent" onclick="navigateModule('module1')">‹ <span>Précédent</span></button><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module2')">Tous les modules</button><button class="module-nav-button module-nav-next" type="button" aria-label="Module suivant" title="Module suivant" onclick="navigateModule('module3')"><span>Suivant</span> ›</button></div></div>
     <div class="modal-content" style="max-width: 850px;">
-        <div class="modal-toolbar"><span>MODULE 2</span><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module2')">← Tous les modules</button></div>
         <h2 id="module2-title">MODULE 2 : BASE DOCUMENTAIRE & CADRE DOCTRINAL</h2>
 <div class="mod-body" data-mod="2">
 
@@ -1092,8 +1122,8 @@
 </div>
 
 <div id="modal-module3" class="modal" role="dialog" aria-modal="true" aria-labelledby="module3-title">
+    <div class="modal-toolbar"><span>MODULE 3</span><div class="module-nav-controls" aria-label="Navigation entre les modules"><button class="module-nav-button module-nav-previous" type="button" aria-label="Module précédent" title="Module précédent" onclick="navigateModule('module2')">‹ <span>Précédent</span></button><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module3')">Tous les modules</button><button class="module-nav-button module-nav-next" type="button" aria-label="Module suivant" title="Module suivant" onclick="navigateModule('module4')"><span>Suivant</span> ›</button></div></div>
     <div class="modal-content">
-        <div class="modal-toolbar"><span>MODULE 3</span><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module3')">← Tous les modules</button></div>
         <h2 id="module3-title">MODULE 3 : EXERCICES DE RÉDACTION</h2>
 <div class="mod-body" data-mod="3">
         <p><strong>3.1. Exercices Thématiques Gradués (De 1 à 4 étoiles) :</strong></p>
@@ -1181,8 +1211,8 @@
 
 <!-- MODALE 4 -->
 <div id="modal-module4" class="modal" role="dialog" aria-modal="true" aria-labelledby="module4-title">
+    <div class="modal-toolbar"><span>MODULE 4</span><div class="module-nav-controls" aria-label="Navigation entre les modules"><button class="module-nav-button module-nav-previous" type="button" aria-label="Module précédent" title="Module précédent" onclick="navigateModule('module3')">‹ <span>Précédent</span></button><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module4')">Tous les modules</button><button class="module-nav-button module-nav-next" type="button" aria-label="Module suivant" title="Module suivant" onclick="navigateModule('module5')"><span>Suivant</span> ›</button></div></div>
     <div class="modal-content">
-        <div class="modal-toolbar"><span>MODULE 4</span><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module4')">← Tous les modules</button></div>
         <h2 id="module4-title">MODULE 4 : PROPOSITIONS DE CORRECTION (L'ANALYSE)</h2>
 <div class="mod-body" data-mod="4">
         <ul>
@@ -1290,8 +1320,8 @@
 </div>
 
 <div id="modal-module5" class="modal" role="dialog" aria-modal="true" aria-labelledby="module5-title">
+    <div class="modal-toolbar"><span>MODULE 5</span><div class="module-nav-controls" aria-label="Navigation entre les modules"><button class="module-nav-button module-nav-previous" type="button" aria-label="Module précédent" title="Module précédent" onclick="navigateModule('module4')">‹ <span>Précédent</span></button><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module5')">Tous les modules</button><button class="module-nav-button module-nav-next" type="button" aria-label="Module suivant" title="Module suivant" onclick="navigateModule('module6')"><span>Suivant</span> ›</button></div></div>
     <div class="modal-content">
-        <div class="modal-toolbar"><span>MODULE 5</span><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module5')">← Tous les modules</button></div>
         <h2 id="module5-title">MODULE 5 : ENTRAÎNEMENT INTENSIF AU QCM DOCTRINAL</h2>
 <div class="mod-body" data-mod="5">
         <ul>
@@ -1319,8 +1349,8 @@
 </div>
 
 <div id="modal-module6" class="modal" role="dialog" aria-modal="true" aria-labelledby="module6-title">
+    <div class="modal-toolbar"><span>MODULE 6</span><div class="module-nav-controls" aria-label="Navigation entre les modules"><button class="module-nav-button module-nav-previous" type="button" aria-label="Module précédent" title="Module précédent" onclick="navigateModule('module5')">‹ <span>Précédent</span></button><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module6')">Tous les modules</button><button class="module-nav-button module-nav-next" type="button" aria-label="Module suivant" title="Module suivant" onclick="navigateModule('module6')"><span>Suivant</span> ›</button></div></div>
     <div class="modal-content">
-        <div class="modal-toolbar"><span>MODULE 6</span><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module6')">← Tous les modules</button></div>
         <h2 id="module6-title">MODULE 6 : PRÉPARATION À L'ADMISSION (L'ORAL &amp; SPORT)</h2>
 <div class="mod-body" data-mod="6">
 
@@ -1423,6 +1453,8 @@
         module5: 'btn-mod5',
         module6: 'btn-mod6'
     };
+    const moduleOrder = Object.keys(moduleButtonMap);
+    const moduleScrollPositions = new Map();
     let deferredInstallPrompt = null;
     let networkStatusTimer = null;
     let correctionsUnlocked = false;
@@ -1524,23 +1556,62 @@
         if (lockWarning) {
             lockWarning.style.display = isUnlocked ? 'none' : 'block';
         }
+        updateModuleNavigation();
         updateResumeModule(getLastModule());
     }
 
+    function updateModuleNavigation(activeModule) {
+        moduleOrder.forEach(function(moduleId, index) {
+            const modal = document.getElementById('modal-' + moduleId);
+            if (!modal) return;
+            const previous = modal.querySelector('.module-nav-previous');
+            const next = modal.querySelector('.module-nav-next');
+            if (previous) previous.disabled = index === 0;
+            if (next) next.disabled = index === moduleOrder.length - 1 || (index === 0 && !isModule1Unlocked());
+        });
+    }
+
+    function navigateModule(id) {
+        openModal(id);
+    }
+
     function openModal(id) {
+        if (!Object.prototype.hasOwnProperty.call(moduleButtonMap, id)) return;
         if (id === 'module1' || isModule1Unlocked()) {
             const modal = document.getElementById('modal-' + id);
-            if (modal) {
-                if (id === 'module4') updateCorrectionAccess();
-                modal.style.display = 'block';
-                setActiveModuleButton(id);
-                try {
-                    localStorage.setItem(lastModuleKey, id);
-                } catch (error) {
-                    console.warn('La reprise du dernier module ne peut pas être mémorisée.', error);
-                }
-                updateResumeModule(id);
+            if (!modal) return;
+            const currentModal = Array.from(document.querySelectorAll('.modal')).find(function(item) {
+                return item.style.display === 'block';
+            });
+            if (currentModal && currentModal !== modal) {
+                const currentContent = currentModal.querySelector('.modal-content');
+                moduleScrollPositions.set(currentModal.id, {
+                    modal: currentModal.scrollTop,
+                    content: currentContent ? currentContent.scrollTop : 0
+                });
             }
+            document.querySelectorAll('.modal').forEach(function(item) {
+                if (item !== modal) item.style.display = 'none';
+            });
+            if (id === 'module4') updateCorrectionAccess();
+            modal.style.display = 'block';
+            const position = moduleScrollPositions.get(modal.id);
+            const content = modal.querySelector('.modal-content');
+            modal.scrollTop = position ? position.modal : 0;
+            if (content) content.scrollTop = position ? position.content : 0;
+            setActiveModuleButton(id);
+            updateModuleNavigation(id);
+            const heading = modal.querySelector('h2');
+            if (heading) {
+                heading.setAttribute('tabindex', '-1');
+                heading.focus({ preventScroll: true });
+            }
+            try {
+                localStorage.setItem(lastModuleKey, id);
+            } catch (error) {
+                console.warn('La reprise du dernier module ne peut pas être mémorisée.', error);
+            }
+            updateResumeModule(id);
         } else {
             alert("Veuillez cocher « J'ai lu l'ensemble du module » pour accéder aux suivants.");
         }
@@ -1577,6 +1648,11 @@
     function closeModal(id) {
         const modal = document.getElementById('modal-' + id);
         if (modal) {
+            const content = modal.querySelector('.modal-content');
+            moduleScrollPositions.set(modal.id, {
+                modal: modal.scrollTop,
+                content: content ? content.scrollTop : 0
+            });
             modal.style.display = 'none';
         }
         setActiveModuleButton(null);
