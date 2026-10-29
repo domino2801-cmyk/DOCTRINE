@@ -1587,6 +1587,15 @@
                 showStatusChip(appUpdateStatus, 'Une mise à jour locale est prête. Fermez puis rouvrez l’application.');
             };
 
+            if (navigator.serviceWorker.controller) {
+                let reloadedForUpdate = false;
+                navigator.serviceWorker.addEventListener('controllerchange', function() {
+                    if (reloadedForUpdate) return;
+                    reloadedForUpdate = true;
+                    window.location.reload();
+                });
+            }
+
             if (registration.waiting) {
                 notifyUpdateReady();
             }
