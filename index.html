@@ -504,14 +504,17 @@
         .dossier-tracking-controls {
             grid-column: 1 / -1;
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: minmax(0, 15rem);
+            justify-content: end;
             gap: 8px;
             padding-top: 8px;
             border-top: 1px solid #d9e0e8;
         }
         .dossier-tracking-field {
             display: grid;
-            gap: 3px;
+            grid-template-columns: auto minmax(0, 1fr);
+            align-items: center;
+            gap: 8px;
             color: #526075;
             font-size: 0.75rem;
             font-weight: 700;
@@ -764,6 +767,16 @@
                 align-items: start;
                 gap: 8px;
                 grid-template-columns: 1fr;
+            }
+            .dossier-tracking-field {
+                grid-template-columns: 1fr;
+                gap: 4px;
+                font-size: 0.8rem;
+            }
+            .dossier-tracking-field select {
+                min-height: 44px;
+                padding: 9px 10px;
+                font-size: 16px;
             }
             .dossier-item > div {
                 width: 100%;
