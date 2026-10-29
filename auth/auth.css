@@ -84,6 +84,25 @@ html.auth-locked body { background: radial-gradient(circle at 50% 30%, #1b2733 0
 #auth-gate .auth-pied { margin: 18px 0 0; padding-top: 14px; border-top: 1px solid #e3e8ef; font-size: 0.85rem; }
 #auth-gate .auth-pied a { color: #a82025; font-weight: 700; }
 #auth-gate .auth-etat { font-weight: 600; }
+#auth-gate .auth-specialty-preview {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #e3e8ef;
+}
+#auth-gate .auth-specialty-preview h2 { margin: 0 0 6px; font-size: 1rem; color: #0b2240; }
+#auth-gate .auth-specialty-preview p { margin-bottom: 8px; font-size: 0.85rem; }
+#auth-gate .auth-specialty-preview label { margin-top: 8px; }
+#auth-gate .auth-specialty-preview select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #c4cedb;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #1d2430;
+    font: inherit;
+}
+#auth-gate .auth-specialty-result { margin-top: 10px; }
+#auth-gate .auth-specialty-result a { color: #0b4b83; font-weight: 700; }
 
 #auth-logout {
     position: fixed;

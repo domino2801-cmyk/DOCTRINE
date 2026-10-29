@@ -2067,6 +2067,45 @@ body.adm-on .specialty-admin-picker {
             adminSelectedSpecialty = specialtySelect.value;
         }
 
+        function initializeUnauthenticatedSpecialtyPreview() {
+            const previewSelect = document.getElementById('auth-specialty-select');
+            const previewResult = document.getElementById('auth-specialty-result');
+            if (!previewSelect || !previewResult) return;
+
+            specialtyRows.forEach(function(row) {
+                previewSelect.appendChild(new Option(
+                    row.querySelector('.row-text').textContent.trim(),
+                    row.dataset.specialty
+                ));
+            });
+            previewSelect.addEventListener('change', function() {
+                previewResult.replaceChildren();
+                const row = specialtyRows.find(function(item) {
+                    return item.dataset.specialty === previewSelect.value;
+                });
+                if (!row) return;
+
+                const title = document.createElement('strong');
+                title.textContent = row.querySelector('.row-text').textContent.trim();
+                previewResult.appendChild(title);
+
+                const resource = row.querySelector('.doc-link');
+                const status = document.createElement('p');
+                status.className = 'auth-specialty-result';
+                if (resource) {
+                    const link = document.createElement('a');
+                    link.href = resource.href;
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    link.textContent = 'Ouvrir la ressource';
+                    status.appendChild(link);
+                } else {
+                    status.textContent = 'Ressource à venir.';
+                }
+                previewResult.appendChild(status);
+            });
+        }
+
         function rowForSpecialty(value) {
             const normalized = value.toLocaleLowerCase('fr');
             const exact = specialtyRows.find(function(row) {
@@ -2140,6 +2179,7 @@ body.adm-on .specialty-admin-picker {
 
         specialtyRows.forEach(function(row) { row.hidden = true; });
         ensureSpecialtyPicker();
+        initializeUnauthenticatedSpecialtyPreview();
         document.addEventListener('doctrine:admin-mode', refreshSpecialtyRows);
         document.addEventListener('doctrine:content-updated', function(event) {
             if (event.detail?.moduleId !== '6') return;
