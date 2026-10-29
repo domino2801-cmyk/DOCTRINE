@@ -1879,11 +1879,6 @@
                     fileInput.click();
                 });
             }
-            if (dossierSelect) {
-                ['focus', 'mousedown'].forEach(function(evt) {
-                    dossierSelect.addEventListener(evt, updateCorrectionDossierOptions);
-                });
-            }
             document.querySelector('.mod-body[data-mod="3"]')?.addEventListener('change', updateCorrectionDossierOptions);
             if (dossierSelect && fileInput && fileName) {
                 dossierSelect.addEventListener('change', function() {
