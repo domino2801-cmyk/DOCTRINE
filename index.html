@@ -1465,18 +1465,25 @@
         return dossier?.closest('.dossier-item')?.querySelector('[data-study-status]')?.value === 'mastered';
     }
 
+    function hasCorrectionAccess() {
+        const selectedDossier = document.getElementById('correctionDossier')?.value;
+        return correctionsUnlocked && !!selectedDossier && isDossierDone(selectedDossier);
+    }
+
     function updateCorrectionAccess() {
         const list = document.getElementById('corrigeList');
-        if (list) list.hidden = !correctionsUnlocked;
+        if (correctionsUnlocked && !hasCorrectionAccess()) correctionsUnlocked = false;
+        const accessAllowed = hasCorrectionAccess();
+        if (list) list.hidden = !accessAllowed;
         const selectedDossier = document.getElementById('correctionDossier')?.value;
         if (list) {
             list.querySelectorAll('.dossier-item').forEach(function(row) {
                 const box = row.querySelector('input[data-corrige]');
-                row.hidden = !correctionsUnlocked || !box || box.getAttribute('data-corrige') !== selectedDossier;
+                row.hidden = !accessAllowed || !box || box.getAttribute('data-corrige') !== selectedDossier;
             });
         }
         const moduleBody = document.querySelector('.mod-body[data-mod="4"]');
-        if (moduleBody) moduleBody.classList.toggle('corrections-locked', !correctionsUnlocked);
+        if (moduleBody) moduleBody.classList.toggle('corrections-locked', !accessAllowed);
     }
 
     function updateCorrectionDossierOptions() {
@@ -1933,10 +1940,15 @@
                 const target = event.target;
                 if (!(target instanceof Element)) return;
                 const link = target.closest('#corrigeList a');
-                if (!link || correctionsUnlocked) return;
+                if (!link || hasCorrectionAccess()) return;
                 event.preventDefault();
                 const status = document.getElementById('correctionGateStatus');
-                if (status) status.textContent = 'Sélectionnez d’abord votre fiche rédigée pour ouvrir les corrigés.';
+                const selectedDossier = document.getElementById('correctionDossier')?.value;
+                if (status) {
+                    status.textContent = selectedDossier && !isDossierDone(selectedDossier)
+                        ? 'Ce dossier n’est pas marqué « Fait » dans le module 3 : terminez-le avant d’ouvrir son corrigé.'
+                        : 'Sélectionnez d’abord votre fiche rédigée pour ouvrir les corrigés.';
+                }
                 document.getElementById('correctionFile')?.focus();
             });
         }
