@@ -382,6 +382,34 @@
         .mod-body p { margin-block: 0.7em; }
         .mod-body li { line-height: 1.6; }
         .mod-body .dossier-item { box-shadow: none; }
+        .correction-gate {
+            max-width: 72ch;
+            margin: 0 auto 18px;
+            padding: 16px;
+            border: 1px solid #d9e0e8;
+            border-left: 4px solid var(--accent-red);
+            border-radius: 6px;
+            background: #f4f7fb;
+        }
+        .correction-gate form { display: grid; gap: 10px; }
+        .correction-gate input,
+        .correction-gate button { font: inherit; }
+        .correction-gate input { max-width: 100%; }
+        .correction-gate button {
+            justify-self: start;
+            padding: 9px 14px;
+            border: 0;
+            border-radius: 5px;
+            background: var(--primary-blue);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .correction-gate button:hover { background: #16396a; }
+        .correction-gate button:focus-visible,
+        .correction-gate input:focus-visible { outline: 2px solid var(--accent-red); outline-offset: 2px; }
+        #corrigeList[hidden] { display: none !important; }
+        .mod-body[data-mod="4"].corrections-locked .progress-container { display: none; }
 
         .progress-container {
             background-color: #eee;
@@ -1121,6 +1149,17 @@
     <div class="modal-content">
         <div class="modal-toolbar"><span>MODULE 4</span><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module4')">← Tous les modules</button></div>
         <h2 id="module4-title">MODULE 4 : PROPOSITIONS DE CORRECTION (L'ANALYSE)</h2>
+        <section class="correction-gate" aria-labelledby="correction-gate-title">
+            <h3 id="correction-gate-title">Accès aux corrigés</h3>
+            <p>Sélectionnez la fiche que vous avez rédigée au format PDF ou Word pour débloquer les corrigés.</p>
+            <form id="correctionUploadForm">
+                <label for="correctionFile">Fiche rédigée (PDF, DOC ou DOCX)</label>
+                <input id="correctionFile" name="correctionFile" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required>
+                <button type="submit">Valider ma fiche et ouvrir les corrigés</button>
+            </form>
+            <p>Le navigateur vérifie uniquement l’extension du fichier : son contenu reste sur votre appareil, n’est pas lu, envoyé ni conservé par le site. L’accès sera réinitialisé au rechargement de la page.</p>
+            <p id="correctionGateStatus" role="status" aria-live="polite"></p>
+        </section>
 <div class="mod-body" data-mod="4">
         <ul>
             <li><strong>4.1. Grilles d'Évaluation & Analyses Méthodologiques</strong>
@@ -1140,7 +1179,7 @@
             <div id="progTextMod4" class="progress-text">Avancement Corrigés : 0%</div>
         </div>
 
-        <ul class="dossier-list" id="corrigeList">
+        <ul class="dossier-list" id="corrigeList" hidden>
             <li class="dossier-item">
                 <label><input type="checkbox" data-corrige="1"> <span>Corrigé 1 : Vie et lumières</span></label>
                 <div><a href="https://drive.google.com/drive/folders/1qVSqztGmalVB2-dLgHwa2x0pOtW4ZjuE?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a></div>
@@ -1346,6 +1385,14 @@
     };
     let deferredInstallPrompt = null;
     let networkStatusTimer = null;
+    let correctionsUnlocked = false;
+
+    function updateCorrectionAccess() {
+        const list = document.getElementById('corrigeList');
+        if (list) list.hidden = !correctionsUnlocked;
+        const moduleBody = document.querySelector('.mod-body[data-mod="4"]');
+        if (moduleBody) moduleBody.classList.toggle('corrections-locked', !correctionsUnlocked);
+    }
 
     function setActiveModuleButton(id) {
         Object.entries(moduleButtonMap).forEach(([moduleId, buttonId]) => {
@@ -1407,6 +1454,7 @@
         if (id === 'module1' || isModule1Unlocked()) {
             const modal = document.getElementById('modal-' + id);
             if (modal) {
+                if (id === 'module4') updateCorrectionAccess();
                 modal.style.display = 'block';
                 setActiveModuleButton(id);
                 try {
@@ -1643,6 +1691,40 @@
         });
 
         updateModuleLockUI();
+        updateCorrectionAccess();
+
+        const correctionUploadForm = document.getElementById('correctionUploadForm');
+        if (correctionUploadForm) {
+            correctionUploadForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const fileInput = document.getElementById('correctionFile');
+                const status = document.getElementById('correctionGateStatus');
+                const file = fileInput && fileInput.files && fileInput.files[0];
+                if (!file || !/\.(pdf|docx?)$/i.test(file.name)) {
+                    if (status) status.textContent = 'Choisissez un fichier PDF (.pdf), Word (.doc) ou Word (.docx).';
+                    return;
+                }
+
+                correctionsUnlocked = true;
+                updateCorrectionAccess();
+                if (status) status.textContent = 'Extension acceptée localement : les corrigés sont déverrouillés.';
+                document.getElementById('corrigeList')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+        }
+
+        const module4 = document.getElementById('modal-module4');
+        if (module4) {
+            module4.addEventListener('click', function(event) {
+                const target = event.target;
+                if (!(target instanceof Element)) return;
+                const link = target.closest('#corrigeList a');
+                if (!link || correctionsUnlocked) return;
+                event.preventDefault();
+                const status = document.getElementById('correctionGateStatus');
+                if (status) status.textContent = 'Sélectionnez d’abord votre fiche rédigée pour ouvrir les corrigés.';
+                document.getElementById('correctionFile')?.focus();
+            });
+        }
 
         const studyStatuses = [
             ['todo', 'À faire'],
@@ -1730,6 +1812,7 @@
         }
 
         function refreshProgress() {
+            updateCorrectionAccess();
             const allItems = [];
             studyGroups.forEach(function(group) {
                 const boxes = document.querySelectorAll('.dossier-item input[' + group.attr + ']');
