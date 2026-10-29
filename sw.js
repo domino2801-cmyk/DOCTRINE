@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bm4-shell-v43';
+const CACHE_NAME = 'bm4-shell-v44';
 const APP_SHELL_URL = new URL('./index.html', self.location.href).toString();
 const LEGACY_APP_URL = new URL('./INDEX%20BM4V2.HTML', self.location.href).toString();
 const SHELL_ASSETS = [
@@ -24,7 +24,8 @@ const SHELL_ASSETS = [
   new URL('./admin/admin.css', self.location.href).toString(),
   new URL('./admin/admin.js', self.location.href).toString(),
   new URL('./viewer/viewer.css', self.location.href).toString(),
-  new URL('./viewer/viewer.js', self.location.href).toString()
+  new URL('./viewer/viewer.js', self.location.href).toString(),
+  new URL('./viewer/dossier-fiches.js', self.location.href).toString()
 ];
 
 function getNavigationFallback() {

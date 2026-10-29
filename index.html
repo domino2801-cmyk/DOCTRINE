@@ -20,6 +20,7 @@
     <script src="auth/auth.js"></script>
     <script src="admin/admin.js" defer></script>
     <script src="viewer/viewer.js" defer></script>
+    <script src="viewer/dossier-fiches.js" defer></script>
     <title>Corpus de Préparation au BM4 - Édition 2027</title>
     <style>
         :root {
@@ -623,6 +624,101 @@
         .dossier-recommendation p {
             margin: 0;
             flex: 1 1 16rem;
+        }
+        .fiche-dossier-viewer {
+            margin: 16px 0 24px;
+            padding: 14px;
+            border: 1px solid #d9e0e8;
+            border-radius: 6px;
+            background: #f8fafc;
+        }
+        .fiche-dossier-viewer label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--primary-blue);
+            font-weight: 700;
+        }
+        .fiche-dossier-viewer select {
+            width: 100%;
+            max-width: 560px;
+            padding: 8px;
+            border: 1px solid #aeb9c6;
+            border-radius: 4px;
+            background: #fff;
+            color: var(--text-dark);
+            font: inherit;
+        }
+        .fiche-dossier-viewer select:focus-visible {
+            outline: 2px solid var(--primary-blue);
+            outline-offset: 2px;
+        }
+        #ficheDossierStatus {
+            margin: 8px 0 0;
+            color: #526075;
+            font-size: 0.9rem;
+        }
+        .fiche-dossier-content {
+            max-height: 55vh;
+            overflow: auto;
+            margin: 12px 0 0;
+            padding: 14px;
+            border-radius: 4px;
+            background: #fff;
+            color: var(--text-dark);
+            font: 0.9rem/1.55 ui-monospace, Consolas, monospace;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+        .fiche-dossier-admin {
+            margin-top: 16px;
+            padding: 14px;
+            border: 1px solid #e5c158;
+            border-radius: 6px;
+            background: #fff8dc;
+        }
+        .fiche-dossier-admin h3 {
+            margin: 0 0 12px;
+            color: var(--primary-blue);
+        }
+        .fiche-dossier-admin input,
+        .fiche-dossier-admin textarea {
+            box-sizing: border-box;
+            width: 100%;
+            max-width: 760px;
+            padding: 8px;
+            border: 1px solid #aeb9c6;
+            border-radius: 4px;
+            color: var(--text-dark);
+            font: inherit;
+        }
+        .fiche-dossier-admin textarea {
+            display: block;
+            resize: vertical;
+            font-family: ui-monospace, Consolas, monospace;
+        }
+        .fiche-dossier-admin-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .fiche-dossier-admin-actions button {
+            padding: 7px 10px;
+            border: 1px solid var(--primary-blue);
+            border-radius: 4px;
+            background: #fff;
+            color: var(--primary-blue);
+            font: inherit;
+            cursor: pointer;
+        }
+        .fiche-dossier-admin-actions button.adm-save {
+            background: var(--primary-blue);
+            color: #fff;
+        }
+        .fiche-dossier-admin-status {
+            margin: 8px 0 0;
+            color: #526075;
+            font-size: 0.9rem;
         }
         #studyDossierList > .dossier-item[hidden] {
             display: none !important;
@@ -1336,12 +1432,21 @@ body.admin-account .specialty-admin-picker {
         <ul>
             <li><strong>4.1. Grilles d'Évaluation & Analyses Méthodologiques</strong>
                 <ul>
-<span>Décryptage de la commande et extraction des faits (Dossiers 1 à 16).</span>
-<a href="https://drive.google.com/file/d/1rss30kVnxNRmCC1x7oCiOYosb7SUK-jG/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
-
+                    <li>
+                        <span>Décryptage de la commande et extraction des faits (Dossiers 1 à 16).</span>
+                        <a href="https://drive.google.com/file/d/1rss30kVnxNRmCC1x7oCiOYosb7SUK-jG/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                    </li>
                 </ul>
             </li>
         </ul>
+        <div class="fiche-dossier-viewer">
+            <label for="ficheDossierSelect">Afficher la fiche d'un dossier</label>
+            <select id="ficheDossierSelect" aria-describedby="ficheDossierStatus">
+                <option value="">Choisissez un dossier…</option>
+            </select>
+            <p id="ficheDossierStatus" role="status" aria-live="polite">Sélectionnez un dossier pour afficher sa fiche.</p>
+            <pre id="ficheDossierContent" class="fiche-dossier-content" hidden></pre>
+        </div>
 
         <p><strong>4.2. Corrigés Types (Modèles conformes de Fiches de Synthèse et Supports Oraux) :</strong></p>
 
