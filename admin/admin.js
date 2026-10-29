@@ -9,7 +9,10 @@
     var CACHE_KEY = 'doctrine-content';
     var MODULES = ['1', '2', '3', '4', '5', '6'];
     var defauts = {};
+    var blocsEtude = [];
+    var SELECTEUR_ETUDE = '.dossier-difficulty-filter, .difficulty-scale, .dossier-recommendation';
     var courant = {};
+    var referenceEdition = {};
     var adminActif = false;
     var bouton;
     var suiviBouton;
@@ -69,6 +72,24 @@
         var c = el.cloneNode(true);
         c.querySelectorAll('.adm-ui').forEach(function (n) { n.remove(); });
         c.querySelectorAll('[contenteditable]').forEach(function (n) { n.removeAttribute('contenteditable'); });
+        c.querySelectorAll(SELECTEUR_ETUDE).forEach(function (n) { n.remove(); });
+        c.querySelectorAll('.dossier-item[hidden]').forEach(function (n) { n.removeAttribute('hidden'); });
+        // État recalculé par la page à chaque chargement : il ne doit pas être publié
+        c.querySelectorAll('.dossier-item').forEach(function (ligne) {
+            Array.prototype.slice.call(ligne.classList).forEach(function (nom) {
+                if (nom === 'study-tracked-item' || nom === 'completed' || nom.indexOf('study-status-') === 0) ligne.classList.remove(nom);
+            });
+            if (!ligne.getAttribute('class')) ligne.removeAttribute('class');
+            var label = ligne.querySelector(':scope > label');
+            ligne.querySelectorAll(':scope > input[data-dossier], :scope > input[data-corrige]').forEach(function (box) {
+                box.removeAttribute('hidden');
+                if (label) label.insertBefore(box, label.firstChild);
+            });
+        });
+        c.querySelectorAll('.progress-bar').forEach(function (barre) {
+            barre.style.removeProperty('width');
+            if (!barre.getAttribute('style')) barre.removeAttribute('style');
+        });
         return assainir(c.innerHTML);
     }
 
@@ -78,6 +99,7 @@
         var correctionGate = n === '4' && el.querySelector('#correctionGate');
         if (correctionGate) correctionGate.remove();
         el.innerHTML = assainir(html);
+        if (n === '3') assurerOutilsEtude(el);
         if (correctionGate) {
             var storedGate = el.querySelector('#correctionGate');
             if (storedGate) storedGate.remove();
@@ -88,6 +110,18 @@
             else el.appendChild(correctionGate);
         }
         courant[n] = nettoye(el);
+    }
+
+    function assurerOutilsEtude(el) {
+        var liste = el.querySelector('.dossier-list');
+        if (liste && !liste.id) liste.id = 'studyDossierList';
+        if (!blocsEtude.length || el.querySelector('#dossierDifficultyFilter')) return;
+        var ancre = el.querySelector('.progress-container') || liste;
+        blocsEtude.forEach(function (bloc) {
+            var copie = bloc.cloneNode(true);
+            if (ancre) ancre.parentNode.insertBefore(copie, ancre);
+            else el.appendChild(copie);
+        });
     }
 
     function rafraichirProgression() {
@@ -200,6 +234,31 @@
         return s;
     }
 
+    function outilDifficulte(ligne) {
+        var etoiles = ligne.querySelector('.stars');
+        var actuel = etoiles ? (etoiles.textContent.match(/★/g) || []).length : 0;
+        var select = document.createElement('select');
+        select.title = 'Difficulté (étoiles)';
+        select.setAttribute('aria-label', 'Difficulté (étoiles)');
+        if (!actuel) select.add(new Option('Difficulté…', ''));
+        [1, 2, 3, 4].forEach(function (n) { select.add(new Option(new Array(n + 1).join('★'), String(n))); });
+        select.value = actuel ? String(actuel) : '';
+        select.addEventListener('change', function () {
+            var n = parseInt(select.value, 10);
+            if (!n) return;
+            var cible = ligne.querySelector('.stars');
+            if (!cible) {
+                cible = document.createElement('span');
+                cible.className = 'stars';
+                var zone = ligne.querySelector(':scope > div') || ligne;
+                zone.insertBefore(cible, zone.firstChild);
+            }
+            cible.textContent = new Array(n + 1).join('★');
+            rafraichirProgression();
+        });
+        return select;
+    }
+
     function prochainId(corpsEl, attr) {
         var max = 0;
         document.querySelectorAll('input[' + attr + ']').forEach(function (i) {
@@ -236,6 +295,7 @@
         var correctionGate = corpsEl.querySelector('#correctionGate');
         if (correctionGate) correctionGate.contentEditable = 'false';
         corpsEl.querySelectorAll('li, .align-row, .dossier-item').forEach(function (ligne) {
+            if (ligne.closest('.difficulty-scale')) return;
             if (ligne.querySelector(':scope > .adm-row-tools')) return;
             var b = [
                 outil('↑', 'Monter', function () {
@@ -251,6 +311,7 @@
                 outil('⧉', 'Dupliquer', function () { dupliquer(ligne, corpsEl); })
             ];
             if (ligne.tagName === 'LI') b.push(outil('＋', 'Ajouter un sous-élément', function () { sousElement(ligne, corpsEl); }));
+            if (ligne.classList.contains('dossier-item') && ligne.querySelector('input[data-dossier]')) b.push(outilDifficulte(ligne));
             b.push(outil('✕', 'Supprimer', function () {
                 if (window.confirm('Supprimer cet élément ?')) { ligne.remove(); rafraichirProgression(); }
             }, true));
@@ -304,9 +365,15 @@
         adminActif = true;
         document.body.classList.add('adm-on');
         bouton.textContent = '✏️ Quitter l\'admin';
+        var filtre = document.getElementById('dossierDifficultyFilter');
+        if (filtre && filtre.value) {
+            filtre.value = '';
+            filtre.dispatchEvent(new Event('change'));
+        }
         MODULES.forEach(function (n) {
             var c = corps(n);
             if (!c) return;
+            referenceEdition[n] = nettoye(c);
             c.insertAdjacentElement('beforebegin', barre(n, c));
             decorer(c);
         });
@@ -333,7 +400,7 @@
             var c = corps(n);
             if (!c) return;
             var html = nettoye(c);
-            if (html !== courant[n]) lignes.push({ module_id: n, html: html });
+            if (html !== referenceEdition[n]) lignes.push({ module_id: n, html: html });
         });
         if (!lignes.length) { etat.className = 'adm-state'; etat.textContent = 'Aucune modification.'; return; }
         etat.className = 'adm-state';
@@ -699,6 +766,11 @@
             if (c) defauts[n] = c.innerHTML;
         });
         construireDialogue();
+        if (defauts['3']) {
+            var modele = document.createElement('template');
+            modele.innerHTML = defauts['3'];
+            blocsEtude = Array.prototype.slice.call(modele.content.querySelectorAll(SELECTEUR_ETUDE));
+        }
         appliquerTout(lireCache());
         document.addEventListener('doctrine:login', function () {
             montrerBouton();

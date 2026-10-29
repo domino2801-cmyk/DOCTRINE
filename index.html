@@ -2227,14 +2227,19 @@
                     maitrises + ' maîtrisés · ' + aRevoir + ' à revoir · ' + enCours + ' en cours';
             }
             updateRecommendedDossier();
+            filterDossiersByDifficulty();
             updateResumeModule(getLastModule());
         }
         window.bm4RefreshProgress = refreshProgress;
 
-        document.getElementById('dossierDifficultyFilter')?.addEventListener('change', filterDossiersByDifficulty);
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.id === 'dossierDifficultyFilter') filterDossiersByDifficulty();
+        });
         filterDossiersByDifficulty();
-        document.getElementById('showRecommendedDossier')?.addEventListener('click', function() {
-            const id = this.dataset.dossierId;
+        document.addEventListener('click', function(e) {
+            const button = e.target.closest && e.target.closest('#showRecommendedDossier');
+            if (!button) return;
+            const id = button.dataset.dossierId;
             const row = id && document.querySelector('#studyDossierList input[data-dossier="' + id + '"]')?.closest('.dossier-item');
             if (!row) return;
 
