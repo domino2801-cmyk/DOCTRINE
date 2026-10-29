@@ -94,12 +94,74 @@
         return assainir(c.innerHTML);
     }
 
+    function specialtyCode(label) {
+        var normalized = String(label || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .trim().toLocaleUpperCase();
+        var aliases = {
+            'MATERIEL': 'MAI',
+            'GENIE': 'GEN',
+            'EPMS': 'EPS',
+            'RENSEIGNEMENT': 'RENS'
+        };
+        var code = normalized.match(/^([A-Z]+)(?:\s*[-(]|\s|$)/);
+        var prefix = code ? code[1] : normalized;
+        if (aliases[prefix]) return aliases[prefix];
+        return ['INF', 'BLD', 'ART', 'GEN', 'AER', 'EMP', 'SIC', 'CYB', 'RENS', 'ADM', 'GRH', 'PBF', 'MVT', 'MAI', 'COM', 'RHL', 'EPS', 'SAN', 'FSP'].indexOf(prefix) !== -1
+            ? prefix
+            : '';
+    }
+
+    function assurerSpecialitesModule6(html) {
+        var contenu = document.createElement('template');
+        contenu.innerHTML = html;
+        if (contenu.content.querySelector('[data-specialty-row]')) return contenu.innerHTML;
+
+        var cible = Array.from(contenu.content.querySelectorAll('.section-title'))
+            .find(function (titre) { return titre.textContent.trim().startsWith('6.3.'); });
+        var modele = document.createElement('template');
+        modele.innerHTML = defauts['6'] || '';
+        var modeleTitre = Array.from(modele.content.querySelectorAll('.section-title'))
+            .find(function (titre) { return titre.textContent.trim().startsWith('6.3.'); });
+        if (!cible || !modeleTitre) return contenu.innerHTML;
+
+        var ancienneSection = cible.closest('li');
+        var nouvelleSection = modeleTitre.closest('li');
+        if (!ancienneSection || !nouvelleSection) return contenu.innerHTML;
+
+        var ressources = new Map();
+        ancienneSection.querySelectorAll('.align-row').forEach(function (ligne) {
+            var libelle = ligne.querySelector('.row-text');
+            var lien = ligne.querySelector('a[href]');
+            var code = specialtyCode(libelle && libelle.textContent);
+            if (code && lien) ressources.set(code, lien.cloneNode(true));
+        });
+
+        var sectionCandidate = nouvelleSection.cloneNode(true);
+        sectionCandidate.querySelectorAll('[data-specialty-row]').forEach(function (ligne) {
+            var code = ligne.getAttribute('data-specialty');
+            var ressource = ressources.get(code);
+            if (!ressource) return;
+            ressource.className = 'doc-link';
+            ressource.target = '_blank';
+            ressource.rel = 'noopener noreferrer';
+            var enAttente = ligne.querySelector('.resource-pending');
+            if (enAttente) enAttente.replaceWith(ressource);
+            else {
+                var ancienLien = ligne.querySelector('a.doc-link');
+                if (ancienLien) ancienLien.replaceWith(ressource);
+            }
+        });
+
+        ancienneSection.replaceWith(sectionCandidate);
+        return contenu.innerHTML;
+    }
+
     function appliquer(n, html) {
         var el = corps(n);
         if (!el) return;
         var correctionGate = n === '4' && el.querySelector('#correctionGate');
         if (correctionGate) correctionGate.remove();
-        el.innerHTML = assainir(html);
+        el.innerHTML = assainir(n === '6' ? assurerSpecialitesModule6(html) : html);
         if (n === '3') assurerOutilsEtude(el);
         if (correctionGate) {
             var storedGate = el.querySelector('#correctionGate');
