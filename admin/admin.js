@@ -75,7 +75,18 @@
     function appliquer(n, html) {
         var el = corps(n);
         if (!el) return;
+        var correctionGate = n === '4' && el.querySelector('#correctionGate');
+        if (correctionGate) correctionGate.remove();
         el.innerHTML = assainir(html);
+        if (correctionGate) {
+            var storedGate = el.querySelector('#correctionGate');
+            if (storedGate) storedGate.remove();
+            var heading = Array.from(el.querySelectorAll('p > strong')).find(function (element) {
+                return element.textContent.trim().startsWith('4.2.');
+            });
+            if (heading) heading.closest('p').after(correctionGate);
+            else el.appendChild(correctionGate);
+        }
         courant[n] = nettoye(el);
     }
 
@@ -222,6 +233,8 @@
 
     function decorer(corpsEl) {
         corpsEl.contentEditable = 'true';
+        var correctionGate = corpsEl.querySelector('#correctionGate');
+        if (correctionGate) correctionGate.contentEditable = 'false';
         corpsEl.querySelectorAll('li, .align-row, .dossier-item').forEach(function (ligne) {
             if (ligne.querySelector(':scope > .adm-row-tools')) return;
             var b = [
@@ -309,7 +322,7 @@
             if (!c) return;
             c.removeAttribute('contenteditable');
             if (restaurer) appliquer(n, courant[n]);
-            else c.querySelectorAll('.adm-ui').forEach(function (x) { x.remove(); });
+            else c.querySelectorAll('.adm-ui:not(#correctionGate)').forEach(function (x) { x.remove(); });
         });
         rafraichirProgression();
     }
