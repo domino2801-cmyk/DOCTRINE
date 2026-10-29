@@ -430,7 +430,7 @@
             border: 0;
         }
         #corrigeList[hidden] { display: none !important; }
-        .mod-body[data-mod="4"].corrections-locked .progress-container { display: none; }
+        .mod-body[data-mod="4"] .progress-container { display: none; }
 
         .progress-container {
             background-color: #eee;
@@ -1194,7 +1194,7 @@
                 <label class="visually-hidden" for="correctionFile">Fiche rédigée (PDF, DOC ou DOCX)</label>
                 <input id="correctionFile" class="visually-hidden" name="correctionFile" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" tabindex="-1" aria-hidden="true">
                 <p id="correctionFileName" aria-live="polite">Aucun fichier sélectionné.</p>
-                <button type="submit">Valider ma fiche et ouvrir le corrigé</button>
+                <button type="submit">Transmettre ma fiche</button>
             </form>
             <p id="correctionGateStatus" role="status" aria-live="polite"></p>
         </section>
