@@ -1846,9 +1846,13 @@
             ['review', 'À revoir'],
             ['mastered', 'Maîtrisé']
         ];
+        const corrigeStatuses = [
+            ['todo', 'Non lu'],
+            ['mastered', 'Lu']
+        ];
         const studyGroups = [
-            { attr: 'data-dossier', kind: 'dossier', legacyPrefix: 'dossier-', bar: 'progBar', text: 'progText', label: 'Avancement exercices : ' },
-            { attr: 'data-corrige', kind: 'corrige', legacyPrefix: 'corrige-', bar: 'progBarMod4', text: 'progTextMod4', label: 'Avancement corrigés : ' }
+            { attr: 'data-dossier', kind: 'dossier', legacyPrefix: 'dossier-', statuses: studyStatuses, checkedStatus: 'review', bar: 'progBar', text: 'progText', label: 'Avancement exercices : ' },
+            { attr: 'data-corrige', kind: 'corrige', legacyPrefix: 'corrige-', statuses: corrigeStatuses, checkedStatus: 'mastered', bar: 'progBarMod4', text: 'progTextMod4', label: 'Avancement corrigés : ' }
         ];
 
         function studyStorageKey(kind, id, field) {
@@ -1888,8 +1892,9 @@
             const id = box.getAttribute(group.attr);
             const statusKey = studyStorageKey(group.kind, id, 'status');
             let status = readStudyValue(statusKey);
-            if (!studyStatuses.some(function(option) { return option[0] === status; })) {
-                status = readStudyValue(group.legacyPrefix + id) === 'true' ? 'review' : 'todo';
+            if (!group.statuses.some(function(option) { return option[0] === status; })) {
+                const wasStarted = status ? status !== 'todo' : readStudyValue(group.legacyPrefix + id) === 'true';
+                status = wasStarted ? group.checkedStatus : 'todo';
                 saveStudyValue(statusKey, status);
             }
 
@@ -1909,7 +1914,7 @@
 
                 const statusSelect = document.createElement('select');
                 statusSelect.dataset.studyStatus = '';
-                studyStatuses.forEach(function(option) {
+                group.statuses.forEach(function(option) {
                     const element = document.createElement('option');
                     element.value = option[0];
                     element.textContent = option[1];
@@ -1974,13 +1979,13 @@
             const id = box.getAttribute(group.attr);
 
             if (target.matches('[data-study-status]')) {
-                const status = studyStatuses.some(function(option) { return option[0] === target.value; }) ? target.value : 'todo';
+                const status = group.statuses.some(function(option) { return option[0] === target.value; }) ? target.value : 'todo';
                 saveStudyValue(studyStorageKey(group.kind, id, 'status'), status);
                 box.checked = status !== 'todo';
                 saveStudyValue(group.legacyPrefix + id, String(box.checked));
                 refreshProgress();
             } else if (target === box) {
-                const status = box.checked ? 'review' : 'todo';
+                const status = box.checked ? group.checkedStatus : 'todo';
                 saveStudyValue(studyStorageKey(group.kind, id, 'status'), status);
                 saveStudyValue(group.legacyPrefix + id, String(box.checked));
                 refreshProgress();
