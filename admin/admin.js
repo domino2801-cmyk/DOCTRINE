@@ -745,30 +745,32 @@
         enregistrerEvenement(d.module, d.title, d.url, 'download');
     }
 
-    // Les boutons admin ne sont proposés que dans le module 1 (ou tant que le mode admin est actif).
-    function module1Ouvert() {
-        var modale = document.getElementById('modal-module1');
-        return !!modale && modale.style.display === 'block';
+    // Les boutons admin ne sont proposés que sur l'accueil (aucun module ouvert), ou tant que le mode admin est actif.
+    function moduleOuvert() {
+        return Array.prototype.some.call(document.querySelectorAll('.modal'), function (m) {
+            return m.style.display === 'block';
+        });
     }
 
     function majVisibiliteOutils() {
         var estAdmin = !!(auth() && auth().estAdmin());
-        var visible = estAdmin && (module1Ouvert() || adminActif);
+        var visible = estAdmin && (!moduleOuvert() || adminActif);
         if (bouton) bouton.hidden = !visible;
         if (suiviBouton) suiviBouton.hidden = !visible;
         if (!visible && suiviDialogue && !suiviDialogue.hidden) fermerSuivi();
     }
 
-    function surveillerModule1() {
-        var modale = document.getElementById('modal-module1');
-        if (!modale || modale.dataset.admSurveille) return;
-        modale.dataset.admSurveille = '1';
-        new MutationObserver(majVisibiliteOutils).observe(modale, { attributes: true, attributeFilter: ['style'] });
+    function surveillerModales() {
+        document.querySelectorAll('.modal').forEach(function (modale) {
+            if (modale.dataset.admSurveille) return;
+            modale.dataset.admSurveille = '1';
+            new MutationObserver(majVisibiliteOutils).observe(modale, { attributes: true, attributeFilter: ['style'] });
+        });
     }
 
     function montrerBouton() {
         if (!auth() || !auth().estAdmin()) return;
-        surveillerModule1();
+        surveillerModales();
         if (!bouton) {
             bouton = document.createElement('button');
             bouton.id = 'adm-toggle';
