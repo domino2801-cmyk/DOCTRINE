@@ -62,7 +62,7 @@ La page `index.html` est l’entrée unique du site et de la PWA. Après le spla
 
 La page d’application affiche le dernier module consulté et le suivi détaillé des dossiers et corrigés, conservé localement sur l’appareil. Le journal des clics sur les liens de documents, y compris les clics identifiés comme téléchargements, est centralisé dans Supabase pour l’administration. Chaque module propose le même retour à la liste des modules.
 
-Dans le module 4, le menu d’accès reprend les dossiers du module 3. Après avoir choisi un dossier, le candidat sélectionne sa fiche en PDF, DOC ou DOCX puis valide pour ouvrir le corrigé correspondant. La sélection est locale et temporaire ; les liens Drive accessibles directement restent soumis à leurs propres autorisations.
+Dans le module 4, le menu d’accès reprend les dossiers du module 3. Après avoir choisi un dossier, le candidat sélectionne sa fiche en PDF, DOC ou DOCX puis la transmet : seul le corrigé du dossier choisi est alors affiché. La sélection est locale et temporaire ; les liens Drive accessibles directement restent soumis à leurs propres autorisations.
 
 - la PWA démarre sur `index.html` et reste installable sur un hébergement statique compatible HTTPS, y compris GitHub Pages pour ce dépôt
 - le manifeste `manifest.webmanifest` utilise des chemins relatifs pour fonctionner à la racine ou sous `/DOCTRINE/`
