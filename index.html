@@ -983,19 +983,6 @@
             <div id="appUpdateStatus" class="status-chip" role="status" aria-live="polite" hidden></div>
         </div>
 
-        <section class="study-dashboard" aria-labelledby="study-dashboard-title">
-            <div class="study-dashboard-heading">
-                <div>
-                    <h2 id="study-dashboard-title">Votre progression</h2>
-                    <p id="resumeModuleDescription">Reprenez votre préparation là où vous l’avez laissée.</p>
-                </div>
-                <button id="resumeModuleButton" class="resume-button" type="button" onclick="resumeLastModule()">Commencer le module 1</button>
-            </div>
-            <label class="study-progress-label" for="overallProgress">Dossiers et corrigés commencés</label>
-            <progress id="overallProgress" max="1" value="0"></progress>
-            <p id="overallProgressText" class="study-progress-text" role="status" aria-live="polite">0 / 32 commencés · 0 maîtrisés · 0 à revoir · 0 en cours</p>
-        </section>
-
 <details class="preface-section">
     <summary>À propos du corpus</summary>
     <div class="preface-box">
@@ -1013,6 +1000,19 @@
 
     </div>
 </details>
+
+        <section class="study-dashboard" aria-labelledby="study-dashboard-title">
+            <div class="study-dashboard-heading">
+                <div>
+                    <h2 id="study-dashboard-title">Votre progression</h2>
+                    <p id="resumeModuleDescription">Reprenez votre préparation là où vous l’avez laissée.</p>
+                </div>
+                <button id="resumeModuleButton" class="resume-button" type="button" onclick="resumeLastModule()">Commencer le module 1</button>
+            </div>
+            <label class="study-progress-label" for="overallProgress">Dossiers et corrigés commencés</label>
+            <progress id="overallProgress" max="1" value="0"></progress>
+            <p id="overallProgressText" class="study-progress-text" role="status" aria-live="polite">0 / 32 commencés · 0 maîtrisés · 0 à revoir · 0 en cours</p>
+        </section>
 </div>
 </div>
 
