@@ -1460,6 +1460,10 @@
     let correctionsUnlocked = false;
     let correctionGateElement = null;
 
+    function isDossierDone(id) {
+        return Boolean(id) && document.querySelector('.mod-body[data-mod="3"] input[data-dossier="' + id + '"]')?.checked === true;
+    }
+
     function updateCorrectionAccess() {
         const list = document.getElementById('corrigeList');
         if (list) list.hidden = !correctionsUnlocked;
@@ -1906,6 +1910,13 @@
                 }
                 if (!file || !/\.(pdf|docx?)$/i.test(file.name)) {
                     if (status) status.textContent = 'Ouvrez le téléversement et choisissez un fichier PDF, DOC ou DOCX.';
+                    return;
+                }
+
+                if (!isDossierDone(dossierSelect.value)) {
+                    correctionsUnlocked = false;
+                    updateCorrectionAccess();
+                    if (status) status.textContent = 'Ce dossier n’est pas marqué « Fait » dans le module 3 : terminez-le avant d’ouvrir son corrigé.';
                     return;
                 }
 
