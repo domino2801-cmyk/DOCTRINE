@@ -393,8 +393,17 @@
         }
         .correction-gate form { display: grid; gap: 10px; }
         .correction-gate input,
+        .correction-gate select,
         .correction-gate button { font: inherit; }
         .correction-gate input { max-width: 100%; }
+        .correction-gate select {
+            width: 100%;
+            max-width: 100%;
+            padding: 8px;
+            border: 1px solid #aeb9c7;
+            border-radius: 5px;
+            background: #fff;
+        }
         .correction-gate button {
             justify-self: start;
             padding: 9px 14px;
@@ -407,7 +416,19 @@
         }
         .correction-gate button:hover { background: #16396a; }
         .correction-gate button:focus-visible,
-        .correction-gate input:focus-visible { outline: 2px solid var(--accent-red); outline-offset: 2px; }
+        .correction-gate input:focus-visible,
+        .correction-gate select:focus-visible { outline: 2px solid var(--accent-red); outline-offset: 2px; }
+        .correction-gate .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
         #corrigeList[hidden] { display: none !important; }
         .mod-body[data-mod="4"].corrections-locked .progress-container { display: none; }
 
@@ -1149,17 +1170,6 @@
     <div class="modal-content">
         <div class="modal-toolbar"><span>MODULE 4</span><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module4')">← Tous les modules</button></div>
         <h2 id="module4-title">MODULE 4 : PROPOSITIONS DE CORRECTION (L'ANALYSE)</h2>
-        <section class="correction-gate" aria-labelledby="correction-gate-title">
-            <h3 id="correction-gate-title">Accès aux corrigés</h3>
-            <p>Sélectionnez la fiche que vous avez rédigée au format PDF ou Word pour débloquer les corrigés.</p>
-            <form id="correctionUploadForm">
-                <label for="correctionFile">Fiche rédigée (PDF, DOC ou DOCX)</label>
-                <input id="correctionFile" name="correctionFile" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required>
-                <button type="submit">Valider ma fiche et ouvrir les corrigés</button>
-            </form>
-            <p>Le navigateur vérifie uniquement l’extension du fichier : son contenu reste sur votre appareil, n’est pas lu, envoyé ni conservé par le site. L’accès sera réinitialisé au rechargement de la page.</p>
-            <p id="correctionGateStatus" role="status" aria-live="polite"></p>
-        </section>
 <div class="mod-body" data-mod="4">
         <ul>
             <li><strong>4.1. Grilles d'Évaluation & Analyses Méthodologiques</strong>
@@ -1172,6 +1182,22 @@
         </ul>
 
         <p><strong>4.2. Corrigés Types (Modèles conformes de Fiches de Synthèse et Supports Oraux) :</strong></p>
+
+        <section id="correctionGate" class="correction-gate adm-ui" aria-labelledby="correction-gate-title">
+            <h3 id="correction-gate-title">Accès aux corrigés</h3>
+            <form id="correctionUploadForm">
+                <label for="correctionDossier">Dossier rédigé dans le module 3</label>
+                <select id="correctionDossier" name="correctionDossier" required>
+                    <option value="">Choisissez un dossier…</option>
+                </select>
+                <button id="openCorrectionUpload" type="button">Ouvrir le téléversement</button>
+                <label class="visually-hidden" for="correctionFile">Fiche rédigée (PDF, DOC ou DOCX)</label>
+                <input id="correctionFile" class="visually-hidden" name="correctionFile" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" tabindex="-1" aria-hidden="true">
+                <p id="correctionFileName" aria-live="polite">Aucun fichier sélectionné.</p>
+                <button type="submit">Valider ma fiche et ouvrir le corrigé</button>
+            </form>
+            <p id="correctionGateStatus" role="status" aria-live="polite"></p>
+        </section>
 
         <!-- SECONDE BARRE DE PROGRESSION POUR LE MODULE 4 -->
         <div class="progress-container">
@@ -1386,12 +1412,49 @@
     let deferredInstallPrompt = null;
     let networkStatusTimer = null;
     let correctionsUnlocked = false;
+    let correctionGateElement = null;
 
     function updateCorrectionAccess() {
         const list = document.getElementById('corrigeList');
         if (list) list.hidden = !correctionsUnlocked;
+        const selectedDossier = document.getElementById('correctionDossier')?.value;
+        if (list) {
+            list.querySelectorAll('.dossier-item').forEach(function(row) {
+                const box = row.querySelector('input[data-corrige]');
+                row.hidden = !correctionsUnlocked || !box || box.getAttribute('data-corrige') !== selectedDossier;
+            });
+        }
         const moduleBody = document.querySelector('.mod-body[data-mod="4"]');
         if (moduleBody) moduleBody.classList.toggle('corrections-locked', !correctionsUnlocked);
+    }
+
+    function updateCorrectionDossierOptions() {
+        const gate = correctionGateElement;
+        const moduleBody = document.querySelector('.mod-body[data-mod="4"]');
+        const dossierSelect = gate && gate.querySelector('#correctionDossier');
+        if (!gate || !moduleBody || !dossierSelect) return;
+
+        const currentValue = dossierSelect.value;
+        const heading = Array.from(moduleBody.querySelectorAll('p > strong')).find(function(element) {
+            return element.textContent.trim().startsWith('4.2.');
+        });
+        const progress = moduleBody.querySelector('#progBarMod4')?.closest('.progress-container');
+        if (heading) heading.closest('p').after(gate);
+        else if (progress) progress.before(gate);
+
+        const dossiers = document.querySelectorAll('.mod-body[data-mod="3"] input[data-dossier]');
+        dossierSelect.replaceChildren(new Option('Choisissez un dossier…', ''));
+        dossiers.forEach(function(box) {
+            const name = box.closest('label')?.textContent.trim();
+            const id = box.getAttribute('data-dossier');
+            if (!name || !id) return;
+            dossierSelect.add(new Option(name, id));
+        });
+        dossierSelect.value = Array.from(dossierSelect.options).some(function(option) {
+            return option.value === currentValue;
+        }) ? currentValue : '';
+        dossierSelect.disabled = dossiers.length === 0;
+        updateCorrectionAccess();
     }
 
     function setActiveModuleButton(id) {
@@ -1691,24 +1754,59 @@
         });
 
         updateModuleLockUI();
+        correctionGateElement = document.getElementById('correctionGate');
         updateCorrectionAccess();
+        updateCorrectionDossierOptions();
 
         const correctionUploadForm = document.getElementById('correctionUploadForm');
         if (correctionUploadForm) {
+            const dossierSelect = document.getElementById('correctionDossier');
+            const fileInput = document.getElementById('correctionFile');
+            const fileName = document.getElementById('correctionFileName');
+            const openUploadButton = document.getElementById('openCorrectionUpload');
+            if (openUploadButton && fileInput && dossierSelect) {
+                openUploadButton.addEventListener('click', function() {
+                    const status = document.getElementById('correctionGateStatus');
+                    if (!dossierSelect.value) {
+                        if (status) status.textContent = 'Choisissez d’abord un dossier du module 3.';
+                        dossierSelect.focus();
+                        return;
+                    }
+                    if (status) status.textContent = '';
+                    fileInput.click();
+                });
+            }
+            if (dossierSelect && fileInput && fileName) {
+                dossierSelect.addEventListener('change', function() {
+                    fileInput.value = '';
+                    fileName.textContent = 'Aucun fichier sélectionné.';
+                    correctionsUnlocked = false;
+                    updateCorrectionAccess();
+                });
+                fileInput.addEventListener('change', function() {
+                    fileName.textContent = fileInput.files && fileInput.files[0]
+                        ? fileInput.files[0].name
+                        : 'Aucun fichier sélectionné.';
+                });
+            }
             correctionUploadForm.addEventListener('submit', function(event) {
                 event.preventDefault();
-                const fileInput = document.getElementById('correctionFile');
                 const status = document.getElementById('correctionGateStatus');
                 const file = fileInput && fileInput.files && fileInput.files[0];
+                if (!dossierSelect || !dossierSelect.value) {
+                    if (status) status.textContent = 'Choisissez le dossier correspondant dans le module 3.';
+                    dossierSelect?.focus();
+                    return;
+                }
                 if (!file || !/\.(pdf|docx?)$/i.test(file.name)) {
-                    if (status) status.textContent = 'Choisissez un fichier PDF (.pdf), Word (.doc) ou Word (.docx).';
+                    if (status) status.textContent = 'Ouvrez le téléversement et choisissez un fichier PDF, DOC ou DOCX.';
                     return;
                 }
 
                 correctionsUnlocked = true;
                 updateCorrectionAccess();
-                if (status) status.textContent = 'Extension acceptée localement : les corrigés sont déverrouillés.';
-                document.getElementById('corrigeList')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                if (status) status.textContent = 'Fiche sélectionnée : le corrigé du dossier choisi est ouvert.';
+                document.querySelector('#corrigeList .dossier-item:not([hidden])')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             });
         }
 
@@ -1813,6 +1911,7 @@
 
         function refreshProgress() {
             updateCorrectionAccess();
+            updateCorrectionDossierOptions();
             const allItems = [];
             studyGroups.forEach(function(group) {
                 const boxes = document.querySelectorAll('.dossier-item input[' + group.attr + ']');
