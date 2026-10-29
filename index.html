@@ -1786,6 +1786,12 @@
                         dossierSelect.focus();
                         return;
                     }
+                    const dossierRow = document.querySelector('.mod-body[data-mod="3"] input[data-dossier="' + dossierSelect.value + '"]')?.closest('.dossier-item');
+                    const dossierState = dossierRow?.querySelector('[data-study-status]')?.value;
+                    if (dossierState !== 'mastered') {
+                        if (status) status.textContent = 'Avant de transmettre votre fiche, indiquez « Fait » dans l’état de ce dossier au module 3.';
+                        return;
+                    }
                     if (status) status.textContent = '';
                     fileInput.click();
                 });
