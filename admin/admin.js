@@ -14,6 +14,7 @@
     var courant = {};
     var referenceEdition = {};
     var adminActif = false;
+    var filtreAvantAdmin = null;
     var bouton;
     var suiviBouton;
     var suiviDialogue;
@@ -366,9 +367,10 @@
         document.body.classList.add('adm-on');
         bouton.textContent = '✏️ Quitter l\'admin';
         var filtre = document.getElementById('dossierDifficultyFilter');
+        filtreAvantAdmin = filtre ? filtre.value : null;
         if (filtre && filtre.value) {
             filtre.value = '';
-            filtre.dispatchEvent(new Event('change'));
+            filtre.dispatchEvent(new Event('change', { bubbles: true }));
         }
         MODULES.forEach(function (n) {
             var c = corps(n);
@@ -393,6 +395,12 @@
             else c.querySelectorAll('.adm-ui:not(#correctionGate)').forEach(function (x) { x.remove(); });
         });
         rafraichirProgression();
+        var filtreSortie = document.getElementById('dossierDifficultyFilter');
+        if (filtreSortie && filtreAvantAdmin !== null) {
+            filtreSortie.value = filtreAvantAdmin;
+            filtreSortie.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        filtreAvantAdmin = null;
         majVisibiliteOutils();
     }
 
