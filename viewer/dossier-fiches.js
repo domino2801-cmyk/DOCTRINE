@@ -282,7 +282,7 @@ Le candidat doit impérativement s'appuyer sur la circulaire officielle pour val
         var viewer = creer('div');
         viewer.className = 'fiche-dossier-viewer';
 
-        var label = creer('label', "Afficher la fiche d'un dossier");
+        var label = creer('label', 'Fiche analyse des documents');
         label.htmlFor = 'ficheDossierSelect';
         viewer.appendChild(label);
 
