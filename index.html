@@ -724,6 +724,41 @@
     flex-shrink: 0;
 }
 
+.resource-pending {
+    flex-shrink: 0;
+    color: #64748b;
+    font-size: 0.8rem;
+}
+
+#modal-module6 [data-specialty-row][hidden] {
+    display: none;
+}
+
+.specialty-filter-message {
+    color: #526075;
+    font-size: 0.9rem;
+}
+
+.specialty-admin-picker {
+    display: none;
+    margin: 8px 0;
+}
+
+body.adm-on .specialty-admin-picker {
+    display: block;
+}
+
+.specialty-admin-picker select {
+    display: block;
+    width: 100%;
+    max-width: 520px;
+    margin-top: 6px;
+    padding: 8px;
+    border: 1px solid #99a;
+    border-radius: 4px;
+    font: inherit;
+}
+
 .doc-link:hover {
     background-color: #0056b3; /* Effet de survol sur le bouton */
 }
@@ -1488,50 +1523,87 @@
             <!-- SECTION 6.3 -->
             <li>
                 <div class="section-title">6.3. Questions de spécialité</div>
+                <p id="candidate-specialty-message" class="specialty-filter-message" aria-live="polite">Chargement de votre spécialité…</p>
 
-                <div class="align-row">
-                    <span class="row-text">RHL (Restauration hébergement loisirs)</span>
-                    <a href="https://drive.google.com/file/d/1ubYsuEqhi6gPwQ_lkq-PMMi8xGQTV8sG/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
-                </div>
-                <div class="align-row">
-                    <span class="row-text">MATÉRIEL</span>
-                    <a href="https://drive.google.com/file/d/1HaqD5KmzAVLjYIx3RIaEL0QcKw2qN2Km/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
-                </div>
-                <div class="align-row">
-                    <span class="row-text">SIC (Systèmes d'Information et de Communication)</span>
-                    <a href="https://drive.google.com/file/d/1fWGGclAAxsNooog6dc2tEH47tqt3rc0s/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
-                </div>
-                <div class="align-row">
-                    <span class="row-text">RENS (Renseignement)</span>
-                    <a href="https://drive.google.com/file/d/1u7ilLnG_fs7x-zHRaJQGr73uDeF-y4vp/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
-                </div>
-                <div class="align-row">
-                    <span class="row-text">GÉNIE</span>
-                    <a href="https://drive.google.com/file/d/1Ar5Z9p9yV0lVvujVnJbTilcFmPXg18NL/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
-                </div>
-                <div class="align-row">
-                    <span class="row-text">GRH (Gestion des Ressources Humaines)</span>
-                    <a href="https://drive.google.com/file/d/1ugegrrbqo8H96UAvvIKskdHetbwvkZ51/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
-                </div>
-                <div class="align-row">
-                    <span class="row-text">MVT (Mouvements / Transports)</span>
-                    <a href="https://drive.google.com/file/d/17BUBgxrrsKa7cHXF61tocSDxagLd48H5/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
-                </div>
-                <div class="align-row">
-                    <span class="row-text">ART (Artillerie)</span>
-                    <a href="https://drive.google.com/file/d/1XIlapmRfute_aX0fAAQh72dUgIMUzYHj/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
-                </div>
-                <div class="align-row">
-                    <span class="row-text">EMP (Emploi)</span>
-                    <a href="https://drive.google.com/file/d/1pA7nAydZdDFQtRf2GKrG64XmSukKBX9i/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
-                </div>
-                <div class="align-row">
-                    <span class="row-text">INF (Infanterie)</span>
+                <div class="align-row" data-specialty-row data-specialty="INF" hidden>
+                    <span class="row-text">INF - Infanterie</span>
                     <a href="https://drive.google.com/file/d/1cvCC5yXPpIGc8sWiCNp_638OK2s-JaFe/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
                 </div>
-                <div class="align-row">
-                    <span class="row-text">EPMS (Entraînement Physique Militaire et Sportif)</span>
+                <div class="align-row" data-specialty-row data-specialty="BLD" hidden>
+                    <span class="row-text">BLD - Combat des blindés</span>
+                    <span class="resource-pending">Ressource à venir</span>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="ART" hidden>
+                    <span class="row-text">ART - Artillerie</span>
+                    <a href="https://drive.google.com/file/d/1XIlapmRfute_aX0fAAQh72dUgIMUzYHj/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="GEN" hidden>
+                    <span class="row-text">GEN - Génie</span>
+                    <a href="https://drive.google.com/file/d/1Ar5Z9p9yV0lVvujVnJbTilcFmPXg18NL/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="AER" hidden>
+                    <span class="row-text">AER - Aéromobilité (ALAT)</span>
+                    <span class="resource-pending">Ressource à venir</span>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="EMP" hidden>
+                    <span class="row-text">EMP - Emploi des forces</span>
+                    <a href="https://drive.google.com/file/d/1pA7nAydZdDFQtRf2GKrG64XmSukKBX9i/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="SIC" hidden>
+                    <span class="row-text">SIC - Systèmes d'information et de communication</span>
+                    <a href="https://drive.google.com/file/d/1fWGGclAAxsNooog6dc2tEH47tqt3rc0s/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="CYB" hidden>
+                    <span class="row-text">CYB - Cybersécurité et cyberdéfense</span>
+                    <span class="resource-pending">Ressource à venir</span>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="RENS" hidden>
+                    <span class="row-text">Renseignement</span>
+                    <a href="https://drive.google.com/file/d/1u7ilLnG_fs7x-zHRaJQGr73uDeF-y4vp/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="ADM" hidden>
+                    <span class="row-text">ADM - Administration et gestion de soutien</span>
+                    <span class="resource-pending">Ressource à venir</span>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="GRH" hidden>
+                    <span class="row-text">GRH - Gestion des ressources humaines</span>
+                    <a href="https://drive.google.com/file/d/1ugegrrbqo8H96UAvvIKskdHetbwvkZ51/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="PBF" hidden>
+                    <span class="row-text">PBF - Pilotage, budget et finances</span>
+                    <span class="resource-pending">Ressource à venir</span>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="MVT" hidden>
+                    <span class="row-text">MVT - Logistique et transport</span>
+                    <a href="https://drive.google.com/file/d/17BUBgxrrsKa7cHXF61tocSDxagLd48H5/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="MAI" hidden>
+                    <span class="row-text">MAI - Maintenance</span>
+                    <a href="https://drive.google.com/file/d/1HaqD5KmzAVLjYIx3RIaEL0QcKw2qN2Km/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="COM" hidden>
+                    <span class="row-text">COM - Communication</span>
+                    <span class="resource-pending">Ressource à venir</span>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="RHL" hidden>
+                    <span class="row-text">RHL - Restauration, hôtellerie et loisirs</span>
+                    <a href="https://drive.google.com/file/d/1ubYsuEqhi6gPwQ_lkq-PMMi8xGQTV8sG/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="EPS" hidden>
+                    <span class="row-text">EPS - Entraînement physique, militaire et sportif</span>
                     <a href="https://drive.google.com/file/d/1CACZovguouHogirsoACqEetJc81Kf6fP/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="SAN" hidden>
+                    <span class="row-text">SAN - Santé</span>
+                    <span class="resource-pending">Ressource à venir</span>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="FSP" hidden>
+                    <span class="row-text">FSP - Forces spéciales</span>
+                    <span class="resource-pending">Ressource à venir</span>
+                </div>
+                <div class="align-row" data-specialty-row data-specialty="OTHER" hidden>
+                    <span class="row-text">Autre (à préciser)</span>
+                    <span class="resource-pending">Ressource à venir</span>
                 </div>
             </li>
         </ul>
@@ -1949,6 +2021,124 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        let specialtyRows = [...document.querySelectorAll('#modal-module6 [data-specialty-row]')];
+        let specialtyMessage = document.getElementById('candidate-specialty-message');
+        let specialtyPicker;
+        let specialtySelect;
+        let specialtyRequestId = 0;
+        let candidateSpecialty = '';
+        let adminSelectedSpecialty = '';
+
+        function ensureSpecialtyPicker() {
+            specialtyRows = [...document.querySelectorAll('#modal-module6 [data-specialty-row]')];
+            specialtyMessage = document.getElementById('candidate-specialty-message');
+            if (!specialtyMessage) return;
+
+            const previousValue = specialtySelect?.value || adminSelectedSpecialty;
+            specialtyPicker = document.getElementById('admin-specialty-picker');
+            if (!specialtyPicker) {
+                specialtyPicker = document.createElement('label');
+                specialtyPicker.id = 'admin-specialty-picker';
+                specialtyPicker.className = 'adm-ui specialty-admin-picker';
+                specialtyPicker.htmlFor = 'admin-specialty-select';
+                const caption = document.createElement('span');
+                caption.textContent = 'Choisir la spécialité à gérer';
+                specialtySelect = document.createElement('select');
+                specialtySelect.id = 'admin-specialty-select';
+                specialtySelect.setAttribute('aria-label', 'Choisir la spécialité à gérer');
+                specialtySelect.addEventListener('change', function() {
+                    adminSelectedSpecialty = specialtySelect.value;
+                    refreshSpecialtyRows();
+                });
+                specialtyPicker.append(caption, specialtySelect);
+                specialtyMessage.before(specialtyPicker);
+            } else {
+                specialtySelect = specialtyPicker.querySelector('select');
+            }
+
+            specialtySelect.replaceChildren(new Option('Sélectionner une spécialité', ''));
+            specialtyRows.forEach(function(row) {
+                const option = new Option(row.querySelector('.row-text').textContent.trim(), row.dataset.specialty);
+                specialtySelect.appendChild(option);
+            });
+            specialtySelect.value = specialtyRows.some(function(row) {
+                return row.dataset.specialty === previousValue;
+            }) ? previousValue : '';
+            adminSelectedSpecialty = specialtySelect.value;
+        }
+
+        function rowForSpecialty(value) {
+            const normalized = value.toLocaleLowerCase('fr');
+            const exact = specialtyRows.find(function(row) {
+                return row.dataset.specialty.toLocaleLowerCase('fr') === normalized;
+            }) || specialtyRows.find(function(row) {
+                const label = row.querySelector('.row-text').textContent.trim().toLocaleLowerCase('fr');
+                return label === normalized || label.replace(/^[a-z]+\s*-\s*/, '') === normalized;
+            });
+            if (exact) return exact;
+
+            const other = specialtyRows.find(function(row) {
+                return row.dataset.specialty === 'OTHER';
+            });
+            if (other && value) other.querySelector('.row-text').textContent = 'Autre - ' + value;
+            return other && value ? other : null;
+        }
+
+        function refreshSpecialtyRows() {
+            ensureSpecialtyPicker();
+            if (!specialtyMessage) return;
+            const adminMode = document.body.classList.contains('adm-on');
+            const matchingRow = rowForSpecialty(adminMode ? adminSelectedSpecialty : candidateSpecialty);
+            specialtyRows.forEach(function(row) {
+                row.hidden = row !== matchingRow;
+            });
+            specialtyMessage.textContent = adminMode
+                ? matchingRow
+                    ? ''
+                    : 'Sélectionnez une spécialité pour gérer sa ressource.'
+                : matchingRow
+                    ? ''
+                    : candidateSpecialty
+                        ? 'Aucune ressource de spécialité ne correspond à votre profil.'
+                        : 'Aucune spécialité candidate n’est renseignée sur votre profil.';
+        }
+
+        function setCandidateSpecialty(specialty) {
+            candidateSpecialty = String(specialty || '').trim();
+            refreshSpecialtyRows();
+        }
+
+        function loadCandidateSpecialty() {
+            const requestId = ++specialtyRequestId;
+            candidateSpecialty = '';
+            specialtyRows.forEach(function(row) { row.hidden = true; });
+            specialtyMessage.textContent = 'Chargement de votre spécialité…';
+            window.DoctrineAuth.specialite().then(function(specialty) {
+                if (requestId === specialtyRequestId) setCandidateSpecialty(specialty);
+            }).catch(function(error) {
+                if (requestId !== specialtyRequestId) return;
+                specialtyMessage.textContent = document.body.classList.contains('adm-on')
+                    ? 'Mode administrateur : toutes les spécialités sont visibles.'
+                    : 'Impossible de charger votre spécialité. Réessayez en vous reconnectant.';
+                console.error('Échec du chargement de la spécialité du candidat :', error);
+            });
+        }
+
+        specialtyRows.forEach(function(row) { row.hidden = true; });
+        ensureSpecialtyPicker();
+        document.addEventListener('doctrine:admin-mode', refreshSpecialtyRows);
+        document.addEventListener('doctrine:content-updated', function(event) {
+            if (event.detail?.moduleId !== '6') return;
+            refreshSpecialtyRows();
+        });
+        document.addEventListener('doctrine:login', loadCandidateSpecialty);
+        document.addEventListener('doctrine:logout', function() {
+            specialtyRequestId++;
+            candidateSpecialty = '';
+            specialtyRows.forEach(function(row) { row.hidden = true; });
+            specialtyMessage.textContent = 'Connectez-vous pour afficher votre spécialité.';
+        });
+
         const checkbox = document.getElementById('chkModule1Valid');
         if (checkbox) {
             checkbox.checked = getModule1State();

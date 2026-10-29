@@ -20,7 +20,7 @@ supabase/                scripts SQL pour le contenu et le suivi des consultatio
 
 ## Interface administrateur
 
-Un compte administrateur voit le bouton **« ✏️ Mode admin »** (en bas à gauche). Il permet, dans les 6 modules : modifier les textes, changer le libellé et l’URL de chaque lien (🔗), supprimer, déplacer, dupliquer, et ajouter rubriques, sous-rubriques et liens. « Enregistrer » publie pour tous les utilisateurs ; « Valeurs d’origine » restaure le module.
+Un compte administrateur voit le bouton **« ✏️ Mode admin »** (en bas à gauche). Il permet, dans les 6 modules : modifier les textes, changer le libellé et l’URL de chaque lien (🔗), supprimer, déplacer, dupliquer, et ajouter rubriques, sous-rubriques et liens. Dans le module 6, une liste déroulante permet de choisir la spécialité à gérer ; **« + Ressource »** permet d’ajouter un lien web à celles sans document. Le candidat ne voit que la ligne correspondant à sa spécialité, avec le bouton **« Ouvrir »** dès qu’une ressource est renseignée. « Enregistrer » publie pour tous les utilisateurs ; « Valeurs d’origine » restaure le module.
 
 Mise en place (une seule fois) :
 1. exécuter `supabase/doctrine-content.sql` dans Supabase > SQL Editor ;

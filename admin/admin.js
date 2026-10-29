@@ -111,6 +111,9 @@
             else el.appendChild(correctionGate);
         }
         courant[n] = nettoye(el);
+        if (n === '6') {
+            document.dispatchEvent(new CustomEvent('doctrine:content-updated', { detail: { moduleId: n } }));
+        }
     }
 
     function assurerOutilsEtude(el) {
@@ -215,6 +218,49 @@
         };
     }
 
+    function ajouterRessourceSpecialite(ligne) {
+        var placeholder = ligne.querySelector('.resource-pending');
+        if (!placeholder) return;
+
+        var texte = dialogue.querySelector('#adm-d-texte');
+        var url = dialogue.querySelector('#adm-d-url');
+        var err = dialogue.querySelector('#adm-d-err');
+        var form = dialogue.querySelector('form');
+        texte.value = 'Ouvrir';
+        url.value = '';
+        err.textContent = '';
+        dialogue.hidden = false;
+        url.focus();
+
+        function fermer() {
+            dialogue.hidden = true;
+            form.onsubmit = null;
+            dialogue.querySelector('#adm-d-annuler').onclick = null;
+        }
+
+        dialogue.querySelector('#adm-d-annuler').onclick = fermer;
+        form.onsubmit = function (event) {
+            event.preventDefault();
+            var adresse = url.value.trim();
+            var parsed;
+            try { parsed = new URL(adresse); } catch (e) { parsed = null; }
+            if (!parsed || (parsed.protocol !== 'https:' && parsed.protocol !== 'http:')) {
+                err.textContent = 'Saisissez une adresse complète commençant par https:// ou http://.';
+                return;
+            }
+
+            var lien = document.createElement('a');
+            lien.className = 'doc-link';
+            lien.href = parsed.href;
+            lien.target = '_blank';
+            lien.rel = 'noopener noreferrer';
+            lien.textContent = texte.value.trim() || 'Ouvrir';
+            placeholder.replaceWith(lien);
+            fermer();
+            decorer(corps('6'));
+        };
+    }
+
     /* ---------- Édition ---------- */
     function outil(libelle, titre, action, danger) {
         var b = document.createElement('button');
@@ -311,6 +357,12 @@
                 }),
                 outil('⧉', 'Dupliquer', function () { dupliquer(ligne, corpsEl); })
             ];
+            if (corpsEl.dataset.mod === '6' && ligne.matches('[data-specialty-row]') &&
+                ligne.querySelector('.resource-pending')) {
+                b.push(outil('+ Ressource', 'Ajouter une ressource à cette spécialité', function () {
+                    ajouterRessourceSpecialite(ligne);
+                }));
+            }
             if (ligne.tagName === 'LI') b.push(outil('＋', 'Ajouter un sous-élément', function () { sousElement(ligne, corpsEl); }));
             if (ligne.classList.contains('dossier-item') && ligne.querySelector('input[data-dossier]')) b.push(outilDifficulte(ligne));
             b.push(outil('✕', 'Supprimer', function () {
@@ -365,6 +417,7 @@
     function entrer() {
         adminActif = true;
         document.body.classList.add('adm-on');
+        document.dispatchEvent(new CustomEvent('doctrine:admin-mode', { detail: { active: true } }));
         bouton.textContent = '✏️ Quitter l\'admin';
         var filtre = document.getElementById('dossierDifficultyFilter');
         filtreAvantAdmin = filtre ? filtre.value : null;
@@ -385,6 +438,7 @@
     function quitter(restaurer) {
         adminActif = false;
         document.body.classList.remove('adm-on');
+        document.dispatchEvent(new CustomEvent('doctrine:admin-mode', { detail: { active: false } }));
         if (bouton) bouton.textContent = '✏️ Mode admin';
         document.querySelectorAll('.adm-bar').forEach(function (n) { n.remove(); });
         MODULES.forEach(function (n) {

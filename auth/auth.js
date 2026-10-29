@@ -56,6 +56,48 @@
         };
     }
 
+    function chargerProfil(s, user, colonne) {
+        var url = SUPABASE_URL + '/rest/v1/profiles?id=eq.' +
+            encodeURIComponent(user.id) + '&select=' + colonne;
+        return fetch(url, {
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: 'Bearer ' + s.access_token
+            }
+        }).then(function (response) {
+            return response.json().catch(function () { return {}; }).then(function (data) {
+                if (!response.ok) {
+                    var err = new Error(data.message || data.error || 'Lecture du profil impossible.');
+                    err.status = response.status;
+                    err.code = data.code || '';
+                    err.details = data.details || '';
+                    throw err;
+                }
+                return Array.isArray(data) ? data[0] || null : null;
+            });
+        });
+    }
+
+    function chargerSpecialite() {
+        return verifier().then(function (s) {
+            if (!s) throw new Error('Aucune session candidate active.');
+            return appel('/user', { methode: 'GET', jeton: s.access_token }).then(function (user) {
+                if (!user || !user.id) throw new Error('Identifiant candidat indisponible.');
+                return chargerProfil(s, user, 'speciality').catch(function (err) {
+                    var detail = (err.message + ' ' + err.details + ' ' + err.code).toLowerCase();
+                    var colonneAbsente = err.status === 400 &&
+                        detail.indexOf('speciality') !== -1 &&
+                        (detail.indexOf('column') !== -1 || detail.indexOf('schema cache') !== -1);
+                    if (!colonneAbsente) throw err;
+                    return chargerProfil(s, user, 'specialty');
+                }).then(function (profile) {
+                    var specialty = profile && (profile.speciality || profile.specialty);
+                    return String(specialty || (user.user_metadata && user.user_metadata.specialty) || '').trim();
+                });
+            });
+        });
+    }
+
     function estConfirme(user) {
         return !!(user && (user.email_confirmed_at || user.confirmed_at));
     }
@@ -235,7 +277,8 @@
         key: SUPABASE_KEY,
         jeton: function () { return verifier().then(function (s) { return s ? s.access_token : null; }); },
         estAdmin: function () { var s = lire(); return !!(s && s.access_token && estAdmin(s.access_token)); },
-        email: function () { var s = lire(); return s ? s.email : ''; }
+        email: function () { var s = lire(); return s ? s.email : ''; },
+        specialite: chargerSpecialite
     };
 
     function demarrer() {
