@@ -1491,7 +1491,7 @@
         const dossiers = document.querySelectorAll('.mod-body[data-mod="3"] input[data-dossier]');
         dossierSelect.replaceChildren(new Option('Choisissez un dossier…', ''));
         dossiers.forEach(function(box) {
-            const name = box.closest('label')?.textContent.trim();
+            const name = box.closest('.dossier-item')?.querySelector(':scope > label > span')?.textContent.trim();
             const id = box.getAttribute('data-dossier');
             if (!name || !id) return;
             dossierSelect.add(new Option(name, id));
