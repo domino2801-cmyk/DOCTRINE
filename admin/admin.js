@@ -377,6 +377,7 @@
             c.insertAdjacentElement('beforebegin', barre(n, c));
             decorer(c);
         });
+        majVisibiliteOutils();
     }
 
     function quitter(restaurer) {
@@ -392,6 +393,7 @@
             else c.querySelectorAll('.adm-ui:not(#correctionGate)').forEach(function (x) { x.remove(); });
         });
         rafraichirProgression();
+        majVisibiliteOutils();
     }
 
     function enregistrer(etat) {
@@ -668,7 +670,6 @@
             suiviBouton.addEventListener('click', ouvrirSuivi);
             document.body.appendChild(suiviBouton);
         }
-        suiviBouton.hidden = false;
     }
 
     function afficherErreurSuivi(message) {
@@ -744,8 +745,30 @@
         enregistrerEvenement(d.module, d.title, d.url, 'download');
     }
 
+    // Les boutons admin ne sont proposés que dans le module 1 (ou tant que le mode admin est actif).
+    function module1Ouvert() {
+        var modale = document.getElementById('modal-module1');
+        return !!modale && modale.style.display === 'block';
+    }
+
+    function majVisibiliteOutils() {
+        var estAdmin = !!(auth() && auth().estAdmin());
+        var visible = estAdmin && (module1Ouvert() || adminActif);
+        if (bouton) bouton.hidden = !visible;
+        if (suiviBouton) suiviBouton.hidden = !visible;
+        if (!visible && suiviDialogue && !suiviDialogue.hidden) fermerSuivi();
+    }
+
+    function surveillerModule1() {
+        var modale = document.getElementById('modal-module1');
+        if (!modale || modale.dataset.admSurveille) return;
+        modale.dataset.admSurveille = '1';
+        new MutationObserver(majVisibiliteOutils).observe(modale, { attributes: true, attributeFilter: ['style'] });
+    }
+
     function montrerBouton() {
         if (!auth() || !auth().estAdmin()) return;
+        surveillerModule1();
         if (!bouton) {
             bouton = document.createElement('button');
             bouton.id = 'adm-toggle';
@@ -756,8 +779,8 @@
             });
             document.body.appendChild(bouton);
         }
-        bouton.hidden = false;
         montrerSuiviBouton();
+        majVisibiliteOutils();
     }
 
     function init() {
