@@ -168,13 +168,6 @@
             '<p class="auth-message" id="auth-message" role="alert" aria-live="assertive"></p>' +
             '<button type="submit" id="auth-submit">Se connecter</button>' +
             '</form>' +
-            '<section id="auth-specialty-preview" class="auth-specialty-preview" aria-labelledby="auth-specialty-title">' +
-            '<h2 id="auth-specialty-title">Aperçu des ressources par spécialité</h2>' +
-            '<p>Choisissez une spécialité pour consulter sa ressource sans vous connecter. La gestion et l’enregistrement restent réservés aux administrateurs connectés.</p>' +
-            '<label for="auth-specialty-select">Spécialité</label>' +
-            '<select id="auth-specialty-select"><option value="">Choisir une spécialité</option></select>' +
-            '<div id="auth-specialty-result" aria-live="polite"></div>' +
-            '</section>' +
             '<p class="auth-pied" id="auth-pied" hidden>Pas encore de compte ? ' +
             '<a href="' + SIGNUP_URL + '" target="_blank" rel="noopener">Créez-le sur QCM-MAJOR.FR</a>' +
             ' puis revenez ici avec les mêmes identifiants. Aucune nouvelle inscription n’est nécessaire.</p>' +
