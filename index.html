@@ -624,26 +624,8 @@
             margin: 0;
             flex: 1 1 16rem;
         }
-        .dossier-recommendation button {
-            padding: 7px 10px;
-            border: 0;
-            border-radius: 4px;
-            background: var(--primary-blue);
-            color: var(--white);
-            font: inherit;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .dossier-recommendation button:focus-visible {
-            outline: 2px solid var(--primary-blue);
-            outline-offset: 2px;
-        }
         #studyDossierList > .dossier-item[hidden] {
             display: none !important;
-        }
-        #studyDossierList > .dossier-item.recommended-highlight {
-            outline: 3px solid var(--primary-blue);
-            outline-offset: 2px;
         }
         .doc-link {
             font-size: 0.8rem;
@@ -1262,7 +1244,6 @@ body.admin-account .specialty-admin-picker {
         </details>
         <div class="dossier-recommendation">
             <p id="recommendedDossierText" role="status" aria-live="polite">Chargement du parcours conseillé…</p>
-            <button id="showRecommendedDossier" type="button" hidden>Voir ce dossier</button>
         </div>
 
         <div class="progress-container">
@@ -2318,8 +2299,7 @@ body.admin-account .specialty-admin-picker {
         function updateRecommendedDossier() {
             const list = document.getElementById('studyDossierList');
             const text = document.getElementById('recommendedDossierText');
-            const button = document.getElementById('showRecommendedDossier');
-            if (!list || !text || !button) return;
+            if (!list || !text) return;
 
             const next = Array.from(list.querySelectorAll(':scope > .dossier-item'))
                 .map(function(row, order) {
@@ -2338,8 +2318,6 @@ body.admin-account .specialty-admin-picker {
             const nextItem = next[0];
             if (!nextItem) {
                 text.textContent = 'Parcours conseillé terminé : tous les dossiers sont marqués « Fait ».';
-                button.hidden = true;
-                delete button.dataset.dossierId;
                 return;
             }
 
@@ -2347,8 +2325,6 @@ body.admin-account .specialty-admin-picker {
             const stars = nextItem.stars;
             text.textContent = 'Prochain dossier conseillé : ' + name + ' — ' +
                 stars + (stars === 1 ? ' étoile.' : ' étoiles.');
-            button.hidden = false;
-            button.dataset.dossierId = nextItem.row.querySelector('input[data-dossier]')?.getAttribute('data-dossier') || '';
         }
 
         function addTrackingField(container, labelText, control, resourceName) {
@@ -2448,27 +2424,6 @@ body.admin-account .specialty-admin-picker {
             if (e.target && e.target.id === 'dossierDifficultyFilter') filterDossiersByDifficulty();
         });
         filterDossiersByDifficulty();
-        document.addEventListener('click', function(e) {
-            const button = e.target.closest && e.target.closest('#showRecommendedDossier');
-            if (!button) return;
-            const id = button.dataset.dossierId;
-            const row = id && document.querySelector('#studyDossierList input[data-dossier="' + id + '"]')?.closest('.dossier-item');
-            if (!row) return;
-
-            const filter = document.getElementById('dossierDifficultyFilter');
-            if (filter) {
-                filter.value = '';
-                filterDossiersByDifficulty();
-            }
-            row.tabIndex = -1;
-            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            row.focus({ preventScroll: true });
-            row.classList.add('recommended-highlight');
-            window.setTimeout(function() {
-                row.classList.remove('recommended-highlight');
-            }, 2200);
-        });
-
         document.addEventListener('change', function(e) {
             const target = e.target;
             if (!target.matches) return;
