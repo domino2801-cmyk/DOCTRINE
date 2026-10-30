@@ -9,17 +9,36 @@
     var progressBar = document.getElementById('progressBar');
     var loadingText = document.getElementById('loadingText');
     var progressTrack = splash.querySelector('[role="progressbar"]');
+    var porte = splash.querySelector('.splash-door');
     var progress = 0;
     var animationFrame;
     var progressTimer;
+    var ouvertureTimer;
     var fermee = false;
+    var ouvertureTerminee = !porte;
+    var fermetureDemandee = false;
+    var fermeturePlanifiee = false;
     try { dejaVu = sessionStorage.getItem('anc-splash-matrix') === '1'; } catch (e) {}
+
+    function programmerFermeture() {
+        if (fermeturePlanifiee || fermee || !splash.parentNode) return;
+        fermeturePlanifiee = true;
+        setTimeout(function () {
+            fermeturePlanifiee = false;
+            fermer();
+        }, 850);
+    }
 
     function fermer() {
         if (fermee || !splash.parentNode) return;
+        if (!ouvertureTerminee) {
+            fermetureDemandee = true;
+            return;
+        }
         fermee = true;
         splash.classList.add('splash-fin');
         clearInterval(progressTimer);
+        clearTimeout(ouvertureTimer);
         if (animationFrame) cancelAnimationFrame(animationFrame);
         window.removeEventListener('resize', redimensionnerMatrix);
         setTimeout(function () {
@@ -35,6 +54,19 @@
 
     try { sessionStorage.setItem('anc-splash-matrix', '1'); } catch (e) {}
     document.documentElement.style.overflow = 'hidden';
+
+    if (porte) {
+        porte.addEventListener('animationend', function (event) {
+            if (event.animationName !== 'anc-coffre-ouverture') return;
+            ouvertureTerminee = true;
+            clearTimeout(ouvertureTimer);
+            if (fermetureDemandee) programmerFermeture();
+        });
+        ouvertureTimer = setTimeout(function () {
+            ouvertureTerminee = true;
+            if (fermetureDemandee) programmerFermeture();
+        }, 2500);
+    }
 
     var contexte = canvas && canvas.getContext('2d');
     var taillePolice = 17;
