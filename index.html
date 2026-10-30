@@ -1133,7 +1133,7 @@ body.admin-account .specialty-admin-picker {
             </div>
             <label class="study-progress-label" for="overallProgress">Dossiers commencés</label>
             <progress id="overallProgress" max="1" value="0"></progress>
-            <p id="overallProgressText" class="study-progress-text" role="status" aria-live="polite">0 / 16 commencés · 0 maîtrisés · 0 à revoir · 0 en cours</p>
+            <p id="overallProgressText" class="study-progress-text" role="status" aria-live="polite">0 / 16 commencés · 0 fait · 16 à faire</p>
         </section>
 </div>
 </div>
@@ -2507,9 +2507,8 @@ body.admin-account .specialty-admin-picker {
                 if (txt) txt.innerText = group.label + pct + '%';
             });
             const consultes = allItems.filter(function(item) { return item.status !== 'todo'; }).length;
-            const maitrises = allItems.filter(function(item) { return item.status === 'mastered'; }).length;
-            const aRevoir = allItems.filter(function(item) { return item.status === 'review'; }).length;
-            const enCours = allItems.filter(function(item) { return item.status === 'in-progress'; }).length;
+            const faits = allItems.filter(function(item) { return item.status === 'mastered'; }).length;
+            const aFaire = allItems.length - faits;
             const progress = document.getElementById('overallProgress');
             const progressText = document.getElementById('overallProgressText');
             if (progress) {
@@ -2518,7 +2517,7 @@ body.admin-account .specialty-admin-picker {
             }
             if (progressText) {
                 progressText.textContent = consultes + ' / ' + allItems.length + ' commencés · ' +
-                    maitrises + ' maîtrisés · ' + aRevoir + ' à revoir · ' + enCours + ' en cours';
+                    faits + ' fait · ' + aFaire + ' à faire';
             }
             updateRecommendedDossier();
             filterDossiersByDifficulty();
