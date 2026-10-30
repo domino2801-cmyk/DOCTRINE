@@ -42,6 +42,19 @@
     display: block;
     width: 100%;
     height: 100%;
+    overflow: hidden;
+    clip-path: inset(0 50%);
+    animation: anc-coffre-ouverture 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+#splash .splash-art::after {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 47%, rgba(141, 234, 255, 0.8) 50%, transparent 53%);
+    content: "";
+    opacity: 0;
+    pointer-events: none;
+    animation: anc-coffre-eclat 0.85s ease-out 0.15s both;
 }
 
 #splash .splash-art img {
@@ -176,6 +189,16 @@
         transition: none;
     }
 
+    #splash .splash-art {
+        clip-path: none;
+        animation: none;
+    }
+
+    #splash .splash-art::after {
+        animation: none;
+        opacity: 0;
+    }
+
     #splash .splash-wordmark span,
     #splash .splash-name {
         animation: none;
@@ -204,6 +227,15 @@
 
 @keyframes anc-nom-apparait {
     to { opacity: 1; }
+}
+
+@keyframes anc-coffre-ouverture {
+    to { clip-path: inset(0); }
+}
+
+@keyframes anc-coffre-eclat {
+    20% { opacity: 1; }
+    to { opacity: 0; }
 }
 
 @keyframes anc-finition-bleue {
