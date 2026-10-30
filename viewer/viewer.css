@@ -16,7 +16,22 @@ body.dv-open { overflow: hidden; }
     flex: none; padding: 7px 12px; border: 1px solid #e5c158; border-radius: 5px;
     background: transparent; color: #e5c158; font: inherit; cursor: pointer;
 }
-#doc-viewer .dv-download { background: #e5c158; color: #0b2240; }
+#doc-viewer .dv-download {
+    background: #e5c158;
+    color: #0b2240;
+    transition: background-color .2s ease, color .2s ease;
+}
+#doc-viewer .dv-download-done {
+    animation: dv-download-pop .45s ease;
+    background: #159b78;
+    border-color: #159b78;
+    color: #fff;
+}
+@keyframes dv-download-pop {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+}
 #doc-viewer .dv-body { flex: 1; min-height: 0; background: #fff; overflow: auto; }
 #doc-viewer .dv-frame { width: 100%; height: 100%; border: 0; display: block; }
 #doc-viewer .dv-img { display: block; max-width: 100%; margin: 0 auto; }
@@ -41,4 +56,9 @@ body.dv-open { overflow: hidden; }
 
 @media (pointer: coarse) {
     #doc-viewer .dv-btn, #doc-viewer .dv-item { min-height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #doc-viewer .dv-download { transition: none; }
+    #doc-viewer .dv-download-done { animation: none; }
 }

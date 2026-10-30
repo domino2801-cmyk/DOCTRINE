@@ -17,6 +17,7 @@
     var courant = null;
     var dossierCourant = null;
     var requete = 0;
+    var minuterieTelechargement = null;
 
     function auth() { return window.DoctrineAuth; }
 
@@ -262,6 +263,16 @@
         document.body.appendChild(a);
         a.click();
         a.remove();
+        if (minuterieTelechargement) clearTimeout(minuterieTelechargement);
+        telecharger.textContent = '✓ Téléchargement lancé';
+        telecharger.classList.remove('dv-download-done');
+        void telecharger.offsetWidth;
+        telecharger.classList.add('dv-download-done');
+        minuterieTelechargement = setTimeout(function () {
+            telecharger.classList.remove('dv-download-done');
+            telecharger.textContent = '⬇ Télécharger';
+            minuterieTelechargement = null;
+        }, 1800);
         document.dispatchEvent(new CustomEvent('doctrine:download', {
             detail: { module: courant.module, title: courant.nom, url: courant.url }
         }));
