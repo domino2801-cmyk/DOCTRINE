@@ -1057,10 +1057,16 @@ body.admin-account .specialty-admin-picker {
 <div id="splash" role="presentation" aria-hidden="true">
     <canvas id="matrix"></canvas>
     <div class="splash-composition">
-        <picture class="splash-art">
-            <source media="(max-width: 700px), (orientation: portrait)" srcset="splash/anc-splash-mobile.jpg">
-            <img src="splash/anc-splash.jpg" alt="">
-        </picture>
+        <div class="splash-art">
+            <picture class="splash-art-layer splash-art-base">
+                <source media="(max-width: 700px), (orientation: portrait)" srcset="splash/anc-splash-mobile-base.jpg">
+                <img src="splash/anc-splash-base.jpg" alt="">
+            </picture>
+            <picture class="splash-art-layer splash-door">
+                <source media="(max-width: 700px), (orientation: portrait)" srcset="splash/anc-splash-mobile-door.webp">
+                <img src="splash/anc-splash-door.webp" alt="">
+            </picture>
+        </div>
         <div class="splash-brand">
             <div class="splash-wordmark" aria-label="ANC"><span>A</span><span>N</span><span>C</span></div>
             <div class="splash-name">ARMOIRE NUMÉRIQUE DE CAMPAGNE</div>
