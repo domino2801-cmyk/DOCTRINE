@@ -1131,9 +1131,9 @@ body.admin-account .specialty-admin-picker {
                 </div>
                 <button id="resumeModuleButton" class="resume-button" type="button" onclick="resumeLastModule()">Commencer le module 1</button>
             </div>
-            <label class="study-progress-label" for="overallProgress">Dossiers et corrigés commencés</label>
+            <label class="study-progress-label" for="overallProgress">Dossiers commencés</label>
             <progress id="overallProgress" max="1" value="0"></progress>
-            <p id="overallProgressText" class="study-progress-text" role="status" aria-live="polite">0 / 32 commencés · 0 maîtrisés · 0 à revoir · 0 en cours</p>
+            <p id="overallProgressText" class="study-progress-text" role="status" aria-live="polite">0 / 16 commencés · 0 maîtrisés · 0 à revoir · 0 en cours</p>
         </section>
 </div>
 </div>
@@ -2497,7 +2497,7 @@ body.admin-account .specialty-admin-picker {
                 boxes.forEach(function(box) {
                     const item = ensureStudyControls(box, group);
                     if (!item) return;
-                    allItems.push(item);
+                    if (group.kind === 'dossier') allItems.push(item);
                     if (item.status !== 'todo') done++;
                 });
                 const pct = Math.round((done / boxes.length) * 100) || 0;
