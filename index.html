@@ -1048,6 +1048,350 @@ body.admin-account .specialty-admin-picker {
             .modal-content > h2 { padding-right: 0; }
         }
 
+        :root {
+            --primary-blue: #20352b;
+            --accent-red: #b52e35;
+            --bg-light: #141c19;
+            --text-dark: #e4ebe4;
+            --white: #1b2722;
+            --overlay: rgba(3, 8, 8, 0.82);
+            --panel-line: rgba(177, 201, 181, 0.2);
+            --panel-highlight: rgba(194, 219, 194, 0.58);
+        }
+
+        html,
+        body {
+            background:
+                radial-gradient(ellipse at 50% 0%, rgba(58, 84, 63, 0.36), transparent 56%),
+                linear-gradient(145deg, #17221c, #0d1314 62%, #11191b);
+            color: var(--text-dark);
+        }
+
+        .main-wrapper {
+            background:
+                linear-gradient(rgba(179, 222, 195, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(179, 222, 195, 0.025) 1px, transparent 1px);
+            background-size: 46px 46px;
+        }
+
+        .main-wrapper > header {
+            position: relative;
+            padding: 22px 20px 19px;
+            border-bottom: 2px solid #9a2930;
+            background:
+                linear-gradient(135deg, rgba(194, 219, 194, 0.54) 0 1px, transparent 1.5px) 10px 10px / 18px 18px no-repeat,
+                linear-gradient(225deg, rgba(194, 219, 194, 0.42) 0 1px, transparent 1.5px) calc(100% - 10px) 10px / 18px 18px no-repeat,
+                linear-gradient(180deg, #24352d, #131c1b);
+            box-shadow: 0 8px 26px rgba(0, 0, 0, 0.3), inset 0 1px rgba(255, 255, 255, 0.08);
+        }
+
+        .main-wrapper > header::before {
+            display: block;
+            margin-bottom: 7px;
+            color: #a9c5ad;
+            content: "ANC  /  RÉSEAU OPÉRATIONNEL  /  BM4 — ÉDITION 2027";
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.19em;
+        }
+
+        .main-wrapper > header h1 {
+            color: #f0f3e8;
+            font-size: clamp(1.15rem, 3vw, 1.8rem);
+            letter-spacing: 0.09em;
+            text-shadow: 0 0 24px rgba(120, 209, 195, 0.16);
+        }
+
+        .main-wrapper > nav {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            border-bottom: 1px solid var(--panel-line);
+            background: rgba(13, 20, 19, 0.94);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+            backdrop-filter: blur(12px);
+        }
+
+        .main-wrapper > nav button {
+            border: 1px solid transparent;
+            color: #c3d0c6;
+            letter-spacing: 0.025em;
+        }
+
+        .main-wrapper > nav button:hover:not(:disabled),
+        .main-wrapper > nav button.is-active {
+            border-color: rgba(153, 195, 163, 0.38);
+            background: linear-gradient(145deg, #30483a, #1d3028);
+            color: #f3f6ed;
+            box-shadow: inset 0 1px rgba(255, 255, 255, 0.08), 0 0 18px rgba(88, 175, 139, 0.1);
+        }
+
+        .main-wrapper > nav button:disabled {
+            border: 1px solid rgba(157, 171, 160, 0.08) !important;
+            background: rgba(255, 255, 255, 0.035) !important;
+            color: #819087 !important;
+            opacity: 0.72 !important;
+        }
+
+        .content-container { color: #d7e0d8; }
+
+        .lock-warning {
+            border-color: rgba(215, 164, 100, 0.5);
+            background: rgba(93, 65, 34, 0.34);
+            color: #f2c98e;
+            box-shadow: inset 3px 0 #d9a95f, 0 8px 24px rgba(0, 0, 0, 0.18);
+        }
+
+        .status-chip {
+            border-color: var(--panel-line);
+            background: #1c2a25;
+            color: #c5d8c8;
+        }
+
+        .status-chip.is-offline {
+            border-color: rgba(217, 169, 95, 0.45);
+            background: #382d20;
+            color: #f2c98e;
+        }
+
+        .preface-section,
+        .study-dashboard {
+            border: 1px solid #52675a;
+            border-radius: 12px;
+            background:
+                linear-gradient(135deg, rgba(190, 218, 192, 0.38) 0 1px, transparent 1.5px) 9px 9px / 16px 16px no-repeat,
+                linear-gradient(315deg, rgba(190, 218, 192, 0.28) 0 1px, transparent 1.5px) calc(100% - 9px) calc(100% - 9px) / 16px 16px no-repeat,
+                linear-gradient(150deg, rgba(31, 47, 39, 0.98), rgba(17, 26, 25, 0.98));
+            color: #dce5dc;
+            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25), inset 0 1px rgba(255, 255, 255, 0.06);
+        }
+
+        .preface-section summary,
+        .difficulty-scale summary { color: #d4e4d4; }
+
+        .preface-box,
+        .preface-section .preface-box {
+            border-left-color: #82a88b;
+            background: rgba(5, 12, 11, 0.32);
+            color: #c4d0c7;
+        }
+
+        .preface-box strong,
+        .study-dashboard h2 { color: #eef4ea; }
+
+        .study-dashboard-heading p,
+        .study-progress-text,
+        .study-progress-label { color: #b6c4ba; }
+
+        .resume-button,
+        .install-button {
+            border: 1px solid rgba(202, 228, 213, 0.2);
+            background: linear-gradient(145deg, #385640, #243c30);
+            color: #f1f5ed;
+            box-shadow: inset 0 1px rgba(255, 255, 255, 0.08), 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .resume-button:hover,
+        .install-button:hover { background: linear-gradient(145deg, #46694e, #2d4d3a); }
+
+        #overallProgress { accent-color: #67b78d; }
+
+        .modal {
+            background:
+                radial-gradient(ellipse at 50% 10%, rgba(61, 93, 69, 0.2), transparent 54%),
+                rgba(3, 8, 8, 0.86);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            border: 1px solid #5b7061;
+            border-radius: 14px;
+            background:
+                linear-gradient(135deg, rgba(194, 219, 194, 0.34) 0 1px, transparent 1.5px) 10px 10px / 18px 18px no-repeat,
+                linear-gradient(225deg, rgba(194, 219, 194, 0.26) 0 1px, transparent 1.5px) calc(100% - 10px) 10px / 18px 18px no-repeat,
+                linear-gradient(45deg, rgba(194, 219, 194, 0.24) 0 1px, transparent 1.5px) 10px calc(100% - 10px) / 18px 18px no-repeat,
+                linear-gradient(315deg, rgba(194, 219, 194, 0.22) 0 1px, transparent 1.5px) calc(100% - 10px) calc(100% - 10px) / 18px 18px no-repeat,
+                linear-gradient(150deg, rgba(29, 43, 36, 0.99), rgba(14, 22, 22, 0.99) 68%);
+            color: #dce5dd;
+            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.56), 0 0 0 4px rgba(7, 13, 11, 0.84), 0 0 0 6px rgba(143, 163, 147, 0.25), inset 0 0 0 4px rgba(4, 10, 9, 0.35);
+        }
+
+        .modal-content > h2 {
+            border: 1px solid rgba(154, 183, 159, 0.28);
+            border-left: 4px solid #b52e35;
+            border-bottom: 1px solid rgba(154, 183, 159, 0.28);
+            border-radius: 5px;
+            background: linear-gradient(100deg, rgba(57, 78, 60, 0.62), rgba(19, 31, 29, 0.52));
+            color: #edf2e8;
+            text-shadow: 0 0 20px rgba(126, 201, 187, 0.1);
+        }
+
+        .modal-toolbar {
+            border: 1px solid #667a69;
+            border-bottom: 2px solid #a32b31;
+            border-radius: 11px;
+            background: linear-gradient(145deg, #263b30, #14221f);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.42), inset 0 1px rgba(255, 255, 255, 0.08);
+        }
+
+        .modal-toolbar > span {
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: linear-gradient(145deg, #9f2930, #76232a);
+        }
+
+        .mod-body {
+            color: #d2ddd4;
+        }
+
+        .mod-body strong,
+        .section-title { color: #edf3e9; }
+
+        .mod-body a:not(.doc-link),
+        .mod-body .specialty-filter-message,
+        .mod-body .resource-pending { color: #b4c6b7; }
+
+        .modal-content > h2,
+        .modal-toolbar,
+        .dossier-item,
+        .progress-container,
+        .correction-gate,
+        .dossier-recommendation,
+        .difficulty-scale,
+        .fiche-dossier-viewer,
+        .fiche-dossier-admin,
+        .study-dashboard,
+        .preface-section {
+            color-scheme: dark;
+        }
+
+        .dossier-item {
+            border: 1px solid rgba(165, 190, 170, 0.16);
+            border-left: 3px solid #a6373d;
+            border-radius: 8px;
+            background: linear-gradient(145deg, rgba(45, 59, 49, 0.82), rgba(24, 35, 32, 0.9));
+            color: #e0e8df;
+            box-shadow: inset 0 1px rgba(255, 255, 255, 0.035), 0 5px 14px rgba(0, 0, 0, 0.12);
+        }
+
+        .mod-body .dossier-item { box-shadow: inset 0 1px rgba(255, 255, 255, 0.035), 0 5px 14px rgba(0, 0, 0, 0.12); }
+
+        .dossier-item.completed {
+            border-left-color: #67b78d;
+            background: linear-gradient(145deg, rgba(38, 73, 56, 0.92), rgba(22, 43, 35, 0.94));
+            color: #d7eee0;
+        }
+
+        .dossier-tracking-controls { border-top-color: rgba(177, 201, 181, 0.18); }
+        .dossier-tracking-field { color: #bdcbbf; }
+
+        .progress-container {
+            overflow: hidden;
+            border: 1px solid rgba(173, 202, 180, 0.22);
+            border-radius: 999px;
+            background: #0c1412;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.52);
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #466d4a, #70bd83, #b5d17c) !important;
+            box-shadow: 0 0 18px rgba(111, 204, 139, 0.32);
+        }
+
+        .progress-text { color: #f0f4e9; text-shadow: 0 1px 3px #101714; }
+
+        .doc-link,
+        .btn-link {
+            border: 1px solid rgba(196, 224, 202, 0.2);
+            border-radius: 6px;
+            background: linear-gradient(145deg, #3c6348, #284532) !important;
+            color: #f3f6ee;
+            box-shadow: inset 0 1px rgba(255, 255, 255, 0.09), 0 4px 12px rgba(0, 0, 0, 0.18);
+        }
+
+        .doc-link:hover,
+        .btn-link:hover {
+            background: linear-gradient(145deg, #557a59, #35543c) !important;
+            color: #fff;
+        }
+
+        .align-row { border-bottom-color: rgba(177, 201, 181, 0.18); }
+        .row-text { color: #dce5dd; }
+        .stars { color: #e7c56e; }
+
+        .dossier-recommendation,
+        .correction-gate,
+        .fiche-dossier-viewer {
+            border: 1px solid rgba(164, 192, 170, 0.22);
+            border-left: 3px solid #83a98a;
+            border-radius: 8px;
+            background: rgba(9, 17, 15, 0.45);
+            color: #d0ddd2;
+        }
+
+        .fiche-dossier-viewer label,
+        .fiche-dossier-admin h3 { color: #e4ede3; }
+        .difficulty-scale { color: #c3d0c6; }
+        .difficulty-scale summary { color: #d4e4d4; }
+        .fiche-dossier-admin { border-color: rgba(206, 177, 99, 0.42); background: rgba(59, 48, 27, 0.45); }
+        .fiche-dossier-content { border: 1px solid rgba(177, 201, 181, 0.2); background: #101918; color: #dce5dd; }
+
+        .mod-body input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+        .mod-body select,
+        .mod-body textarea {
+            border-color: rgba(176, 202, 183, 0.3);
+            border-radius: 6px;
+            background-color: #101a18;
+            color: #edf3e9;
+        }
+
+        .mod-body input:focus-visible,
+        .mod-body select:focus-visible,
+        .mod-body textarea:focus-visible,
+        .dossier-item input[type="checkbox"]:focus-visible,
+        .dossier-item input[type="radio"]:focus-visible {
+            outline: 2px solid #86d1c8;
+            outline-offset: 2px;
+        }
+
+        .mod-body input[type="checkbox"],
+        .mod-body input[type="radio"] { accent-color: #76c493; }
+
+        #modal-module1 > .modal-content > div[style*="dashed"] {
+            border-color: rgba(132, 170, 139, 0.55) !important;
+            background: rgba(8, 15, 14, 0.42) !important;
+            color: #edcf91;
+        }
+
+        #modal-module1 > .modal-content > div[style*="dashed"] label { color: #dce5dd !important; }
+
+        #modal-module4 #correctionGateStatus { color: #ff9a91 !important; }
+
+        @media (prefers-reduced-motion: no-preference) {
+            .main-wrapper > header h1 { animation: anc-interface-arrive 0.6s ease-out both; }
+            .study-dashboard,
+            .preface-section { animation: anc-interface-arrive 0.45s ease-out both; }
+        }
+
+        @keyframes anc-interface-arrive {
+            from { opacity: 0.72; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .main-wrapper > nav { position: relative; }
+            .main-wrapper > header::before { font-size: 0.58rem; letter-spacing: 0.12em; }
+            .modal-content {
+                border-radius: 12px;
+                box-shadow: 0 18px 54px rgba(0, 0, 0, 0.55), 0 0 0 3px rgba(7, 13, 11, 0.84), 0 0 0 4px rgba(143, 163, 147, 0.24);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .main-wrapper > header h1,
+            .study-dashboard,
+            .preface-section { animation: none; }
+        }
+
     </style>
 
 </head>
