@@ -11,7 +11,7 @@ favicon.ico
 icons/                   icônes PWA (192, 512, maskable, apple-touch)
 viewer/                  visionneuse intégrée des documents Google Drive
 supabase/functions/      fonction drive-proxy (accès privé à Drive)
-splash/                  splash animé (CSS, JS, images, police)
+splash/                  splash animé et cadre de connexion (CSS, JS, images, police)
 auth/                    écran de connexion (Supabase, comptes QCM-MAJOR.FR)
 admin/                   interface administrateur (édition des modules)
 supabase/                scripts SQL pour le contenu et le suivi des consultations
@@ -72,6 +72,7 @@ Dans le module 4, le menu d’accès reprend les dossiers du module 3. Après av
 - les liens externes Google Drive et `https://Qcm-major.fr` restent des ressources réseau et ne sont pas préchargés ni mis en cache
 - en cas de mise à jour du service worker, un message indique qu’il faut fermer puis rouvrir l’application pour récupérer la nouvelle version
 - au démarrage, `index.html` affiche un splash animé « Couteau Suisse BM4 » (dossier `splash/`, précaché par le service worker) : environ 6 s, une fois par session, fermable d’un toucher et désactivé si `prefers-reduced-motion` est actif
+- l’écran de connexion est entouré par `splash/connexion-cadre.png` ; le fond latéral reprend les couleurs des bords du cadre pour se fondre avec lui. Les deux images sont précachées pour rester disponibles hors ligne
 
 ## Installation GitHub Pages
 
