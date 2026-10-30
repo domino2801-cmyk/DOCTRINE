@@ -154,6 +154,7 @@
         gate.id = 'auth-gate';
         gate.innerHTML =
             '<div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="auth-titre">' +
+            '<p class="auth-kicker" aria-hidden="true">ANC / ACCÈS AU CORPUS</p>' +
             '<h1 id="auth-titre">Connexion</h1>' +
             '<p class="auth-intro">Utilisez vos identifiants QCM-MAJOR.FR.</p>' +
             '<p class="auth-etat" id="auth-etat">Vérification de votre session…</p>' +
