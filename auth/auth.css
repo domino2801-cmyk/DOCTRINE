@@ -338,12 +338,31 @@ html.auth-locked body {
 }
 
 @media (max-width: 700px) {
-    #auth-gate { background-size: auto 90dvh, 100% 100%; }
+    #auth-gate { background-size: auto 100dvh, 100% 100%; }
     .auth-closing-stage {
-        width: 60.3668dvh;
-        height: 90dvh;
+        width: 67.0742dvh;
+        height: 100dvh;
     }
     #auth-gate .auth-card { width: min(336px, calc(100vw - 44px)); }
+}
+
+@media (min-width: 701px) {
+    #auth-gate {
+        background-image:
+            url("../splash/auth-closing-open.png"),
+            radial-gradient(ellipse at center, rgba(81, 84, 61, 0.38), transparent 78%),
+            var(--auth-frame-edge-fill);
+        background-size: auto 100dvh, 100% 100%, 100% 100%;
+    }
+    #auth-closing {
+        background-image:
+            radial-gradient(ellipse at center, rgba(81, 84, 61, 0.38), transparent 78%),
+            var(--auth-frame-edge-fill);
+    }
+    .auth-closing-stage {
+        width: 67.0742dvh;
+        height: 100dvh;
+    }
 }
 
 @media (max-width: 340px) {
