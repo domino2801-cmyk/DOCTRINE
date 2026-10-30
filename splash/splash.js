@@ -13,7 +13,7 @@
     var animationFrame;
     var progressTimer;
     var fermee = false;
-    try { dejaVu = sessionStorage.getItem('anc-splash') === '1'; } catch (e) {}
+    try { dejaVu = sessionStorage.getItem('anc-splash-matrix') === '1'; } catch (e) {}
 
     function fermer() {
         if (fermee || !splash.parentNode) return;
@@ -33,7 +33,7 @@
         return;
     }
 
-    try { sessionStorage.setItem('anc-splash', '1'); } catch (e) {}
+    try { sessionStorage.setItem('anc-splash-matrix', '1'); } catch (e) {}
     document.documentElement.style.overflow = 'hidden';
 
     var contexte = canvas && canvas.getContext('2d');
