@@ -1,6 +1,18 @@
-html.auth-locked body > *:not(#auth-gate):not(#splash) { display: none !important; }
+html.auth-locked body > *:not(#auth-gate):not(#splash):not(#auth-closing) { display: none !important; }
 html.auth-locked body {
     background: #101914;
+}
+
+:root {
+    --auth-frame-edge-fill: linear-gradient(
+        180deg,
+        #65684f 0%,
+        #595c45 12%,
+        #51543d 25%,
+        #464833 55%,
+        #3e402b 78%,
+        #393c26 100%
+    );
 }
 
 #auth-gate {
@@ -10,59 +22,73 @@ html.auth-locked body {
     position: fixed;
     inset: 0;
     z-index: 99000;
-    display: flex;
-    padding: clamp(22px, 5vh, 44px) clamp(16px, 4vw, 40px);
+    display: grid;
+    place-items: center;
+    padding: 16px 0;
     overflow-y: auto;
-    isolation: isolate;
-    border: solid transparent;
-    border-width: clamp(38px, 9vh, 72px) clamp(24px, 7vw, 72px);
-    border-image-source: url("../splash/connexion-cadre.png");
-    border-image-slice: 10% 16% fill;
-    border-image-width: 1;
-    border-image-repeat: stretch;
-    background:
-        radial-gradient(ellipse at 50% 40%, rgba(52, 83, 61, 0.42), transparent 58%),
-        radial-gradient(ellipse at 50% 100%, rgba(0, 170, 212, 0.1), transparent 55%),
-        linear-gradient(145deg, #17231d 0%, #0c1213 55%, #10171b 100%);
+    background-color: #393c26;
+    background-image: url("../splash/auth-closing-open.png"), var(--auth-frame-edge-fill);
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    background-size: auto 100vh, 100% 100%;
+    background-size: auto 100dvh, 100% 100%;
     color: var(--auth-ink);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-#auth-gate::before,
-#auth-gate::after {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    content: "";
-}
-
-#auth-gate::before {
-    background:
-        linear-gradient(rgba(179, 222, 195, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(179, 222, 195, 0.035) 1px, transparent 1px);
-    background-size: 46px 46px;
-    mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);
-}
-
-#auth-gate::after {
-    background: repeating-linear-gradient(
-        to bottom,
-        transparent 0,
-        transparent 3px,
-        rgba(0, 0, 0, 0.11) 4px
-    );
-    opacity: 0.42;
 }
 
 #auth-gate[hidden] { display: none; }
 #auth-gate *, #auth-gate *::before, #auth-gate *::after { box-sizing: border-box; }
 
+#auth-closing {
+    position: fixed;
+    inset: 0;
+    z-index: 100001;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: var(--auth-frame-edge-fill);
+}
+
+.auth-closing-stage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: block;
+    width: 67.0742vh;
+    width: 67.0742dvh;
+    height: 100vh;
+    height: 100dvh;
+    aspect-ratio: 768 / 1145;
+    transform: translate(-50%, -50%);
+}
+
+.auth-closing-base,
+.auth-closing-door {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    pointer-events: none;
+}
+
+.auth-closing-door {
+    z-index: 1;
+    animation: auth-fermeture-porte 700ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+@keyframes auth-fermeture-porte {
+    from { opacity: 0.7; }
+    to { opacity: 1; }
+}
+
 #auth-gate .auth-card {
     position: relative;
-    width: min(460px, 100%);
+    width: min(320px, calc(100vw - 88px));
     margin: auto;
-    padding: 34px clamp(22px, 6vw, 38px) 28px;
+    padding: 20px 18px 17px;
     overflow: hidden;
     border: 2px solid rgba(121, 145, 128, 0.82);
     border-top-color: #9cad9d;
@@ -77,8 +103,8 @@ html.auth-locked body {
         linear-gradient(315deg, rgba(197, 219, 198, 0.45) 0 1px, transparent 1.5px) calc(100% - 9px) calc(100% - 9px) / 18px 18px no-repeat,
         linear-gradient(180deg, transparent, rgba(108, 214, 219, 0.3), transparent) 6px center / 1px 58% no-repeat,
         linear-gradient(180deg, transparent, rgba(108, 214, 219, 0.22), transparent) calc(100% - 6px) center / 1px 58% no-repeat,
-        radial-gradient(ellipse at 100% 0%, rgba(68, 117, 84, 0.19), transparent 44%),
-        linear-gradient(155deg, rgba(29, 42, 37, 0.97), rgba(15, 23, 24, 0.98) 66%);
+        radial-gradient(ellipse at 100% 0%, rgba(68, 117, 84, 0.12), transparent 44%),
+        linear-gradient(155deg, rgba(23, 31, 28, 0.94), rgba(11, 17, 18, 0.96) 66%);
     box-shadow:
         0 30px 90px rgba(0, 0, 0, 0.58),
         0 0 0 4px rgba(7, 13, 11, 0.86),
@@ -168,6 +194,8 @@ html.auth-locked body {
     font-size: 0.8rem;
     letter-spacing: 0.04em;
 }
+
+#auth-gate .auth-etat[hidden] { display: none; }
 
 #auth-gate .auth-etat::before {
     width: 7px;
@@ -305,32 +333,51 @@ html.auth-locked body {
 #auth-logout:hover { border-color: #a82025; background: #fff; color: #a82025; }
 
 @media (max-width: 480px) {
-    #auth-gate {
-        padding: 16px 10px;
-        border-width: clamp(34px, 8vh, 60px) 18px;
+    #auth-gate .auth-card { padding: 17px 14px 14px; }
+    #auth-gate .auth-card::after { top: 15px; right: 16px; }
+}
+
+@media (max-width: 700px) {
+    #auth-gate { background-size: auto 90dvh, 100% 100%; }
+    .auth-closing-stage {
+        width: 60.3668dvh;
+        height: 90dvh;
     }
-    #auth-gate .auth-card { padding-top: 29px; }
-    #auth-gate .auth-card::after { top: 20px; right: 22px; font-size: 3.2rem; }
+    #auth-gate .auth-card { width: min(336px, calc(100vw - 44px)); }
+}
+
+@media (max-width: 340px) {
+    #auth-gate { background-size: auto 100dvh, 100% 100%; }
+    .auth-closing-stage {
+        width: 67.0742dvh;
+        height: 100dvh;
+    }
+    #auth-gate .auth-card { width: min(320px, calc(100vw - 88px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .auth-closing-door {
+        animation: none;
+    }
 }
 
 @media (min-width: 769px) {
-    #auth-gate {
-        border: 0;
-        border-image: none;
-        background-color: #51543e;
-        background-image:
-            url("../splash/connexion-cadre.png"),
-            url("../splash/connexion-fond-lateraux.png");
-        background-position: center, center;
-        background-repeat: no-repeat;
-        background-size: auto min(100%, 900px), 100% min(100%, 900px);
-    }
-
-    #auth-gate .auth-card { transform: scale(0.84, 0.98); }
+    #auth-gate .auth-card { width: min(320px, calc(100vw - 88px)); }
 }
 
-@media (min-width: 769px) and (max-height: 820px) {
-    #auth-gate .auth-card { transform: scale(0.74, 0.84); }
+@media (max-height: 650px) {
+    #auth-gate { padding-block: 8px; }
+    #auth-gate .auth-card { padding: 14px 14px 12px; }
+    #auth-gate .auth-kicker { margin-bottom: 5px; }
+    #auth-gate h1 { margin-bottom: 5px; font-size: clamp(1.35rem, 6vw, 1.65rem); }
+    #auth-gate p { margin-bottom: 8px; font-size: 0.88rem; line-height: 1.4; }
+    #auth-gate .auth-intro { margin-bottom: 10px; }
+    #auth-gate .auth-etat { min-height: 32px; margin-top: 10px; }
+    #auth-gate label { margin: 9px 0 4px; }
+    #auth-gate input { padding: 9px 12px; }
+    #auth-gate .auth-message { min-height: 1em; margin-top: 6px; }
+    #auth-gate button[type="submit"] { margin-top: 10px; padding: 10px 12px; }
+    #auth-gate .auth-pied { margin-top: 12px; padding-top: 10px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

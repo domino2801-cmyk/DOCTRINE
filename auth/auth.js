@@ -204,6 +204,29 @@
         document.dispatchEvent(new CustomEvent('doctrine:login'));
     }
 
+    function fermerArmoirePuisDeverrouiller(s) {
+        var fermeture = document.createElement('div');
+        fermeture.id = 'auth-closing';
+        fermeture.setAttribute('aria-hidden', 'true');
+        fermeture.innerHTML =
+            '<div class="auth-closing-stage">' +
+            '<img class="auth-closing-base" src="splash/auth-closing-open.png" alt="">' +
+            '<img class="auth-closing-door" src="splash/auth-closing-door-layer.png" alt="">' +
+            '</div>';
+        document.body.appendChild(fermeture);
+
+        var mouvementReduit = window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        setTimeout(function () {
+            setTimeout(function () {
+                fermeture.remove();
+                bouton.disabled = false;
+                bouton.textContent = 'Se connecter';
+                deverrouiller(s);
+            }, 1000);
+        }, mouvementReduit ? 0 : 700);
+    }
+
     function verrouiller() {
         root.classList.add('auth-locked');
         var mdp = gate.querySelector('#auth-mdp');
@@ -232,12 +255,11 @@
                 if (!s.email) s.email = email;
                 ecrire(s);
                 gate.querySelector('#auth-mdp').value = '';
-                deverrouiller(s);
+                bouton.textContent = 'Fermeture en cours…';
+                fermerArmoirePuisDeverrouiller(s);
             })
             .catch(function (err) {
                 message.textContent = messageErreur(err);
-            })
-            .then(function () {
                 bouton.disabled = false;
                 bouton.textContent = 'Se connecter';
             });
