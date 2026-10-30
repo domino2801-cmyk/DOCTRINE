@@ -205,15 +205,34 @@
     }
 
     function appliquerTout(lignes) {
+        if (!Array.isArray(lignes)) {
+            console.error('Cache administrateur invalide : une liste de contenus était attendue.');
+            lignes = [];
+        }
         MODULES.forEach(function (n) {
-            var l = lignes.filter(function (x) { return String(x.module_id) === n; })[0];
+            var l = lignes.filter(function (x) { return x && String(x.module_id) === n; })[0];
             appliquer(n, l ? l.html : defauts[n]);
         });
         rafraichirProgression();
     }
 
     function lireCache() {
-        try { return JSON.parse(localStorage.getItem(CACHE_KEY)) || []; } catch (e) { return []; }
+        var contenu;
+        try {
+            contenu = localStorage.getItem(CACHE_KEY);
+        } catch (e) {
+            console.error('Impossible de lire le cache administrateur.', e);
+            return [];
+        }
+        if (contenu === null) return [];
+        try {
+            var lignes = JSON.parse(contenu);
+            if (Array.isArray(lignes)) return lignes;
+            console.error('Cache administrateur invalide : une liste de contenus était attendue.');
+        } catch (e) {
+            console.error('Cache administrateur illisible : le JSON est invalide.', e);
+        }
+        return [];
     }
 
     function api(chemin, options) {
@@ -237,6 +256,10 @@
 
     function charger() {
         api('doctrine_content?select=module_id,html').then(function (lignes) {
+            if (!Array.isArray(lignes)) {
+                console.error('Réponse invalide de doctrine_content : une liste de contenus était attendue.');
+                return;
+            }
             try { localStorage.setItem(CACHE_KEY, JSON.stringify(lignes)); } catch (e) {}
             if (!adminActif) appliquerTout(lignes);
         }).catch(function () { /* table absente ou hors ligne : cache puis contenu d'origine */ });

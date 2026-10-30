@@ -399,6 +399,52 @@ html.auth-locked body {
     #auth-gate .auth-pied { margin-top: 12px; padding-top: 10px; }
 }
 
+@media (min-width: 701px) {
+    #auth-gate .auth-card {
+        width: min(380px, 44.5dvh, calc(100vw - 64px));
+        padding: clamp(12px, 2.5dvh, 24px) clamp(16px, 2.5dvh, 24px);
+        border-radius: 23px;
+    }
+
+    #auth-gate .auth-kicker {
+        margin-bottom: 10px;
+        font-size: 0.74rem;
+    }
+
+    #auth-gate h1 {
+        margin-bottom: 10px;
+        font-size: clamp(1.7rem, 3.2dvh, 2.1rem);
+    }
+
+    #auth-gate p { font-size: 0.98rem; }
+    #auth-gate .auth-intro { margin-bottom: 18px; }
+    #auth-gate label { margin: 13px 0 6px; font-size: 0.86rem; }
+
+    #auth-gate input {
+        padding: 14px;
+        border-color: rgba(37, 50, 42, 0.28);
+        background: rgba(238, 239, 230, 0.96);
+        color: #17211b;
+    }
+
+    #auth-gate input:focus {
+        border-color: #438d70;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(80, 194, 139, 0.2), 0 0 20px rgba(80, 194, 139, 0.12);
+    }
+
+    #auth-gate .auth-password-toggle { color: #38463d; }
+    #auth-gate .auth-password-toggle:hover { background: rgba(29, 52, 38, 0.1); color: #17211b; }
+
+    #auth-gate button[type="submit"] {
+        margin-top: 17px;
+        padding: 16px;
+        font-size: 1rem;
+    }
+
+    #auth-gate .auth-pied { margin-top: 17px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
     #auth-gate *,
     #auth-gate *::before,
