@@ -8,13 +8,23 @@
     height: 100vh;
     height: 100dvh;
     overflow: hidden;
-    background: #797d66;
+    background: radial-gradient(ellipse at center, #394d3d 0%, #26372b 55%, #101b14 100%);
     opacity: 1;
     transition: opacity 0.65s ease;
 }
 
 #splash.splash-fin {
     opacity: 0;
+    pointer-events: none;
+}
+
+#splash #matrix {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    opacity: 0.36;
     pointer-events: none;
 }
 
@@ -27,6 +37,8 @@
 }
 
 #splash .splash-art {
+    position: relative;
+    z-index: 1;
     display: block;
     width: 100%;
     height: 100%;
@@ -41,6 +53,7 @@
 
 #splash .splash-brand {
     position: absolute;
+    z-index: 3;
     top: 66.2%;
     left: 50%;
     width: 48%;
@@ -88,6 +101,40 @@
     animation: anc-nom-apparait 0.45s 0.9s ease-out forwards;
 }
 
+#splash .splash-loading {
+    position: absolute;
+    z-index: 4;
+    right: 0;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    left: 0;
+    width: min(70%, 400px);
+    margin: 0 auto;
+}
+
+#splash .splash-loading-text {
+    margin-bottom: 10px;
+    color: #fff;
+    font: 11px/1.2 Arial, Helvetica, sans-serif;
+    letter-spacing: 3px;
+    text-align: center;
+}
+
+#splash .splash-progress {
+    height: 6px;
+    overflow: hidden;
+    border-radius: 20px;
+    background: #506153;
+    box-shadow: 0 0 12px #00bfff;
+}
+
+#splash .splash-progress-bar {
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #008cff, #fff, #00eaff);
+    box-shadow: 0 0 15px #00d9ff;
+    transition: width 0.15s linear;
+}
+
 @media (min-width: 701px) {
     #splash .splash-wordmark { transform: scaleX(1.22); }
 }
@@ -118,6 +165,10 @@
         font-size: clamp(0.62rem, 3.2vw, 0.9rem);
         letter-spacing: 0.005em;
     }
+
+    #splash .splash-loading {
+        width: min(86%, 400px);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -129,6 +180,10 @@
     #splash .splash-name {
         animation: none;
         opacity: 1;
+    }
+
+    #splash .splash-progress-bar {
+        transition: none;
     }
 
     #splash .splash-wordmark span:first-child {
