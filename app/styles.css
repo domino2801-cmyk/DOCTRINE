@@ -1449,6 +1449,12 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
         flex-wrap: wrap;
         margin: 0 0 12px;
     }
+    @media (min-width: 769px) {
+        .outil-redaction.dossier-item {
+            box-sizing: border-box;
+            width: calc((100% - 12px) / 2);
+        }
+    }
     .outil-redaction > .doc-link {
         box-sizing: border-box;
         width: 5.2em;
