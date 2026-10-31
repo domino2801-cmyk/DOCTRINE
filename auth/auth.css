@@ -333,17 +333,22 @@ html.auth-locked body {
 #auth-logout:hover { border-color: #a82025; background: #fff; color: #a82025; }
 
 @media (max-width: 480px) {
-    #auth-gate .auth-card { padding: 17px 14px 14px; }
+    #auth-gate .auth-card { padding: 17px 16px 15px; }
     #auth-gate .auth-card::after { top: 15px; right: 16px; }
+    #auth-gate input,
+    #auth-gate button[type="submit"] { min-height: 48px; }
 }
 
 @media (max-width: 700px) {
-    #auth-gate { background-size: auto 100dvh, 100% 100%; }
+    #auth-gate {
+        padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+        background-size: auto 100dvh, 100% 100%;
+    }
     .auth-closing-stage {
         width: 67.0742dvh;
         height: 100dvh;
     }
-    #auth-gate .auth-card { width: min(336px, calc(100vw - 44px)); }
+    #auth-gate .auth-card { width: min(400px, calc(100vw - 32px)); }
 }
 
 @media (min-width: 701px) {
@@ -371,7 +376,6 @@ html.auth-locked body {
         width: 67.0742dvh;
         height: 100dvh;
     }
-    #auth-gate .auth-card { width: min(320px, calc(100vw - 88px)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
