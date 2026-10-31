@@ -1442,19 +1442,27 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
     .mod-body input[type="radio"] { accent-color: #76c493; }
     .mod-body input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; }
     .outil-redaction {
+        box-sizing: border-box;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
-        flex-wrap: wrap;
+        gap: 10px;
         margin: 0 0 12px;
+        padding: 10px 12px;
+        border: 1px solid rgba(165, 190, 170, 0.16);
+        border-left: 3px solid #a6373d;
+        border-radius: 8px;
+        background: linear-gradient(145deg, rgba(45, 59, 49, 0.82), rgba(24, 35, 32, 0.9));
+        color: #e0e8df;
+        font-size: 0.95rem;
+        text-align: left;
     }
     @media (min-width: 769px) {
-        .outil-redaction.dossier-item {
-            box-sizing: border-box;
+        .outil-redaction {
             width: calc((100% - 12px) / 2);
         }
     }
+    li.outil-redaction { list-style: none; }
     .outil-redaction > .doc-link {
         box-sizing: border-box;
         width: 5.2em;

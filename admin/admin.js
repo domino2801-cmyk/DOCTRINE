@@ -191,6 +191,12 @@
     function assurerOutilsEtude(el) {
         var liste = el.querySelector('.dossier-list');
         if (liste && !liste.id) liste.id = 'studyDossierList';
+        var titreOutil = Array.from(el.querySelectorAll('p > strong')).find(function (s) {
+            return s.textContent.trim().indexOf('3.2.') === 0;
+        });
+        var blocOutil = titreOutil && titreOutil.parentElement.nextElementSibling;
+        if (blocOutil && /^(UL|OL)$/.test(blocOutil.tagName)) blocOutil = blocOutil.querySelector('li');
+        if (blocOutil && blocOutil.querySelector('a.doc-link')) blocOutil.classList.add('outil-redaction');
         if (!blocsEtude.length || el.querySelector('#dossierDifficultyFilter')) return;
         var ancre = el.querySelector('.progress-container') || liste;
         blocsEtude.forEach(function (bloc) {
