@@ -153,6 +153,7 @@
         gate = document.createElement('div');
         gate.id = 'auth-gate';
         gate.innerHTML =
+            '<div class="auth-stage">' +
             '<div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="auth-titre">' +
             '<p class="auth-kicker" aria-hidden="true">ANC / ACCÈS AU CORPUS</p>' +
             '<h1 id="auth-titre">Connexion</h1>' +
@@ -172,7 +173,7 @@
             '<p class="auth-pied" id="auth-pied" hidden>Pas encore de compte ? ' +
             '<a href="' + SIGNUP_URL + '" target="_blank" rel="noopener">Créez-le sur QCM-MAJOR.FR</a>' +
             ' puis revenez ici avec les mêmes identifiants. Aucune nouvelle inscription n’est nécessaire.</p>' +
-            '</div>';
+            '</div></div>';
         document.body.appendChild(gate);
         form = gate.querySelector('#auth-form');
         message = gate.querySelector('#auth-message');

@@ -23,21 +23,45 @@ html.auth-locked body {
     inset: 0;
     z-index: 99000;
     display: grid;
-    place-items: center;
-    padding: 16px 0;
+    place-items: safe center;
+    overflow-x: hidden;
     overflow-y: auto;
-    background-color: #393c26;
-    background-image: url("../splash/auth-closing-open.png"), var(--auth-frame-edge-fill);
-    background-position: center, center;
-    background-repeat: no-repeat, no-repeat;
-    background-size: auto 100vh, 100% 100%;
-    background-size: auto 100dvh, 100% 100%;
+    background:
+        radial-gradient(ellipse at center, rgba(103, 105, 78, 0.72), rgba(54, 60, 43, 0.82) 48%, rgba(12, 18, 14, 0.98) 100%),
+        var(--auth-frame-edge-fill);
     color: var(--auth-ink);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 #auth-gate[hidden] { display: none; }
 #auth-gate *, #auth-gate *::before, #auth-gate *::after { box-sizing: border-box; }
+
+.auth-stage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 67.0742dvh;
+    height: 100dvh;
+    flex: 0 0 auto;
+    transform: translate(-50%, -50%);
+    background: url("../splash/auth-closing-open.png") center / 100% 100% no-repeat;
+    box-shadow:
+        0 0 0 1px rgba(231, 236, 212, 0.72),
+        0 0 0 5px rgba(9, 15, 12, 0.92),
+        0 0 0 7px rgba(190, 202, 166, 0.62),
+        0 0 0 11px rgba(8, 14, 11, 0.72),
+        0 24px 70px rgba(0, 0, 0, 0.72);
+}
+
+.auth-stage::after {
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(4, 9, 7, 0.72);
+    content: "";
+    pointer-events: none;
+}
 
 #auth-closing {
     position: fixed;
@@ -86,10 +110,14 @@ html.auth-locked body {
 
 #auth-gate .auth-card {
     position: relative;
-    width: min(320px, calc(100vw - 88px));
-    margin: auto;
-    padding: 20px 18px 17px;
-    overflow: hidden;
+    width: min(62%, 400px, calc(100vw - 32px));
+    max-height: min(65dvh, calc(100dvh - 24px));
+    margin: 0;
+    padding: clamp(12px, 2.2dvh, 21px) clamp(14px, 2.5dvh, 24px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-color: rgba(168, 201, 178, 0.52) rgba(5, 12, 12, 0.3);
+    scrollbar-width: thin;
     border: 2px solid rgba(121, 145, 128, 0.82);
     border-top-color: #9cad9d;
     border-left-color: #728579;
@@ -342,16 +370,7 @@ html.auth-locked body {
 }
 
 @media (max-width: 700px) {
-    #auth-gate {
-        padding: max(8px, env(safe-area-inset-top)) 12px max(8px, env(safe-area-inset-bottom));
-        background-size: auto 100dvh, 100% 100%;
-    }
-    .auth-closing-stage {
-        width: 67.0742dvh;
-        height: 100dvh;
-    }
     #auth-gate .auth-card {
-        width: min(336px, 39dvh, calc(100vw - 32px));
         padding: clamp(12px, 2dvh, 17px) clamp(12px, 3vw, 16px);
         border: 1px solid rgba(195, 220, 207, 0.16);
         border-radius: 14px;
@@ -362,13 +381,6 @@ html.auth-locked body {
 }
 
 @media (min-width: 701px) {
-    #auth-gate {
-        background-image:
-            url("../splash/auth-closing-open.png"),
-            radial-gradient(ellipse at center, rgba(81, 84, 61, 0.38), transparent 78%),
-            var(--auth-frame-edge-fill);
-        background-size: auto 100dvh, 100% 100%, 100% 100%;
-    }
     #auth-closing {
         background-image:
             radial-gradient(ellipse at center, rgba(81, 84, 61, 0.38), transparent 78%),
@@ -380,29 +392,13 @@ html.auth-locked body {
     }
 }
 
-@media (max-width: 340px) {
-    #auth-gate { background-size: auto 100dvh, 100% 100%; }
-    .auth-closing-stage {
-        width: 67.0742dvh;
-        height: 100dvh;
-    }
-    #auth-gate .auth-card { width: min(320px, 39dvh, calc(100vw - 32px)); }
-}
-
 @media (prefers-reduced-motion: reduce) {
     .auth-closing-door {
         animation: none;
     }
 }
 
-@media (min-width: 769px) {
-    #auth-gate .auth-card { width: min(320px, calc(100vw - 88px)); }
-}
-
 @media (max-height: 650px) {
-    #auth-gate {
-        padding-block: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-bottom));
-    }
     #auth-gate .auth-card { padding: 10px 12px 8px; }
     #auth-gate .auth-kicker { margin-bottom: 5px; }
     #auth-gate h1 { margin-bottom: 5px; font-size: clamp(1.35rem, 6vw, 1.65rem); }
@@ -418,17 +414,18 @@ html.auth-locked body {
 
 @media (min-width: 701px) {
     #auth-gate .auth-card {
-        width: min(310px, 34dvh, calc(100vw - 64px));
-        padding: clamp(14px, 2.2dvh, 21px) clamp(18px, 2.5dvh, 24px);
+        width: min(62%, 400px, calc(100vw - 32px));
+        padding: clamp(14px, 2.2dvh, 21px) clamp(16px, 2.5dvh, 24px);
         border: 1px solid rgba(195, 220, 207, 0.2);
         border-radius: 15px;
         background:
             radial-gradient(ellipse at 50% 0%, rgba(56, 95, 70, 0.14), transparent 58%),
             linear-gradient(155deg, rgba(8, 15, 16, 0.78), rgba(8, 15, 16, 0.9));
         box-shadow:
-            0 18px 50px rgba(0, 0, 0, 0.32),
+            0 12px 38px rgba(0, 0, 0, 0.32),
             inset 0 0 0 1px rgba(4, 10, 9, 0.35),
             inset 0 1px rgba(255, 255, 255, 0.06);
+        font-size: 0.94rem;
     }
 
     #auth-gate .auth-card::after { display: none; }
@@ -443,12 +440,12 @@ html.auth-locked body {
         font-size: clamp(1.55rem, 3dvh, 1.9rem);
     }
 
-    #auth-gate p { font-size: 0.92rem; }
-    #auth-gate .auth-intro { margin-bottom: 14px; }
-    #auth-gate label { margin: 11px 0 5px; font-size: 0.8rem; }
+    #auth-gate p { font-size: 0.88rem; }
+    #auth-gate .auth-intro { margin-bottom: 12px; }
+    #auth-gate label { margin: 9px 0 5px; font-size: 0.8rem; }
 
     #auth-gate input {
-        padding: 12px 13px;
+        padding: 10px 12px;
         border-color: rgba(195, 220, 207, 0.24);
         background: rgba(5, 12, 13, 0.68);
         color: #f4f7f2;
@@ -478,12 +475,30 @@ html.auth-locked body {
     #auth-gate .auth-password-toggle:hover { background: rgba(183, 219, 194, 0.1); color: #fff; }
 
     #auth-gate button[type="submit"] {
-        margin-top: 14px;
-        padding: 13px 16px;
-        font-size: 0.95rem;
+        margin-top: 12px;
+        padding: 12px 14px;
+        font-size: 0.9rem;
     }
 
-    #auth-gate .auth-pied { margin-top: 14px; padding-top: 12px; }
+    #auth-gate .auth-pied { margin-top: 12px; padding-top: 10px; }
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+    #auth-gate .auth-card {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: min(440px, calc(100vw - 48px));
+        max-height: calc(100dvh - max(16px, env(safe-area-inset-top)) - max(16px, env(safe-area-inset-bottom)));
+        padding: 10px 16px;
+        border: 1px solid rgba(195, 220, 207, 0.3);
+        border-radius: 14px;
+        background: rgba(8, 15, 16, 0.96);
+        box-shadow: 0 12px 38px rgba(0, 0, 0, 0.58), inset 0 0 0 1px rgba(157, 179, 162, 0.12);
+        transform: translate(-50%, -50%);
+    }
+
+    #auth-gate .auth-card::after { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
