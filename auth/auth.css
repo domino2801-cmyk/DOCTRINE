@@ -100,12 +100,39 @@ html.auth-locked body {
 
 .auth-closing-door {
     z-index: 1;
-    animation: auth-fermeture-porte 700ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+    animation: auth-fermeture-porte 1800ms cubic-bezier(0.65, 0, 0.35, 1) both;
+    will-change: transform;
+}
+
+.auth-closing-stage { overflow: hidden; }
+
+.auth-porte {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.auth-porte img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    transform: translateY(0);
+    transition: transform 1800ms cubic-bezier(0.65, 0, 0.35, 1);
+    will-change: transform;
+}
+
+.auth-porte.ouverte img { transform: translateY(100%); }
+
+@media (prefers-reduced-motion: reduce) {
+    .auth-porte img { transition: none; }
 }
 
 @keyframes auth-fermeture-porte {
-    from { opacity: 0.7; }
-    to { opacity: 1; }
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
 }
 
 #auth-gate .auth-card {

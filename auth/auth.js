@@ -173,7 +173,9 @@
             '<p class="auth-pied" id="auth-pied" hidden>Pas encore de compte ? ' +
             '<a href="' + SIGNUP_URL + '" target="_blank" rel="noopener">Créez-le sur QCM-MAJOR.FR</a>' +
             ' puis revenez ici avec les mêmes identifiants. Aucune nouvelle inscription n’est nécessaire.</p>' +
-            '</div></div>';
+            '</div>' +
+            '<div class="auth-porte" aria-hidden="true"><img src="splash/auth-closing-door-layer.png" alt=""></div>' +
+            '</div>';
         document.body.appendChild(gate);
         form = gate.querySelector('#auth-form');
         message = gate.querySelector('#auth-message');
@@ -189,11 +191,20 @@
         });
     }
 
+    function ouvrirPorte() {
+        var porte = gate.querySelector('.auth-porte');
+        if (!porte) return;
+        porte.classList.remove('ouverte');
+        void porte.offsetWidth;
+        setTimeout(function () { porte.classList.add('ouverte'); }, 450);
+    }
+
     function montrerFormulaire() {
         gate.querySelector('#auth-etat').hidden = true;
         form.hidden = false;
         pied.hidden = false;
         gate.hidden = false;
+        ouvrirPorte();
         var champ = gate.querySelector('#auth-email');
         if (champ && !champ.value) champ.focus();
     }
@@ -206,26 +217,18 @@
     }
 
     function fermerArmoirePuisDeverrouiller(s) {
-        var fermeture = document.createElement('div');
-        fermeture.id = 'auth-closing';
-        fermeture.setAttribute('aria-hidden', 'true');
-        fermeture.innerHTML =
-            '<div class="auth-closing-stage">' +
-            '<img class="auth-closing-base" src="splash/auth-closing-open.png" alt="">' +
-            '<img class="auth-closing-door" src="splash/auth-closing-door-layer.png" alt="">' +
-            '</div>';
-        document.body.appendChild(fermeture);
+        var porte = gate.querySelector('.auth-porte');
+        if (porte) porte.classList.remove('ouverte');
 
         var mouvementReduit = window.matchMedia &&
             window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         setTimeout(function () {
             setTimeout(function () {
-                fermeture.remove();
                 bouton.disabled = false;
                 bouton.textContent = 'Se connecter';
                 deverrouiller(s);
-            }, 1000);
-        }, mouvementReduit ? 0 : 700);
+            }, 700);
+        }, mouvementReduit ? 0 : 1800);
     }
 
     function verrouiller() {
