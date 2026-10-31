@@ -12,6 +12,7 @@
     var corps;
     var retour;
     var telecharger;
+    var toutBtn;
     var dernierFocus;
     var urlObjet = null;
     var courant = null;
@@ -70,7 +71,9 @@
         titre = element('span', 'dv-title');
         telecharger = bouton('dv-btn dv-download', '⬇ Télécharger', telechargerCourant);
         telecharger.hidden = true;
-        barre.append(retour, titre, telecharger, bouton('dv-btn', 'Fermer', fermer));
+        toutBtn = bouton('dv-btn dv-download', '⬇ Tout télécharger', telechargerTout);
+        toutBtn.hidden = true;
+        barre.append(retour, titre, toutBtn, telecharger, bouton('dv-btn', 'Fermer', fermer));
 
         corps = element('div', 'dv-body');
         panneau.append(barre, corps);
@@ -84,6 +87,7 @@
         if (urlObjet) { URL.revokeObjectURL(urlObjet); urlObjet = null; }
         courant = null;
         telecharger.hidden = true;
+        toutBtn.hidden = true;
     }
 
     function message(texte, erreur) {
@@ -235,6 +239,7 @@
             return r.json().then(function (d) {
                 if (numero !== requete) return;
                 titre.textContent = d.name || 'Dossier';
+                dossierNom = d.name || nom || 'dossier';
                 var liste = element('ul', 'dv-list');
                 (d.files || []).forEach(function (f) {
                     var li = document.createElement('li');
@@ -247,6 +252,7 @@
                 });
                 if (!liste.children.length) return message('Dossier vide.');
                 corps.replaceChildren(liste);
+                toutBtn.hidden = false;
             });
         }).catch(function () {
             if (numero === requete) message('Impossible d\u2019ouvrir ce dossier pour le moment.', true);
@@ -254,6 +260,136 @@
     }
 
     var contexteModule = '';
+    var dossierNom = '';
+    var toutEnCours = false;
+    var tableCrc = null;
+
+    function crc32(octets) {
+        if (!tableCrc) {
+            tableCrc = new Uint32Array(256);
+            for (var n = 0; n < 256; n++) {
+                var c = n;
+                for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+                tableCrc[n] = c >>> 0;
+            }
+        }
+        var crc = 0xFFFFFFFF;
+        for (var i = 0; i < octets.length; i++) crc = tableCrc[(crc ^ octets[i]) & 0xFF] ^ (crc >>> 8);
+        return (crc ^ 0xFFFFFFFF) >>> 0;
+    }
+
+    // Archive ZIP sans compression (suffisant pour des PDF/Office déjà compressés)
+    function creerZip(entrees) {
+        var encodeur = new TextEncoder();
+        var morceaux = [];
+        var centrale = [];
+        var decalage = 0;
+        var d = new Date();
+        var heure = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+        var date = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+        entrees.forEach(function (e) {
+            var nom = encodeur.encode(e.nom);
+            var crc = crc32(e.donnees);
+            var local = new DataView(new ArrayBuffer(30));
+            local.setUint32(0, 0x04034b50, true);
+            local.setUint16(4, 20, true);
+            local.setUint16(6, 0x0800, true);
+            local.setUint16(10, heure, true);
+            local.setUint16(12, date, true);
+            local.setUint32(14, crc, true);
+            local.setUint32(18, e.donnees.length, true);
+            local.setUint32(22, e.donnees.length, true);
+            local.setUint16(26, nom.length, true);
+            morceaux.push(local.buffer, nom, e.donnees);
+            var cd = new DataView(new ArrayBuffer(46));
+            cd.setUint32(0, 0x02014b50, true);
+            cd.setUint16(4, 20, true);
+            cd.setUint16(6, 20, true);
+            cd.setUint16(8, 0x0800, true);
+            cd.setUint16(12, heure, true);
+            cd.setUint16(14, date, true);
+            cd.setUint32(16, crc, true);
+            cd.setUint32(20, e.donnees.length, true);
+            cd.setUint32(24, e.donnees.length, true);
+            cd.setUint16(28, nom.length, true);
+            cd.setUint32(42, decalage, true);
+            centrale.push(cd.buffer, nom);
+            decalage += 30 + nom.length + e.donnees.length;
+        });
+        var tailleCentrale = centrale.reduce(function (t, m) { return t + (m.byteLength || m.length); }, 0);
+        var fin = new DataView(new ArrayBuffer(22));
+        fin.setUint32(0, 0x06054b50, true);
+        fin.setUint16(8, entrees.length, true);
+        fin.setUint16(10, entrees.length, true);
+        fin.setUint32(12, tailleCentrale, true);
+        fin.setUint32(16, decalage, true);
+        return new Blob(morceaux.concat(centrale, [fin.buffer]), { type: 'application/zip' });
+    }
+
+    function nomSur(nom) {
+        return String(nom || 'document').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_').trim() || 'document';
+    }
+
+    // Parcourt le dossier (sous-dossiers inclus) et accumule les fichiers téléchargés via le proxy
+    function collecter(id, prefixe, entrees, bilan, profondeur) {
+        return proxy('list', id).then(function (r) {
+            if (!r.ok || !r.headers.get('X-Doctrine-Proxy')) throw new Error('liste');
+            return r.json();
+        }).then(function (d) {
+            return (d.files || []).reduce(function (suite, f) {
+                return suite.then(function () {
+                    if (f.mimeType === 'application/vnd.google-apps.folder') {
+                        return profondeur < 3 ? collecter(f.id, prefixe + nomSur(f.name) + '/', entrees, bilan, profondeur + 1) : null;
+                    }
+                    bilan.total++;
+                    toutBtn.textContent = '⏳ ' + bilan.fait + '/' + bilan.total + '…';
+                    return proxy('file', f.id).then(function (rf) {
+                        if (!rf.ok) throw new Error('fichier');
+                        var entete = rf.headers.get('X-File-Name');
+                        return rf.arrayBuffer().then(function (buf) {
+                            var base = nomSur(entete ? decodeURIComponent(entete) : f.name);
+                            var nom = prefixe + base;
+                            var n = 1;
+                            while (bilan.noms[nom]) nom = prefixe + (n++) + '_' + base;
+                            bilan.noms[nom] = true;
+                            entrees.push({ nom: nom, donnees: new Uint8Array(buf) });
+                            bilan.fait++;
+                        });
+                    }).catch(function () { bilan.echecs++; });
+                });
+            }, Promise.resolve());
+        });
+    }
+
+    function telechargerTout() {
+        if (toutEnCours || !dossierCourant) return;
+        toutEnCours = true;
+        toutBtn.disabled = true;
+        var entrees = [];
+        var bilan = { total: 0, fait: 0, echecs: 0, noms: {} };
+        var nomDossier = dossierNom || 'dossier';
+        collecter(dossierCourant, '', entrees, bilan, 0).then(function () {
+            if (!entrees.length) throw new Error('vide');
+            var url = URL.createObjectURL(creerZip(entrees));
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = nomSur(nomDossier) + '.zip';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+            toutBtn.textContent = bilan.echecs ? '✓ Zip prêt (' + bilan.echecs + ' échec)' : '✓ ' + bilan.fait + ' fichiers';
+            document.dispatchEvent(new CustomEvent('doctrine:download', {
+                detail: { module: contexteModule, title: nomSur(nomDossier) + '.zip', url: 'https://drive.google.com/drive/folders/' + dossierCourant }
+            }));
+        }).catch(function () {
+            toutBtn.textContent = '⚠ Échec du téléchargement';
+        }).then(function () {
+            toutEnCours = false;
+            toutBtn.disabled = false;
+            setTimeout(function () { toutBtn.textContent = '⬇ Tout télécharger'; }, 3000);
+        });
+    }
 
     function telechargerCourant() {
         if (!urlObjet || !courant) return;
