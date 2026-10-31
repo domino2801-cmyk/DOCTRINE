@@ -505,6 +505,8 @@
         b('Enregistrer', 'adm-save', function () { enregistrer(etat); });
         b('Annuler', '', function () { quitter(true); });
         b('Valeurs d\'origine', 'adm-danger', function () { reinitialiser(n, etat); });
+        b('⬇ Sauvegarde', '', function () { exporterSauvegarde(etat); });
+        b('⬆ Restaurer', '', function () { choisirSauvegarde(etat); });
         bar.appendChild(etat);
         return bar;
     }
@@ -589,6 +591,96 @@
             etat.className = 'adm-state err';
             etat.textContent = messageErreur(err);
         });
+    }
+
+    var TAILLE_MAX_SAUVEGARDE = 2 * 1024 * 1024;
+
+    function telechargerFichier(nom, texte) {
+        var url = URL.createObjectURL(new Blob([texte], { type: 'application/json' }));
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = nom;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    }
+
+    function exporterSauvegarde(etat) {
+        etat.className = 'adm-state';
+        etat.textContent = 'Préparation de la sauvegarde…';
+        api('doctrine_content?select=module_id,html').then(function (lignes) {
+            if (!Array.isArray(lignes)) throw new Error('Réponse invalide du serveur.');
+            var modules = lignes.filter(function (l) { return l && MODULES.indexOf(String(l.module_id)) !== -1; })
+                .map(function (l) { return { module_id: String(l.module_id), html: String(l.html || '') }; });
+            var contenu = { format: 'doctrine-content', version: 1, exporte_le: new Date().toISOString(), modules: modules };
+            telechargerFichier('doctrine-sauvegarde-' + contenu.exporte_le.slice(0, 10) + '.json', JSON.stringify(contenu, null, 2));
+            etat.textContent = modules.length
+                ? 'Sauvegarde téléchargée (' + modules.length + ' module(s) personnalisé(s)).'
+                : 'Aucun module personnalisé : le fichier téléchargé est vide.';
+        }).catch(function (err) {
+            etat.className = 'adm-state err';
+            etat.textContent = messageErreur(err);
+        });
+    }
+
+    function lireSauvegarde(texte) {
+        var donnees;
+        try { donnees = JSON.parse(texte); } catch (e) { throw new Error('Fichier illisible : JSON invalide.'); }
+        if (!donnees || donnees.format !== 'doctrine-content' || !Array.isArray(donnees.modules)) {
+            throw new Error('Ce fichier n\'est pas une sauvegarde DOCTRINE.');
+        }
+        var vus = {};
+        return donnees.modules.map(function (l) {
+            var id = l && String(l.module_id);
+            if (MODULES.indexOf(id) === -1 || typeof l.html !== 'string' || vus[id]) {
+                throw new Error('Sauvegarde invalide : module ou contenu incorrect.');
+            }
+            vus[id] = true;
+            return { module_id: id, html: l.html };
+        });
+    }
+
+    function restaurerSauvegarde(lignes, etat) {
+        if (!lignes.length) { etat.textContent = 'La sauvegarde ne contient aucun module.'; return; }
+        var liste = lignes.map(function (l) { return l.module_id; }).join(', ');
+        if (!window.confirm('Remplacer pour tous les utilisateurs le contenu des modules ' + liste + ' par cette sauvegarde ?\nLes modifications non enregistrées seront perdues.')) return;
+        etat.textContent = 'Restauration…';
+        api('doctrine_content?on_conflict=module_id', {
+            methode: 'POST', corps: lignes, prefer: 'resolution=merge-duplicates,return=minimal'
+        }).then(function () {
+            var cache = lireCache().filter(function (x) { return !lignes.some(function (l) { return l.module_id === String(x.module_id); }); });
+            try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache.concat(lignes))); } catch (e) {}
+            quitter(false);
+            lignes.forEach(function (l) { appliquer(l.module_id, l.html); });
+            rafraichirProgression();
+        }).catch(function (err) {
+            etat.className = 'adm-state err';
+            etat.textContent = messageErreur(err);
+        });
+    }
+
+    function choisirSauvegarde(etat) {
+        var champ = document.createElement('input');
+        champ.type = 'file';
+        champ.accept = '.json,application/json';
+        champ.addEventListener('change', function () {
+            var fichier = champ.files && champ.files[0];
+            if (!fichier) return;
+            etat.className = 'adm-state';
+            if (fichier.size > TAILLE_MAX_SAUVEGARDE) {
+                etat.className = 'adm-state err';
+                etat.textContent = 'Fichier trop volumineux (2 Mo maximum).';
+                return;
+            }
+            fichier.text().then(function (texte) {
+                restaurerSauvegarde(lireSauvegarde(texte), etat);
+            }).catch(function (err) {
+                etat.className = 'adm-state err';
+                etat.textContent = err.message;
+            });
+        });
+        champ.click();
     }
 
     function element(tag, className, text) {

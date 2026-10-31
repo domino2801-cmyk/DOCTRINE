@@ -4,7 +4,8 @@
 
 ```
 index.html               application BM4 (entrée unique du site et de la PWA)
-INDEX BM4V2.HTML         ancienne URL conservée par redirection
+app/                     styles.css (styles), app.js (logique des modules), effets.js (animations)
+INDEX BM4V2.HTML         ancienne URL conservée par redirection (ne pas supprimer : anciens liens)
 manifest.webmanifest     manifeste PWA
 sw.js                    service worker (doit rester à la racine : portée)
 favicon.ico
@@ -20,7 +21,7 @@ supabase/                scripts SQL pour le contenu et le suivi des consultatio
 
 ## Interface administrateur
 
-Un compte administrateur voit le bouton **« ✏️ Mode admin »** (en bas à gauche). Il permet, dans les 6 modules : modifier les textes, changer le libellé et l’URL de chaque lien (🔗), supprimer, déplacer, dupliquer, et ajouter rubriques, sous-rubriques et liens. Dans le module 6, le sélecteur de spécialité est visible dès qu’un administrateur est connecté et permet de consulter une ressource ; les commandes d’édition restent disponibles après activation du mode admin. **« + Ressource »** permet d’ajouter un lien web à celles sans document. Le candidat connecté ne voit que la ligne correspondant à sa spécialité, avec le bouton **« Ouvrir »** dès qu’une ressource est renseignée. « Enregistrer » publie pour tous les utilisateurs ; « Valeurs d’origine » restaure le module.
+Un compte administrateur voit le bouton **« ✏️ Mode admin »** (en bas à gauche). Il permet, dans les 6 modules : modifier les textes, changer le libellé et l’URL de chaque lien (🔗), supprimer, déplacer, dupliquer, et ajouter rubriques, sous-rubriques et liens. Dans le module 6, le sélecteur de spécialité est visible dès qu’un administrateur est connecté et permet de consulter une ressource ; les commandes d’édition restent disponibles après activation du mode admin. **« + Ressource »** permet d’ajouter un lien web à celles sans document. Le candidat connecté ne voit que la ligne correspondant à sa spécialité, avec le bouton **« Ouvrir »** dès qu’une ressource est renseignée. « Enregistrer » publie pour tous les utilisateurs ; « Valeurs d’origine » restaure le module. **« ⬇ Sauvegarde »** télécharge un fichier JSON avec tout le contenu personnalisé (à faire avant une grosse modification) ; **« ⬆ Restaurer »** recharge un tel fichier après confirmation (fichier `doctrine-content`, 2 Mo maximum, modules 1 à 6 uniquement).
 
 Mise en place (une seule fois) :
 1. exécuter `supabase/doctrine-content.sql` dans Supabase > SQL Editor ;
@@ -66,7 +67,8 @@ Dans le module 4, le menu d’accès reprend les dossiers du module 3. Après av
 
 - la PWA démarre sur `index.html` et reste installable sur un hébergement statique compatible HTTPS, y compris GitHub Pages pour ce dépôt
 - le manifeste `manifest.webmanifest` utilise des chemins relatifs pour fonctionner à la racine ou sous `/DOCTRINE/`
-- le service worker `sw.js` met en cache dès l’installation le shell local (HTML, manifeste), les icônes du dossier `icons/` et `favicon.ico`
+- le service worker `sw.js` met en cache dès l’installation le shell local (HTML, CSS et JS de `app/`, manifeste), les icônes du dossier `icons/` et `favicon.ico`
+- au déploiement, le workflow remplace automatiquement le nom du cache (`CACHE_NAME`) par l’identifiant du commit : plus besoin d’incrémenter `bm4-shell-vN` à la main pour publier
 - ces icônes locales servent à l’onglet du navigateur, à l’installation PWA et au raccourci mobile
 - les liens Google Drive (fichiers et dossiers) des modules s'ouvrent dans une visionneuse intégrée avec bouton **⬇ Télécharger** (le téléchargement est enregistré dans le suivi admin) ; le candidat n'ouvre jamais Drive (Ctrl/⌘/Maj+clic mis à part). Voir « Proxy Google Drive » ci-dessous
 - les liens externes Google Drive et `https://Qcm-major.fr` restent des ressources réseau et ne sont pas préchargés ni mis en cache

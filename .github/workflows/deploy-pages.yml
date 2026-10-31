@@ -47,6 +47,10 @@ jobs:
         uses: actions/checkout@v4
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
+      - name: Version the service worker cache
+        run: |
+          sed -i -E "s/(const CACHE_NAME = 'bm4-shell-)[^']*'/\1${GITHUB_SHA::10}'/" sw.js
+          grep -q "bm4-shell-${GITHUB_SHA::10}" sw.js
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
