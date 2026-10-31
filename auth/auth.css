@@ -341,14 +341,22 @@ html.auth-locked body {
 
 @media (max-width: 700px) {
     #auth-gate {
-        padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+        padding: max(8px, env(safe-area-inset-top)) 12px max(8px, env(safe-area-inset-bottom));
         background-size: auto 100dvh, 100% 100%;
     }
     .auth-closing-stage {
         width: 67.0742dvh;
         height: 100dvh;
     }
-    #auth-gate .auth-card { width: min(400px, calc(100vw - 32px)); }
+    #auth-gate .auth-card {
+        width: min(336px, 39dvh, calc(100vw - 32px));
+        padding: clamp(12px, 2dvh, 17px) clamp(12px, 3vw, 16px);
+        border: 1px solid rgba(195, 220, 207, 0.16);
+        border-radius: 14px;
+        background: linear-gradient(180deg, rgba(10, 16, 17, 0.84), rgba(10, 16, 17, 0.76));
+        box-shadow: inset 0 0 0 1px rgba(4, 10, 9, 0.42), inset 0 1px rgba(255, 255, 255, 0.06);
+    }
+    #auth-gate .auth-card::after { display: none; }
 }
 
 @media (min-width: 701px) {
@@ -376,6 +384,7 @@ html.auth-locked body {
         width: 67.0742dvh;
         height: 100dvh;
     }
+    #auth-gate .auth-card { width: min(320px, 39dvh, calc(100vw - 32px)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -389,18 +398,20 @@ html.auth-locked body {
 }
 
 @media (max-height: 650px) {
-    #auth-gate { padding-block: 8px; }
-    #auth-gate .auth-card { padding: 14px 14px 12px; }
+    #auth-gate {
+        padding-block: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-bottom));
+    }
+    #auth-gate .auth-card { padding: 10px 12px 8px; }
     #auth-gate .auth-kicker { margin-bottom: 5px; }
     #auth-gate h1 { margin-bottom: 5px; font-size: clamp(1.35rem, 6vw, 1.65rem); }
-    #auth-gate p { margin-bottom: 8px; font-size: 0.88rem; line-height: 1.4; }
-    #auth-gate .auth-intro { margin-bottom: 10px; }
-    #auth-gate .auth-etat { min-height: 32px; margin-top: 10px; }
-    #auth-gate label { margin: 9px 0 4px; }
-    #auth-gate input { padding: 9px 12px; }
-    #auth-gate .auth-message { min-height: 1em; margin-top: 6px; }
-    #auth-gate button[type="submit"] { margin-top: 10px; padding: 10px 12px; }
-    #auth-gate .auth-pied { margin-top: 12px; padding-top: 10px; }
+    #auth-gate p { margin-bottom: 6px; font-size: 0.86rem; line-height: 1.35; }
+    #auth-gate .auth-intro { margin-bottom: 8px; }
+    #auth-gate .auth-etat { min-height: 30px; margin-top: 8px; }
+    #auth-gate label { margin: 7px 0 3px; }
+    #auth-gate input { padding: 8px 10px; }
+    #auth-gate .auth-message { min-height: 1em; margin-top: 5px; }
+    #auth-gate button[type="submit"] { margin-top: 8px; padding: 9px 12px; }
+    #auth-gate .auth-pied { margin-top: 9px; padding-top: 8px; }
 }
 
 @media (min-width: 701px) {
