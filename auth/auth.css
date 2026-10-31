@@ -266,6 +266,8 @@ html.auth-locked body {
     font-weight: 600;
 }
 
+#auth-gate .auth-message:empty { display: none; }
+
 #auth-gate button[type="submit"] {
     width: 100%;
     margin-top: 15px;
@@ -416,7 +418,7 @@ html.auth-locked body {
 
 @media (min-width: 701px) {
     #auth-gate .auth-card {
-        width: min(340px, 37.5dvh, calc(100vw - 64px));
+        width: min(310px, 34dvh, calc(100vw - 64px));
         padding: clamp(14px, 2.2dvh, 21px) clamp(18px, 2.5dvh, 24px);
         border: 1px solid rgba(195, 220, 207, 0.2);
         border-radius: 15px;
@@ -456,6 +458,20 @@ html.auth-locked body {
         border-color: #75cdd0;
         background: rgba(5, 12, 13, 0.9);
         box-shadow: 0 0 0 3px rgba(80, 194, 199, 0.14), 0 0 20px rgba(80, 194, 199, 0.08);
+    }
+
+    #auth-gate input:-webkit-autofill,
+    #auth-gate input:-webkit-autofill:hover,
+    #auth-gate input:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px #101a18 inset;
+        -webkit-text-fill-color: #f4f7f2;
+        caret-color: #f4f7f2;
+    }
+
+    #auth-gate input:autofill {
+        box-shadow: 0 0 0 1000px #101a18 inset;
+        color: #f4f7f2;
+        caret-color: #f4f7f2;
     }
 
     #auth-gate .auth-password-toggle { color: #c3d6c9; }
