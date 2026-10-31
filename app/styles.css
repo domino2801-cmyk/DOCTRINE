@@ -1168,15 +1168,17 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
         box-shadow: 0 8px 26px rgba(0, 0, 0, 0.3), inset 0 1px rgba(255, 255, 255, 0.08);
     }
 
-    .main-wrapper > header::before {
-        display: block;
+    .main-wrapper > header .brand-kicker {
         margin-bottom: 7px;
         color: #a9c5ad;
-        content: "ANC  /  RÉSEAU OPÉRATIONNEL  /  BM4 — ÉDITION 2027";
         font-size: 0.68rem;
         font-weight: 700;
         letter-spacing: 0.19em;
     }
+
+    .main-wrapper > header .c-blue { color: #4da3ff; }
+    .main-wrapper > header .c-white { color: #ffffff; }
+    .main-wrapper > header .c-red { color: #ff3b3b; }
 
     .main-wrapper > header h1 {
         color: #f0f3e8;
