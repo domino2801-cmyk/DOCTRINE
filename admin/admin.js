@@ -922,7 +922,7 @@
                 b.addEventListener('click', function () {
                     if (adminActif) quitter(true); else entrer();
                 });
-                zone.insertBefore(b, zone.querySelector('.module-nav-next'));
+                zone.appendChild(b);
             }
             if (b) {
                 b.hidden = !visible;
