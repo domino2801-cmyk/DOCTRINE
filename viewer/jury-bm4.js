@@ -53,7 +53,7 @@
         {
             codes: ['ADM'],
             libelles: ['administration'],
-            titre: 'FICHE 01 : ADMINISTRATION (ADM)',
+            titre: 'ADM - Administration',
             texte: [
                 '- AXE DE L’ÉPREUVE ÉCRITE :',
                 '  • Bonne application générale du canevas mais manque de caractérisation des solutions.',
@@ -68,7 +68,7 @@
         {
             codes: ['GRH'],
             libelles: ['gestion des ressources humaines', 'ressources humaines'],
-            titre: 'FICHE 02 : GESTION DES RESSOURCES HUMAINES (GRH / GRH-BSPP)',
+            titre: 'GRH - Gestion des ressources humaines (GRH / GRH-BSPP)',
             texte: [
                 '- AXE DE L’ÉPREUVE ÉCRITE :',
                 '  • Manque de précision et oubli fréquent des critères d’analyse réglementaires.',
@@ -87,7 +87,7 @@
         {
             codes: ['PBF'],
             libelles: ['pilotage budget et finances', 'pilotage comptabilite budget finances'],
-            titre: 'FICHE 03 : PILOTAGE - COMPTABILITÉ - BUDGET - FINANCES (PBF)',
+            titre: 'PBF - Pilotage, comptabilité, budget, finances',
             texte: [
                 '- AXE DE L’ÉPREUVE ÉCRITE :',
                 '  • Résultats d’écrit souvent décevants. Oubli impardonnable du critère financier.',
@@ -104,7 +104,7 @@
         {
             codes: ['RHL'],
             libelles: ['restauration hotellerie et loisirs', 'restauration hotellerie loisirs'],
-            titre: 'FICHE 04 : RESTAURATION HÔTELLERIE LOISIRS (RHL)',
+            titre: 'RHL - Restauration, hôtellerie, loisirs',
             texte: [
                 '- AXE DE L’ÉPREUVE ÉCRITE :',
                 '  • Fiches trop vagues ne permettant pas une prise de décision rapide de l’autorité.',
@@ -123,7 +123,7 @@
         {
             codes: ['MAI', 'MMA'],
             libelles: ['maintenance', 'materiel'],
-            titre: 'FICHE 05 : MAINTENANCE (MAI / MMA)',
+            titre: 'MAI / MMA - Maintenance',
             texte: [
                 '- AXE DE L’ÉPREUVE ÉCRITE :',
                 '  • Méthode maîtrisée mais solutions parfois caricaturales (ex : tout détruire, tout refaire).',
@@ -138,7 +138,7 @@
         {
             codes: ['INF', 'ART', 'BLD', 'EMP'],
             libelles: ['infanterie', 'artillerie', 'combat des blindes', 'blindes', 'emploi des forces', 'combat'],
-            titre: 'FICHE 06 : COMBAT (INF / ART / BLD / EMP)',
+            titre: 'INF / ART / BLD / EMP - Combat',
             texte: [
                 '- AXE DE L’ÉPREUVE ÉCRITE :',
                 '  • Niveau général faible par manque de maîtrise des travaux d’état-major. Les copies sont très inégales.',
@@ -163,7 +163,7 @@
         {
             codes: ['SIC'],
             libelles: ['systemes d information et de communication', 'systemes d information et de communications'],
-            titre: 'FICHE 07 : SYSTÈMES D’INFORMATION ET DE COMMUNICATIONS (SIC / SIC/BSPP)',
+            titre: 'SIC - Systèmes d’information et de communication (SIC / SIC/BSPP)',
             texte: [
                 '- AXE DE L’ÉPREUVE ÉCRITE :',
                 '  • Méthode globalement connue concernant la structure de la fiche, mais la prise en compte des critères',
@@ -185,7 +185,7 @@
         {
             codes: ['SAN'],
             libelles: ['sante'],
-            titre: 'FICHE 08 : SANTÉ (SAN / SAN/BSPP)',
+            titre: 'SAN - Santé (SAN / SAN/BSPP)',
             texte: [
                 '- AXE DE L’ÉPREUVE ÉCRITE :',
                 '  • Niveau général de l’épreuve en baisse. La méthode de la fiche de propositions et la démarche de',
@@ -207,7 +207,7 @@
         {
             codes: ['COM'],
             libelles: ['communication'],
-            titre: 'FICHE 09 : COMMUNICATION (COM)',
+            titre: 'COM - Communication',
             texte: [
                 '- AXE DE L’ÉPREUVE ÉCRITE :',
                 '  • Le sujet ne présente généralement pas de difficulté technique majeure, mais près de 70 % des copies',
@@ -226,7 +226,7 @@
         {
             codes: ['GEN', 'CGEN', 'TOI', 'SDC'],
             libelles: ['genie', 'genie et infrastructure'],
-            titre: 'FICHE 10 : GÉNIE ET INFRASTRUCTURE (GEN / CGEN / TOI / SDC)',
+            titre: 'GEN / CGEN / TOI / SDC - Génie et infrastructure',
             texte: [
                 '- AXE DE L’ÉPREUVE ÉCRITE :',
                 '  • Résultats très décevants, tant sur la forme que sur le fond. Trois candidats sur quatre ne saisissent',
@@ -248,7 +248,7 @@
         {
             codes: ['LEG'],
             libelles: ['legion etrangere'],
-            titre: 'FICHE 11 : LÉGION ÉTRANGÈRE (LEG)',
+            titre: 'LEG - Légion étrangère',
             texte: [
                 '- AXE DE L’ÉPREUVE ÉCRITE :',
                 '  • Niveau général de l’épreuve très faible et en baisse. La fiche d’état-major et sa méthodologie ne sont',
@@ -270,7 +270,7 @@
         {
             codes: ['AER', 'MGF', 'MTN', 'NBC'],
             libelles: ['aeromobilite', 'aeromobilite alat', 'montagne'],
-            titre: 'FICHE 12 : AÉROMOBILITÉ, MONTAGNE, NBC (AER / MGF / MTN / NBC)',
+            titre: 'AER / MGF / MTN / NBC - Aéromobilité, montagne, NBC',
             texte: [
                 '- AXE DE L’ÉPREUVE ÉCRITE :',
                 '  • Niveau de maîtrise hétérogène. L’épreuve de synthèse exige une rédaction structurée, ce qui exclut le',
@@ -291,7 +291,7 @@
         {
             codes: ['SEC', 'SCI'],
             libelles: ['securite'],
-            titre: 'FICHE 13 : SÉCURITÉ (SEC / SEC/BSPP / SCI/BSPP)',
+            titre: 'SEC / SCI - Sécurité (SEC / SEC/BSPP / SCI/BSPP)',
             texte: [
                 '- AXE DE L’ÉPREUVE ÉCRITE :',
                 '  • Niveau global satisfaisant et en nette progression. Très bon retex sur les thèmes liant la protection',
