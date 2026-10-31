@@ -21,7 +21,7 @@
     <script src="admin/admin.js" defer></script>
     <script src="viewer/viewer.js" defer></script>
     <script src="viewer/dossier-fiches.js" defer></script>
-    <script src="viewer/jury-specialite.js" defer></script>
+    <script src="viewer/jury-bm4.js" defer></script>
     <title>Corpus de Préparation au BM4 - Édition 2027</title>
     <style>
         :root {
@@ -653,10 +653,25 @@
             outline: 2px solid var(--primary-blue);
             outline-offset: 2px;
         }
+        .jury-accordeon {
+            border-color: rgba(177, 201, 181, 0.28);
+            background: #101918;
+            color: #fff;
+        }
+        .jury-accordeon > summary,
+        .jury-accordeon h3,
+        .jury-accordeon p,
+        .jury-accordeon label,
+        .jury-accordeon #jury-specialite-statut { color: #fff; }
+        .jury-accordeon .fiche-dossier-content {
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: #0a1110;
+            color: #fff;
+        }
         .jury-accordeon > summary {
             position: relative;
             padding-right: 28px;
-            color: var(--primary-blue);
+            color: #fff;
             font-weight: 700;
             cursor: pointer;
             list-style: none;
@@ -671,7 +686,7 @@
         }
         .jury-accordeon[open] > summary::after { transform: rotate(180deg); }
         .jury-accordeon > summary:focus-visible {
-            outline: 2px solid var(--primary-blue);
+            outline: 2px solid #fff;
             outline-offset: 3px;
         }
         .jury-accordeon h3 { margin: 12px 0 0; font-size: 1rem; }
@@ -2070,7 +2085,7 @@ body.admin-account .specialty-admin-picker {
                     <a href="https://drive.google.com/file/d/1ubYsuEqhi6gPwQ_lkq-PMMi8xGQTV8sG/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
                 </div>
                 <div class="align-row" data-specialty-row data-specialty="EPS" hidden>
-                    <span class="row-text">EPS - Entraînement physique, militaire et sportif</span>
+                    <span class="row-text">EPMS - Éducation physique militaire et sportive</span>
                     <a href="https://drive.google.com/file/d/1CACZovguouHogirsoACqEetJc81Kf6fP/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
                 </div>
                 <div class="align-row" data-specialty-row data-specialty="SAN" hidden>
@@ -2548,6 +2563,9 @@ body.admin-account .specialty-admin-picker {
         }
 
         function rowForSpecialty(value) {
+            const aliases = { EPMS: 'EPS', MATERIEL: 'MAI', RENSEIGNEMENT: 'RENS', GENIE: 'GEN' };
+            const prefix = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLocaleUpperCase().split(/[\s\-(]/)[0];
+            if (aliases[prefix]) value = aliases[prefix];
             const normalized = value.toLocaleLowerCase('fr');
             const exact = specialtyRows.find(function(row) {
                 return row.dataset.specialty.toLocaleLowerCase('fr') === normalized;

@@ -183,7 +183,7 @@
             else el.appendChild(correctionGate);
         }
         courant[n] = nettoye(el);
-        if (n === '4' || n === '6') {
+        if (n === '1' || n === '4' || n === '6') {
             document.dispatchEvent(new CustomEvent('doctrine:content-updated', { detail: { moduleId: n } }));
         }
     }
