@@ -342,13 +342,16 @@
     }
 
     var SPECS = [
-        ['INF', 'Infanterie'], ['BLD', 'Blindés'], ['ART', 'Artillerie'], ['GEN', 'Génie', ['genie']],
-        ['AER', 'Aéromobilité'], ['EMP', 'Emploi des forces'], ['SIC', 'Systèmes d’information et de communication'],
-        ['CYB', 'Cyber'], ['RENS', 'Renseignement', ['renseignement']], ['ADM', 'Administration'],
-        ['GRH', 'Gestion des ressources humaines'], ['PBF', 'Pilotage, budget, finances'], ['MVT', 'Mouvement'],
-        ['MAI', 'Maintenance', ['materiel']], ['COM', 'Commissariat'], ['RHL', 'Restauration, hôtellerie, loisirs'],
-        ['EPS', 'EPMS', ['epms']], ['SAN', 'Santé', ['sante']], ['FSP', 'FSP'], ['LEG', 'Légion étrangère', ['legion']],
-        ['SEC', 'Sécurité civile'], ['OTHER', 'Autre spécialité']
+        ['INF', 'INF - Infanterie'], ['BLD', 'BLD - Combat des blindés'], ['ART', 'ART - Artillerie'],
+        ['GEN', 'GEN - Génie', ['genie']], ['AER', 'AER - Aéromobilité (ALAT)'], ['EMP', 'EMP - Emploi des forces'],
+        ['SIC', 'SIC - Systèmes d\'information et de communication'], ['CYB', 'CYB - Cybersécurité et cyberdéfense'],
+        ['RENS', 'RENS - Renseignement', ['renseignement']], ['ADM', 'ADM - Administration et gestion de soutien'],
+        ['GRH', 'GRH - Gestion des ressources humaines'], ['PBF', 'PBF - Pilotage, budget et finances'],
+        ['MVT', 'MVT - Logistique et transport'], ['MAI', 'MAI - Maintenance', ['materiel']],
+        ['COM', 'COM - Communication'], ['RHL', 'RHL - Restauration, hôtellerie et loisirs'],
+        ['EPS', 'EPMS - Éducation physique militaire et sportive', ['epms']], ['SAN', 'SAN - Santé', ['sante']],
+        ['FSP', 'FSP - Forces spéciales'], ['OTHER', 'Autre (à préciser)'],
+        ['LEG', 'LEG - Légion étrangère', ['legion']], ['SEC', 'SEC - Sécurité civile']
     ];
 
     function codePour(valeur) {
@@ -426,7 +429,7 @@
         SPECS.forEach(function (s) {
             var d = fichePour(s[0]);
             var perso = recordPour(s[0], source(false));
-            select.appendChild(new Option(s[0] + (d ? ' — ' + d.titre : ' — (pas de fiche)') + (perso ? ' ✎' : ''), s[0]));
+            select.appendChild(new Option(s[1] + (d || perso ? '' : ' (sans fiche)') + (perso ? ' ✎' : ''), s[0]));
         });
         var titre = panneau.querySelector('#jury-admin-titre');
         var texte = panneau.querySelector('#jury-admin-texte');
