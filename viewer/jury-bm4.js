@@ -418,7 +418,7 @@
             '<label for="jury-admin-texte">Contenu de la fiche</label>' +
             '<textarea id="jury-admin-texte" rows="14"></textarea>' +
             '<p><button type="button" data-jury-save>Appliquer la fiche</button> ' +
-            '<button type="button" data-jury-publish>Appliquer et publier</button> ' +
+            '<button type="button" data-jury-publish>Enregistrer</button> ' +
             '<button type="button" data-jury-reset>Rétablir la fiche d’origine</button></p>' +
             '<p data-jury-msg role="status"></p>';
         var select = panneau.querySelector('#jury-admin-select');
@@ -463,7 +463,7 @@
             }
             rec.querySelector('[data-jury-title]').textContent = titre.value.trim();
             rec.querySelector('[data-jury-text]').textContent = texte.value;
-            msg.textContent = 'Fiche appliquée.             Cliquez sur « Appliquer et publier » pour la publier.';
+            msg.textContent = 'Fiche appliquée. Cliquez sur « Enregistrer » pour la publier.';
             afficher(true);
         });
         panneau.querySelector('[data-jury-reset]').addEventListener('click', function () {
@@ -472,7 +472,7 @@
             var f = choixAdmin ? ficheFinale(choixAdmin) : null;
             titre.value = f ? f.titre : '';
             texte.value = f ? f.texte : '';
-            msg.textContent = 'Fiche d’origine rétablie. Cliquez sur « Enregistrer » dans la barre du module 1 pour publier.';
+            msg.textContent = 'Fiche d’origine rétablie. Cliquez sur « Enregistrer » pour publier.';
             afficher(true);
         });
         zone.appendChild(panneau);
