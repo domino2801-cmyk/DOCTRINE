@@ -429,7 +429,8 @@
         SPECS.forEach(function (s) {
             var d = fichePour(s[0]);
             var perso = recordPour(s[0], source(false));
-            select.appendChild(new Option(s[1] + (d || perso ? '' : ' (sans fiche)') + (perso ? ' ✎' : ''), s[0]));
+            var affiche = s[0] === 'EPS' ? 'EPMS' : s[0] === 'OTHER' ? 'Autre' : s[0];
+            select.appendChild(new Option(affiche + (d || perso ? '' : ' (sans fiche)') + (perso ? ' ✎' : ''), s[0]));
         });
         var titre = panneau.querySelector('#jury-admin-titre');
         var texte = panneau.querySelector('#jury-admin-texte');
