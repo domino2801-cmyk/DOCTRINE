@@ -1464,6 +1464,21 @@ body.admin-account .specialty-admin-picker {
 
         .mod-body input[type="checkbox"],
         .mod-body input[type="radio"] { accent-color: #76c493; }
+        .mod-body input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; }
+        .outil-redaction {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 0 0 12px;
+        }
+        .dossier-item > .annees-jury { display: flex; flex-wrap: wrap; gap: 6px; width: auto; }
+        @media (max-width: 560px) {
+            .dossier-item > .annees-jury { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+            .annees-jury .doc-link { text-align: center; }
+            #modal-module1 .dossier-item:has(> .annees-jury) { flex-direction: column; align-items: flex-start !important; gap: 8px; }
+        }
 
         #modal-module1 > .modal-content > div[style*="dashed"] {
             border-color: rgba(132, 170, 139, 0.55) !important;
@@ -1653,7 +1668,7 @@ body.admin-account .specialty-admin-picker {
             <li>
                 <div class="dossier-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                     <strong>1.2. Rapport du Jury d'Examen</strong>
-                    <div style="display: flex; gap: 5px;">
+                    <div class="annees-jury">
                         <a href="https://drive.google.com/file/d/1NTokt0W6_EfUxgC6jHrC0kjZe2pr1mNu/view?usp=drive_link" target="_blank" class="doc-link" style="background-color: #555;">2023</a>
                         <a href="https://drive.google.com/file/d/1avqwK8RYtifPxRm5IJst6vp2bThdusMu/view?usp=drive_link" target="_blank" class="doc-link" style="background-color: #555;">2024</a>
                         <a href="https://drive.google.com/file/d/1EYf-cJLYYcpaQtyXI39UClwfXZe6nSxy/view?usp=drive_link" target="_blank" class="doc-link" style="background-color: #555;">2025</a>
@@ -1932,11 +1947,10 @@ body.admin-account .specialty-admin-picker {
             </li>
         </ul>
         <p><strong>3.2. Fiche Outil de Rédaction</strong></p>
-        <ul>
-<span>Gabarits, feuille d’examen vierge.</span>
-<a href="https://drive.google.com/drive/folders/1tEkPvduUqHmaYklivfqSC4i72k5a9bwK?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
-
-        </ul>
+        <div class="outil-redaction">
+            <span>Gabarits, feuille d’examen vierge.</span>
+            <a href="https://drive.google.com/drive/folders/1tEkPvduUqHmaYklivfqSC4i72k5a9bwK?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+        </div>
 </div><!-- /mod-body -->
     </div>
 </div>
