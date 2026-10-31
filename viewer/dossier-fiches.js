@@ -278,6 +278,94 @@ Le candidat doit impérativement s'appuyer sur la circulaire officielle pour val
         return element;
     }
 
+    function ajouterTexteGras(el, texte) {
+        var m = /^([^:]{2,70}?) ?: (.+)$/.exec(texte);
+        if (m) {
+            var s = creer('strong', m[1] + ' : ');
+            el.appendChild(s);
+            el.appendChild(document.createTextNode(m[2]));
+        } else {
+            el.appendChild(document.createTextNode(texte));
+        }
+    }
+
+    // Met en forme le texte brut d'une fiche : titre, difficulté, puis une carte par section (I, II, III…)
+    function rendreFiche(conteneur, texte) {
+        conteneur.textContent = '';
+        var carte = null, liste = null, dernier = null, sousListe = null, parent = null;
+
+        function nouvelleCarte(titre) {
+            carte = creer('section');
+            carte.className = 'jury-bloc';
+            carte.appendChild(creer('h4', titre));
+            conteneur.appendChild(carte);
+            liste = sousListe = parent = dernier = null;
+        }
+
+        String(texte || '').split('\n').forEach(function (brut) {
+            var ligne = brut.trim();
+            if (!ligne || /^[=\-_*\s]{3,}$/.test(ligne)) return;
+            if (/^Fiche générée automatiquement/i.test(ligne)) return;
+
+            var enTete = /^=+\s*(.*?)\s*=*$/.exec(ligne);
+            if (/^=/.test(ligne) && enTete && enTete[1]) {
+                conteneur.appendChild(creer('h3', enTete[1].replace(/^FICHE DE SYNTHÈSE\s*:\s*/i, '')));
+                return;
+            }
+            if (/^(LE )?DOSSIER\s+\d+\s*:/i.test(ligne) && !carte) {
+                conteneur.appendChild(creer('h3', ligne));
+                return;
+            }
+            var niveau = /^Niveau de difficulté\s*:\s*(.+)$/i.exec(ligne);
+            if (niveau && !carte) {
+                var badge = creer('p', 'Difficulté : ' + niveau[1]);
+                badge.className = 'jury-badge';
+                conteneur.appendChild(badge);
+                return;
+            }
+            var section = /^([IVX]+)\)\s+(.*)$/.exec(ligne);
+            if (section) {
+                nouvelleCarte(section[1] + ') ' + section[2].replace(/\s*:\s*$/, ''));
+                return;
+            }
+            var puce = /^(\s*)[-•]\s+(.*)$/.exec(brut);
+            if (puce) {
+                if (!carte) nouvelleCarte('');
+                var li = creer('li');
+                ajouterTexteGras(li, puce[2].trim());
+                if (puce[1].length >= 2 && parent) {
+                    if (!sousListe) {
+                        sousListe = creer('ul');
+                        parent.appendChild(sousListe);
+                    }
+                    sousListe.appendChild(li);
+                } else {
+                    if (!liste) {
+                        liste = creer('ul');
+                        carte.appendChild(liste);
+                    }
+                    liste.appendChild(li);
+                    parent = li;
+                    sousListe = null;
+                }
+                dernier = li;
+                return;
+            }
+            if (!carte && !conteneur.querySelector('h3')) {
+                conteneur.appendChild(creer('h3', ligne));
+                return;
+            }
+            if (!carte) nouvelleCarte('');
+            if (dernier && dernier.tagName === 'LI') {
+                dernier.appendChild(document.createTextNode(' ' + ligne));
+            } else {
+                var p = creer('p', ligne);
+                carte.appendChild(p);
+                dernier = p;
+            }
+        });
+    }
+
     function creerVisionneuse() {
         var viewer = creer('div');
         viewer.className = 'fiche-dossier-viewer';
@@ -297,9 +385,9 @@ Le candidat doit impérativement s'appuyer sur la circulaire officielle pour val
         status.setAttribute('aria-live', 'polite');
         viewer.appendChild(status);
 
-        var content = creer('pre');
+        var content = creer('div');
         content.id = 'ficheDossierContent';
-        content.className = 'fiche-dossier-content';
+        content.className = 'jury-rendu';
         content.hidden = true;
         viewer.appendChild(content);
         return viewer;
@@ -360,7 +448,7 @@ Le candidat doit impérativement s'appuyer sur la circulaire officielle pour val
         select.value = allRecords.some(function (record) { return record.id === previousId; }) ? previousId : '';
 
         var selected = allRecords.find(function (record) { return record.id === select.value; });
-        content.textContent = selected ? selected.text : '';
+        if (selected) rendreFiche(content, selected.text); else content.textContent = '';
         content.hidden = !selected;
         status.textContent = selected ? 'Fiche affichée dans le module.' : 'Sélectionnez un dossier pour afficher sa fiche.';
     }

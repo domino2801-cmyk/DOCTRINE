@@ -706,6 +706,18 @@
         .jury-bloc li { margin: 6px 0; line-height: 1.55; overflow-wrap: anywhere; }
         .jury-bloc li ul { margin-top: 6px; }
         .jury-bloc strong { color: #f3dd91; }
+        .jury-rendu h3 { margin: 4px 0 0; color: #fff; font-size: 1.05rem; line-height: 1.35; }
+        .jury-badge {
+            justify-self: start;
+            margin: 0;
+            padding: 4px 12px;
+            border: 1px solid #e5c158;
+            border-radius: 999px;
+            background: rgba(229, 193, 88, 0.15);
+            color: #f3dd91;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
         @media (max-width: 560px) {
             .jury-bloc { padding: 12px 10px; }
             .jury-bloc ul { padding-left: 16px; }
@@ -1874,7 +1886,7 @@ body.admin-account .specialty-admin-picker {
                 <option value="">Choisissez un dossier…</option>
             </select>
             <p id="ficheDossierStatus" role="status" aria-live="polite">Sélectionnez un dossier pour afficher sa fiche.</p>
-            <pre id="ficheDossierContent" class="fiche-dossier-content" hidden></pre>
+            <div id="ficheDossierContent" class="jury-rendu" hidden></div>
         </div>
 
         <p><strong>4.2. Corrigés Types (Modèles conformes de Fiches de Synthèse et Supports Oraux) :</strong></p>
