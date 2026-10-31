@@ -723,6 +723,43 @@
             .jury-bloc ul { padding-left: 16px; }
             .jury-bloc li { font-size: 0.95rem; }
         }
+        .qcm-cartes { display: grid; gap: 14px; }
+        .qcm-carte {
+            padding: 16px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-left: 4px solid #e5c158;
+            border-radius: 8px;
+            background: #0a1110;
+            color: #fff;
+            display: grid;
+            gap: 12px;
+        }
+        .qcm-carte-tete { display: flex; align-items: center; gap: 12px; }
+        .qcm-carte h3 { margin: 0; color: #e5c158; font-size: 1.05rem; line-height: 1.35; }
+        .qcm-num {
+            flex-shrink: 0;
+            padding: 3px 10px;
+            border: 1px solid #e5c158;
+            border-radius: 999px;
+            background: rgba(229, 193, 88, 0.15);
+            color: #f3dd91;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .qcm-chiffres { display: flex; flex-wrap: wrap; gap: 10px; }
+        .qcm-chiffres span { padding: 6px 12px; border-radius: 6px; background: rgba(255, 255, 255, 0.08); }
+        .qcm-chiffres strong { color: #f3dd91; font-size: 1.15rem; }
+        .qcm-ligne { display: flex; align-items: center; justify-content: space-between; gap: 12px; line-height: 1.5; }
+        .qcm-ligne .doc-link { flex-shrink: 0; }
+        .qcm-texte { margin: 0; line-height: 1.6; }
+        .qcm-texte strong { color: #f3dd91; }
+        .qcm-acces { text-align: center; }
+        .qcm-acces .btn-link { margin-top: 0; color: #fff; }
+        @media (max-width: 560px) {
+            .qcm-carte { padding: 14px 12px; }
+            .qcm-ligne { flex-direction: column; align-items: stretch; }
+            .qcm-ligne .doc-link { text-align: center; }
+        }
         .jury-accordeon select { margin: 6px 0 8px; }
         #ficheDossierStatus {
             margin: 8px 0 0;
@@ -2022,25 +2059,20 @@ body.admin-account .specialty-admin-picker {
     <div class="modal-content">
         <h2 id="module5-title">MODULE 5 : ENTRAÎNEMENT INTENSIF AU QCM DOCTRINAL</h2>
 <div class="mod-body" data-mod="5">
-        <ul>
-            <li><strong>5.1. Banque de Questions (1 000 questions / 20 séries)</strong>
-                <ul>
-
-<span>QCM papier : Enjeux stratégiques, budgets et LPM 2024-2030...</span>
-<a href="https://drive.google.com/file/d/1gmn1Vw19N4nxZF15tLk_C1qjLDqAUTTF/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
-
-
-		</ul>
-            </li>
-
-            <li><strong>5.2. Logiciel « question pour un major »</strong>
-                <ul>
-                    <li>Fonctionne sur tout support tablette, ordinateur, téléphone.</li>
-                </ul>
-            </li>
-        </ul>
-        <div style="text-align: center; margin-top: 15px;">
-            <a href="https://Qcm-major.fr" class="btn-link" target="_blank" rel="noopener">Accéder à : https://Qcm-major.fr</a>
+        <div class="qcm-cartes">
+            <section class="qcm-carte">
+                <div class="qcm-carte-tete"><span class="qcm-num">5.1</span><h3>Banque de questions</h3></div>
+                <div class="qcm-chiffres"><span><strong>1 000</strong> questions</span><span><strong>20</strong> séries</span></div>
+                <div class="qcm-ligne">
+                    <span>QCM papier : Enjeux stratégiques, budgets et LPM 2024-2030…</span>
+                    <a href="https://drive.google.com/file/d/1gmn1Vw19N4nxZF15tLk_C1qjLDqAUTTF/view?usp=drive_link" target="_blank" class="doc-link">Ouvrir</a>
+                </div>
+            </section>
+            <section class="qcm-carte">
+                <div class="qcm-carte-tete"><span class="qcm-num">5.2</span><h3>Logiciel « Question pour un major »</h3></div>
+                <p class="qcm-texte">Fonctionne sur tout support : <strong>tablette</strong>, <strong>ordinateur</strong> et <strong>téléphone</strong>.</p>
+                <div class="qcm-acces"><a href="https://Qcm-major.fr" class="btn-link" target="_blank" rel="noopener">Accéder à Qcm-major.fr</a></div>
+            </section>
         </div>
 </div><!-- /mod-body -->
     </div>
