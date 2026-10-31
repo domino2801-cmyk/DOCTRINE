@@ -483,6 +483,89 @@
         return panneau;
     }
 
+    function ajouterTexte(el, texte) {
+        var m = /^([^:]{2,80}?) ?: (.+)$/.exec(texte);
+        if (/^[^:]{2,80}:$/.test(texte)) {
+            var s0 = document.createElement('strong');
+            s0.textContent = texte;
+            el.appendChild(s0);
+        } else if (m) {
+            var s = document.createElement('strong');
+            s.textContent = m[1] + ' : ';
+            el.appendChild(s);
+            el.appendChild(document.createTextNode(m[2]));
+        } else {
+            el.appendChild(document.createTextNode(texte));
+        }
+    }
+
+    // Transforme le texte brut d'une fiche (puces indentées) en blocs lisibles
+    function rendre(conteneur, texte) {
+        conteneur.textContent = '';
+        var lignes = String(texte || '').split('\n');
+        var numerote = lignes.some(function (l) { return /^\d+\.\s/.test(l); });
+        var carte = null, ulRacine = null, ulImbrique = null, dernier = null, niveau1 = null;
+
+        function nouvelleCarte(titre, balise) {
+            carte = document.createElement('section');
+            carte.className = 'jury-bloc';
+            var h = document.createElement(balise);
+            h.textContent = titre;
+            carte.appendChild(h);
+            conteneur.appendChild(carte);
+            ulRacine = ulImbrique = niveau1 = null;
+            dernier = h;
+        }
+        function racine() {
+            if (!carte) nouvelleCarte('', 'h4');
+            if (!ulRacine) {
+                ulRacine = document.createElement('ul');
+                carte.appendChild(ulRacine);
+            }
+            return ulRacine;
+        }
+
+        lignes.forEach(function (brut) {
+            if (!brut.trim()) return;
+            var m = /^(\s*)(?:[•-]|\d+\.)\s+(.*)$/.exec(brut);
+            if (!m) {
+                if (dernier) dernier.appendChild(document.createTextNode(' ' + brut.trim()));
+                return;
+            }
+            var niveau = Math.floor(m[1].length / 2);
+            var texteLigne = m[2].trim();
+            if (/^\d+\.\s/.test(brut)) {
+                nouvelleCarte(brut.trim(), 'h4');
+                return;
+            }
+            if (niveau === 0 && /:$/.test(texteLigne)) {
+                if (!numerote || !carte) nouvelleCarte(texteLigne.replace(/\s*:$/, ''), numerote ? 'h5' : 'h4');
+                else {
+                    var h5 = document.createElement('h5');
+                    h5.textContent = texteLigne.replace(/\s*:$/, '');
+                    carte.appendChild(h5);
+                    ulRacine = ulImbrique = niveau1 = null;
+                    dernier = h5;
+                }
+                return;
+            }
+            var li = document.createElement('li');
+            ajouterTexte(li, texteLigne);
+            if (niveau >= 2 && niveau1) {
+                if (!ulImbrique) {
+                    ulImbrique = document.createElement('ul');
+                    niveau1.appendChild(ulImbrique);
+                }
+                ulImbrique.appendChild(li);
+            } else {
+                racine().appendChild(li);
+                ulImbrique = null;
+                niveau1 = li;
+            }
+            dernier = li;
+        });
+    }
+
     function afficher(garder) {
         var zone = racine();
         if (!zone) return;
@@ -500,7 +583,7 @@
         contenu.hidden = !fiche;
         if (fiche) {
             titre.textContent = fiche.titre;
-            contenu.textContent = fiche.texte;
+            rendre(contenu, fiche.texte);
             statut.textContent = admin ? '' : 'Spécialité déclarée : ' + etat.specialite + '.';
             return;
         }
@@ -541,7 +624,7 @@
         var zone = racine();
         if (!zone) return;
         var partie1 = zone.querySelector('#jury-partie1');
-        if (partie1) partie1.textContent = PARTIE_1;
+        if (partie1) rendre(partie1, PARTIE_1);
         afficher();
         document.addEventListener('doctrine:login', charger);
         document.addEventListener('doctrine:admin-mode', function () { afficher(); });
@@ -549,7 +632,7 @@
             if (!e.detail || e.detail.moduleId !== '1') return;
             var z = racine();
             var p1 = z && z.querySelector('#jury-partie1');
-            if (p1) p1.textContent = PARTIE_1;
+            if (p1) rendre(p1, PARTIE_1);
             afficher();
         });
         document.addEventListener('doctrine:logout', function () {

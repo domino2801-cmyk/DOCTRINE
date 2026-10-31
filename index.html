@@ -690,6 +690,27 @@
             outline-offset: 3px;
         }
         .jury-accordeon h3 { margin: 12px 0 0; font-size: 1rem; }
+        .jury-rendu { display: grid; gap: 12px; margin-top: 12px; }
+        .jury-rendu[hidden] { display: none; }
+        .jury-bloc {
+            padding: 14px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-left: 4px solid #e5c158;
+            border-radius: 8px;
+            background: #0a1110;
+            color: #fff;
+        }
+        .jury-bloc h4 { margin: 0 0 10px; color: #e5c158; font-size: 1rem; line-height: 1.35; }
+        .jury-bloc h5 { margin: 14px 0 6px; color: #fff; font-size: 0.92rem; text-transform: uppercase; letter-spacing: 0.04em; }
+        .jury-bloc ul { margin: 0; padding-left: 20px; }
+        .jury-bloc li { margin: 6px 0; line-height: 1.55; overflow-wrap: anywhere; }
+        .jury-bloc li ul { margin-top: 6px; }
+        .jury-bloc strong { color: #f3dd91; }
+        @media (max-width: 560px) {
+            .jury-bloc { padding: 12px 10px; }
+            .jury-bloc ul { padding-left: 16px; }
+            .jury-bloc li { font-size: 0.95rem; }
+        }
         .jury-accordeon select { margin: 6px 0 8px; }
         #ficheDossierStatus {
             margin: 8px 0 0;
@@ -1570,14 +1591,14 @@ body.admin-account .specialty-admin-picker {
                 </div>
                 <details class="fiche-dossier-viewer jury-accordeon">
                     <summary>Partie 1 : Points clés transverses</summary>
-                    <pre id="jury-partie1" class="fiche-dossier-content"></pre>
+                    <div id="jury-partie1" class="jury-rendu"></div>
                 </details>
                 <details class="fiche-dossier-viewer jury-accordeon">
                     <summary>Partie 2 : Fiche d'analyse de ta spécialité</summary>
                     <div class="jury-specialite-admin" hidden></div>
                     <p id="jury-specialite-statut" role="status" aria-live="polite">Chargement de votre spécialité…</p>
                     <h3 id="jury-specialite-titre" hidden></h3>
-                    <pre id="jury-specialite-contenu" class="fiche-dossier-content" hidden></pre>
+                    <div id="jury-specialite-contenu" class="jury-rendu" hidden></div>
                 </details>
             </li>
         </ul>
