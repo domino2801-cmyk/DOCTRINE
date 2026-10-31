@@ -194,9 +194,38 @@
         var titreOutil = Array.from(el.querySelectorAll('p > strong')).find(function (s) {
             return s.textContent.trim().indexOf('3.2.') === 0;
         });
-        var blocOutil = titreOutil && titreOutil.parentElement.nextElementSibling;
-        if (blocOutil && /^(UL|OL)$/.test(blocOutil.tagName)) blocOutil = blocOutil.querySelector('li');
-        if (blocOutil && blocOutil.querySelector('a.doc-link')) blocOutil.classList.add('outil-redaction');
+        var depart = titreOutil && titreOutil.parentElement;
+        var lienOutil = null;
+        for (var voisin = depart && depart.nextElementSibling; voisin && !lienOutil; voisin = voisin.nextElementSibling) {
+            lienOutil = voisin.matches('a.doc-link') ? voisin : voisin.querySelector('a.doc-link');
+        }
+        if (lienOutil && !lienOutil.closest('.outil-redaction')) {
+            var noeuds;
+            var conteneur = lienOutil.parentElement;
+            if (conteneur === el) {
+                noeuds = [];
+                for (var m = depart.nextSibling; m; m = m.nextSibling) {
+                    noeuds.push(m);
+                    if (m === lienOutil) break;
+                }
+            } else {
+                while (conteneur.parentElement !== el && /^(LI|UL|OL)$/.test(conteneur.parentElement.tagName)) conteneur = conteneur.parentElement;
+                noeuds = [conteneur];
+            }
+            var libelle = noeuds.filter(function (nd) { return nd !== lienOutil; }).map(function (nd) {
+                var copie = nd.cloneNode(true);
+                if (copie.querySelectorAll) copie.querySelectorAll('a.doc-link').forEach(function (a) { a.remove(); });
+                return copie.textContent;
+            }).join(' ').replace(/\s+/g, ' ').trim();
+            var carteOutil = document.createElement('div');
+            carteOutil.className = 'outil-redaction';
+            var texteOutil = document.createElement('span');
+            texteOutil.textContent = libelle;
+            noeuds[0].parentNode.insertBefore(carteOutil, noeuds[0]);
+            carteOutil.appendChild(texteOutil);
+            carteOutil.appendChild(lienOutil);
+            noeuds.forEach(function (nd) { if (nd !== lienOutil) nd.remove(); });
+        }
         if (!blocsEtude.length || el.querySelector('#dossierDifficultyFilter')) return;
         var ancre = el.querySelector('.progress-container') || liste;
         blocsEtude.forEach(function (bloc) {
