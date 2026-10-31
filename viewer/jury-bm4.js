@@ -418,6 +418,7 @@
             '<label for="jury-admin-texte">Contenu de la fiche</label>' +
             '<textarea id="jury-admin-texte" rows="14"></textarea>' +
             '<p><button type="button" data-jury-save>Appliquer la fiche</button> ' +
+            '<button type="button" data-jury-publish>Appliquer et publier</button> ' +
             '<button type="button" data-jury-reset>Rétablir la fiche d’origine</button></p>' +
             '<p data-jury-msg role="status"></p>';
         var select = panneau.querySelector('#jury-admin-select');
@@ -438,6 +439,18 @@
             msg.textContent = '';
             afficher(true);
         });
+        panneau.querySelector('[data-jury-publish]').addEventListener('click', function () {
+            panneau.querySelector('[data-jury-save]').click();
+            var corps = zone.closest('.mod-body');
+            var bar = corps && corps.previousElementSibling;
+            var save = bar && bar.querySelector('.adm-save');
+            if (save) {
+                save.click();
+                msg.textContent = 'Fiche publiée (voir le message de la barre du module 1 en haut).';
+            } else {
+                msg.textContent = 'Barre d’administration introuvable : activez le mode admin.';
+            }
+        });
         panneau.querySelector('[data-jury-save]').addEventListener('click', function () {
             if (!choixAdmin) { msg.textContent = 'Choisissez d’abord une spécialité.'; return; }
             var src = source(true);
@@ -450,7 +463,7 @@
             }
             rec.querySelector('[data-jury-title]').textContent = titre.value.trim();
             rec.querySelector('[data-jury-text]').textContent = texte.value;
-            msg.textContent = 'Fiche appliquée. Cliquez sur « Enregistrer » dans la barre du module 1 pour la publier.';
+            msg.textContent = 'Fiche appliquée.             Cliquez sur « Appliquer et publier » pour la publier.';
             afficher(true);
         });
         panneau.querySelector('[data-jury-reset]').addEventListener('click', function () {
