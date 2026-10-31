@@ -1449,6 +1449,12 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
         flex-wrap: wrap;
         margin: 0 0 12px;
     }
+    .outil-redaction > .doc-link {
+        box-sizing: border-box;
+        width: 5.2em;
+        margin-left: auto;
+        text-align: center;
+    }
     .dossier-item > .annees-jury { display: flex; flex-wrap: wrap; gap: 6px; width: auto; }
     @media (max-width: 560px) {
         .dossier-item > .annees-jury { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
@@ -1479,7 +1485,7 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
 
     @media (max-width: 768px) {
         .main-wrapper > nav { position: relative; }
-        .main-wrapper > header::before { font-size: 0.58rem; letter-spacing: 0.12em; }
+        .main-wrapper > header .brand-kicker { font-size: 0.58rem; letter-spacing: 0.12em; }
         .modal-content {
             border-radius: 12px;
             box-shadow: 0 18px 54px rgba(0, 0, 0, 0.55), 0 0 0 3px rgba(7, 13, 11, 0.84), 0 0 0 4px rgba(143, 163, 147, 0.24);
@@ -1510,6 +1516,7 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
         justify-self: stretch;
     }
     @media (max-width: 560px) {
+        .outil-redaction > .doc-link { width: 4.6em; }
         .dossier-list .dossier-item.study-tracked-item {
             grid-template-columns: minmax(0, 1fr);
         }
