@@ -1458,6 +1458,40 @@ body.admin-account .specialty-admin-picker {
             }
         }
 
+        /* Colonnes alignées : étoiles puis bouton Ouvrir à largeur fixe */
+        .mod-body .dossier-item > div:has(> .stars) {
+            display: grid;
+            grid-template-columns: 4.6em 5.2em;
+            align-items: center;
+            justify-content: end;
+            column-gap: 10px;
+            width: auto;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+        .mod-body .dossier-item > div:has(> .stars) > .stars {
+            margin: 0;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .mod-body .dossier-item > div:has(> .stars) > .doc-link {
+            box-sizing: border-box;
+            width: 100%;
+            margin: 0;
+            text-align: center;
+            justify-self: stretch;
+        }
+        @media (max-width: 560px) {
+            .dossier-list .dossier-item.study-tracked-item {
+                grid-template-columns: minmax(0, 1fr);
+            }
+            .mod-body .dossier-item > div:has(> .stars) {
+                grid-template-columns: 4em 4.6em;
+                column-gap: 8px;
+                justify-self: end;
+            }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             .main-wrapper > header h1,
             .study-dashboard,
