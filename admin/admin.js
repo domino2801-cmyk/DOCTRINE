@@ -513,7 +513,7 @@
         adminActif = true;
         document.body.classList.add('adm-on');
         document.dispatchEvent(new CustomEvent('doctrine:admin-mode', { detail: { active: true } }));
-        bouton.textContent = '✏️ Quitter l\'admin';
+        bouton.textContent = libelleAdmin();
         var filtre = document.getElementById('dossierDifficultyFilter');
         filtreAvantAdmin = filtre ? filtre.value : null;
         if (filtre && filtre.value) {
@@ -534,7 +534,7 @@
         adminActif = false;
         document.body.classList.remove('adm-on');
         document.dispatchEvent(new CustomEvent('doctrine:admin-mode', { detail: { active: false } }));
-        if (bouton) bouton.textContent = '✏️ Mode admin';
+        if (bouton) bouton.textContent = libelleAdmin();
         document.querySelectorAll('.adm-bar').forEach(function (n) { n.remove(); });
         MODULES.forEach(function (n) {
             var c = corps(n);
@@ -909,11 +909,34 @@
         });
     }
 
+    function libelleAdmin() { return adminActif ? '✏️ Quitter l\'admin' : '✏️ Mode admin'; }
+
+    function majBoutonsToolbar() {
+        var visible = !!(auth() && auth().estAdmin());
+        document.querySelectorAll('.module-nav-controls').forEach(function (zone) {
+            var b = zone.querySelector('.adm-toolbar-toggle');
+            if (!b && visible) {
+                b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'module-nav-button adm-toolbar-toggle';
+                b.addEventListener('click', function () {
+                    if (adminActif) quitter(true); else entrer();
+                });
+                zone.insertBefore(b, zone.querySelector('.module-nav-next'));
+            }
+            if (b) {
+                b.hidden = !visible;
+                b.textContent = libelleAdmin();
+            }
+        });
+    }
+
     function majVisibiliteOutils() {
         var estAdmin = !!(auth() && auth().estAdmin());
         var visible = estAdmin && (!moduleOuvert() || adminActif);
         if (bouton) bouton.hidden = !visible;
         if (suiviBouton) suiviBouton.hidden = !visible;
+        majBoutonsToolbar();
         if (!visible && suiviDialogue && !suiviDialogue.hidden) fermerSuivi();
     }
 
@@ -961,6 +984,7 @@
         document.addEventListener('doctrine:logout', function () {
             if (adminActif) quitter(true);
             if (bouton) bouton.hidden = true;
+            majBoutonsToolbar();
             if (suiviBouton) suiviBouton.hidden = true;
             if (suiviDialogue) fermerSuivi();
         });

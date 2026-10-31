@@ -4,6 +4,9 @@
     padding: 8px 14px; font: 600 13px/1 'Helvetica Neue', Arial, sans-serif; cursor: pointer;
 }
 #adm-toggle[hidden] { display: none; }
+.adm-toolbar-toggle { border-color: #e5c158; }
+.adm-toolbar-toggle[hidden] { display: none; }
+body.adm-on .adm-toolbar-toggle { background: #e5c158; color: #0b2240; }
 body.adm-on #adm-toggle { background: #e5c158; color: #0b2240; }
 #adm-views-toggle {
     position: fixed; left: 156px; bottom: 12px; z-index: 9000;
