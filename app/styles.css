@@ -261,10 +261,18 @@
         border-radius: 8px;
         background: #fff;
     }
-    .preface-section summary {
+    .preface-section summary,
+    .preface-section .preface-title {
         color: var(--primary-blue);
         font-weight: 700;
         cursor: pointer;
+    }
+    .preface-section .preface-title {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 1rem;
+        cursor: default;
     }
     .preface-section .preface-box {
         margin-top: 14px;
@@ -1459,6 +1467,7 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
     }
 
     .preface-section summary,
+    .preface-section .preface-title,
     .difficulty-scale summary { color: #d4e4d4; }
 
     .preface-box,
