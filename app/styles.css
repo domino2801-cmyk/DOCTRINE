@@ -877,24 +877,27 @@
     .fiche-status.is-ok { color: #8fdca0; }
     .fiche-status.is-error { color: #ff8a80; }
     .fiche-form[hidden] { display: none; }
-    .fiche-card.is-sent > p:first-child {
+    #retexCard > p:first-child {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         gap: 10px;
+        cursor: pointer;
+    }
+    #retexCard > p:first-child[aria-expanded="false"] {
         margin-bottom: 0;
         padding-bottom: 0;
         border-bottom: 0;
-        cursor: pointer;
     }
-    .fiche-card.is-sent > p:first-child::after {
+    #retexCard > p:first-child::after {
         content: '▾';
         margin-left: auto;
         color: #e5c158;
         transition: transform 0.2s ease;
     }
-    .fiche-card.is-sent > p:first-child[aria-expanded="true"]::after { transform: rotate(180deg); }
-    .fiche-card.is-sent > .fiche-form:not([hidden]) {
+    #retexCard > p:first-child[aria-expanded="true"]::after { transform: rotate(180deg); }
+    #retexCard > .fiche-form:not([hidden]) { margin-top: 0; }
+    #retexCard.is-sent > .fiche-form:not([hidden]) {
         margin-top: 12px;
         padding-top: 12px;
         border-top: 1px solid rgba(229, 193, 88, 0.35);

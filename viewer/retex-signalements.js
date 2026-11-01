@@ -67,11 +67,13 @@
     retexHeading.appendChild(retexBadge);
 
     function toggleRetex() {
-        if (!retexCard.classList.contains('is-sent')) return;
         var open = retexForm.hidden;
         retexForm.hidden = !open;
         retexHeading.setAttribute('aria-expanded', String(open));
     }
+    retexHeading.setAttribute('role', 'button');
+    retexHeading.setAttribute('tabindex', '0');
+    retexHeading.setAttribute('aria-expanded', 'true');
     retexHeading.addEventListener('click', toggleRetex);
     retexHeading.addEventListener('keydown', function (event) {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -80,7 +82,7 @@
         }
     });
 
-    // Une fois le RETEX envoyé, la fiche devient un accordéon replié.
+    // Accordéon déplié par défaut ; replié une fois le RETEX envoyé.
     function lockRetex(message) {
         retexForm.querySelectorAll('input, textarea').forEach(function (el) { el.disabled = true; });
         retexSubmit.disabled = true;
@@ -88,8 +90,6 @@
         retexCard.classList.add('is-sent');
         retexForm.hidden = true;
         retexBadge.hidden = false;
-        retexHeading.setAttribute('role', 'button');
-        retexHeading.setAttribute('tabindex', '0');
         retexHeading.setAttribute('aria-expanded', 'false');
     }
 
@@ -99,9 +99,7 @@
         retexCard.classList.remove('is-sent');
         retexForm.hidden = false;
         retexBadge.hidden = true;
-        retexHeading.removeAttribute('role');
-        retexHeading.removeAttribute('tabindex');
-        retexHeading.removeAttribute('aria-expanded');
+        retexHeading.setAttribute('aria-expanded', 'true');
     }
 
     function refreshRetexProfile() {
