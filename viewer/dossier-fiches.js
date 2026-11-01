@@ -379,7 +379,7 @@ Le candidat doit impérativement s'appuyer sur la circulaire officielle pour val
         select.setAttribute('aria-describedby', 'ficheDossierStatus');
         viewer.appendChild(select);
 
-        var status = creer('p', 'Sélectionnez un dossier pour afficher sa fiche.');
+        var status = creer('p', '');
         status.id = 'ficheDossierStatus';
         status.setAttribute('role', 'status');
         status.setAttribute('aria-live', 'polite');
@@ -450,7 +450,7 @@ Le candidat doit impérativement s'appuyer sur la circulaire officielle pour val
         var selected = allRecords.find(function (record) { return record.id === select.value; });
         if (selected) rendreFiche(content, selected.text); else content.textContent = '';
         content.hidden = !selected;
-        status.textContent = selected ? 'Fiche affichée dans le module.' : 'Sélectionnez un dossier pour afficher sa fiche.';
+        status.textContent = selected ? 'Fiche affichée dans le module.' : '';
     }
 
     function ouvrirEditeur(viewer, source) {
