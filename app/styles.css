@@ -821,6 +821,63 @@
     @media (max-width: 560px) {
         .part-card { padding: 14px 12px; }
     }
+    .fiche-intro { margin: 0 0 12px; line-height: 1.5; }
+    .fiche-group {
+        margin: 0 0 14px;
+        padding: 12px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+    }
+    .fiche-group legend {
+        padding: 0 8px;
+        color: #e5c158;
+        font-weight: 700;
+    }
+    .fiche-step {
+        display: inline-block;
+        min-width: 22px;
+        margin-right: 6px;
+        border-radius: 50%;
+        background: #e5c158;
+        color: #0a1110;
+        font-size: 0.85rem;
+        line-height: 22px;
+        text-align: center;
+    }
+    .fiche-question { display: block; margin: 12px 0 6px; font-weight: 600; }
+    .fiche-group > label:not(.fiche-question) {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin: 6px 0;
+        cursor: pointer;
+    }
+    .fiche-group input[type="radio"],
+    .fiche-group input[type="checkbox"] { margin-top: 3px; accent-color: #e5c158; }
+    .fiche-group select,
+    .fiche-group input[type="text"],
+    .fiche-group textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 6px;
+        background: #0f1a18;
+        color: #fff;
+        font: inherit;
+    }
+    .fiche-group textarea { resize: vertical; }
+    .fiche-profile { display: grid; gap: 6px; margin: 0 0 6px; }
+    .fiche-profile div { display: flex; flex-wrap: wrap; gap: 6px; }
+    .fiche-profile dt { color: #e5c158; font-weight: 600; }
+    .fiche-profile dd { margin: 0; }
+    .fiche-count { margin-top: 4px; font-size: 0.85rem; text-align: right; opacity: 0.8; }
+    .fiche-status { min-height: 1.2em; margin: 4px 0 10px; font-weight: 600; }
+    .fiche-status.is-ok { color: #8fdca0; }
+    .fiche-status.is-error { color: #ff8a80; }
+    .fiche-form .btn-link { border: 0; cursor: pointer; font: inherit; }
+    .fiche-form .btn-link:disabled { opacity: 0.55; cursor: not-allowed; }
     .jury-accordeon select { margin: 6px 0 8px; }
     #ficheDossierStatus {
         margin: 8px 0 0;

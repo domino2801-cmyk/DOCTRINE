@@ -22,6 +22,7 @@
     <script src="viewer/viewer.js" defer></script>
     <script src="viewer/dossier-fiches.js" defer></script>
     <script src="viewer/jury-bm4.js" defer></script>
+    <script src="viewer/retex-signalements.js" defer></script>
     <title>Corpus de Préparation au BM4 - Édition 2027</title>
     <link rel="stylesheet" href="app/styles.css">
 
@@ -701,19 +702,122 @@
     <div class="modal-toolbar"><span>MODULE 7</span><div class="module-nav-controls" aria-label="Navigation entre les modules"><button class="module-nav-button module-nav-previous" type="button" aria-label="Module précédent" title="Module précédent" onclick="navigateModule('module6')">‹ <span>Précédent</span></button><button class="modal-return-btn" type="button" aria-label="Revenir à tous les modules" title="Revenir à tous les modules" onclick="closeModal('module7')">Tous les modules</button><button class="module-nav-button module-nav-next" type="button" aria-label="Module suivant" title="Module suivant" onclick="navigateModule('module7')"><span>Suivant</span> ›</button></div></div>
     <div class="modal-content">
         <h2 id="module7-title">MODULE 7 : RETEX ET SIGNALEMENTS</h2>
-<div class="mod-body" data-mod="7">
-        <p><strong>7.1. Retours d'expérience (RETEX)</strong></p>
-        <div class="align-row">
-            <span class="row-text">Retours d'expérience des candidats et des lauréats sur la préparation et les épreuves.</span>
-            <span class="resource-pending">Ressource à venir</span>
-        </div>
+<section class="part-card fiche-card" id="retexCard">
+    <p><strong>7.1. Fiche RETEX DOCTRINE</strong></p>
+    <form id="retexForm" class="fiche-form" novalidate>
+        <p class="fiche-intro">Pour t’aider à valider ton <strong>BM4</strong>, nous avons besoin de ton retour terrain sur l’armoire numérique. Prends <strong>2 minutes</strong> pour cocher ton ressenti (une seule fiche par compte).</p>
 
-        <p><strong>        7.2. Signalements</strong></p>
-        <div class="align-row">
-                    <span class="row-text">Signalement d'erreurs, de problèmes ou de points à corriger sur le site et les ressources.</span>
-            <span class="resource-pending">Ressource à venir</span>
-        </div>
-</div><!-- /mod-body -->
+        <fieldset class="fiche-group">
+            <legend><span class="fiche-step">1</span> Ton profil</legend>
+            <dl class="fiche-profile">
+                <div><dt>Compte</dt><dd id="retexEmail">Non renseigné</dd></div>
+                <div><dt>Spécialité BM4</dt><dd id="retexSpecialty">Non renseignée</dd></div>
+            </dl>
+            <p class="fiche-question">Quels modules as-tu le plus consultés ? (plusieurs choix possibles)</p>
+            <label><input type="checkbox" name="retex-modules" value="1. Cadre institutionnel &amp; RETEX"> 1. Cadre institutionnel &amp; RETEX</label>
+            <label><input type="checkbox" name="retex-modules" value="2. Base documentaire &amp; cadre doctrinal"> 2. Base documentaire &amp; cadre doctrinal</label>
+            <label><input type="checkbox" name="retex-modules" value="3. Exercices de rédaction"> 3. Exercices de rédaction</label>
+            <label><input type="checkbox" name="retex-modules" value="4. Propositions de correction"> 4. Propositions de correction (l’analyse)</label>
+            <label><input type="checkbox" name="retex-modules" value="5. Entraînement intensif au QCM"> 5. Entraînement intensif au QCM doctrinal</label>
+            <label><input type="checkbox" name="retex-modules" value="6. Préparation à l'admission"> 6. Préparation à l’admission (oral &amp; sport)</label>
+        </fieldset>
+
+        <fieldset class="fiche-group">
+            <legend><span class="fiche-step">2</span> L’application</legend>
+            <p class="fiche-question">La navigation entre les modules est</p>
+            <label><input type="radio" name="retex-navigation" value="Fluide et claire"> Fluide et claire.</label>
+            <label><input type="radio" name="retex-navigation" value="Lente ou confuse"> Lente ou confuse (chargements, menus).</label>
+            <p class="fiche-question">Le design visuel est</p>
+            <label><input type="radio" name="retex-design" value="Très propre et lisible"> Très propre, lisible sur tous les écrans.</label>
+            <label><input type="radio" name="retex-design" value="À optimiser"> Moyen, l’affichage mériterait d’être optimisé.</label>
+        </fieldset>
+
+        <fieldset class="fiche-group">
+            <legend><span class="fiche-step">3</span> Les ressources</legend>
+            <p class="fiche-question">Les ressources documentaires sont</p>
+            <label><input type="radio" name="retex-resources" value="Complètes et à jour"> Complètes et à jour.</label>
+            <label><input type="radio" name="retex-resources" value="Incomplètes ou à actualiser"> Incomplètes ou à actualiser.</label>
+            <p class="fiche-question">La visionneuse de documents (ouverture et téléchargement) est</p>
+            <label><input type="radio" name="retex-viewer" value="Pratique"> Pratique et rapide.</label>
+            <label><input type="radio" name="retex-viewer" value="À améliorer"> À améliorer.</label>
+            <p class="fiche-question">As-tu déjà utilisé la fiche de signalement (7.2) pour remonter une anomalie ?</p>
+            <label><input type="radio" name="retex-report" value="Oui"> Oui.</label>
+            <label><input type="radio" name="retex-report" value="Non"> Non, pas besoin / je ne l’avais pas remarquée.</label>
+        </fieldset>
+
+        <fieldset class="fiche-group">
+            <legend><span class="fiche-step">4</span> Note globale &amp; recommandation</legend>
+            <p class="fiche-question">Conseillerais-tu cette armoire numérique dans une préparation BM4 ?</p>
+            <label><input type="radio" name="retex-note" value="1 à 3 (Négatif)"> 1 à 3 (Négatif)</label>
+            <label><input type="radio" name="retex-note" value="4 à 6 (Neutre)"> 4 à 6 (Neutre)</label>
+            <label><input type="radio" name="retex-note" value="7 à 8 (Bon)"> 7 à 8 (Bon)</label>
+            <label><input type="radio" name="retex-note" value="9 à 10 (Excellent)"> 9 à 10 (Excellent)</label>
+        </fieldset>
+
+        <fieldset class="fiche-group">
+            <legend><span class="fiche-step">5</span> Observations terrain</legend>
+            <label for="retexComment" class="fiche-question">Une idée d’amélioration ? Un point à corriger ? Dépose ton compte-rendu ici :</label>
+            <textarea id="retexComment" rows="5" maxlength="2000"></textarea>
+        </fieldset>
+
+        <p id="retexStatus" class="fiche-status" role="status" aria-live="polite"></p>
+        <button id="retexSubmit" class="btn-link" type="submit">Envoyer le RETEX</button>
+    </form>
+</section>
+
+<section class="part-card fiche-card" id="signalementCard">
+    <p><strong>7.2. Fiche de signalement</strong></p>
+    <form id="signalementForm" class="fiche-form" novalidate>
+        <p class="fiche-intro">Une erreur, un lien cassé, un document obsolète ? Dépose ton compte-rendu ici.</p>
+
+        <fieldset class="fiche-group">
+            <legend><span class="fiche-step">1</span> Identification de l’anomalie</legend>
+            <label for="signalementType" class="fiche-question">Type d’incident</label>
+            <select id="signalementType" required>
+                <option value="">— Choisir —</option>
+                <option value="Lien ou ressource inaccessible">Lien ou ressource inaccessible</option>
+                <option value="Contenu erroné ou obsolète">Contenu erroné ou obsolète</option>
+                <option value="Problème d'affichage">Problème d’affichage</option>
+                <option value="Problème de connexion ou de compte">Problème de connexion ou de compte</option>
+                <option value="Autre">Autre anomalie</option>
+            </select>
+            <label for="signalementModule" class="fiche-question">Module concerné</label>
+            <select id="signalementModule" required>
+                <option value="">— Choisir —</option>
+                <option value="1">Module 1 : Cadre institutionnel &amp; RETEX</option>
+                <option value="2">                Module 2 : Base documentaire &amp; cadre doctrinal</option>
+                                <option value="3">Module 3 : Exercices de rédaction</option>
+                                <option value="4">Module 4 : Propositions de correction</option>
+                                <option value="5">Module 5 : Entraînement intensif au QCM</option>
+                                <option value="6">Module 6 : Préparation à l’admission</option>
+                <option value="7">Module 7 : Retex et Signalements</option>
+                <option value="general">Application en général</option>
+            </select>
+            <label for="signalementResource" class="fiche-question">Ressource concernée (facultatif)</label>
+            <input id="signalementResource" type="text" maxlength="200" placeholder="Ex. : 2.1 – nom du dossier">
+        </fieldset>
+
+        <fieldset class="fiche-group">
+            <legend><span class="fiche-step">2</span> Description détaillée de l’incident</legend>
+            <label for="signalementDetails" class="fiche-question">Observation terrain</label>
+            <textarea id="signalementDetails" rows="5" maxlength="500" placeholder="Décris l’anomalie constatée (500 caractères maximum)." required></textarea>
+            <div class="fiche-count"><span id="signalementCount">0</span> / 500</div>
+        </fieldset>
+
+        <fieldset class="fiche-group">
+            <legend><span class="fiche-step">3</span> Validation du rapport</legend>
+            <p class="fiche-question">Priorité</p>
+            <label><input type="radio" name="signalement-priority" value="Information" checked> Information</label>
+            <label><input type="radio" name="signalement-priority" value="Correction requise"> Correction requise</label>
+            <label><input type="radio" name="signalement-priority" value="Bloquant"> Bloquant</label>
+        </fieldset>
+
+        <p id="signalementStatus" class="fiche-status" role="status" aria-live="polite"></p>
+        <button id="signalementSubmit" class="btn-link" type="submit">Transmettre le compte-rendu</button>
+    </form>
+</section>
+
+<div class="mod-body" data-mod="7"></div><!-- /mod-body -->
 
     </div>
 </div>

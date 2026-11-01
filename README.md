@@ -26,7 +26,8 @@ Un compte administrateur voit le bouton **« ✏️ Mode admin »** (dans la bar
 Mise en place (une seule fois) :
 1. exécuter `supabase/doctrine-content.sql` dans Supabase > SQL Editor ;
 2. exécuter `supabase/documentation-consultations.sql` dans Supabase > SQL Editor pour activer le journal des ouvertures et sa purge automatique ;
-3. donner le rôle au compte : `app_metadata` = `{"role": "admin"}` (ou `{"bm4_admin": true}`), comme sur QCM-MAJOR.FR.
+3. exécuter `supabase/retex-signalements.sql` dans Supabase > SQL Editor pour activer les fiches du module 7 (RETEX : une par compte ; signalements : plusieurs, avec priorité et statut `pending`/`resolved`) ; chaque candidat n’y ajoute que ses propres fiches et seuls les administrateurs les lisent (consultation dans Supabase > Table Editor) ;
+4. donner le rôle au compte : `app_metadata` = `{"role": "admin"}` (ou `{"bm4_admin": true}`), comme sur QCM-MAJOR.FR.
 
 Le rôle lu côté navigateur n’affiche que l’interface : les écritures sont autorisées ou refusées par les règles RLS de la table. Le contenu enregistré est assaini (scripts, `on*`, URL `javascript:` retirés). Sans table ou hors ligne, le contenu d’origine du HTML est affiché.
 
