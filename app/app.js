@@ -404,6 +404,29 @@ const module1Key = 'module1_validated';
     }
 
     // Présente chaque partie / sous-partie des modules sous forme de carte, y compris pour le contenu publié par l'admin.
+    // Rapport du jury sans document publié (lien vide) : message au lieu d'un rechargement de la page.
+    document.addEventListener('click', function(event) {
+        if (document.body.classList.contains('adm-on')) return;
+        const link = event.target instanceof Element ? event.target.closest('.annees-jury a') : null;
+        if (!link || (link.getAttribute('href') || '').trim() !== '') return;
+        event.preventDefault();
+        const year = link.textContent.trim();
+        const container = link.closest('.annees-jury');
+        const anchor = container.closest('.dossier-item') || container;
+        let message = anchor.parentElement.querySelector('.jury-year-message');
+        if (!message) {
+            message = document.createElement('p');
+            message.className = 'jury-year-message adm-ui';
+            message.setAttribute('role', 'status');
+            message.setAttribute('aria-live', 'polite');
+            anchor.after(message);
+        }
+        message.textContent = 'Le rapport du jury ' + year + ' n’est pas encore publié.';
+        message.hidden = false;
+        clearTimeout(message.hideTimer);
+        message.hideTimer = setTimeout(function() { message.hidden = true; }, 6000);
+    });
+
     function isPartHeading(element) {
         if (element.matches('p')) {
             const first = element.firstElementChild;
