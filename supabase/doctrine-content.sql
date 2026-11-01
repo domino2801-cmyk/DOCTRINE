@@ -4,7 +4,7 @@
 -- avec la même règle que QCM-MAJOR (app_metadata.role = 'admin' ou bm4_admin = true).
 
 create table if not exists public.doctrine_content (
-    module_id   text primary key check (module_id ~ '^[1-6]$'),
+    module_id   text primary key check (module_id ~ '^[1-7]$'),
     html        text not null check (length(html) < 500000),
     updated_at  timestamptz not null default now(),
     updated_by  text

@@ -8,7 +8,7 @@ create table if not exists public.doctrine_document_views (
     id              bigint generated always as identity primary key,
     user_id         uuid not null references auth.users(id) on delete cascade,
     candidate_email text not null,
-    module_id       text not null check (module_id ~ '^[1-6]$'),
+    module_id       text not null check (module_id ~ '^[1-7]$'),
     document_title  text not null check (length(document_title) between 1 and 300),
     document_url    text not null check (length(document_url) <= 2048 and document_url ~ '^https?://'),
     event_type      text not null default 'open' check (event_type in ('open', 'download')),

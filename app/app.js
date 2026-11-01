@@ -1,13 +1,14 @@
 const module1Key = 'module1_validated';
     const lastModuleKey = 'bm4-last-module';
-    const modulesToLock = ['btn-mod2', 'btn-mod3', 'btn-mod4', 'btn-mod5', 'btn-mod6'];
+    const modulesToLock = ['btn-mod2', 'btn-mod3', 'btn-mod4', 'btn-mod5', 'btn-mod6', 'btn-mod7'];
     const moduleButtonMap = {
         module1: 'btn-mod1',
         module2: 'btn-mod2',
         module3: 'btn-mod3',
         module4: 'btn-mod4',
         module5: 'btn-mod5',
-        module6: 'btn-mod6'
+        module6: 'btn-mod6',
+        module7: 'btn-mod7'
     };
     const moduleOrder = Object.keys(moduleButtonMap);
     const moduleScrollPositions = new Map();
@@ -470,7 +471,7 @@ const module1Key = 'module1_validated';
 
         convertLegacyQcmCards();
 
-        ['3', '4', '5'].forEach(function(id) {
+        ['3', '4', '5', '7'].forEach(function(id) {
             const body = document.querySelector('.mod-body[data-mod="' + id + '"]');
             if (!body) return;
             let card = null;

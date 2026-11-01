@@ -7,7 +7,7 @@
     'use strict';
 
     var CACHE_KEY = 'doctrine-content';
-    var MODULES = ['1', '2', '3', '4', '5', '6'];
+    var MODULES = ['1', '2', '3', '4', '5', '6', '7'];
     var defauts = {};
     var blocsEtude = [];
     var SELECTEUR_ETUDE = '.dossier-difficulty-filter, .difficulty-scale, .dossier-recommendation';
@@ -1014,7 +1014,7 @@
     function enregistrerTelechargement(event) {
         var d = event.detail || {};
         if (document.body.classList.contains('adm-on') || (auth() && auth().estAdmin())) return;
-        if (!/^[1-6]$/.test(d.module || '') || !/^https?:\/\//.test(d.url || '') || !d.title) return;
+        if (!/^[1-7]$/.test(d.module || '') || !/^https?:\/\//.test(d.url || '') || !d.title) return;
         enregistrerEvenement(d.module, d.title, d.url, 'download');
     }
 
