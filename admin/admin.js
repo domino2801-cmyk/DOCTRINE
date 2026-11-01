@@ -833,7 +833,7 @@
         suiviRetour.hidden = true;
         suiviTitre.textContent = 'Historique des consultations et téléchargements';
         suiviRecherche.placeholder = 'Filtrer les candidats chargés';
-        definirEntetes(['Candidat', 'Ouvertures', 'Téléchargements', 'Dernière activité']);
+        definirEntetes(['Candidat']);
         suiviBody.replaceChildren();
         candidats.forEach(function(c) {
             var tr = document.createElement('tr');
@@ -849,13 +849,7 @@
             });
             cellule.appendChild(bouton);
             cellule.setAttribute('data-label', 'Candidat');
-            var ouvertures = element('td', '', String(c.ouvertures));
-            ouvertures.setAttribute('data-label', 'Ouvertures');
-            var telechargements = element('td', '', String(c.telechargements));
-            telechargements.setAttribute('data-label', 'Téléchargements');
-            var derniere = element('td', '', formaterDate(c.derniere));
-            derniere.setAttribute('data-label', 'Dernière activité');
-            tr.append(cellule, ouvertures, telechargements, derniere);
+            tr.appendChild(cellule);
             suiviBody.appendChild(tr);
         });
         suiviEtat.textContent = candidats.length + ' candidat(s) affiché(s) (' + consultations.length +
@@ -899,8 +893,15 @@
             tr.appendChild(element('td', '', formaterDate(ligne.opened_at)));
             suiviBody.appendChild(tr);
         });
-        suiviEtat.textContent = lignes.length + ' événement(s) pour ce candidat, parmi ' + consultations.length +
-            ' chargé(s). Le filtre porte sur les événements chargés.';
+        var resume = { ouvertures: 0, telechargements: 0, derniere: null };
+        consultations.forEach(function(ligne) {
+            if (identifiantCandidat(ligne) !== suiviCandidat) return;
+            if (ligne.event_type === 'download') resume.telechargements++; else resume.ouvertures++;
+            if (!resume.derniere || new Date(ligne.opened_at) > new Date(resume.derniere)) resume.derniere = ligne.opened_at;
+        });
+        suiviEtat.textContent = 'Ouvertures : ' + resume.ouvertures + ' · Téléchargements : ' + resume.telechargements +
+            ' · Dernière activité : ' + (resume.derniere ? formaterDate(resume.derniere) : '—') + '. ' +
+            lignes.length + ' événement(s) affiché(s) parmi ' + consultations.length + ' chargé(s).';
     }
 
     function chargerConsultations() {
