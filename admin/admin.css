@@ -41,8 +41,13 @@ body.adm-on .adm-toolbar-toggle { background: #e5c158; color: #0b2240; }
 
 /* Signalements et synthèse RETEX */
 .adm-fiches .adm-views-card { background: #0f1a18; color: #e4ebe4; border: 1px solid rgba(177, 201, 181, .25); }
-.adm-fiches .adm-views-header h2 { color: #f3f6ed; }
-.adm-fiches .adm-views-header p, .adm-fiches .adm-views-status, .adm-fiches-discret { color: #aebdb2; font-size: 13px; }
+.adm-fiches .adm-views-header {
+    margin: 0 0 12px; padding: 14px 16px; border: 0; border-radius: 6px; text-align: left;
+    background: #1d4a33; color: #ffffff;
+}
+.adm-fiches .adm-views-header h2 { margin: 0 0 6px; padding: 0; border: 0; color: #ffffff; font-size: 20px; text-transform: none; letter-spacing: 0; }
+.adm-fiches .adm-views-header p { margin: 0; color: #e8f2ea; font-size: 14px; font-style: normal; opacity: 1; }
+.adm-fiches .adm-views-status, .adm-fiches-discret { color: #c5d3c8; font-size: 13px; }
 .adm-fiches .adm-views-close, .adm-fiches .adm-views-more { background: #1d3028; color: #e4ebe4; border-color: rgba(153, 195, 163, .45); }
 .adm-fiches .adm-views-more { margin-top: 0; }
 .adm-fiches th { background: #1b2722; color: #f3f6ed; }
