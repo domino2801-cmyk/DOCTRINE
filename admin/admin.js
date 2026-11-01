@@ -1051,6 +1051,22 @@
                 suivi.addEventListener('click', ouvrirSuivi);
                 zone.appendChild(suivi);
             }
+            [['signalements', '🚩 Signalements'], ['retex', '📝 RETEX']].forEach(function (def) {
+                var classe = 'adm-fiches-toolbar-' + def[0];
+                var bouton = zone.querySelector('.' + classe);
+                if (!bouton && visible) {
+                    bouton = document.createElement('button');
+                    bouton.type = 'button';
+                    bouton.className = 'module-nav-button ' + classe;
+                    bouton.textContent = def[1];
+                    bouton.title = def[0] === 'retex' ? 'Synthèse des RETEX' : 'Signalements des candidats';
+                    bouton.addEventListener('click', function () {
+                        document.dispatchEvent(new CustomEvent('doctrine:admin-fiches', { detail: def[0] }));
+                    });
+                    zone.appendChild(bouton);
+                }
+                if (bouton) bouton.hidden = !visible;
+            });
             if (b) {
                 b.hidden = !visible;
                 b.textContent = libelleAdmin();
