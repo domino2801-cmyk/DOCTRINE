@@ -405,8 +405,14 @@ html.auth-locked body {
 
 @media (max-width: 768px) {
     .modal-toolbar .auth-toolbar-logout {
+        order: 1;
         padding: 7px 8px;
         font-size: 0.78rem;
+    }
+
+    .modal-toolbar > .module-nav-controls {
+        order: 2;
+        flex: 1 0 100%;
     }
 }
 
