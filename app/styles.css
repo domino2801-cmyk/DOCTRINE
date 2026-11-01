@@ -1781,6 +1781,18 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
         .module-nav-button > span {
             display: none;
         }
+
+        .module-nav-controls {
+            align-items: stretch;
+        }
+
+        .module-nav-button,
+        .modal-return-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
+        }
     }
 
     @media (max-width: 560px) {
