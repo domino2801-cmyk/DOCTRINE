@@ -249,7 +249,53 @@ III) Méthodologie d'analyse obligatoire :
 Le candidat doit impérativement s'appuyer sur la circulaire officielle pour valider la légalité de cette collaboration interservices :
 - Critères de sélection : vérifier si les demandes des mairies respectent scrupuleusement les conditions d'éligibilité pour des activités extérieures aux missions habituelles des forces armées.
 - Ingénierie contractuelle : formaliser les modalités juridiques de rédaction et de signature des conventions de partenariat.
-- Recouvrement des coûts : appliquer strictement les barèmes financiers officiels pour exiger le remboursement intégral des frais engagés par le régiment.`
+- Recouvrement des coûts : appliquer strictement les barèmes financiers officiels pour exiger le remboursement intégral des frais engagés par le régiment.`,
+        '15': `=========================================
+LE DOSSIER 15 : MCO SCORPION & ÉCONOMIE DE GUERRE
+=========================================
+
+Niveau de difficulté : 3 étoiles
+Thématiques : Ingénierie juridique, résilience logistique, transition éco-circulaire, pilotage financier du MCO-Terre.
+
+I) Objectif de la mission :
+Proposer une évolution du soutien des parcs SCORPION vers un modèle plus résilient et soutenable face aux ruptures d'approvisionnement.
+
+II) Diagnostic et vulnérabilités :
+Les données du dossier font état d'une disponibilité inférieure à la cible et de tensions touchant plusieurs familles de composants :
+- Disponibilité technique : 61,4 % pour le Griffon et 58,9 % pour le Serval, pour une cible de 75 %.
+- Approvisionnements : allongement des délais pour la vétronique, les équipements optroniques et les composants de liaison au sol.
+- Écart territorial : disponibilité annoncée de 78,2 % pour les parcs projetés contre 46,5 % pour les parcs d'entraînement en métropole.
+- Fiabilité des données : vérifier les chiffres, les hypothèses de calcul et les références budgétaires avant de proposer un arbitrage.
+
+III) Méthodologie d'analyse obligatoire :
+Le candidat doit articuler ses propositions autour de quatre axes, dans le respect des règles applicables :
+- Résilience technique : évaluer les solutions de réparation et de fabrication locale pour les pièces admissibles, après validation de leur sécurité, de leur conformité et de leur certification.
+- Cadre juridique et industriel : examiner les procédures d'urgence, les priorités d'approvisionnement, les obligations contractuelles et le partage des droits de propriété intellectuelle avec les services compétents.
+- Pilotage financier : comparer les coûts de possession, les besoins de stocks, la mutualisation des composants et le retour sur investissement des solutions envisagées.
+- Économie circulaire : étudier le reconditionnement et la réutilisation de pièces certifiées, avec traçabilité, contrôle qualité et affectation adaptée aux besoins opérationnels.`,
+        '16': `=========================================
+LE DOSSIER 16 : SÉCURISATION FACE À LA MENACE DRONE (8e RHC)
+=========================================
+
+Niveau de difficulté : 3 étoiles
+Thématiques : Réglementation LADA, défense-sécurité, planification budgétaire, gestion de crise en emprise sensible.
+
+I) Objectif de la mission :
+Élaborer une réponse graduée et conforme au droit face à des signalements de drones au-dessus d'une emprise militaire sensible, afin de protéger les personnes et les matériels.
+
+II) Diagnostic et vulnérabilités :
+Le scénario porte sur des survols signalés en mars 2026 à proximité de zones techniques :
+- Cadre de protection : le site ne disposerait pas de moyens propres et son statut réglementaire de survol reste à clarifier.
+- Surveillance : les dispositifs existants ne couvriraient pas uniformément le périmètre.
+- Contraintes : les mesures doivent concilier protection de l'emprise, sécurité des personnes, continuité des activités et respect des règles de l'aviation civile.
+- Programmation budgétaire annoncée : 10 000 € en 2026, 150 000 € en 2027 et 250 000 € en 2028 ; ces montants et leur disponibilité sont à confirmer.
+
+III) Méthodologie d'analyse obligatoire :
+Le candidat doit structurer sa réponse selon quatre axes complémentaires :
+- Signalement et coordination : préciser les circuits de compte rendu, la conservation des éléments utiles à l'enquête et la coordination avec les autorités civiles et militaires compétentes.
+- Cadre réglementaire : vérifier les textes applicables, le statut de l'emprise, les autorisations requises et les responsabilités avant toute mesure affectant un aéronef ou son fonctionnement.
+- Réponse graduée : comparer les mesures de prévention, d'observation et de protection passive, puis n'envisager des moyens techniques qu'après validation juridique, technique et de compatibilité électromagnétique.
+- Programmation et gouvernance : phaser les investissements selon les crédits disponibles, définir les responsabilités de décision et prévoir la formation ainsi que l'évaluation régulière du dispositif.`
     };
 
     var titres = {
@@ -266,7 +312,9 @@ Le candidat doit impérativement s'appuyer sur la circulaire officielle pour val
         '11': 'Dossier 11 : Camp du Ruchard',
         '12': 'Dossier 12 : Service national',
         '13': 'Dossier 13 : Désinformation',
-        '14': 'Dossier 14 : Bègles-Moissac'
+        '14': 'Dossier 14 : Bègles-Moissac',
+        '15': 'Dossier 15 : MCO SCORPION & économie de guerre',
+        '16': 'Dossier 16 : Sécurisation face à la menace drone (8e RHC)'
     };
     var visionneusesInitialisees = new WeakSet();
 
