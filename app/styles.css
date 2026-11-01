@@ -1822,3 +1822,9 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
             font-size: clamp(0.9rem, 4vw, 1.05rem);
         }
     }
+
+    .adm-toolbar-toggle,
+    .adm-views-toolbar-toggle,
+    .adm-fiches-toolbar-signalements {
+        text-transform: uppercase;
+    }
