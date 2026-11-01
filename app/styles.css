@@ -1100,6 +1100,25 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
         overflow-y: auto;
     }
 
+    /* Ordinateur : les 7 modules sur une seule ligne */
+    @media (min-width: 1025px) {
+        nav ul {
+            flex-wrap: nowrap;
+            max-width: none;
+            gap: 6px;
+        }
+        nav li {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+        nav button {
+            width: 100%;
+            padding: 8px 6px;
+            font-size: 0.82rem;
+            text-align: center;
+        }
+    }
+
     /* RESPONSIVE TABLETTE */
     @media (max-width: 1024px) {
         .content-container {
