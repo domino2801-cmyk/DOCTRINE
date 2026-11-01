@@ -403,8 +403,44 @@ const module1Key = 'module1_validated';
         }
     }
 
+    // Présente chaque partie / sous-partie des modules sous forme de carte, y compris pour le contenu publié par l'admin.
+    function isPartHeading(element) {
+        if (element.matches('p')) {
+            const first = element.firstElementChild;
+            return !!first && first.tagName === 'STRONG' && /^\d\.\d\./.test(first.textContent.trim());
+        }
+        if (element.matches('ul')) {
+            const items = element.children;
+            const first = items.length === 1 ? items[0].firstElementChild : null;
+            return !!first && first.tagName === 'STRONG' && /^\d\.\d\./.test(first.textContent.trim());
+        }
+        return false;
+    }
+
+    function harmonizePartCards() {
+        document.querySelectorAll('.mod-body[data-mod="1"] > ul > li, .mod-body[data-mod="2"] > div, #modal-module6 .modal-list > li')
+            .forEach(function(card) { card.classList.add('part-card'); });
+
+        ['3', '4'].forEach(function(id) {
+            const body = document.querySelector('.mod-body[data-mod="' + id + '"]');
+            if (!body) return;
+            let card = null;
+            Array.from(body.children).forEach(function(child) {
+                if (child.classList.contains('part-card')) { card = null; return; }
+                if (isPartHeading(child)) {
+                    card = document.createElement('section');
+                    card.className = 'part-card';
+                    child.before(card);
+                }
+                if (card) card.appendChild(child);
+            });
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
-        let specialtyRows = [...document.querySelectorAll('#modal-module6 [data-specialty-row]')];
+        harmonizePartCards();
+        document.addEventListener('doctrine:content-updated', harmonizePartCards);
+        let specialtyRows =  [...document.querySelectorAll('#modal-module6 [data-specialty-row]')];
         let specialtyMessage = document.getElementById('candidate-specialty-message');
         let specialtyPicker;
         let specialtySelect;

@@ -734,6 +734,45 @@
         .qcm-ligne { flex-direction: column; align-items: stretch; }
         .qcm-ligne .doc-link { text-align: center; }
     }
+    .part-card {
+        display: block;
+        margin: 0 0 14px !important;
+        padding: 16px 18px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-left: 4px solid #e5c158;
+        border-radius: 8px;
+        background: #0a1110;
+        color: #fff;
+        list-style: none;
+    }
+    .part-card:last-child { margin-bottom: 0 !important; }
+    .part-card > p:first-child,
+    .part-card > ul:first-child:has(> li > strong:only-child),
+    .part-card > .dossier-item:first-child,
+    .part-card > .section-title {
+        margin: 0 0 12px;
+        padding: 0 0 10px;
+        border: 0;
+        border-bottom: 1px solid rgba(229, 193, 88, 0.35);
+        border-radius: 0;
+        background: none;
+        box-shadow: none;
+        list-style: none;
+    }
+    .part-card > ul:first-child:has(> li > strong:only-child) { padding-left: 0; }
+    .part-card > p:first-child > strong,
+    .part-card > ul:first-child > li > strong:only-child,
+    .part-card > .dossier-item:first-child > strong,
+    .part-card > .section-title,
+    .part-card > .align-row:first-child .row-text > strong {
+        color: #e5c158;
+        font-size: 1.05rem;
+        line-height: 1.35;
+    }
+    .part-card > .align-row:first-child:only-child { padding: 0; border-bottom: 0; }
+    @media (max-width: 560px) {
+        .part-card { padding: 14px 12px; }
+    }
     .jury-accordeon select { margin: 6px 0 8px; }
     #ficheDossierStatus {
         margin: 8px 0 0;
