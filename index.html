@@ -92,6 +92,19 @@
             <div id="appUpdateStatus" class="status-chip" role="status" aria-live="polite" hidden></div>
         </div>
 
+<section class="study-dashboard" aria-labelledby="study-dashboard-title">
+            <div class="study-dashboard-heading">
+                <div>
+                    <h2 id="study-dashboard-title">Votre progression</h2>
+                    <p id="resumeModuleDescription">Reprenez votre préparation là où vous l’avez laissée.</p>
+                </div>
+                <button id="resumeModuleButton" class="resume-button" type="button" onclick="resumeLastModule()">Commencer le module 1</button>
+            </div>
+            <label class="study-progress-label" for="overallProgress">Dossiers commencés</label>
+            <progress id="overallProgress" max="1" value="0"></progress>
+            <p id="overallProgressText" class="study-progress-text" role="status" aria-live="polite">0 / 16 commencés · 0 fait · 16 à faire</p>
+        </section>
+
 <section class="preface-section">
     <h2 class="preface-title">À propos du corpus</h2>
     <div class="preface-box">
@@ -109,19 +122,6 @@
 
     </div>
 </section>
-
-        <section class="study-dashboard" aria-labelledby="study-dashboard-title">
-            <div class="study-dashboard-heading">
-                <div>
-                    <h2 id="study-dashboard-title">Votre progression</h2>
-                    <p id="resumeModuleDescription">Reprenez votre préparation là où vous l’avez laissée.</p>
-                </div>
-                <button id="resumeModuleButton" class="resume-button" type="button" onclick="resumeLastModule()">Commencer le module 1</button>
-            </div>
-            <label class="study-progress-label" for="overallProgress">Dossiers commencés</label>
-            <progress id="overallProgress" max="1" value="0"></progress>
-            <p id="overallProgressText" class="study-progress-text" role="status" aria-live="polite">0 / 16 commencés · 0 fait · 16 à faire</p>
-        </section>
 </div>
 </div>
 
