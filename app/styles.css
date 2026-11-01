@@ -728,7 +728,44 @@
     .qcm-texte { margin: 0; line-height: 1.6; }
     .qcm-texte strong { color: #f3dd91; }
     .qcm-acces { text-align: center; }
-    .qcm-acces .btn-link { margin-top: 0; color: #fff; }
+    .qcm-acces .btn-link { margin-top: 0; }
+    .qcm-acces .btn-link,
+    .qcm-acces .btn-link:hover {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #f6e08f;
+        background: linear-gradient(145deg, #f3d77a, #d4a62a 55%, #b8891b) !important;
+        color: #1c1405;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        text-shadow: 0 1px rgba(255, 255, 255, 0.35);
+        box-shadow: 0 0 10px rgba(229, 193, 88, 0.45), inset 0 1px rgba(255, 255, 255, 0.5);
+    }
+    .qcm-acces .btn-link:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .qcm-acces .btn-link:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+    @media (prefers-reduced-motion: no-preference) {
+        .qcm-acces .btn-link { animation: gold-glow 2.4s ease-in-out infinite; }
+        .qcm-acces .btn-link::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -75%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+            transform: skewX(-20deg);
+            animation: gold-shine 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+    }
+    @keyframes gold-glow {
+        0%, 100% { box-shadow: 0 0 8px rgba(229, 193, 88, 0.35), inset 0 1px rgba(255, 255, 255, 0.5); }
+        50% { box-shadow: 0 0 22px rgba(243, 215, 122, 0.85), inset 0 1px rgba(255, 255, 255, 0.5); }
+    }
+    @keyframes gold-shine {
+        0%, 55% { left: -75%; }
+        100% { left: 140%; }
+    }
     @media (max-width: 560px) {
         .qcm-carte { padding: 14px 12px; }
         .qcm-ligne { flex-direction: column; align-items: stretch; }
