@@ -272,8 +272,7 @@
     function deconnecter() {
         var s = lire();
         effacer();
-        var pastille = document.getElementById('auth-logout');
-        if (pastille) pastille.remove();
+        document.querySelectorAll('#auth-logout, .auth-toolbar-logout').forEach(function (n) { n.remove(); });
         if (s && s.access_token) appel('/logout', { jeton: s.access_token }).catch(function () {});
         verrouiller();
         document.dispatchEvent(new CustomEvent('doctrine:logout'));
@@ -288,6 +287,16 @@
         b.title = s && s.email ? 'Connecté : ' + s.email : 'Se déconnecter';
         b.addEventListener('click', deconnecter);
         document.body.appendChild(b);
+        // Même bouton dans la barre de chaque module, aligné à droite.
+        document.querySelectorAll('.modal-toolbar').forEach(function (barre) {
+            var t = document.createElement('button');
+            t.type = 'button';
+            t.className = 'auth-toolbar-logout';
+            t.textContent = 'Déconnexion';
+            t.title = b.title;
+            t.addEventListener('click', deconnecter);
+            barre.appendChild(t);
+        });
     }
 
     // Rôle lu dans le JWT pour l'affichage uniquement : seule la RLS Supabase fait foi.
