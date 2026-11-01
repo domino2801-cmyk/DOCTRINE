@@ -536,11 +536,11 @@
         b('+ Lien', '', function () {
             ajouter('<ul><li><span>Nouveau lien</span> <a href="https://" class="doc-link" target="_blank" rel="noopener noreferrer">Ouvrir</a></li></ul>');
         });
-        b('Enregistrer', 'adm-save', function () { enregistrer(etat); });
+        b('Appliquer', 'adm-save', function () { enregistrer(etat); });
         b('Annuler', '', function () { quitter(true); });
         b('Valeurs d\'origine', 'adm-danger', function () { reinitialiser(n, etat); });
-        b('⬇ Sauvegarde', '', function () { exporterSauvegarde(etat); });
-        b('⬆ Restaurer', '', function () { choisirSauvegarde(etat); });
+        b('⬇ Enregistrer', '', function () { exporterSauvegarde(etat); });
+        b('⬆ Rétablir', '', function () { choisirSauvegarde(etat); });
         bar.appendChild(etat);
         return bar;
     }
