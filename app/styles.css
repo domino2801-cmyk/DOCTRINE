@@ -342,6 +342,9 @@
         justify-content: center;
         gap: 6px;
     }
+    .module-nav-button > span {
+        display: none;
+    }
     .modal-toolbar > span {
         color: #fff;
         font-size: 0.8rem;
@@ -352,24 +355,32 @@
         background: var(--accent-red);
     }
     .modal-return-btn {
-        padding: 8px 14px;
+        padding: 6px 10px;
         border: 1px solid rgba(255, 255, 255, 0.55);
         border-radius: 7px;
         background: rgba(255, 255, 255, 0.12);
         color: #fff;
         font: inherit;
+        font-size: 0.9em;
         font-weight: 700;
         cursor: pointer;
         transition: background 0.15s ease, color 0.15s ease;
     }
     .module-nav-button {
-        padding: 8px 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        min-width: 36px;
+        min-height: 36px;
+        padding: 6px 10px;
         border: 1px solid rgba(255, 255, 255, 0.4);
         border-radius: 7px;
         background: rgba(255, 255, 255, 0.08);
         color: #fff;
         font: inherit;
         font-weight: 700;
+        line-height: 1;
         cursor: pointer;
     }
     .module-nav-button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.2); }
@@ -1778,14 +1789,6 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
             hyphens: auto;
         }
 
-        .module-nav-button > span {
-            display: none;
-        }
-
-        .module-nav-controls {
-            align-items: stretch;
-        }
-
         .module-nav-button,
         .modal-return-btn {
             display: inline-flex;
@@ -1827,9 +1830,4 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
     .adm-views-toolbar-toggle,
     .adm-fiches-toolbar-signalements {
         text-transform: uppercase;
-    }
-
-    body.admin-account .module-nav-button > span,
-    body.adm-on .module-nav-button > span {
-        display: none;
     }
