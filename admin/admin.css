@@ -1,19 +1,6 @@
-#adm-toggle {
-    position: fixed; left: 12px; bottom: 12px; z-index: 9000;
-    background: #0b2240; color: #e5c158; border: 1px solid #e5c158; border-radius: 20px;
-    padding: 8px 14px; font: 600 13px/1 'Helvetica Neue', Arial, sans-serif; cursor: pointer;
-}
-#adm-toggle[hidden] { display: none; }
 .adm-toolbar-toggle { border-color: #e5c158; }
 .adm-toolbar-toggle[hidden] { display: none; }
 body.adm-on .adm-toolbar-toggle { background: #e5c158; color: #0b2240; }
-body.adm-on #adm-toggle { background: #e5c158; color: #0b2240; }
-#adm-views-toggle {
-    position: fixed; left: 156px; bottom: 12px; z-index: 9000;
-    background: #fff; color: #0b2240; border: 1px solid #0b2240; border-radius: 20px;
-    padding: 8px 14px; font: 600 13px/1 'Helvetica Neue', Arial, sans-serif; cursor: pointer;
-}
-#adm-views-toggle[hidden] { display: none; }
 
 .adm-views {
     position: fixed; inset: 0; z-index: 9200; display: flex; align-items: center; justify-content: center;
@@ -99,7 +86,6 @@ body.adm-on .adm-row-tools, body.adm-on .adm-row-tools * { pointer-events: auto;
 #adm-dialog button[type="submit"] { background: #0b2240; color: #e5c158; }
 
 @media (max-width: 560px) {
-    #adm-views-toggle { left: 12px; bottom: 54px; }
     .adm-views { padding: 8px; }
     .adm-views-card { max-height: 94vh; padding: 14px; }
     .adm-views-header { flex-direction: column; }

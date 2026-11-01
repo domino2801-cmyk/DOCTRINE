@@ -15,8 +15,6 @@
     var referenceEdition = {};
     var adminActif = false;
     var filtreAvantAdmin = null;
-    var bouton;
-    var suiviBouton;
     var suiviDialogue;
     var suiviBody;
     var suiviEtat;
@@ -551,8 +549,7 @@
         adminActif = true;
         document.body.classList.add('adm-on');
         document.dispatchEvent(new CustomEvent('doctrine:admin-mode', { detail: { active: true } }));
-        bouton.textContent = libelleAdmin();
-        var filtre = document.getElementById('dossierDifficultyFilter');
+        var filtre =  document.getElementById('dossierDifficultyFilter');
         filtreAvantAdmin = filtre ? filtre.value : null;
         if (filtre && filtre.value) {
             filtre.value = '';
@@ -572,7 +569,6 @@
         adminActif = false;
         document.body.classList.remove('adm-on');
         document.dispatchEvent(new CustomEvent('doctrine:admin-mode', { detail: { active: false } }));
-        if (bouton) bouton.textContent = libelleAdmin();
         document.querySelectorAll('.adm-bar').forEach(function (n) { n.remove(); });
         MODULES.forEach(function (n) {
             var c = corps(n);
@@ -944,22 +940,8 @@
 
     function fermerSuivi() {
         if (suiviDialogue) suiviDialogue.hidden = true;
-        var retour = suiviDeclencheur && suiviDeclencheur.isConnected && !suiviDeclencheur.hidden
-            ? suiviDeclencheur
-            : suiviBouton;
-        if (retour && !retour.hidden) retour.focus();
+        if (suiviDeclencheur && suiviDeclencheur.isConnected && !suiviDeclencheur.hidden) suiviDeclencheur.focus();
         suiviDeclencheur = null;
-    }
-
-    function montrerSuiviBouton() {
-        if (!auth() || !auth().estAdmin()) return;
-        if (!suiviBouton) {
-            suiviBouton = element('button', '', '📊 Suivi des consultations');
-            suiviBouton.id = 'adm-views-toggle';
-            suiviBouton.type = 'button';
-            suiviBouton.addEventListener('click', ouvrirSuivi);
-            document.body.appendChild(suiviBouton);
-        }
     }
 
     function afficherErreurSuivi(message) {
@@ -1078,9 +1060,6 @@
 
     function majVisibiliteOutils() {
         var estAdmin = !!(auth() && auth().estAdmin());
-        var visible = estAdmin && (!moduleOuvert() || adminActif);
-        if (bouton) bouton.hidden = !visible;
-        if (suiviBouton) suiviBouton.hidden = !visible;
         majBoutonsToolbar();
         if (!estAdmin && suiviDialogue && !suiviDialogue.hidden) fermerSuivi();
     }
@@ -1096,17 +1075,6 @@
     function montrerBouton() {
         if (!auth() || !auth().estAdmin()) return;
         surveillerModales();
-        if (!bouton) {
-            bouton = document.createElement('button');
-            bouton.id = 'adm-toggle';
-            bouton.type = 'button';
-            bouton.textContent = '✏️ Mode admin';
-            bouton.addEventListener('click', function () {
-                if (adminActif) quitter(true); else entrer();
-            });
-            document.body.appendChild(bouton);
-        }
-        montrerSuiviBouton();
         majVisibiliteOutils();
     }
 
@@ -1128,9 +1096,7 @@
         });
         document.addEventListener('doctrine:logout', function () {
             if (adminActif) quitter(true);
-            if (bouton) bouton.hidden = true;
             majBoutonsToolbar();
-            if (suiviBouton) suiviBouton.hidden = true;
             if (suiviDialogue) fermerSuivi();
         });
         document.addEventListener('click', enregistrerOuverture);
