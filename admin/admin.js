@@ -316,8 +316,8 @@
         dialogue = document.createElement('div');
         dialogue.id = 'adm-dialog';
         dialogue.hidden = true;
-        dialogue.innerHTML = '<form><strong>Modifier le lien</strong>' +
-            '<label for="adm-d-texte">Texte</label><input id="adm-d-texte" type="text" autocomplete="off">' +
+        dialogue.innerHTML = '<form><strong id="adm-d-titre">Modifier le lien</strong>' +
+            '<label for="adm-d-texte" id="adm-d-libelle-texte">Texte</label><input id="adm-d-texte" type="text" autocomplete="off">' +
             '<label for="adm-d-url">Adresse (URL)</label><input id="adm-d-url" type="url" placeholder="https://" autocomplete="off">' +
             '<div class="adm-state err" id="adm-d-err"></div>' +
             '<div class="adm-actions"><button type="button" id="adm-d-annuler">Annuler</button><button type="submit">Valider</button></div></form>';
@@ -329,6 +329,8 @@
         var url = dialogue.querySelector('#adm-d-url');
         var err = dialogue.querySelector('#adm-d-err');
         var form = dialogue.querySelector('form');
+        dialogue.querySelector('#adm-d-titre').textContent = 'Modifier le lien';
+        dialogue.querySelector('#adm-d-libelle-texte').textContent = 'Texte';
         texte.value = a.textContent.trim();
         url.value = a.getAttribute('href') || '';
         err.textContent = '';
@@ -347,6 +349,71 @@
         };
     }
 
+    function ajouterCarteModule2(corpsEl, etat) {
+        var liste = corpsEl.querySelector('.dossier-list');
+        if (!liste) {
+            etat.className = 'adm-state err';
+            etat.textContent = 'Impossible de trouver la grille de cartes du module 2.';
+            return;
+        }
+
+        var texte = dialogue.querySelector('#adm-d-texte');
+        var url = dialogue.querySelector('#adm-d-url');
+        var err = dialogue.querySelector('#adm-d-err');
+        var form = dialogue.querySelector('form');
+        dialogue.querySelector('#adm-d-titre').textContent = 'Créer une carte';
+        dialogue.querySelector('#adm-d-libelle-texte').textContent = 'Titre de la carte';
+        texte.value = '';
+        url.value = '';
+        err.textContent = '';
+        dialogue.hidden = false;
+        texte.focus();
+
+        function fermer() {
+            dialogue.hidden = true;
+            form.onsubmit = null;
+            dialogue.querySelector('#adm-d-annuler').onclick = null;
+        }
+
+        dialogue.querySelector('#adm-d-annuler').onclick = fermer;
+        form.onsubmit = function (event) {
+            event.preventDefault();
+            var titre = texte.value.trim();
+            var adresse = url.value.trim();
+            var parsed;
+            try { parsed = new URL(adresse); } catch (e) { parsed = null; }
+            if (!titre) {
+                err.textContent = 'Le titre de la carte est obligatoire.';
+                texte.focus();
+                return;
+            }
+            if (!parsed || (parsed.protocol !== 'https:' && parsed.protocol !== 'http:')) {
+                err.textContent = 'Saisissez une adresse complète commençant par https:// ou http://.';
+                url.focus();
+                return;
+            }
+
+            var carte = document.createElement('li');
+            carte.className = 'dossier-item';
+            var libelle = document.createElement('span');
+            libelle.className = 'dossier-text';
+            libelle.textContent = titre;
+            var lien = document.createElement('a');
+            lien.className = 'doc-link';
+            lien.href = parsed.href;
+            lien.target = '_blank';
+            lien.rel = 'noopener noreferrer';
+            lien.textContent = 'Ouvrir';
+            carte.appendChild(libelle);
+            carte.appendChild(lien);
+            liste.appendChild(carte);
+            decorer(corpsEl);
+            fermer();
+            etat.className = 'adm-state';
+            etat.textContent = 'Carte ajoutée. Cliquez sur « Appliquer » pour la publier.';
+        };
+    }
+
     function ajouterRessourceSpecialite(ligne) {
         var placeholder = ligne.querySelector('.resource-pending');
         if (!placeholder) return;
@@ -355,6 +422,8 @@
         var url = dialogue.querySelector('#adm-d-url');
         var err = dialogue.querySelector('#adm-d-err');
         var form = dialogue.querySelector('form');
+        dialogue.querySelector('#adm-d-titre').textContent = 'Modifier le lien';
+        dialogue.querySelector('#adm-d-libelle-texte').textContent = 'Texte';
         texte.value = 'Ouvrir';
         url.value = '';
         err.textContent = '';
@@ -536,6 +605,9 @@
         b('+ Lien', '', function () {
             ajouter('<ul><li><span>Nouveau lien</span> <a href="https://" class="doc-link" target="_blank" rel="noopener noreferrer">Ouvrir</a></li></ul>');
         });
+        if (n === '2') {
+            b('+ Carte', '', function () { ajouterCarteModule2(corpsEl, etat); });
+        }
         b('Appliquer', 'adm-save', function () { enregistrer(etat); });
         b('Annuler', '', function () { quitter(true); });
         b('Valeurs d\'origine', 'adm-danger', function () { reinitialiser(n, etat); });
