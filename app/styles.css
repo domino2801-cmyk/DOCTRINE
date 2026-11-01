@@ -1367,8 +1367,16 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
         box-shadow: 0 8px 26px rgba(0, 0, 0, 0.3), inset 0 1px rgba(255, 255, 255, 0.08);
     }
 
+    .main-wrapper > header .brand-header {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 6px;
+    }
+
     .main-wrapper > header .brand-kicker {
-        margin-bottom: 7px;
+        margin-bottom: 0;
         color: #a9c5ad;
         font-size: 0.68rem;
         font-weight: 700;
