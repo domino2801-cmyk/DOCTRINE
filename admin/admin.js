@@ -105,7 +105,7 @@
         var code = normalized.match(/^([A-Z]+)(?:\s*[-(]|\s|$)/);
         var prefix = code ? code[1] : normalized;
         if (aliases[prefix]) return aliases[prefix];
-        return ['INF', 'BLD', 'ART', 'GEN', 'AER', 'EMP', 'SIC', 'CYB', 'RENS', 'ADM', 'GRH', 'PBF', 'MVT', 'MAI', 'COM', 'RHL', 'EPS', 'SAN', 'FSP'].indexOf(prefix) !== -1
+        return ['INF', 'BLD', 'ART', 'GEN', 'AER', 'EMP', 'SIC', 'CYB', 'RENS', 'ADM', 'GRH', 'PBF', 'MVT', 'MAI', 'COM', 'RHL', 'EPS', 'SAN', 'FSP', 'EMIA'].indexOf(prefix) !== -1
             ? prefix
             : '';
     }

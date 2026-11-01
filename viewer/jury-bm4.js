@@ -350,7 +350,7 @@
         ['MVT', 'MVT - Logistique et transport'], ['MAI', 'MAI - Maintenance', ['materiel']],
         ['COM', 'COM - Communication'], ['RHL', 'RHL - Restauration, hôtellerie et loisirs'],
         ['EPS', 'EPMS - Éducation physique militaire et sportive', ['epms']], ['SAN', 'SAN - Santé', ['sante']],
-        ['FSP', 'FSP - Forces spéciales'], ['OTHER', 'Autre (à préciser)'],
+        ['FSP', 'FSP - Forces spéciales'], ['EMIA', 'EMIA - École militaire interarmes'], ['OTHER', 'Autre (à préciser)'],
         ['LEG', 'LEG - Légion étrangère', ['legion']], ['SEC', 'SEC - Sécurité civile']
     ];
 
