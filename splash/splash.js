@@ -3,14 +3,10 @@
     if (!splash) return;
 
     var reduit = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var dejaVu = false;
-    try { dejaVu = sessionStorage.getItem('anc-splash-matrix') === '1'; } catch (e) {}
-
-    if (dejaVu || reduit) {
+    if (reduit) {
         splash.remove();
         return;
     }
-    try { sessionStorage.setItem('anc-splash-matrix', '1'); } catch (e) {}
     document.documentElement.style.overflow = 'hidden';
 
     var canvas = document.getElementById('matrix');
@@ -53,6 +49,7 @@
     }
 
     resizeMatrix();
+    drawMatrix();
     window.addEventListener('resize', resizeMatrix);
     var matrixTimer = setInterval(drawMatrix, 45);
 

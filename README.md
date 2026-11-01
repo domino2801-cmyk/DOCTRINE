@@ -74,7 +74,7 @@ Dans le module 4, le menu d’accès reprend les dossiers du module 3. Après av
 - les liens Google Drive (fichiers et dossiers) des modules s'ouvrent dans une visionneuse intégrée avec bouton **⬇ Télécharger** (le téléchargement est enregistré dans le suivi admin) ; le candidat n'ouvre jamais Drive (Ctrl/⌘/Maj+clic mis à part). Voir « Proxy Google Drive » ci-dessous
 - les liens externes Google Drive et `https://Qcm-major.fr` restent des ressources réseau et ne sont pas préchargés ni mis en cache
 - en cas de mise à jour du service worker, un message indique qu’il faut fermer puis rouvrir l’application pour récupérer la nouvelle version
-- au démarrage, `index.html` affiche un splash animé « Couteau Suisse BM4 » (dossier `splash/`, précaché par le service worker) : environ 6 s, une fois par session, fermable d’un toucher et désactivé si `prefers-reduced-motion` est actif
+- au démarrage, `index.html` affiche à chaque chargement un splash animé « Couteau Suisse BM4 » (dossier `splash/`, précaché par le service worker) : environ 6 s, fermable d’un toucher et désactivé si `prefers-reduced-motion` est actif
 - l’écran de connexion est entouré par `splash/connexion-cadre.png` ; le fond latéral reprend les couleurs des bords du cadre pour se fondre avec lui. Les deux images sont précachées pour rester disponibles hors ligne
 
 ## Installation GitHub Pages
