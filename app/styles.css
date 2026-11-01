@@ -876,6 +876,38 @@
     .fiche-status { min-height: 1.2em; margin: 4px 0 10px; font-weight: 600; }
     .fiche-status.is-ok { color: #8fdca0; }
     .fiche-status.is-error { color: #ff8a80; }
+    .fiche-form[hidden] { display: none; }
+    .fiche-card.is-sent > p:first-child {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: 0;
+        cursor: pointer;
+    }
+    .fiche-card.is-sent > p:first-child::after {
+        content: '▾';
+        margin-left: auto;
+        color: #e5c158;
+        transition: transform 0.2s ease;
+    }
+    .fiche-card.is-sent > p:first-child[aria-expanded="true"]::after { transform: rotate(180deg); }
+    .fiche-card.is-sent > .fiche-form:not([hidden]) {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(229, 193, 88, 0.35);
+    }
+    .fiche-sent-badge {
+        padding: 2px 10px;
+        border: 1px solid #8fdca0;
+        border-radius: 999px;
+        color: #8fdca0;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .fiche-sent-badge[hidden] { display: none; }
     .fiche-form .btn-link { border: 0; cursor: pointer; font: inherit; }
     .fiche-form .btn-link:disabled { opacity: 0.55; cursor: not-allowed; }
     .jury-accordeon select { margin: 6px 0 8px; }
