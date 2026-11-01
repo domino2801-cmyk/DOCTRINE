@@ -417,11 +417,37 @@ const module1Key = 'module1_validated';
         return false;
     }
 
+    // Ancien contenu publié du module 5 : cartes .qcm-carte converties vers le format partie / sous-partie.
+    function convertLegacyQcmCards() {
+        document.querySelectorAll('.mod-body[data-mod="5"] .qcm-carte').forEach(function(card) {
+            const head = card.querySelector('.qcm-carte-tete');
+            const number = head && head.querySelector('.qcm-num')?.textContent.trim();
+            const title = head && head.querySelector('h3')?.textContent.trim();
+            const section = document.createElement('section');
+            section.className = 'part-card';
+            if (head && title) {
+                const heading = document.createElement('p');
+                const strong = document.createElement('strong');
+                strong.textContent = (number ? number + '. ' : '') + title;
+                heading.appendChild(strong);
+                section.appendChild(heading);
+                head.remove();
+            }
+            while (card.firstChild) section.appendChild(card.firstChild);
+            card.replaceWith(section);
+        });
+        document.querySelectorAll('.mod-body[data-mod="5"] .qcm-cartes').forEach(function(wrapper) {
+            if (!wrapper.children.length) wrapper.remove();
+        });
+    }
+
     function harmonizePartCards() {
         document.querySelectorAll('.mod-body[data-mod="1"] > ul > li, .mod-body[data-mod="2"] > div, #modal-module6 .modal-list > li')
             .forEach(function(card) { card.classList.add('part-card'); });
 
-        ['3', '4'].forEach(function(id) {
+        convertLegacyQcmCards();
+
+        ['3', '4', '5'].forEach(function(id) {
             const body = document.querySelector('.mod-body[data-mod="' + id + '"]');
             if (!body) return;
             let card = null;

@@ -746,6 +746,7 @@
         list-style: none;
     }
     .part-card:last-child { margin-bottom: 0 !important; }
+    .part-card > .qcm-chiffres { margin-bottom: 12px; }
     .part-card > p:first-child,
     .part-card > ul:first-child:has(> li > strong:only-child),
     .part-card > .dossier-item:first-child,
