@@ -779,6 +779,7 @@
         color: #526075;
         font-size: 0.9rem;
     }
+    #ficheDossierStatus:empty { display: none; }
     .fiche-dossier-content {
         max-height: 55vh;
         overflow: auto;
