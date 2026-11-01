@@ -2,132 +2,97 @@
     var splash = document.getElementById('splash');
     if (!splash) return;
 
-    var DUREE_MS = 5800;
     var reduit = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var dejaVu = false;
-    var canvas = document.getElementById('matrix');
-    var progressBar = document.getElementById('progressBar');
-    var loadingText = document.getElementById('loadingText');
-    var progressTrack = splash.querySelector('[role="progressbar"]');
-    var porte = splash.querySelector('.splash-door');
-    var progress = 0;
-    var animationFrame;
-    var progressTimer;
-    var ouvertureTimer;
-    var fermee = false;
-    var ouvertureTerminee = !porte;
-    var fermetureDemandee = false;
-    var fermeturePlanifiee = false;
     try { dejaVu = sessionStorage.getItem('anc-splash-matrix') === '1'; } catch (e) {}
-
-    function programmerFermeture() {
-        if (fermeturePlanifiee || fermee || !splash.parentNode) return;
-        fermeturePlanifiee = true;
-        setTimeout(function () {
-            fermeturePlanifiee = false;
-            fermer();
-        }, 850);
-    }
-
-    function fermer() {
-        if (fermee || !splash.parentNode) return;
-        if (!ouvertureTerminee) {
-            fermetureDemandee = true;
-            return;
-        }
-        fermee = true;
-        splash.classList.add('splash-fin');
-        clearInterval(progressTimer);
-        clearTimeout(ouvertureTimer);
-        if (animationFrame) cancelAnimationFrame(animationFrame);
-        window.removeEventListener('resize', redimensionnerMatrix);
-        setTimeout(function () {
-            if (splash.parentNode) splash.parentNode.removeChild(splash);
-        }, 700);
-        document.documentElement.style.overflow = '';
-    }
 
     if (dejaVu || reduit) {
         splash.remove();
         return;
     }
-
     try { sessionStorage.setItem('anc-splash-matrix', '1'); } catch (e) {}
     document.documentElement.style.overflow = 'hidden';
 
-    if (porte) {
-        porte.addEventListener('animationend', function (event) {
-            if (event.animationName !== 'anc-coffre-ouverture') return;
-            ouvertureTerminee = true;
-            clearTimeout(ouvertureTimer);
-            if (fermetureDemandee) programmerFermeture();
-        });
-        ouvertureTimer = setTimeout(function () {
-            ouvertureTerminee = true;
-            if (fermetureDemandee) programmerFermeture();
-        }, 2500);
+    var canvas = document.getElementById('matrix');
+    var ctx = canvas.getContext('2d');
+    var closedImage = document.getElementById('closed');
+    var openedImage = document.getElementById('opened');
+    var blueScan = document.getElementById('blue-scan');
+    var loading = document.getElementById('loading');
+    var progressBar = document.getElementById('loading-progress');
+    var progressPercent = document.getElementById('loading-percent');
+
+    var width, height, drops;
+    var fontSize = 14;
+    var characters = '010101010101';
+    var fini = false;
+    var timers = [];
+
+    function resizeMatrix() {
+        var dpr = window.devicePixelRatio || 1;
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        drops = Array(Math.ceil(width / fontSize)).fill(1);
     }
 
-    var contexte = canvas && canvas.getContext('2d');
-    var taillePolice = 17;
-    var colonnes = [];
+    function drawMatrix() {
+        ctx.fillStyle = 'rgba(10, 20, 12, 0.12)';
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = '#00ff66';
+        ctx.font = fontSize + 'px monospace';
 
-    function redimensionnerMatrix() {
-        if (!contexte) return;
-
-        var ratio = Math.min(window.devicePixelRatio || 1, 2);
-        canvas.width = window.innerWidth * ratio;
-        canvas.height = window.innerHeight * ratio;
-        contexte.setTransform(ratio, 0, 0, ratio, 0, 0);
-        colonnes = Array.from(
-            { length: Math.ceil(window.innerWidth / taillePolice) },
-            function () { return -Math.random() * 60; }
-        );
+        for (var i = 0; i < drops.length; i++) {
+            var char = characters[Math.floor(Math.random() * characters.length)];
+            ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }
     }
 
-    function dessinerMatrix() {
-        if (!contexte || fermee) return;
+    resizeMatrix();
+    window.addEventListener('resize', resizeMatrix);
+    var matrixTimer = setInterval(drawMatrix, 45);
 
-        contexte.fillStyle = 'rgba(16, 27, 20, 0.10)';
-        contexte.fillRect(0, 0, window.innerWidth, window.innerHeight);
-        contexte.font = 'bold ' + taillePolice + 'px monospace';
+    var progress = 0;
+    var loadingTimer = setInterval(function () {
+        if (progress < 100) {
+            progress++;
+            progressBar.style.width = progress + '%';
+            progressPercent.textContent = progress + '%';
+        }
+        if (progress >= 100) clearInterval(loadingTimer);
+    }, 65);
 
-        colonnes.forEach(function (y, index) {
-            contexte.fillStyle = Math.random() > 0.85 ? '#fff' : '#55ffad';
-            contexte.shadowBlur = 8;
-            contexte.shadowColor = '#00ff9d';
-            contexte.fillText(Math.random() > 0.5 ? '1' : '0', index * taillePolice, y * taillePolice);
-            contexte.shadowBlur = 0;
+    function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
 
-            colonnes[index] += 0.35 + Math.random() * 0.7;
-            if (y * taillePolice > window.innerHeight && Math.random() > 0.975) {
-                colonnes[index] = -Math.random() * 30;
-            }
-        });
-
-        animationFrame = requestAnimationFrame(dessinerMatrix);
+    function fermer() {
+        if (fini || !splash.parentNode) return;
+        fini = true;
+        timers.forEach(clearTimeout);
+        clearInterval(matrixTimer);
+        clearInterval(loadingTimer);
+        window.removeEventListener('resize', resizeMatrix);
+        canvas.classList.add('hide');
+        loading.classList.add('hide');
+        splash.classList.add('splash-fin');
+        document.documentElement.style.overflow = '';
+        setTimeout(function () {
+            if (splash.parentNode) splash.parentNode.removeChild(splash);
+        }, 800);
     }
 
-    redimensionnerMatrix();
-    dessinerMatrix();
-    window.addEventListener('resize', redimensionnerMatrix);
+    function demarrer() {
+        later(function () { blueScan.classList.add('animate'); }, 2500);
+        later(function () { openedImage.classList.add('show'); }, 3300);
+        later(function () { closedImage.classList.add('slide-up'); }, 3800);
+        later(fermer, 6500);
+    }
 
-    var messages = [
-        'INITIALISATION DU SYSTÈME...',
-        'CHARGEMENT DES DONNÉES...',
-        'SÉCURISATION DES ACCÈS...',
-        'PRÉPARATION DE L’ARMOIRE...',
-        'ACCÈS AUTORISÉ'
-    ];
-
-    progressTimer = setInterval(function () {
-        progress = Math.min(progress + 1, 100);
-        progressBar.style.width = progress + '%';
-        progressTrack.setAttribute('aria-valuenow', progress);
-        loadingText.textContent = messages[Math.min(Math.floor(progress / 25), messages.length - 1)];
-
-        if (progress === 100) fermer();
-    }, DUREE_MS / 100);
+    if (document.readyState === 'complete') demarrer();
+    else window.addEventListener('load', demarrer, { once: true });
 
     splash.addEventListener('click', fermer, { once: true });
     window.addEventListener('app-ready', fermer, { once: true });

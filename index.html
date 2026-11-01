@@ -32,27 +32,17 @@
 <body>
 
 <div id="splash" role="presentation" aria-hidden="true">
+    <img id="opened" src="splash/armoire-ouverte.png" alt="">
+    <img id="closed" src="splash/armoire-fermee.png" alt="">
     <canvas id="matrix"></canvas>
-    <div class="splash-composition">
-        <div class="splash-art">
-            <picture class="splash-art-layer splash-art-base">
-                <source media="(max-width: 700px), (orientation: portrait)" srcset="splash/anc-splash-mobile-base.jpg">
-                <img src="splash/anc-splash-base.jpg" alt="">
-            </picture>
-            <picture class="splash-art-layer splash-door">
-                <source media="(max-width: 700px), (orientation: portrait)" srcset="splash/anc-splash-mobile-door.webp">
-                <img src="splash/anc-splash-door.webp" alt="">
-            </picture>
+    <div id="blue-scan"></div>
+    <div id="loading">
+        <div class="loading-info">
+            <span>CHARGEMENT DU SYSTÈME</span>
+            <span id="loading-percent">0%</span>
         </div>
-        <div class="splash-brand">
-            <div class="splash-wordmark" aria-label="ANC"><span>A</span><span>N</span><span>C</span></div>
-            <div class="splash-name">ARMOIRE NUMÉRIQUE DE CAMPAGNE</div>
-        </div>
-    </div>
-    <div class="splash-loading">
-        <div class="splash-loading-text" id="loadingText">INITIALISATION DU SYSTÈME...</div>
-        <div class="splash-progress" role="progressbar" aria-label="Chargement de l’application" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-            <div class="splash-progress-bar" id="progressBar"></div>
+        <div class="loading-track">
+            <div id="loading-progress"></div>
         </div>
     </div>
 </div>
