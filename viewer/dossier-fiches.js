@@ -485,7 +485,7 @@ Le candidat doit impérativement s'appuyer sur la circulaire officielle pour val
         actions.className = 'fiche-dossier-admin-actions';
         var addButton = creer('button', 'Nouvelle fiche');
         addButton.type = 'button';
-        var saveButton = creer('button', 'Enregistrer la fiche');
+        var saveButton = creer('button', 'Appliquer');
         saveButton.type = 'button';
         saveButton.className = 'adm-save';
         actions.appendChild(addButton);
@@ -573,7 +573,7 @@ Le candidat doit impérativement s'appuyer sur la circulaire officielle pour val
             textNode.textContent = textInput.value;
             rafraichirEditeur(id);
             afficher(viewer, id);
-            status.textContent = 'Fiche modifiée dans le module. Cliquez sur « Enregistrer » dans la barre du module pour la publier.';
+            status.textContent = 'Fiche modifiée dans le module. Cliquez sur « Appliquer » dans la barre du module pour la publier.';
         });
 
         rafraichirEditeur('');

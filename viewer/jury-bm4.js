@@ -420,9 +420,9 @@
             '<input id="jury-admin-titre" type="text">' +
             '<label for="jury-admin-texte">Contenu de la fiche</label>' +
             '<textarea id="jury-admin-texte" rows="14"></textarea>' +
-            '<p><button type="button" data-jury-save>Appliquer la fiche</button> ' +
+            '<p><button type="button" data-jury-save>Appliquer</button> ' +
             '<button type="button" data-jury-publish>Enregistrer</button> ' +
-            '<button type="button" data-jury-reset>Rétablir la fiche d’origine</button></p>' +
+            '<button type="button" data-jury-reset>Rétablir</button></p>' +
             '<p data-jury-msg role="status"></p>';
         var select = panneau.querySelector('#jury-admin-select');
         select.appendChild(new Option('Sélectionner une spécialité', ''));
