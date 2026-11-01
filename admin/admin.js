@@ -514,7 +514,7 @@
         bar.className = 'adm-ui adm-bar';
         var etat = document.createElement('div');
         etat.className = 'adm-state';
-        etat.textContent = 'Mode administrateur : cliquez dans le texte pour le modifier.';
+        etat.textContent = 'Admin : cliquez dans le texte pour le modifier.';
         function ajouter(html) {
             corpsEl.insertAdjacentHTML('beforeend', html);
             decorer(corpsEl);
@@ -1025,7 +1025,7 @@
         });
     }
 
-    function libelleAdmin() { return adminActif ? '✏️ Quitter l\'admin' : '✏️ Mode admin'; }
+    function libelleAdmin() { return adminActif ? '✏️ Quitter l\'admin' : '✏️ Admin'; }
 
     function majBoutonsToolbar() {
         var visible = !!(auth() && auth().estAdmin());
@@ -1051,7 +1051,7 @@
                 suivi.addEventListener('click', ouvrirSuivi);
                 zone.appendChild(suivi);
             }
-            [['signalements', '🚩 Signalements'], ['retex', '📝 RETEX']].forEach(function (def) {
+            [['signalements', '🚩 Signal'], ['retex', '📝 RETEX']].forEach(function (def) {
                 var classe = 'adm-fiches-toolbar-' + def[0];
                 var bouton = zone.querySelector('.' + classe);
                 if (!bouton && visible) {
