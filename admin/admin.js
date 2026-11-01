@@ -28,6 +28,7 @@
     var suiviEntete;
     var suiviCandidat = null;
     var suiviCandidatNom = '';
+    var suiviDeclencheur;
     var consultations = [];
     var consultationsOffset = 0;
     var consultationsCompletes = false;
@@ -929,7 +930,8 @@
         });
     }
 
-    function ouvrirSuivi() {
+    function ouvrirSuivi(event) {
+        suiviDeclencheur = event && event.currentTarget;
         construireSuivi();
         suiviCandidat = null;
         suiviCandidatNom = '';
@@ -942,7 +944,11 @@
 
     function fermerSuivi() {
         if (suiviDialogue) suiviDialogue.hidden = true;
-        if (suiviBouton) suiviBouton.focus();
+        var retour = suiviDeclencheur && suiviDeclencheur.isConnected && !suiviDeclencheur.hidden
+            ? suiviDeclencheur
+            : suiviBouton;
+        if (retour && !retour.hidden) retour.focus();
+        suiviDeclencheur = null;
     }
 
     function montrerSuiviBouton() {
@@ -1042,6 +1048,7 @@
         var visible = !!(auth() && auth().estAdmin());
         document.querySelectorAll('.module-nav-controls').forEach(function (zone) {
             var b = zone.querySelector('.adm-toolbar-toggle');
+            var suivi = zone.querySelector('.adm-views-toolbar-toggle');
             if (!b && visible) {
                 b = document.createElement('button');
                 b.type = 'button';
@@ -1051,10 +1058,21 @@
                 });
                 zone.appendChild(b);
             }
+            if (!suivi && visible) {
+                suivi = document.createElement('button');
+                suivi.type = 'button';
+                suivi.className = 'module-nav-button adm-views-toolbar-toggle';
+                suivi.textContent = '📊 Suivi';
+                suivi.title = 'Suivi des consultations';
+                suivi.setAttribute('aria-label', 'Suivi des consultations');
+                suivi.addEventListener('click', ouvrirSuivi);
+                zone.appendChild(suivi);
+            }
             if (b) {
                 b.hidden = !visible;
                 b.textContent = libelleAdmin();
             }
+            if (suivi) suivi.hidden = !visible;
         });
     }
 
@@ -1064,7 +1082,7 @@
         if (bouton) bouton.hidden = !visible;
         if (suiviBouton) suiviBouton.hidden = !visible;
         majBoutonsToolbar();
-        if (!visible && suiviDialogue && !suiviDialogue.hidden) fermerSuivi();
+        if (!estAdmin && suiviDialogue && !suiviDialogue.hidden) fermerSuivi();
     }
 
     function surveillerModales() {
