@@ -98,6 +98,16 @@
         }).catch(function () {});
     }
 
+    // « Tous les modules » est exclusif des choix individuels.
+    retexForm.addEventListener('change', function (event) {
+        var target = event.target;
+        if (!target || target.name !== 'retex-modules' || !target.checked) return;
+        var all = document.getElementById('retexAllModules');
+        retexForm.querySelectorAll('input[name="retex-modules"]').forEach(function (el) {
+            if (target === all ? el !== all : el === all) el.checked = false;
+        });
+    });
+
     retexForm.addEventListener('submit', function (event) {
         event.preventDefault();
         var modules = Array.prototype.map.call(
