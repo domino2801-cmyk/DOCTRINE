@@ -1,7 +1,8 @@
 -- DOCTRINE : journal des ouvertures et clics de téléchargement par candidat.
 -- À exécuter une fois dans Supabase > SQL Editor (projet de QCM-MAJOR.FR).
--- Les candidats peuvent ajouter leurs propres événements ; seuls les admins
--- peuvent lire le journal. L'identité et la date sont fixées côté base.
+-- Les candidats peuvent ajouter leurs propres événements et relire uniquement
+-- les leurs (vérification de la présentation avant validation du module 1) ;
+-- seuls les admins peuvent lire tout le journal. L'identité et la date sont fixées côté base.
 
 create table if not exists public.doctrine_document_views (
     id              bigint generated always as identity primary key,
@@ -32,6 +33,13 @@ create policy doctrine_document_views_candidate_insert
     on public.doctrine_document_views
     for insert to authenticated
     with check (user_id = auth.uid());
+
+drop policy if exists doctrine_document_views_candidate_read_own
+    on public.doctrine_document_views;
+create policy doctrine_document_views_candidate_read_own
+    on public.doctrine_document_views
+    for select to authenticated
+    using (user_id = auth.uid());
 
 drop policy if exists doctrine_document_views_admin_read
     on public.doctrine_document_views;

@@ -631,11 +631,68 @@ const module1Key = 'module1_validated';
         });
 
         const checkbox = document.getElementById('chkModule1Valid');
+        const presentationError = document.createElement('p');
+        presentationError.id = 'module1PresentationError';
+        presentationError.setAttribute('role', 'alert');
+        presentationError.hidden = true;
+        presentationError.style.cssText = 'margin:8px 0 0;color:#c0392b;font-weight:bold;';
+        if (checkbox) checkbox.closest('div').after(presentationError);
+
+        // Lien « Ouvrir » de la rubrique 1.1 (adresse lue dans le contenu courant, éventuellement modifié par l'admin).
+        function presentationDriveId() {
+            const heading = Array.from(document.querySelectorAll('.mod-body[data-mod="1"] strong'))
+                .find(function(el) { return el.textContent.trim().startsWith('1.1.'); });
+            const link = heading && heading.closest('li')?.querySelector('a[href]');
+            const match = link && link.href.match(/\/(?:file|folders)\/d?\/?([\w-]{10,})/);
+            return match ? match[1] : '';
+        }
+
+        // Retourne true seulement si une ouverture de la présentation est enregistrée pour ce candidat.
+        function hasOpenedPresentation() {
+            const auth = window.DoctrineAuth;
+            if (!auth || auth.estAdmin()) return Promise.resolve(true);
+            const id = presentationDriveId();
+            if (!id) return Promise.resolve(true);
+            return auth.jeton().then(function(token) {
+                if (!token) return false;
+                const query = 'doctrine_document_views?select=id&module_id=eq.1&event_type=eq.open&limit=1&document_url=like.' +
+                    encodeURIComponent('*' + id + '*');
+                return fetch(auth.url + '/rest/v1/' + query, {
+                    headers: { apikey: auth.key, Authorization: 'Bearer ' + token }
+                }).then(function(response) {
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    return response.json();
+                }).then(function(rows) { return rows.length > 0; });
+            });
+        }
+
         if (checkbox) {
             checkbox.checked = getModule1State();
             checkbox.addEventListener('change', function() {
-                setModule1State(this.checked);
-                updateModuleLockUI();
+                presentationError.hidden = true;
+                if (!this.checked) {
+                    setModule1State(false);
+                    updateModuleLockUI();
+                    return;
+                }
+                const box = this;
+                box.disabled = true;
+                hasOpenedPresentation().then(function(opened) {
+                    box.disabled = false;
+                    if (!opened) {
+                        box.checked = false;
+                        presentationError.textContent = 'Vous n’avez même pas ouvert la présentation du BM4 (rubrique 1.1). Ouvrez-la avant de valider le module.';
+                        presentationError.hidden = false;
+                        return;
+                    }
+                    setModule1State(true);
+                    updateModuleLockUI();
+                }).catch(function() {
+                    box.disabled = false;
+                    box.checked = false;
+                    presentationError.textContent = 'Vérification impossible pour le moment (connexion ou droits). Réessayez.';
+                    presentationError.hidden = false;
+                });
             });
         }
 
