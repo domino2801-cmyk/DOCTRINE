@@ -475,6 +475,22 @@ Le candidat doit structurer sa réponse selon quatre axes complémentaires :
         });
     }
 
+    function completerSource(source) {
+        var ids = new Set(records(source).map(function (record) { return record.id; }));
+        Object.keys(fiches).forEach(function (id) {
+            if (ids.has(id)) return;
+            var record = creer('div');
+            record.setAttribute('data-fiche-dossier-record', id);
+            var title = creer('span', titres[id]);
+            title.setAttribute('data-fiche-dossier-title', '');
+            var text = creer('pre', fiches[id]);
+            text.setAttribute('data-fiche-dossier-text', '');
+            record.appendChild(title);
+            record.appendChild(text);
+            source.appendChild(record);
+        });
+    }
+
     function ajouterOption(select, record) {
         var option = creer('option', record.title);
         option.value = record.id;
@@ -646,6 +662,7 @@ Le candidat doit structurer sa réponse selon quatre axes complémentaires :
             source = creerSource();
             viewer.after(source);
         }
+        completerSource(source);
         var select = viewer.querySelector('#ficheDossierSelect');
         if (!select || !viewer.querySelector('#ficheDossierContent') || !viewer.querySelector('#ficheDossierStatus')) {
             var replacement = creerVisionneuse();
