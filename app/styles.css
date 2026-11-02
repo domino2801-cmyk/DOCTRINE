@@ -357,6 +357,8 @@
         display: none;
     }
     .modal-toolbar > span {
+        position: relative;
+        overflow: hidden;
         display: inline-flex;
         align-items: center;
         box-sizing: border-box;
@@ -787,8 +789,10 @@
     .qcm-acces .btn-link:hover { filter: brightness(1.08); transform: translateY(-1px); }
     .qcm-acces .btn-link:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
     @media (prefers-reduced-motion: no-preference) {
-        .qcm-acces .btn-link { animation: blue-glow 2.4s ease-in-out infinite; }
-        .qcm-acces .btn-link::after {
+        .qcm-acces .btn-link,
+        .modal-toolbar > span { animation: blue-glow 2.4s ease-in-out infinite; }
+        .qcm-acces .btn-link::after,
+        .modal-toolbar > span::after {
             content: "";
             position: absolute;
             top: 0;
