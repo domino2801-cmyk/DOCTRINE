@@ -3,7 +3,13 @@
     if (!splash) return;
 
     var reduit = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduit) {
+    // Rechargement automatique après mise à jour du service worker : le splash a déjà été vu.
+    var rechargement = false;
+    try {
+        rechargement = sessionStorage.getItem('splash-skip') === '1';
+        sessionStorage.removeItem('splash-skip');
+    } catch (e) { /* stockage indisponible */ }
+    if (reduit || rechargement) {
         splash.remove();
         return;
     }
