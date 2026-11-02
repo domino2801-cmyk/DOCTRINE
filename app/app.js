@@ -22,9 +22,33 @@ const module1Key = 'module1_validated';
         return dossier?.closest('.dossier-item')?.querySelector('[data-study-status]')?.value === 'mastered';
     }
 
+    function isAdminUser() {
+        return !!(window.DoctrineAuth && window.DoctrineAuth.estAdmin && window.DoctrineAuth.estAdmin());
+    }
+
+    // Un dossier du module 4 n'est consultable que s'il est marqué « Fait » dans le module 3 (sauf admin).
+    function isDossierAvailable(id) {
+        return isAdminUser() || isDossierDone(id);
+    }
+
+    window.bm4IsDossierAvailable = isDossierAvailable;
+
+    function isModule4Unlocked() {
+        if (isAdminUser()) return true;
+        return Array.from(document.querySelectorAll('.mod-body[data-mod="3"] input[data-dossier]')).some(function(box) {
+            return isDossierDone(box.getAttribute('data-dossier'));
+        });
+    }
+
+    function canOpenModule(id) {
+        if (id === 'module1') return true;
+        if (!isModule1Unlocked()) return false;
+        return id !== 'module4' || isModule4Unlocked();
+    }
+
     function hasCorrectionAccess() {
         const selectedDossier = document.getElementById('correctionDossier')?.value;
-        return correctionsUnlocked && !!selectedDossier && isDossierDone(selectedDossier);
+        return correctionsUnlocked && !!selectedDossier && isDossierAvailable(selectedDossier);
     }
 
     function updateCorrectionAccess() {
@@ -62,13 +86,13 @@ const module1Key = 'module1_validated';
         dossiers.forEach(function(box) {
             const name = box.closest('.dossier-item')?.querySelector(':scope > label > span')?.textContent.trim();
             const id = box.getAttribute('data-dossier');
-            if (!name || !id) return;
+            if (!name || !id || !isDossierAvailable(id)) return;
             dossierSelect.add(new Option(name, id));
         });
         dossierSelect.value = Array.from(dossierSelect.options).some(function(option) {
             return option.value === currentValue;
         }) ? currentValue : '';
-        dossierSelect.disabled = dossiers.length === 0;
+        dossierSelect.disabled = dossierSelect.options.length <= 1;
         updateCorrectionAccess();
     }
 
@@ -128,11 +152,16 @@ const module1Key = 'module1_validated';
         modulesToLock.forEach(id => {
             const btn = document.getElementById(id);
             if (!btn) return;
-            btn.disabled = !isUnlocked;
-            btn.style.opacity = isUnlocked ? '1' : '0.5';
-            btn.style.cursor = isUnlocked ? 'pointer' : 'not-allowed';
-            btn.style.backgroundColor = isUnlocked ? '' : '#e2e8f0';
-            btn.style.color = isUnlocked ? '' : '#94a3b8';
+            const moduleId = Object.keys(moduleButtonMap).find(key => moduleButtonMap[key] === id);
+            const isOpenable = isUnlocked && canOpenModule(moduleId);
+            btn.disabled = !isOpenable;
+            btn.style.opacity = isOpenable ? '1' : '0.5';
+            btn.style.cursor = isOpenable ? 'pointer' : 'not-allowed';
+            btn.style.backgroundColor = isOpenable ? '' : '#e2e8f0';
+            btn.style.color = isOpenable ? '' : '#94a3b8';
+            if (moduleId === 'module4') {
+                btn.title = isOpenable || !isUnlocked ? '' : 'Marquez au moins un dossier « Fait » dans le module 3 pour accéder au module 4.';
+            }
         });
 
         if (lockWarning) {
@@ -148,8 +177,8 @@ const module1Key = 'module1_validated';
             if (!modal) return;
             const previous = modal.querySelector('.module-nav-previous');
             const next = modal.querySelector('.module-nav-next');
-            if (previous) previous.disabled = index === 0;
-            if (next) next.disabled = index === moduleOrder.length - 1 || (index === 0 && !isModule1Unlocked());
+            if (previous) previous.disabled = index === 0 || !canOpenModule(moduleOrder[index - 1]);
+            if (next) next.disabled = index === moduleOrder.length - 1 || !canOpenModule(moduleOrder[index + 1]);
         });
     }
 
@@ -159,6 +188,10 @@ const module1Key = 'module1_validated';
 
     function openModal(id) {
         if (!Object.prototype.hasOwnProperty.call(moduleButtonMap, id)) return;
+        if (id === 'module4' && isModule1Unlocked() && !isModule4Unlocked()) {
+            alert('Marquez au moins un dossier « Fait » dans le module 3 pour accéder au module 4.');
+            return;
+        }
         if (id === 'module1' || isModule1Unlocked()) {
             const modal = document.getElementById('modal-' + id);
             if (!modal) return;
@@ -224,6 +257,7 @@ const module1Key = 'module1_validated';
     function resumeLastModule() {
         let id = getLastModule();
         if (id !== 'module1' && !isModule1Unlocked()) id = 'module1';
+        else if (id === 'module4' && !isModule4Unlocked()) id = 'module3';
         openModal(id);
     }
 
@@ -757,7 +791,7 @@ const module1Key = 'module1_validated';
                     dossierSelect?.focus();
                     return;
                 }
-                if (!isDossierDone(dossierSelect.value)) {
+                if (!isDossierAvailable(dossierSelect.value)) {
                     correctionsUnlocked = false;
                     updateCorrectionAccess();
                     if (status) status.textContent = 'Ce dossier n’est pas marqué « Fait » dans le module 3 : terminez-le avant d’ouvrir son corrigé.';
@@ -786,7 +820,7 @@ const module1Key = 'module1_validated';
                 const status = document.getElementById('correctionGateStatus');
                 const selectedDossier = document.getElementById('correctionDossier')?.value;
                 if (status) {
-                    status.textContent = selectedDossier && !isDossierDone(selectedDossier)
+                    status.textContent = selectedDossier && !isDossierAvailable(selectedDossier)
                         ? 'Ce dossier n’est pas marqué « Fait » dans le module 3 : terminez-le avant d’ouvrir son corrigé.'
                         : 'Sélectionnez d’abord votre fiche rédigée pour ouvrir les corrigés.';
                 }
@@ -963,9 +997,14 @@ const module1Key = 'module1_validated';
             }
             updateRecommendedDossier();
             filterDossiersByDifficulty();
+            updateModuleLockUI();
+            document.dispatchEvent(new CustomEvent('doctrine:dossiers-updated'));
             updateResumeModule(getLastModule());
         }
         window.bm4RefreshProgress = refreshProgress;
+        ['doctrine:login', 'doctrine:logout'].forEach(function(name) {
+            document.addEventListener(name, refreshProgress);
+        });
 
         document.addEventListener('change', function(e) {
             if (e.target && e.target.id === 'dossierDifficultyFilter') filterDossiersByDifficulty();

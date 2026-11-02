@@ -504,7 +504,8 @@ Le candidat doit structurer sa réponse selon quatre axes complémentaires :
         var source = viewer.parentElement.querySelector('[data-fiche-dossier-source]');
         if (!select || !content || !status || !source) return;
 
-        var allRecords = records(source);
+        var disponible = window.bm4IsDossierAvailable || function () { return true; };
+        var allRecords = records(source).filter(function (record) { return disponible(record.id); });
         var previousId = selectedId === undefined ? select.value : selectedId;
         select.replaceChildren(creer('option', 'Choisissez un dossier…'));
         select.options[0].value = '';
@@ -680,6 +681,10 @@ Le candidat doit structurer sa réponse selon quatre axes complémentaires :
     }
 
     document.addEventListener('DOMContentLoaded', initialiser);
+    document.addEventListener('doctrine:dossiers-updated', function () {
+        var viewer = document.querySelector('.fiche-dossier-viewer');
+        if (viewer) afficher(viewer);
+    });
     document.addEventListener('doctrine:content-updated', function (event) {
         if (event.detail && event.detail.moduleId === '4') initialiser();
     });
