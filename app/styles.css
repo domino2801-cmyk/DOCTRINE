@@ -427,14 +427,25 @@
     .mod-body .dossier-item { box-shadow: none; }
     .correction-gate {
         max-width: 72ch;
-        margin: -14px auto 18px;
-        padding: 16px;
+        margin: -14px auto 12px;
+        padding: 10px 12px;
         border: 1px solid #d9e0e8;
         border-left: 4px solid var(--accent-red);
         border-radius: 6px;
         background: #f4f7fb;
     }
-    .correction-gate form { display: grid; gap: 10px; }
+    .correction-gate h3 { margin: 0 0 6px; font-size: 1rem; line-height: 1.2; }
+    .correction-gate form {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px 8px;
+    }
+    .correction-gate form > select,
+    .correction-gate form > p { grid-column: 1 / -1; }
+    .correction-gate form > p { order: 3; margin: 0; font-size: 0.85rem; line-height: 1.3; }
+    .correction-gate form > button { order: 2; padding-inline: 6px; font-size: 0.8rem; line-height: 1.15; }
+    #correctionGateStatus { margin: 6px 0 0; font-size: 0.85rem; }
+    #correctionGateStatus:empty { display: none; }
     .correction-gate input,
     .correction-gate select,
     .correction-gate button { font: inherit; }
@@ -442,19 +453,20 @@
     .correction-gate select {
         width: 100%;
         max-width: 100%;
-        padding: 8px;
+        padding: 6px 8px;
         border: 1px solid #aeb9c7;
         border-radius: 5px;
         background: #fff;
     }
     .correction-gate button {
-        justify-self: start;
-        padding: 9px 14px;
+        justify-self: stretch;
+        padding: 7px 10px;
         border: 0;
         border-radius: 5px;
         background: var(--primary-blue);
         color: #fff;
         font-weight: 700;
+        font-size: 0.9rem;
         cursor: pointer;
     }
     .correction-gate button:hover { background: #16396a; }
@@ -646,22 +658,22 @@
         flex: 1 1 16rem;
     }
     .fiche-dossier-viewer {
-        margin: 16px 0 24px;
-        padding: 14px;
+        margin: 8px 0 12px;
+        padding: 10px 12px;
         border: 1px solid #d9e0e8;
         border-radius: 6px;
         background: #f8fafc;
     }
     .fiche-dossier-viewer label {
         display: block;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         color: var(--primary-blue);
         font-weight: 700;
     }
     .fiche-dossier-viewer select {
         width: 100%;
         max-width: 560px;
-        padding: 8px;
+        padding: 6px 8px;
         border: 1px solid #aeb9c6;
         border-radius: 4px;
         background: #fff;
@@ -962,7 +974,7 @@
     .fiche-form .btn-link:disabled { opacity: 0.55; cursor: not-allowed; }
     .jury-accordeon select { margin: 6px 0 8px; }
     #ficheDossierStatus {
-        margin: 8px 0 0;
+        margin: 6px 0 0;
         color: #526075;
         font-size: 0.9rem;
     }
