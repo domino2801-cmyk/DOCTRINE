@@ -427,7 +427,7 @@
     .mod-body .dossier-item { box-shadow: none; }
     .correction-gate {
         max-width: 72ch;
-        margin: 0 auto 18px;
+        margin: -14px auto 18px;
         padding: 16px;
         border: 1px solid #d9e0e8;
         border-left: 4px solid var(--accent-red);
