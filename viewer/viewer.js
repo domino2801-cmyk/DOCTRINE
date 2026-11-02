@@ -121,10 +121,14 @@
                 if (numero !== requete) return;
                 var nomFichier = fichier ? decodeURIComponent(fichier) : nom;
                 titre.textContent = nomFichier;
+                // Drive peut servir un .html en text/plain : on force le type pour l'afficher en page et non en code source.
+                if (/\.html?$/i.test(nomFichier)) {
+                    type = 'text/html';
+                    blob = new Blob([blob], { type: 'text/html;charset=utf-8' });
+                }
                 urlObjet = URL.createObjectURL(blob);
                 courant = { nom: nomFichier, url: contexte && contexte.url || '', module: contexte && contexte.module || '' };
                 telecharger.hidden = false;
-                if (/\.html?$/i.test(nomFichier)) type = 'text/html';
                 montrer(type, urlObjet, id);
             });
         }).catch(function () {
