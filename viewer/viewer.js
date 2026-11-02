@@ -25,7 +25,12 @@
     function identifier(href) {
         var url;
         try { url = new URL(href); } catch (e) { return null; }
-        if (url.protocol !== 'https:' || url.hostname !== 'drive.google.com') return null;
+        if (url.protocol !== 'https:') return null;
+        if (url.hostname === 'docs.google.com') {
+            var g = url.pathname.match(/^\/(?:document|spreadsheets|presentation)\/d\/([\w-]+)/);
+            return g ? { type: 'file', id: g[1] } : null;
+        }
+        if (url.hostname !== 'drive.google.com') return null;
         var f = url.pathname.match(/^\/file\/d\/([\w-]+)/);
         if (f) return { type: 'file', id: f[1] };
         var d = url.pathname.match(/^\/drive\/folders\/([\w-]+)/);
@@ -200,6 +205,11 @@
             if (tactile()) return montrerPdfMobile(src);
             noeud = element('iframe', 'dv-frame');
             noeud.title = 'Document';
+        } else if (type === 'text/html') {
+            // Sans allow-same-origin : le HTML s'exécute dans une origine isolée, sans accès à la session.
+            noeud = element('iframe', 'dv-frame');
+            noeud.title = 'Document';
+            noeud.setAttribute('sandbox', 'allow-scripts allow-popups allow-popups-to-escape-sandbox');
         } else if (type.indexOf('image/') === 0) {
             noeud = element('img', 'dv-img');
             noeud.alt = titre.textContent;
