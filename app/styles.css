@@ -1803,6 +1803,55 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
     }
 
     @media (max-width: 768px) {
+        .modal > .modal-toolbar {
+            flex-wrap: nowrap;
+            gap: 4px;
+            padding: 8px;
+        }
+
+        .modal > .modal-toolbar > span,
+        .modal > .modal-toolbar .module-nav-controls > button,
+        .modal > .modal-toolbar > .auth-toolbar-logout {
+            height: 44px;
+            min-height: 0;
+            font-size: 0.64rem;
+            line-height: 1.1;
+        }
+
+        .modal > .modal-toolbar > span {
+            order: 1;
+            flex: 0 0 auto;
+            padding: 4px 6px;
+            letter-spacing: 0.03em;
+        }
+
+        .modal > .modal-toolbar > .module-nav-controls {
+            order: 2;
+            flex: 1 1 0;
+            min-width: 0;
+            gap: 3px;
+        }
+
+        .modal > .modal-toolbar .module-nav-controls > .modal-return-btn {
+            flex: 1 1 0;
+            min-width: 0;
+            padding: 4px;
+        }
+
+        .modal > .modal-toolbar .module-nav-controls > .module-nav-button {
+            flex: 0 0 26px;
+            width: 26px;
+            min-width: 26px;
+            padding-inline: 0;
+        }
+
+        .modal > .modal-toolbar > .auth-toolbar-logout {
+            order: 3;
+            flex: 0 0 auto;
+            margin: 0;
+            padding: 4px 6px;
+        }
+
         .modal-content > h2 {
             font-size: clamp(0.95rem, 3.8vw, 1.1rem);
             line-height: 1.3;
