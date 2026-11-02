@@ -342,6 +342,17 @@
         justify-content: center;
         gap: 6px;
     }
+    .modal-toolbar .module-nav-controls > button,
+    .modal-toolbar > .auth-toolbar-logout {
+        box-sizing: border-box;
+        height: 58px;
+    }
+    .module-nav-button.module-nav-previous,
+    .module-nav-button.module-nav-next {
+        width: 34px;
+        min-width: 34px;
+        padding-inline: 4px;
+    }
     .module-nav-button > span {
         display: none;
     }
