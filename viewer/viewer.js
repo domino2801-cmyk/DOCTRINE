@@ -124,7 +124,8 @@
                 urlObjet = URL.createObjectURL(blob);
                 courant = { nom: nomFichier, url: contexte && contexte.url || '', module: contexte && contexte.module || '' };
                 telecharger.hidden = false;
-                montrer(type, urlObjet);
+                if (/\.html?$/i.test(nomFichier)) type = 'text/html';
+                montrer(type, urlObjet, id);
             });
         }).catch(function () {
             if (numero === requete) repliApercu(id);
@@ -199,7 +200,7 @@
         });
     }
 
-    function montrer(type, src) {
+    function montrer(type, src, id) {
         var noeud;
         if (type === 'application/pdf') {
             if (tactile()) return montrerPdfMobile(src);
@@ -218,21 +219,26 @@
             noeud.controls = true;
             noeud.setAttribute('controlsList', 'nodownload');
         } else {
-            return message('Aperçu indisponible pour ce format : utilisez « Télécharger ».');
+            // Formats non lisibles par le navigateur (Excel, Word…) : aperçu Drive, téléchargement conservé.
+            return id ? apercuDrive(id) : message('Aperçu indisponible pour ce format : utilisez « Télécharger ».');
         }
         noeud.src = src;
         corps.replaceChildren(noeud);
     }
 
-    // Fonction non déployée : aperçu Drive intégré (sans téléchargement).
-    function repliApercu(id) {
-        libererObjet();
+    function apercuDrive(id) {
         var noeud = element('iframe', 'dv-frame');
         noeud.title = 'Document';
         noeud.setAttribute('allow', 'fullscreen');
         noeud.setAttribute('referrerpolicy', 'no-referrer');
         noeud.src = 'https://drive.google.com/file/d/' + id + '/preview';
         corps.replaceChildren(noeud);
+    }
+
+    // Fonction non déployée : aperçu Drive intégré (sans téléchargement).
+    function repliApercu(id) {
+        libererObjet();
+        apercuDrive(id);
     }
 
     function afficherDossier(id, nom) {
