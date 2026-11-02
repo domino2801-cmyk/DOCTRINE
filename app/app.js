@@ -171,18 +171,35 @@ const module1Key = 'module1_validated';
         updateResumeModule(getLastModule());
     }
 
+    // Tant que le module 4 est verrouillé, la navigation le saute (3 ↔ 5).
+    function neighborModule(index, step) {
+        let target = index + step;
+        while (target >= 0 && target < moduleOrder.length && moduleOrder[target] === 'module4' && !canOpenModule('module4')) {
+            target += step;
+        }
+        return target >= 0 && target < moduleOrder.length ? moduleOrder[target] : null;
+    }
+
     function updateModuleNavigation(activeModule) {
         moduleOrder.forEach(function(moduleId, index) {
             const modal = document.getElementById('modal-' + moduleId);
             if (!modal) return;
             const previous = modal.querySelector('.module-nav-previous');
             const next = modal.querySelector('.module-nav-next');
-            if (previous) previous.disabled = index === 0 || !canOpenModule(moduleOrder[index - 1]);
-            if (next) next.disabled = index === moduleOrder.length - 1 || !canOpenModule(moduleOrder[index + 1]);
+            const previousId = neighborModule(index, -1);
+            const nextId = neighborModule(index, 1);
+            if (previous) previous.disabled = !previousId || !canOpenModule(previousId);
+            if (next) next.disabled = !nextId || !canOpenModule(nextId);
         });
     }
 
     function navigateModule(id) {
+        if (id === 'module4' && isModule1Unlocked() && !isModule4Unlocked()) {
+            const currentModal = Array.from(document.querySelectorAll('.modal')).find(function(item) {
+                return item.style.display === 'block';
+            });
+            id = currentModal && currentModal.id === 'modal-module5' ? 'module3' : 'module5';
+        }
         openModal(id);
     }
 
