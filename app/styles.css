@@ -362,7 +362,7 @@
         font-weight: 800;
         letter-spacing: 0.12em;
         padding: 4px 10px;
-        border-radius: 999px;
+        border-radius: 7px;
         background: var(--accent-red);
     }
     .modal-return-btn {
