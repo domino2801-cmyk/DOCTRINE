@@ -682,7 +682,7 @@ Le candidat doit structurer sa réponse selon quatre axes complémentaires :
 
     document.addEventListener('DOMContentLoaded', initialiser);
     document.addEventListener('doctrine:dossiers-updated', function () {
-        var viewer = document.querySelector('.fiche-dossier-viewer');
+        var viewer = document.querySelector('#ficheDossierSelect')?.closest('.fiche-dossier-viewer');
         if (viewer) afficher(viewer);
     });
     document.addEventListener('doctrine:content-updated', function (event) {
