@@ -357,6 +357,12 @@
         display: none;
     }
     .modal-toolbar > span {
+        display: inline-flex;
+        align-items: center;
+        box-sizing: border-box;
+        height: 58px;
+        flex-shrink: 0;
+        white-space: nowrap;
         color: #fff;
         font-size: 0.8rem;
         font-weight: 800;
