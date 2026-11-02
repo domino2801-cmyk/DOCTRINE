@@ -964,8 +964,6 @@ const module1Key = 'module1_validated';
         }
 
         function refreshProgress() {
-            updateCorrectionAccess();
-            updateCorrectionDossierOptions();
             const allItems = [];
             studyGroups.forEach(function(group) {
                 const boxes = document.querySelectorAll('.dossier-item input[' + group.attr + ']');
@@ -982,6 +980,8 @@ const module1Key = 'module1_validated';
                 if (bar) bar.style.width = pct + '%';
                 if (txt) txt.innerText = group.label + pct + '%';
             });
+            updateCorrectionAccess();
+            updateCorrectionDossierOptions();
             const consultes = allItems.filter(function(item) { return item.status !== 'todo'; }).length;
             const faits = allItems.filter(function(item) { return item.status === 'mastered'; }).length;
             const aFaire = allItems.length - faits;
