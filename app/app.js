@@ -58,7 +58,7 @@ const module1Key = 'module1_validated';
         else if (progress) progress.before(gate);
 
         const dossiers = document.querySelectorAll('.mod-body[data-mod="3"] input[data-dossier]');
-        dossierSelect.replaceChildren(new Option('Choisissez un dossier…', ''));
+        dossierSelect.replaceChildren(new Option('Dossier rédigé dans le module 3…', ''));
         dossiers.forEach(function(box) {
             const name = box.closest('.dossier-item')?.querySelector(':scope > label > span')?.textContent.trim();
             const id = box.getAttribute('data-dossier');
