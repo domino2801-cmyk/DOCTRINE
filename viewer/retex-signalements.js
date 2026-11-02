@@ -176,6 +176,26 @@
     });
 
     // --- 7.2 Signalement ---
+    var signalementCard = document.getElementById('signalementCard');
+    var signalementHeading = signalementCard && signalementCard.querySelector(':scope > p');
+    if (signalementHeading) {
+        var toggleSignalement = function () {
+            var open = signalementForm.hidden;
+            signalementForm.hidden = !open;
+            signalementHeading.setAttribute('aria-expanded', String(open));
+        };
+        signalementHeading.setAttribute('role', 'button');
+        signalementHeading.setAttribute('tabindex', '0');
+        signalementHeading.setAttribute('aria-expanded', 'true');
+        signalementHeading.addEventListener('click', toggleSignalement);
+        signalementHeading.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                toggleSignalement();
+            }
+        });
+    }
+
     var sigStatus = document.getElementById('signalementStatus');
     var sigSubmit = document.getElementById('signalementSubmit');
     var sigDetails = document.getElementById('signalementDetails');
