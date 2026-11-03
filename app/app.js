@@ -226,6 +226,11 @@ const module1Key = 'module1_validated';
                 if (item !== modal) item.style.display = 'none';
             });
             if (id === 'module4') resetCorrectionGate();
+            if (id === 'module1') {
+                modal.querySelectorAll('.jury-accordeon').forEach(function(accordeon) {
+                    accordeon.open = false;
+                });
+            }
             modal.style.display = 'block';
             const position = moduleScrollPositions.get(modal.id);
             const content = modal.querySelector('.modal-content');
