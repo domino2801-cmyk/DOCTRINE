@@ -73,7 +73,7 @@
     }
     retexHeading.setAttribute('role', 'button');
     retexHeading.setAttribute('tabindex', '0');
-    retexHeading.setAttribute('aria-expanded', 'true');
+    retexHeading.setAttribute('aria-expanded', 'false');
     retexHeading.addEventListener('click', toggleRetex);
     retexHeading.addEventListener('keydown', function (event) {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -82,7 +82,7 @@
         }
     });
 
-    // Accordéon déplié par défaut ; replié une fois le RETEX envoyé.
+    // Replié par défaut et après l'envoi du RETEX.
     function lockRetex(message) {
         retexForm.querySelectorAll('input, textarea').forEach(function (el) { el.disabled = true; });
         retexSubmit.disabled = true;
@@ -97,9 +97,7 @@
         retexForm.querySelectorAll('input, textarea').forEach(function (el) { el.disabled = false; });
         retexSubmit.disabled = false;
         retexCard.classList.remove('is-sent');
-        retexForm.hidden = false;
         retexBadge.hidden = true;
-        retexHeading.setAttribute('aria-expanded', 'true');
     }
 
     function refreshRetexProfile() {
@@ -186,7 +184,7 @@
         };
         signalementHeading.setAttribute('role', 'button');
         signalementHeading.setAttribute('tabindex', '0');
-        signalementHeading.setAttribute('aria-expanded', 'true');
+        signalementHeading.setAttribute('aria-expanded', 'false');
         signalementHeading.addEventListener('click', toggleSignalement);
         signalementHeading.addEventListener('keydown', function (event) {
             if (event.key === 'Enter' || event.key === ' ') {
