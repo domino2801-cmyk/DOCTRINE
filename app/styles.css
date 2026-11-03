@@ -1918,3 +1918,7 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
     .adm-fiches-toolbar-signalements {
         text-transform: uppercase;
     }
+
+    .module-nav-controls > button[hidden] {
+        display: none;
+    }
