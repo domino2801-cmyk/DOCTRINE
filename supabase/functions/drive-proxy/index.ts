@@ -147,7 +147,7 @@ Deno.serve(async (req) => {
 
   try {
     const jeton = await jetonDrive();
-    const meta = await drive(`/files/${id}    ?fields=id,name,mimeType,parents&supportsAllDrives=true`, jeton);
+    const meta = await drive(`/files/${id}?fields=id,name,mimeType,parents&supportsAllDrives=true`, jeton);
     if (meta.status === 404 || meta.status === 403) return erreur(404, 'Document introuvable');
     if (!meta.ok) return erreur(502, 'Erreur Google Drive');
     const fichier = await meta.json();
