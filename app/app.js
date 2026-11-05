@@ -14,7 +14,7 @@ const module1Key = 'module1_validated';
     const moduleScrollPositions = new Map();
     let deferredInstallPrompt = null;
     let networkStatusTimer = null;
-    let correctionsUnlocked = false;
+    let transmittedDossiers = new Set();
     let correctionGateElement = null;
 
     function isDossierDone(id) {
@@ -46,21 +46,43 @@ const module1Key = 'module1_validated';
         return id !== 'module4' || isModule4Unlocked();
     }
 
+    function canViewCorrige(id) {
+        return !!id && (isAdminUser() || transmittedDossiers.has(String(id)));
+    }
+
     function hasCorrectionAccess() {
-        const selectedDossier = document.getElementById('correctionDossier')?.value;
-        return correctionsUnlocked && !!selectedDossier && isDossierAvailable(selectedDossier);
+        const rows = document.querySelectorAll('#corrigeList .dossier-item input[data-corrige]');
+        return Array.from(rows).some(function(box) {
+            return canViewCorrige(box.getAttribute('data-corrige'));
+        });
+    }
+
+    function loadTransmittedDossiers() {
+        const auth = window.DoctrineAuth;
+        if (!auth || typeof auth.jeton !== 'function') return Promise.resolve();
+        return auth.jeton().then(function(jeton) {
+            if (!jeton) return null;
+            return fetch(auth.url + '/functions/v1/doctrine-submit-fiche', {
+                headers: { apikey: auth.key, Authorization: 'Bearer ' + jeton }
+            });
+        }).then(function(response) {
+            if (!response || !response.ok) return null;
+            return response.json();
+        }).then(function(data) {
+            if (!data || !Array.isArray(data.dossiers)) return;
+            transmittedDossiers = new Set(data.dossiers.map(String));
+            updateCorrectionAccess();
+        }).catch(function() {});
     }
 
     function updateCorrectionAccess() {
         const list = document.getElementById('corrigeList');
-        if (correctionsUnlocked && !hasCorrectionAccess()) correctionsUnlocked = false;
         const accessAllowed = hasCorrectionAccess();
-        if (list) list.hidden = !accessAllowed;
-        const selectedDossier = document.getElementById('correctionDossier')?.value;
         if (list) {
+            list.hidden = !accessAllowed;
             list.querySelectorAll('.dossier-item').forEach(function(row) {
                 const box = row.querySelector('input[data-corrige]');
-                row.hidden = !accessAllowed || !box || box.getAttribute('data-corrige') !== selectedDossier;
+                row.hidden = !box || !canViewCorrige(box.getAttribute('data-corrige'));
             });
         }
         const moduleBody = document.querySelector('.mod-body[data-mod="4"]');
@@ -105,7 +127,6 @@ const module1Key = 'module1_validated';
         if (fileInput) fileInput.value = '';
         if (fileName) fileName.textContent = 'Aucun fichier sélectionné.';
         if (status) status.textContent = '';
-        correctionsUnlocked = false;
         updateCorrectionAccess();
     }
 
@@ -225,7 +246,7 @@ const module1Key = 'module1_validated';
             document.querySelectorAll('.modal').forEach(function(item) {
                 if (item !== modal) item.style.display = 'none';
             });
-            if (id === 'module4') resetCorrectionGate();
+            if (id === 'module4') { resetCorrectionGate(); loadTransmittedDossiers(); }
             if (id === 'module1') {
                 modal.querySelectorAll('.jury-accordeon').forEach(function(accordeon) {
                     accordeon.open = false;
@@ -793,14 +814,12 @@ const module1Key = 'module1_validated';
                 dossierSelect.addEventListener('change', function() {
                     fileInput.value = '';
                     fileName.textContent = 'Aucun fichier sélectionné.';
-                    correctionsUnlocked = false;
                     updateCorrectionAccess();
                 });
                 fileInput.addEventListener('change', function() {
                     fileName.textContent = fileInput.files && fileInput.files[0]
                         ? fileInput.files[0].name
                         : 'Aucun fichier sélectionné.';
-                    correctionsUnlocked = false;
                     updateCorrectionAccess();
                 });
             }
@@ -814,7 +833,6 @@ const module1Key = 'module1_validated';
                     return;
                 }
                 if (!isDossierAvailable(dossierSelect.value)) {
-                    correctionsUnlocked = false;
                     updateCorrectionAccess();
                     if (status) status.textContent = 'Ce dossier n’est pas marqué « Fait » dans le module 3 : terminez-le avant d’ouvrir son corrigé.';
                     return;
@@ -846,13 +864,12 @@ const module1Key = 'module1_validated';
                 }).then(function(response) {
                     return response.json().catch(function() { return {}; }).then(function(data) {
                         if (!response.ok) throw new Error(data.error || 'Envoi impossible (HTTP ' + response.status + ').');
-                        correctionsUnlocked = true;
+                        transmittedDossiers.add(String(dossierSelect.value));
                         updateCorrectionAccess();
-                        if (status) status.textContent = 'Fiche transmise : le corrigé du dossier choisi est ouvert.';
+                        if (status) status.textContent = 'Fiche transmise : le corrigé du dossier est désormais disponible.';
                         document.querySelector('#corrigeList .dossier-item:not([hidden])')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     });
                 }).catch(function(error) {
-                    correctionsUnlocked = false;
                     updateCorrectionAccess();
                     if (status) status.textContent = error.message || 'Envoi impossible. Réessayez.';
                 }).finally(function() {
@@ -867,18 +884,21 @@ const module1Key = 'module1_validated';
                 const target = event.target;
                 if (!(target instanceof Element)) return;
                 const link = target.closest('#corrigeList a');
-                if (!link || hasCorrectionAccess()) return;
+                if (!link) return;
+                const corrigeId = link.closest('.dossier-item')?.querySelector('input[data-corrige]')?.getAttribute('data-corrige');
+                if (canViewCorrige(corrigeId)) return;
                 event.preventDefault();
                 const status = document.getElementById('correctionGateStatus');
-                const selectedDossier = document.getElementById('correctionDossier')?.value;
-                if (status) {
-                    status.textContent = selectedDossier && !isDossierAvailable(selectedDossier)
-                        ? 'Ce dossier n’est pas marqué « Fait » dans le module 3 : terminez-le avant d’ouvrir son corrigé.'
-                        : 'Sélectionnez d’abord votre fiche rédigée pour ouvrir les corrigés.';
-                }
+                if (status) status.textContent = 'Transmettez d’abord votre fiche de ce dossier pour ouvrir son corrigé.';
                 document.getElementById('correctionFile')?.focus();
             });
         }
+        loadTransmittedDossiers();
+        document.addEventListener('doctrine:login', loadTransmittedDossiers);
+        document.addEventListener('doctrine:logout', function() {
+            transmittedDossiers = new Set();
+            updateCorrectionAccess();
+        });
 
         const studyStatuses = [
             ['todo', 'À faire'],

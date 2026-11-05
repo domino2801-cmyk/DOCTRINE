@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "authorization, apikey, content-type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS"
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS"
 };
 
 const DESTINATAIRE = "domino2801@gmail.com";
@@ -28,7 +28,7 @@ function base64(bytes: Uint8Array) {
 
 Deno.serve(async (request) => {
     if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-    if (request.method !== "POST") return response({ error: "Method not allowed" }, 405);
+    if (request.method !== "POST" && request.method !== "GET") return response({ error: "Method not allowed" }, 405);
 
     try {
         const database = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
@@ -38,6 +38,13 @@ Deno.serve(async (request) => {
         const token = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
         const { data: userData, error: userError } = await database.auth.getUser(token);
         if (userError || !userData.user) return response({ error: "Session invalide" }, 401);
+
+        if (request.method === "GET") {
+            const { data, error } = await database.from("doctrine_fiche_submissions")
+                .select("dossier").eq("user_id", userData.user.id);
+            if (error) throw error;
+            return response({ dossiers: (data || []).map((row) => row.dossier) });
+        }
 
         const form = await request.formData();
         const file = form.get("file");
