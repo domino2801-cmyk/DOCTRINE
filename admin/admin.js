@@ -1123,7 +1123,7 @@
                 suivi.addEventListener('click', ouvrirSuivi);
                 zone.appendChild(suivi);
             }
-            [['signalements', '🚩 Signal'], ['retex', '📝 RETEX']].forEach(function (def) {
+            [['signalements', '🚩 Signal'], ['retex', '📝 RETEX'], ['notifications', '🔔 Alertes']].forEach(function (def) {
                 var classe = 'adm-fiches-toolbar-' + def[0];
                 var bouton = zone.querySelector('.' + classe);
                 if (!bouton && visible) {
@@ -1131,7 +1131,9 @@
                     bouton.type = 'button';
                     bouton.className = 'module-nav-button ' + classe;
                     bouton.textContent = def[1];
-                    bouton.title = def[0] === 'retex' ? 'Synthèse des RETEX' : 'Signalements des candidats';
+                    bouton.title = def[0] === 'retex' ? 'Synthèse des RETEX' :
+                        def[0] === 'notifications' ? 'Paramètres des notifications de signalements' :
+                        'Signalements des candidats';
                     bouton.addEventListener('click', function () {
                         document.dispatchEvent(new CustomEvent('doctrine:admin-fiches', { detail: def[0] }));
                     });

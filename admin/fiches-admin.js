@@ -110,6 +110,7 @@
         mode = quel;
         dialogue.hidden = false;
         if (quel === 'signalements') chargerSignalements();
+        else if (quel === 'notifications') chargerNotifications();
         else chargerRetex();
     }
 
@@ -126,6 +127,19 @@
             afficherSignalements();
         }).catch(function (err) {
             etat.textContent = messageErreur(err);
+        });
+    }
+
+    function actualiserBadge(nombre) {
+        if (typeof navigator.setAppBadge !== 'function' || !Number.isSafeInteger(nombre) || nombre < 0) {
+            return Promise.resolve();
+        }
+        return Promise.resolve().then(function () {
+            return nombre > 0
+                ? navigator.setAppBadge(nombre)
+                : typeof navigator.clearAppBadge === 'function' ? navigator.clearAppBadge() : undefined;
+        }).catch(function (err) {
+            console.warn('Mise à jour du badge de l’application impossible.', err);
         });
     }
 
@@ -153,6 +167,7 @@
         var lignes = signalements.filter(function (s) { return filtreStatut === 'all' || s.status === filtreStatut; });
         var enAttente = signalements.filter(function (s) { return s.status === 'pending'; }).length;
         etat.textContent = lignes.length + ' signalement(s) affiché(s) — ' + enAttente + ' à traiter.';
+        actualiserBadge(enAttente);
 
         var wrap = el('div', 'adm-views-table-wrap');
         var table = document.createElement('table');
@@ -198,6 +213,146 @@
         table.append(thead, tbody);
         wrap.appendChild(table);
         corps.append(barre, wrap);
+    }
+
+    function requeteNotifications(methode, donnees, endpoint) {
+        return auth().jeton().then(function (jeton) {
+            if (!jeton) throw Object.assign(new Error('Session expirée'), { status: 401 });
+            var url = auth().url + '/functions/v1/doctrine-report-push';
+            if (endpoint) url += '?endpoint=' + encodeURIComponent(endpoint);
+            return fetch(url, {
+                method: methode,
+                headers: {
+                    apikey: auth().key,
+                    Authorization: 'Bearer ' + jeton,
+                    'Content-Type': 'application/json'
+                },
+                body: donnees ? JSON.stringify(donnees) : undefined
+            });
+        }).then(function (response) {
+            return response.json().catch(function () { return {}; }).then(function (data) {
+                if (!response.ok) {
+                    throw Object.assign(new Error(data.error || data.message || 'HTTP ' + response.status), {
+                        status: response.status
+                    });
+                }
+                return data;
+            });
+        });
+    }
+
+    function registrationNotifications() {
+        if (!window.isSecureContext || !('serviceWorker' in navigator) ||
+            !('PushManager' in window) || !('Notification' in window)) {
+            return Promise.reject(new Error('Les notifications nécessitent un navigateur compatible et une connexion HTTPS.'));
+        }
+        return navigator.serviceWorker.ready.then(function (registration) {
+            if (!registration.pushManager) throw new Error('Ce navigateur ne prend pas en charge les notifications push.');
+            return registration;
+        });
+    }
+
+    function chargerNotifications() {
+        titre.textContent = 'Notifications des signalements';
+        sousTitre.textContent = 'Recevez une alerte sur cet appareil lorsqu’un nouveau signalement est transmis.';
+        actions.replaceChildren(bouton('Fermer', fermer));
+        corps.replaceChildren();
+        etat.textContent = 'Vérification des notifications…';
+
+        var commandes = el('div', 'adm-fiches-notifications-actions');
+        corps.appendChild(commandes);
+        registrationNotifications().then(function (registration) {
+            return registration.pushManager.getSubscription().then(function (subscription) {
+                return requeteNotifications('GET', null, subscription && subscription.endpoint).then(function (config) {
+                    if (mode !== 'notifications') return;
+                    return actualiserBadge(config.pendingCount).then(function () {
+                        if (mode !== 'notifications') return;
+                        etat.textContent = (config.enabled ? 'Notifications activées' : 'Notifications désactivées') +
+                            ' sur cet appareil — ' + config.pendingCount + ' signalement(s) à traiter.';
+                        commandes.replaceChildren();
+
+                        if (config.enabled) {
+                            var tester = bouton('Tester les notifications', function () {
+                                tester.disabled = true;
+                                etat.textContent = 'Envoi de la notification de test…';
+                                requeteNotifications('POST', { type: 'test' }).then(function () {
+                                    if (mode !== 'notifications') return;
+                                    tester.disabled = false;
+                                    etat.textContent = 'Notification de test envoyée.';
+                                }).catch(function (err) {
+                                    if (mode !== 'notifications') return;
+                                    tester.disabled = false;
+                                    etat.textContent = 'Test impossible : ' + err.message;
+                                });
+                            });
+                            var desactiver = bouton('Désactiver sur cet appareil', function () {
+                                desactiver.disabled = true;
+                                etat.textContent = 'Désactivation des notifications…';
+                                requeteNotifications('POST', { type: 'unsubscribe', endpoint: subscription.endpoint })
+                                    .then(function () {
+                                        return subscription.unsubscribe();
+                                    }).then(function (ok) {
+                                        if (!ok) throw new Error('Le navigateur n’a pas confirmé la désactivation.');
+                                        if (mode === 'notifications') return chargerNotifications();
+                                    }).catch(function (err) {
+                                        if (mode !== 'notifications') return;
+                                        desactiver.disabled = false;
+                                        etat.textContent = 'Désactivation impossible : ' + err.message;
+                                    });
+                            });
+                            commandes.append(tester, desactiver);
+                            return;
+                        }
+
+                        var activer = bouton('Activer les notifications', function () {
+                            activer.disabled = true;
+                            etat.textContent = 'Demande d’autorisation…';
+                            Notification.requestPermission().then(function (permission) {
+                                if (permission !== 'granted') {
+                                    throw new Error('Autorisation refusée. Modifiez le réglage des notifications du site dans votre navigateur.');
+                                }
+                                etat.textContent = 'Création de l’abonnement…';
+                                return requeteNotifications('GET').then(function (cles) {
+                                    var base64 = cles.publicKey.replace(/-/g, '+').replace(/_/g, '/');
+                                    while (base64.length % 4) base64 += '=';
+                                    var applicationServerKey = Uint8Array.from(atob(base64), function (caractere) {
+                                        return caractere.charCodeAt(0);
+                                    });
+                                    return registration.pushManager.getSubscription().then(function (subscription) {
+                                        return subscription || registration.pushManager.subscribe({
+                                            userVisibleOnly: true,
+                                            applicationServerKey: applicationServerKey
+                                        });
+                                    }).then(function (subscription) {
+                                        var donnees = subscription.toJSON();
+                                        if (!donnees.keys || !donnees.keys.p256dh || !donnees.keys.auth) {
+                                            throw new Error('Abonnement aux notifications incomplet.');
+                                        }
+                                        return requeteNotifications('POST', {
+                                            type: 'subscribe',
+                                            subscription: {
+                                                endpoint: subscription.endpoint,
+                                                keys: donnees.keys
+                                            }
+                                        });
+                                    });
+                                });
+                            }).then(function () {
+                                if (mode === 'notifications') chargerNotifications();
+                            }).catch(function (err) {
+                                if (mode !== 'notifications') return;
+                                activer.disabled = false;
+                                etat.textContent = 'Activation impossible : ' + err.message;
+                            });
+                        });
+                        commandes.appendChild(activer);
+                    });
+                });
+            });
+        }).catch(function (err) {
+            if (mode !== 'notifications') return;
+            etat.textContent = 'Notifications indisponibles : ' + err.message;
+        });
     }
 
     /* ---------- Synthèse RETEX ---------- */
@@ -459,6 +614,31 @@
         setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
     }
 
+    var ouvrirSignalementsApresConnexion = false;
+
+    function ouvrirSignalementsDepuisNotification() {
+        var url = new URL(window.location.href);
+        var demandee = url.searchParams.get('admin-section') === 'signalements';
+        if (!demandee && !ouvrirSignalementsApresConnexion) return;
+        if (!auth() || !auth().estAdmin() || document.documentElement.classList.contains('auth-locked')) return;
+        ouvrirSignalementsApresConnexion = false;
+        url.searchParams.delete('admin-section');
+        window.history.replaceState(window.history.state, '', url.href);
+        ouvrir('signalements');
+    }
+
     document.addEventListener('doctrine:admin-fiches', function (event) { ouvrir(event.detail); });
+    document.addEventListener('doctrine:login', ouvrirSignalementsDepuisNotification);
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('message', function (event) {
+            if (!event.data || event.data.type !== 'doctrine-open-signalements') return;
+            if (auth() && auth().estAdmin() && !document.documentElement.classList.contains('auth-locked')) {
+                ouvrir('signalements');
+            } else {
+                ouvrirSignalementsApresConnexion = true;
+            }
+        });
+    }
+    ouvrirSignalementsDepuisNotification();
     document.addEventListener('doctrine:logout', fermer);
 })();

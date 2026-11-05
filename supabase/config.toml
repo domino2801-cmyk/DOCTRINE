@@ -1,2 +1,5 @@
 [functions.drive-proxy]
 verify_jwt = false
+
+[functions.doctrine-report-push]
+verify_jwt = false

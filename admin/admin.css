@@ -50,6 +50,7 @@ body.adm-on .adm-toolbar-toggle { background: #e5c158; color: #0b2240; }
 .adm-fiches .adm-views-status, .adm-fiches-discret { color: #c5d3c8; font-size: 13px; }
 .adm-fiches .adm-views-close, .adm-fiches .adm-views-more { background: #1d3028; color: #e4ebe4; border-color: rgba(153, 195, 163, .45); }
 .adm-fiches .adm-views-more { margin-top: 0; }
+.adm-fiches-notifications-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .adm-fiches th { background: #1b2722; color: #f3f6ed; }
 .adm-fiches th, .adm-fiches td { border-bottom-color: rgba(177, 201, 181, .2); }
 .adm-fiches-filtre { display: flex; align-items: center; gap: 8px; margin: 8px 0; }

@@ -95,3 +95,55 @@ self.addEventListener('fetch', event => {
     return networkResponse;
   })());
 });
+
+self.addEventListener('push', event => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch (error) {
+    console.warn('Notification de signalement invalide.', error);
+  }
+
+  const pendingCount = payload && payload.pendingCount;
+  const isTest = payload && payload.type === 'doctrine-test';
+  let badgeUpdate = Promise.resolve();
+  if (typeof self.navigator.setAppBadge === 'function' && Number.isSafeInteger(pendingCount) && pendingCount >= 0) {
+    badgeUpdate = Promise.resolve().then(() => pendingCount > 0
+      ? self.navigator.setAppBadge(pendingCount)
+      : typeof self.navigator.clearAppBadge === 'function' ? self.navigator.clearAppBadge() : undefined);
+  }
+
+  event.waitUntil(Promise.all([
+    self.registration.showNotification('DOCTRINE — Signalements', {
+      body: isTest ? 'Notification de test : les alertes de signalement sont activées.' :
+        'Un nouveau signalement nécessite votre attention.',
+      icon: new URL('./icons/icon-192.png', self.registration.scope).href,
+      badge: new URL('./icons/icon-192.png', self.registration.scope).href,
+      tag: 'doctrine-signalements',
+      renotify: true,
+      data: { url: self.registration.scope }
+    }),
+    Promise.resolve(badgeUpdate).catch(error => {
+      console.warn('Mise à jour du badge de l’application impossible.', error);
+    })
+  ]));
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    const appUrl = new URL('./index.html', self.registration.scope);
+    appUrl.searchParams.set('admin-section', 'signalements');
+    const scopeUrl = new URL(self.registration.scope);
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const appClient = clients.find(client => {
+      const url = new URL(client.url);
+      return url.origin === scopeUrl.origin && url.pathname.startsWith(scopeUrl.pathname);
+    });
+    if (appClient) {
+      appClient.postMessage({ type: 'doctrine-open-signalements' });
+      return appClient.focus();
+    }
+    return self.clients.openWindow(appUrl.href);
+  })());
+});

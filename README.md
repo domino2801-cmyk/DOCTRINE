@@ -11,7 +11,7 @@ sw.js                    service worker (doit rester à la racine : portée)
 favicon.ico
 icons/                   icônes PWA (192, 512, maskable, apple-touch)
 viewer/                  visionneuse intégrée des documents Google Drive
-supabase/functions/      fonction drive-proxy (accès privé à Drive)
+supabase/functions/      fonctions drive-proxy (Drive) et doctrine-report-push (alertes)
 splash/                  splash animé et cadre de connexion (CSS, JS, images, police)
 auth/                    écran de connexion (Supabase, comptes QCM-MAJOR.FR)
 admin/                   interface administrateur (édition des modules)
@@ -27,9 +27,13 @@ Mise en place (une seule fois) :
 1. exécuter `supabase/doctrine-content.sql` dans Supabase > SQL Editor ;
 2. exécuter `supabase/documentation-consultations.sql` dans Supabase > SQL Editor pour activer le journal des ouvertures et sa purge automatique ;
 3. exécuter `supabase/retex-signalements.sql` dans Supabase > SQL Editor pour activer les fiches du module 7 (RETEX : une par compte ; signalements : plusieurs, avec priorité et statut `pending`/`resolved`) ; chaque candidat n’y ajoute que ses propres fiches et seuls les administrateurs les lisent (consultation dans Supabase > Table Editor) ;
-4. donner le rôle au compte : `app_metadata` = `{"role": "admin"}` (ou `{"bm4_admin": true}`), comme sur QCM-MAJOR.FR.
+4. activer les notifications push : exécuter `supabase/retex-notifications.sql`, générer une paire de clés VAPID (`npx web-push generate-vapid-keys`), puis renseigner dans les secrets Edge Functions `DOCTRINE_VAPID_PUBLIC_KEY`, `DOCTRINE_VAPID_PRIVATE_KEY` et un secret aléatoire `DOCTRINE_REPORT_PUSH_WEBHOOK_SECRET` ;
+5. ajouter dans Supabase Vault les secrets `doctrine_report_push_url` (URL complète de la fonction `doctrine-report-push`) et `doctrine_report_push_webhook_secret` (la même valeur que `DOCTRINE_REPORT_PUSH_WEBHOOK_SECRET`), puis déployer avec `supabase functions deploy doctrine-report-push --no-verify-jwt` ;
+6. donner le rôle au compte : `app_metadata` = `{"role": "admin"}` (ou `{"bm4_admin": true}`), comme sur QCM-MAJOR.FR.
 
 Le rôle lu côté navigateur n’affiche que l’interface : les écritures sont autorisées ou refusées par les règles RLS de la table. Le contenu enregistré est assaini (scripts, `on*`, URL `javascript:` retirés). Sans table ou hors ligne, le contenu d’origine du HTML est affiché.
+
+Le bouton **« 🔔 Alertes »** de l’administration active ou désactive les notifications sur l’appareil, et permet d’en envoyer une notification de test. Chaque nouveau signalement avertit les administrateurs abonnés et met à jour le badge numérique de l’icône lorsque le navigateur et le système le prennent en charge. Ces notifications utilisent une fonction et une table propres à DOCTRINE afin de ne pas interférer avec celles de QCM-MAJOR.FR. Le clic sur une notification ouvre les signalements dans l’administration. La configuration Supabase et le déploiement de la fonction sont nécessaires ; les permissions de notification sont accordées par appareil et navigateur.
 
 Le bouton **« 📊 Suivi »** du compte administrateur (à droite de « Mode admin », dans la barre de chaque module) affiche d’abord la liste des candidats ; un clic sur le nom d’un candidat affiche son nombre d’ouvertures, de téléchargements, sa dernière activité et le détail de ses consultations (module, document, action, date et heure), avec un bouton pour revenir à la liste. Les liens dont le libellé indique « télécharger »/« download », ou qui ont l’attribut HTML `download`, sont identifiés comme des téléchargements ; les autres sont des ouvertures. Pour les fichiers externes (notamment Google Drive), seul le clic sur le lien est mesurable : le site ne peut pas savoir si le téléchargement a abouti ou si le document a été lu. Les lignes sont enregistrées dans Supabase ; chaque candidat ne peut ajouter et relire que ses propres événements, et seuls les administrateurs peuvent lire tout l’historique. Pour valider le module 1, le candidat doit avoir ouvert la présentation du BM4 (rubrique 1.1) : la case « J’ai lu l’ensemble de ce module » vérifie cette ouverture dans Supabase, sinon elle affiche un message et se décoche (les administrateurs ne sont pas concernés). Une tâche Supabase supprime quotidiennement les événements datant de plus de 12 mois ; elle est créée par le script SQL ci-dessus.
 
@@ -69,6 +73,7 @@ Dans le module 4, le menu d’accès reprend les dossiers du module 3. Après av
 - la PWA démarre sur `index.html` et reste installable sur un hébergement statique compatible HTTPS, y compris GitHub Pages pour ce dépôt
 - le manifeste `manifest.webmanifest` utilise des chemins relatifs pour fonctionner à la racine ou sous `/DOCTRINE/`
 - le service worker `sw.js` met en cache dès l’installation le shell local (HTML, CSS et JS de `app/`, manifeste), les icônes du dossier `icons/` et `favicon.ico`
+- pour les administrateurs abonnés, il affiche les notifications push de signalement et actualise le badge de l’application quand l’API de badge est prise en charge
 - au déploiement, le workflow remplace automatiquement le nom du cache (`CACHE_NAME`) par l’identifiant du commit : plus besoin d’incrémenter `bm4-shell-vN` à la main pour publier
 - ces icônes locales servent à l’onglet du navigateur, à l’installation PWA et au raccourci mobile
 - les liens Google Drive (fichiers et dossiers) des modules s'ouvrent dans une visionneuse intégrée avec bouton **⬇ Télécharger** (le téléchargement est enregistré dans le suivi admin) ; le candidat n'ouvre jamais Drive (Ctrl/⌘/Maj+clic mis à part). Voir « Proxy Google Drive » ci-dessous
