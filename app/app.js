@@ -824,10 +824,40 @@ const module1Key = 'module1_validated';
                     return;
                 }
 
-                correctionsUnlocked = true;
-                updateCorrectionAccess();
-                if (status) status.textContent = 'Fiche sélectionnée : le corrigé du dossier choisi est ouvert.';
-                document.querySelector('#corrigeList .dossier-item:not([hidden])')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                const auth = window.DoctrineAuth;
+                const submitButton = correctionUploadForm.querySelector('button[type="submit"]');
+                if (!auth || typeof auth.jeton !== 'function') {
+                    if (status) status.textContent = 'Connexion indisponible : impossible de transmettre la fiche.';
+                    return;
+                }
+                if (submitButton) submitButton.disabled = true;
+                if (status) status.textContent = 'Envoi de la fiche en cours…';
+
+                auth.jeton().then(function(jeton) {
+                    if (!jeton) throw new Error('Session expirée : reconnectez-vous.');
+                    const body = new FormData();
+                    body.append('file', file);
+                    body.append('dossier', dossierSelect.value);
+                    return fetch(auth.url + '/functions/v1/doctrine-submit-fiche', {
+                        method: 'POST',
+                        headers: { apikey: auth.key, Authorization: 'Bearer ' + jeton },
+                        body: body
+                    });
+                }).then(function(response) {
+                    return response.json().catch(function() { return {}; }).then(function(data) {
+                        if (!response.ok) throw new Error(data.error || 'Envoi impossible (HTTP ' + response.status + ').');
+                        correctionsUnlocked = true;
+                        updateCorrectionAccess();
+                        if (status) status.textContent = 'Fiche transmise : le corrigé du dossier choisi est ouvert.';
+                        document.querySelector('#corrigeList .dossier-item:not([hidden])')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    });
+                }).catch(function(error) {
+                    correctionsUnlocked = false;
+                    updateCorrectionAccess();
+                    if (status) status.textContent = error.message || 'Envoi impossible. Réessayez.';
+                }).finally(function() {
+                    if (submitButton) submitButton.disabled = false;
+                });
             });
         }
 
