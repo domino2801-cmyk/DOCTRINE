@@ -32,14 +32,70 @@ function b64url(donnees: string | Uint8Array) {
   return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-async function candidatValide(jeton: string) {
+// Dossiers Drive des corrigés (module 4) -> numéro du dossier à avoir transmis.
+const CORRIGES: Record<string, number> = {
+  '1qVSqztGmalVB2-dLgHwa2x0pOtW4ZjuE': 1,
+  '12G0BtVz5PA0qGhL6xPFJjpKSZw5-jTgG': 2,
+  '12fz3jUIgvYDV89GdQDG7QBAhHSF510Dp': 3,
+  '11IOmzhi7ksqTLOqNKtfLG4j-qH3CcHn6': 4,
+  '1BoVpi3Ke4I1d0hBz6vL7rjh6sxy4fvvD': 5,
+  '1Ss-0YwPBDZsN9rmitZRVkprUh75jqsAK': 6,
+  '1iZudP3gqUMFzGOkxLThgrVxgj21udSlE': 7,
+  '1_MAX1scMW8CTk-d2knB6dSOCSlggZOgM': 8,
+  '1AH8-e-vwolrrjUCG1Gn183YjeY-HyKQy': 9,
+  '1UYK0aho1K7z2wOXmqUXF2TPvj6TInvFM': 10,
+  '1H9402lu3QuepL6KbC2yAMkJcL8-syh9G': 11,
+  '1QZx00qTM5qfAYu9r7ocxqmZ0B0G1qBaY': 12,
+  '1GzEw2urNP5JOgL7HclorpVBmhj5MVhPS': 13,
+  '1jZ9GYoiqI60tq8ysbwcVXFVbY-TzDvv8': 14,
+  '136f9XIU1BRSEOFmTqsbpPX3U_toLA0dm': 15,
+  '1JkJHooL7jbmHRf9a3l3gwrZw-BeP83zV': 16,
+};
+const MAX_PROFONDEUR = 8;
+
+type Candidat = { id: string; admin: boolean };
+
+async function candidatValide(jeton: string): Promise<Candidat | null> {
   const url = Deno.env.get('SUPABASE_URL');
   const cle = Deno.env.get('SUPABASE_ANON_KEY');
-  if (!url || !cle || !jeton) return false;
+  if (!url || !cle || !jeton) return null;
   const r = await fetch(`${url}/auth/v1/user`, { headers: { apikey: cle, Authorization: `Bearer ${jeton}` } });
-  if (!r.ok) return false;
+  if (!r.ok) return null;
   const u = await r.json();
-  return !!(u && u.id && (u.email_confirmed_at || u.confirmed_at));
+  if (!(u && u.id && (u.email_confirmed_at || u.confirmed_at))) return null;
+  const meta = u.app_metadata || {};
+  const admin = meta.role === 'admin' || meta.bm4_admin === true || meta.bm4_admin === 'true' || meta.bm4_admin === '1';
+  return { id: u.id, admin };
+}
+
+async function fichesTransmises(candidatId: string): Promise<Set<number>> {
+  const url = Deno.env.get('SUPABASE_URL');
+  const cle = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !cle) throw new Error('Configuration Supabase manquante');
+  const r = await fetch(
+    `${url}/rest/v1/doctrine_fiche_submissions?user_id=eq.${encodeURIComponent(candidatId)}&select=dossier`,
+    { headers: { apikey: cle, Authorization: `Bearer ${cle}` } },
+  );
+  if (!r.ok) throw new Error('Lecture des fiches transmises impossible');
+  const lignes: { dossier: number }[] = await r.json();
+  return new Set(lignes.map((l) => l.dossier));
+}
+
+// Numéro de dossier exigé si l'élément est (ou se trouve dans) un dossier de corrigés.
+async function dossierRequis(id: string, parents: string[], jeton: string): Promise<number | null> {
+  if (CORRIGES[id]) return CORRIGES[id];
+  let courants = parents;
+  for (let niveau = 0; niveau < MAX_PROFONDEUR && courants.length; niveau++) {
+    const suivants: string[] = [];
+    for (const parent of courants) {
+      if (CORRIGES[parent]) return CORRIGES[parent];
+      const r = await drive(`/files/${parent}?fields=parents&supportsAllDrives=true`, jeton);
+      if (!r.ok) throw new Error('Lecture des dossiers parents impossible');
+      suivants.push(...((await r.json()).parents || []));
+    }
+    courants = suivants;
+  }
+  return null;
 }
 
 async function jetonDrive() {
@@ -81,7 +137,8 @@ Deno.serve(async (req) => {
   if (req.method !== 'GET') return erreur(405, 'Méthode non autorisée');
 
   const jetonCandidat = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
-  if (!(await candidatValide(jetonCandidat))) return erreur(401, 'Connexion requise');
+  const candidat = await candidatValide(jetonCandidat);
+  if (!candidat) return erreur(401, 'Connexion requise');
 
   const params = new URL(req.url).searchParams;
   const id = params.get('id') || '';
@@ -90,11 +147,17 @@ Deno.serve(async (req) => {
 
   try {
     const jeton = await jetonDrive();
-    const meta = await drive(`/files/${id}?fields=id,name,mimeType&supportsAllDrives=true`, jeton);
+    const meta = await drive(`/files/${id}    ?fields=id,name,mimeType,parents&supportsAllDrives=true`, jeton);
     if (meta.status === 404 || meta.status === 403) return erreur(404, 'Document introuvable');
     if (!meta.ok) return erreur(502, 'Erreur Google Drive');
     const fichier = await meta.json();
 
+        if (!candidat.admin) {
+          const requis = await dossierRequis(id, fichier.parents || [], jeton);
+          if (requis !== null && !(await fichesTransmises(candidat.id)).has(requis)) {
+            return erreur(403, 'Transmettez votre fiche du dossier ' + requis + ' pour ouvrir ce corrigé');
+          }
+        }
     if (action === 'list') {
       if (fichier.mimeType !== FOLDER) return erreur(400, 'Ce n\'est pas un dossier');
       const q = encodeURIComponent(`'${id}' in parents and trashed = false`);

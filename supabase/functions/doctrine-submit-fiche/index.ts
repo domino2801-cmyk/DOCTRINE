@@ -74,6 +74,9 @@ Deno.serve(async (request) => {
             console.error("Resend error", sent.status, await sent.text());
             return response({ error: "Envoi du mail impossible" }, 502);
         }
+        const { error: recordError } = await database.from("doctrine_fiche_submissions")
+            .upsert({ user_id: userData.user.id, dossier: Number(dossier) });
+        if (recordError) throw recordError;
         return response({ ok: true });
     } catch (error) {
         console.error(error);
