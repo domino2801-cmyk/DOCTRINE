@@ -54,7 +54,7 @@ Deno.serve(async (request) => {
             .select("name").eq("id", userData.user.id).maybeSingle();
         const pseudo = String(profile?.name || userData.user.email || "inconnu").slice(0, 100);
 
-        const apiKey = Deno.env.get("RESEND_API_KEY");
+        const apiKey = Deno.env.get("RESEND_API_KEY") || Deno.env.get("RESEND_API_KEY2");
         if (!apiKey) throw new Error("Missing configuration: RESEND_API_KEY");
 
         const attachment = base64(new Uint8Array(await file.arrayBuffer()));
