@@ -1,11 +1,7 @@
-import { Buffer } from "node:buffer";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
-import { PDFiumLibrary } from "npm:@hyzyla/pdfium@3.0.0";
-import pixelmatch from "npm:pixelmatch@8.0.0";
-import { PNG } from "npm:pngjs@7.0.0";
+import { comparePdf } from "./compare.ts";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
-const RENDER_SCALE = 150 / 72;
 const CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -14,36 +10,6 @@ const CORS_HEADERS = {
 
 function response(body: Record<string, unknown>, status = 200) {
     return Response.json(body, { status, headers: CORS_HEADERS });
-}
-
-async function renderPdfPages(pdfBytes: Uint8Array) {
-    const library = await PDFiumLibrary.init();
-    try {
-        const document = await library.loadDocument(Buffer.from(pdfBytes));
-        try {
-            const pages = Array.from(document.pages());
-            const images: PNG[] = [];
-
-            for (const page of pages) {
-                try {
-                    const rendered = await page.render({
-                        scale: RENDER_SCALE,
-                        render: ({ data, width, height }) =>
-                            PNG.sync.write({ width, height, data })
-                    });
-                    images.push(PNG.sync.read(Buffer.from(rendered.data)));
-                } finally {
-                    page.close();
-                }
-            }
-
-            return images;
-        } finally {
-            document.destroy();
-        }
-    } finally {
-        library.destroy();
-    }
 }
 
 Deno.serve(async (request) => {
@@ -85,45 +51,7 @@ Deno.serve(async (request) => {
             return response({ error: "Impossible de charger le modèle de référence" }, 500);
         }
 
-        const [modelPages, candidatePages] = await Promise.all([
-            renderPdfPages(new Uint8Array(await modelFile.arrayBuffer())),
-            renderPdfPages(candidateBytes)
-        ]);
-        if (modelPages.length !== 2 || candidatePages.length !== 2) {
-            return response({
-                conforme: false,
-                error: `Le modèle et le document doivent faire strictement 2 pages. (Modèle: ${modelPages.length}, reçu: ${candidatePages.length})`
-            });
-        }
-
-        let totalPixels = 0;
-        let differentPixels = 0;
-        for (let i = 0; i < 2; i++) {
-            const model = modelPages[i];
-            const candidate = candidatePages[i];
-            if (model.width !== candidate.width || model.height !== candidate.height) {
-                return response({ conforme: false, error: "Les dimensions des pages ne correspondent pas au modèle" });
-            }
-
-            const diff = new PNG({ width: model.width, height: model.height });
-            differentPixels += pixelmatch(
-                model.data,
-                candidate.data,
-                diff.data,
-                model.width,
-                model.height,
-                { threshold: 0.1, includeAA: false }
-            );
-            totalPixels += model.width * model.height;
-        }
-
-        const score = 100 - (differentPixels / totalPixels) * 100;
-        const conforme = score >= 88;
-        return response({
-            conforme,
-            score: score.toFixed(2),
-            message: conforme ? "Gabarit officiel validé" : "Gabarit non conforme ou mauvaise fiche"
-        });
+        return response(await comparePdf(new Uint8Array(await modelFile.arrayBuffer()), candidateBytes));
     } catch (error) {
         console.error("Erreur lors de la validation du gabarit", error);
         return response({ error: "Erreur serveur" }, 500);
