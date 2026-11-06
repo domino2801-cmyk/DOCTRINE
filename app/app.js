@@ -837,8 +837,12 @@ const module1Key = 'module1_validated';
                     if (status) status.textContent = 'Ce dossier n’est pas marqué « Fait » dans le module 3 : terminez-le avant d’ouvrir son corrigé.';
                     return;
                 }
-                if (!file || !/\.(pdf|docx?)$/i.test(file.name)) {
-                    if (status) status.textContent = 'Ouvrez le téléversement et choisissez un fichier PDF, DOC ou DOCX.';
+                if (!file || !/\.pdf$/i.test(file.name)) {
+                    if (status) status.textContent = 'Choisissez une fiche scannée au format PDF.';
+                    return;
+                }
+                if (file.size === 0 || file.size > 10 * 1024 * 1024) {
+                    if (status) status.textContent = 'Le fichier PDF doit être non vide et ne pas dépasser 10 Mo.';
                     return;
                 }
 
@@ -849,13 +853,14 @@ const module1Key = 'module1_validated';
                     return;
                 }
                 if (submitButton) submitButton.disabled = true;
-                if (status) status.textContent = 'Envoi de la fiche en cours…';
+                if (status) status.textContent = 'Vérification et transmission de la fiche en cours…';
 
+                const dossierId = dossierSelect.value;
                 auth.jeton().then(function(jeton) {
                     if (!jeton) throw new Error('Session expirée : reconnectez-vous.');
                     const body = new FormData();
                     body.append('file', file);
-                    body.append('dossier', dossierSelect.value);
+                    body.append('dossier', dossierId);
                     return fetch(auth.url + '/functions/v1/doctrine-submit-fiche', {
                         method: 'POST',
                         headers: { apikey: auth.key, Authorization: 'Bearer ' + jeton },
@@ -864,7 +869,7 @@ const module1Key = 'module1_validated';
                 }).then(function(response) {
                     return response.json().catch(function() { return {}; }).then(function(data) {
                         if (!response.ok) throw new Error(data.error || 'Envoi impossible (HTTP ' + response.status + ').');
-                        transmittedDossiers.add(String(dossierSelect.value));
+                        transmittedDossiers.add(String(dossierId));
                         updateCorrectionAccess();
                         if (status) status.textContent = 'Fiche transmise : le corrigé du dossier est désormais disponible.';
                         document.querySelector('#corrigeList .dossier-item:not([hidden])')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
