@@ -30,6 +30,8 @@ jobs:
           node-version: 20
       - name: Check JavaScript and local site assets
         run: node scripts/check-site.mjs
+      - name: Test PDF template validation
+        run: node --test scripts/test-validate-gabarit.mjs
 
   deploy:
     needs: test

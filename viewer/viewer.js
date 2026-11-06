@@ -163,6 +163,8 @@
         return chargementPdfjs;
     }
 
+    window.DoctrinePdfLoader = chargerPdfjs;
+
     // Safari/Chrome mobiles n'affichent pas un PDF dans une iframe : rendu page par page.
     function montrerPdfMobile(src) {
         var numero = requete;
