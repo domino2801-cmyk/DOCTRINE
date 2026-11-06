@@ -849,36 +849,37 @@ const module1Key = 'module1_validated';
                     return;
                 }
                 if (submitButton) submitButton.disabled = true;
+                dossierSelect.disabled = true;
+                if (openUploadButton) openUploadButton.disabled = true;
                 if (status) status.textContent = 'Envoi de la fiche en cours…';
+                const dossierId = dossierSelect.value;
 
                 auth.jeton().then(function(jeton) {
                     if (!jeton) throw new Error('Session expirée : reconnectez-vous.');
                     const validation = /\.pdf$/i.test(file.name)
                         ? (function() {
                             if (status) status.textContent = 'Vérification du gabarit PDF…';
-                            const validationBody = new FormData();
-                            validationBody.append('file', file);
-                            return fetch(auth.url + '/functions/v1/validate-gabarit', {
-                                method: 'POST',
-                                headers: { apikey: auth.key, Authorization: 'Bearer ' + jeton },
-                                body: validationBody
-                            }).then(function(response) {
-                                return response.json().catch(function() { return {}; }).then(function(data) {
-                                    if (!response.ok) {
-                                        throw new Error(data.error || 'Validation du gabarit impossible (HTTP ' + response.status + ').');
-                                    }
-                                    if (!data.conforme) {
-                                        throw new Error('Fiche non conforme : ' + (data.error || data.message || 'utilisez le gabarit officiel.'));
-                                    }
-                                    if (status) status.textContent = 'Gabarit officiel validé (' + data.score + '%). Transmission de la fiche en cours…';
-                                });
+                            if (typeof window.DoctrinePdfLoader !== 'function') {
+                                throw new Error('Le lecteur PDF est indisponible. Rechargez la page.');
+                            }
+                            return Promise.all([import('./validate-gabarit.mjs'), window.DoctrinePdfLoader().catch(function(error) {
+                                console.error('Chargement du lecteur PDF impossible', error);
+                                throw new Error('Impossible de charger le lecteur PDF. Vérifiez votre connexion puis réessayez.');
+                            })])
+                                .then(function(values) {
+                                    return values[0].validateGabarit(file, auth, jeton, values[1]);
+                                }).then(function(data) {
+                                if (!data.conforme) {
+                                    throw new Error('Fiche non conforme : ' + (data.error || data.message || 'utilisez le gabarit officiel.'));
+                                }
+                                if (status) status.textContent = 'Gabarit officiel validé (' + data.score + '%). Transmission de la fiche en cours…';
                             });
                         })()
                         : Promise.resolve();
                     return validation.then(function() {
                         const body = new FormData();
                         body.append('file', file);
-                        body.append('dossier', dossierSelect.value);
+                        body.append('dossier', dossierId);
                         return fetch(auth.url + '/functions/v1/doctrine-submit-fiche', {
                             method: 'POST',
                             headers: { apikey: auth.key, Authorization: 'Bearer ' + jeton },
@@ -888,16 +889,19 @@ const module1Key = 'module1_validated';
                 }).then(function(response) {
                     return response.json().catch(function() { return {}; }).then(function(data) {
                         if (!response.ok) throw new Error(data.error || 'Envoi impossible (HTTP ' + response.status + ').');
-                        transmittedDossiers.add(String(dossierSelect.value));
+                        transmittedDossiers.add(String(dossierId));
                         updateCorrectionAccess();
                         if (status) status.textContent = 'Fiche transmise : le corrigé du dossier est désormais disponible.';
                         document.querySelector('#corrigeList .dossier-item:not([hidden])')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     });
                 }).catch(function(error) {
+                    console.error('Erreur de validation ou de transmission de la fiche', error);
                     updateCorrectionAccess();
                     if (status) status.textContent = error.message || 'Envoi impossible. Réessayez.';
                 }).finally(function() {
                     if (submitButton) submitButton.disabled = false;
+                    dossierSelect.disabled = dossierSelect.options.length <= 1;
+                    if (openUploadButton) openUploadButton.disabled = false;
                 });
             });
         }
