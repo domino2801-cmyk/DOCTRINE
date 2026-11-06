@@ -32,6 +32,8 @@ jobs:
         run: node scripts/check-site.mjs
       - name: Test PDF template validation
         run: node --test scripts/test-validate-gabarit.mjs
+      - name: Test correction access
+        run: node --test scripts/test-correction-access.mjs
 
   deploy:
     needs: test

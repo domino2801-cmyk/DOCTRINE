@@ -48,7 +48,7 @@ const module1Key = 'module1_validated';
     }
 
     function canViewCorrige(id) {
-        return !!id && (isAdminUser() || transmittedDossiers.has(String(id)));
+        return !!id && (isAdminUser() || (isDossierDone(id) && transmittedDossiers.has(String(id))));
     }
 
     function hasCorrectionAccess() {
@@ -923,7 +923,9 @@ const module1Key = 'module1_validated';
                         if (!response.ok) throw new Error(data.error || 'Envoi impossible (HTTP ' + response.status + ').');
                         transmittedDossiers.add(String(dossierId));
                         updateCorrectionAccess();
-                        if (status) status.textContent = 'Fiche transmise : le corrigé du dossier est désormais disponible.';
+                        if (status) status.textContent = canViewCorrige(dossierId)
+                            ? 'Fiche transmise : le corrigé du dossier est désormais disponible.'
+                            : 'Fiche transmise. Marquez ce dossier « Fait » dans le module 3 pour afficher son corrigé.';
                         document.querySelector('#corrigeList .dossier-item:not([hidden])')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     });
                 }).catch(function(error) {
@@ -952,7 +954,7 @@ const module1Key = 'module1_validated';
                 if (canViewCorrige(corrigeId)) return;
                 event.preventDefault();
                 const status = document.getElementById('correctionGateStatus');
-                if (status) status.textContent = 'Transmettez d’abord votre fiche de ce dossier pour ouvrir son corrigé.';
+                if (status) status.textContent = 'Marquez ce dossier « Fait » dans le module 3 et transmettez sa fiche pour ouvrir son corrigé.';
                 document.getElementById('correctionFile')?.focus();
             });
         }

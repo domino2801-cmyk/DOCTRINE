@@ -30,7 +30,7 @@ export async function comparePdf(pdfjs, modelBytes, candidateBytes, onProgress =
         const [model, candidate] = await Promise.all([modelTask.promise, candidateTask.promise]);
         if (model.numPages !== 2) throw new Error('Le modèle de référence doit comporter 2 pages.');
         if (candidate.numPages !== 2) {
-            return { conforme: false, error: `Le document doit faire strictement 2 pages. (Reçu: ${candidate.numPages})` };
+            return { conforme: false, error: 'Le document doit faire strictement 2 pages.' };
         }
 
         onProgress(20);
@@ -48,7 +48,7 @@ export async function comparePdf(pdfjs, modelBytes, candidateBytes, onProgress =
                     const candidateWidth = Math.floor(Math.floor(candidateView.width) * SCALE);
                     const candidateHeight = Math.floor(Math.floor(candidateView.height) * SCALE);
                     if (width !== candidateWidth || height !== candidateHeight) {
-                        return { conforme: false, error: 'Les dimensions des pages ne correspondent pas au modèle.' };
+                        return { conforme: false, error: 'utiliser la fiche du module 3.2. Fiche Outil de Rédaction comme gabarit' };
                     }
                     if (width < 1 || height < 1 || width * height > MAX_PAGE_PIXELS) {
                         return { conforme: false, error: 'Les dimensions des pages dépassent la limite autorisée.' };
