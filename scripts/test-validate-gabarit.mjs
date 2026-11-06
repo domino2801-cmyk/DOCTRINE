@@ -82,3 +82,19 @@ test('reference download sends authentication and reports failures', async () =>
     };
     await assert.rejects(validateGabarit(file, { url: 'https://example.test', key: 'public' }, 'token', {}), /HTTP 403/);
 });
+
+test('progress reports completed PDF verification steps in order', async () => {
+    const file = new File([new Uint8Array([1])], 'fiche.pdf', { type: 'application/pdf' });
+    globalThis.fetch = async () => new Response(new Uint8Array([1]), { status: 200 });
+    const progress = [];
+    const result = await validateGabarit(file, { url: 'https://example.test', key: 'public' }, 'token', pdfjsFor({}, {}), value => progress.push(value));
+    assert.equal(result.conforme, true);
+    assert.deepEqual(progress, [10, 20, 30, 40, 60, 70, 80, 100]);
+});
+
+test('progress does not reach 100 when document page count is invalid', async () => {
+    const progress = [];
+    const result = await comparePdf(pdfjsFor({}, { pages: 1 }), new Uint8Array(), new Uint8Array(), value => progress.push(value));
+    assert.equal(result.conforme, false);
+    assert.ok(!progress.includes(100));
+});

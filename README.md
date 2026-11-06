@@ -72,6 +72,8 @@ Dans le module 4, le menu d’accès reprend les dossiers du module 3. Après av
 
 La comparaison est effectuée à 150 DPI sur les pixels bruts, page par page, avec PDF.js et Pixelmatch 8.0.0 (licence MIT dans `app/vendor/pixelmatch-LICENSE.txt`). Elle dépend des ressources de l’appareil et d’un accès au modèle et à PDF.js ; elle ne sollicite pas la fonction Edge `validate-gabarit`. Le score inclut les zones blanches et ne garantit pas la présence du bon gabarit. La vérification est déclenchée par le navigateur uniquement pour les PDF : elle ne contrôle ni les fichiers DOC/DOCX, ni les appels directs à la fonction de transmission.
 
+Une barre indique la progression des étapes de vérification du PDF ; elle est distincte du score de conformité et de la transmission de la fiche.
+
 Les tests de cette comparaison se lancent avec `node --test scripts/test-validate-gabarit.mjs`.
 
 - la PWA démarre sur `index.html` et reste installable sur un hébergement statique compatible HTTPS, y compris GitHub Pages pour ce dépôt

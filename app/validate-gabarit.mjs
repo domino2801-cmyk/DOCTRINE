@@ -23,7 +23,7 @@ async function renderPage(page, width, height) {
     }
 }
 
-export async function comparePdf(pdfjs, modelBytes, candidateBytes) {
+export async function comparePdf(pdfjs, modelBytes, candidateBytes, onProgress = () => {}) {
     const modelTask = pdfjs.getDocument({ data: modelBytes });
     const candidateTask = pdfjs.getDocument({ data: candidateBytes });
     try {
@@ -33,6 +33,7 @@ export async function comparePdf(pdfjs, modelBytes, candidateBytes) {
             return { conforme: false, error: `Le document doit faire strictement 2 pages. (Reçu: ${candidate.numPages})` };
         }
 
+        onProgress(20);
         let totalPixels = 0;
         let differentPixels = 0;
         for (let i = 1; i <= 2; i++) {
@@ -53,11 +54,15 @@ export async function comparePdf(pdfjs, modelBytes, candidateBytes) {
                         return { conforme: false, error: 'Les dimensions des pages dépassent la limite autorisée.' };
                     }
                     const modelPixels = await renderPage(modelPage, width, height);
+                    onProgress(i === 1 ? 30 : 70);
                     const candidatePixels = await renderPage(candidatePage, width, height);
+                    onProgress(i === 1 ? 40 : 80);
+                    await new Promise(resolve => setTimeout(resolve, 0));
                     differentPixels += pixelmatch(modelPixels, candidatePixels, null, width, height, {
                         threshold: 0.1, includeAA: false
                     });
                     totalPixels += width * height;
+                    if (i === 1) onProgress(60);
                 } finally {
                     candidatePage.cleanup();
                 }
@@ -67,6 +72,7 @@ export async function comparePdf(pdfjs, modelBytes, candidateBytes) {
         }
 
         const score = 100 - differentPixels / totalPixels * 100;
+        onProgress(100);
         return {
             conforme: score >= 88,
             score: score.toFixed(2),
@@ -77,7 +83,7 @@ export async function comparePdf(pdfjs, modelBytes, candidateBytes) {
     }
 }
 
-export async function validateGabarit(file, auth, token, pdfjs) {
+export async function validateGabarit(file, auth, token, pdfjs, onProgress = () => {}) {
     if (!file || file.size === 0 || file.size > MAX_FILE_BYTES) {
         throw new Error('Le fichier PDF doit faire 10 Mo maximum.');
     }
@@ -85,5 +91,8 @@ export async function validateGabarit(file, auth, token, pdfjs) {
         headers: { apikey: auth.key, Authorization: 'Bearer ' + token }
     });
     if (!response.ok) throw new Error('Impossible de charger le modèle de référence (HTTP ' + response.status + ').');
-    return comparePdf(pdfjs, new Uint8Array(await response.arrayBuffer()), new Uint8Array(await file.arrayBuffer()));
+    const modelBytes = new Uint8Array(await response.arrayBuffer());
+    const candidateBytes = new Uint8Array(await file.arrayBuffer());
+    onProgress(10);
+    return comparePdf(pdfjs, modelBytes, candidateBytes, onProgress);
 }
