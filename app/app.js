@@ -853,13 +853,37 @@ const module1Key = 'module1_validated';
 
                 auth.jeton().then(function(jeton) {
                     if (!jeton) throw new Error('Session expirée : reconnectez-vous.');
-                    const body = new FormData();
-                    body.append('file', file);
-                    body.append('dossier', dossierSelect.value);
-                    return fetch(auth.url + '/functions/v1/doctrine-submit-fiche', {
-                        method: 'POST',
-                        headers: { apikey: auth.key, Authorization: 'Bearer ' + jeton },
-                        body: body
+                    const validation = /\.pdf$/i.test(file.name)
+                        ? (function() {
+                            if (status) status.textContent = 'Vérification du gabarit PDF…';
+                            const validationBody = new FormData();
+                            validationBody.append('file', file);
+                            return fetch(auth.url + '/functions/v1/validate-gabarit', {
+                                method: 'POST',
+                                headers: { apikey: auth.key, Authorization: 'Bearer ' + jeton },
+                                body: validationBody
+                            }).then(function(response) {
+                                return response.json().catch(function() { return {}; }).then(function(data) {
+                                    if (!response.ok) {
+                                        throw new Error(data.error || 'Validation du gabarit impossible (HTTP ' + response.status + ').');
+                                    }
+                                    if (!data.conforme) {
+                                        throw new Error('Fiche non conforme : ' + (data.error || data.message || 'utilisez le gabarit officiel.'));
+                                    }
+                                    if (status) status.textContent = 'Gabarit officiel validé (' + data.score + '%). Transmission de la fiche en cours…';
+                                });
+                            });
+                        })()
+                        : Promise.resolve();
+                    return validation.then(function() {
+                        const body = new FormData();
+                        body.append('file', file);
+                        body.append('dossier', dossierSelect.value);
+                        return fetch(auth.url + '/functions/v1/doctrine-submit-fiche', {
+                            method: 'POST',
+                            headers: { apikey: auth.key, Authorization: 'Bearer ' + jeton },
+                            body: body
+                        });
                     });
                 }).then(function(response) {
                     return response.json().catch(function() { return {}; }).then(function(data) {
