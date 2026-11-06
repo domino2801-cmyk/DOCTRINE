@@ -39,52 +39,6 @@ Le bouton **« 📊 Suivi »** du compte administrateur (à droite de « Mode ad
 
 Les contrôles automatiques s’exécutent sur les pull requests vers `main` et avant chaque déploiement : ils vérifient la syntaxe JavaScript ainsi que la présence des ressources locales référencées par les pages, le manifeste PWA et le service worker.
 
-## Contrôle indicatif d'une copie d'examen PDF
-
-La fonction Supabase `doctrine-submit-fiche` appelle le service Python [scan_service/server.py](scan_service/server.py) avant l'envoi du mail et l'ouverture du corrigé. Seul un PDF validé est transmis ; un refus ou une panne affiche un message et ne crée pas de nouvel accès. Les accès accordés avant cette mise en place ne sont pas supprimés. Le service utilise [scripts/validate_exam_scan.py](scripts/validate_exam_scan.py) : il rejette un PDF si le texte extractible de l'ensemble de ses pages dépasse 50 caractères, puis examine et recale uniquement la première page sur le modèle. Il compare notamment la mention fixe dans une zone choisie sur le modèle. Le retour est un dictionnaire `{"valide": ..., "status": ..., "details": ...}` ; en ligne de commande, il est affiché en JSON, avec un code de sortie 0 en cas de succès et 1 sinon.
-
-**Limites importantes :** un succès indique seulement que ces heuristiques ont été satisfaites. Il ne prouve pas qu'une copie est officielle, réellement scannée ou manuscrite : une image numérique ou une copie falsifiée peut les satisfaire. La différence d'images inclut aussi le bruit et les défauts de recalage, pas seulement l'écriture. Un scan avec une couche OCR peut être rejeté par la règle des 50 caractères. L'alignement au pixel près et l'absence de faux positifs ou négatifs ne sont pas garantis. Les seuils de `Thresholds` sont indicatifs : les calibrer avec des scans et des rejets représentatifs, puis prévoir une revue humaine.
-
-### Déploiement du contrôle pour le module 4
-
-1. Construire depuis la racine du dépôt l'image du service : `docker build -f scan_service/Dockerfile -t doctrine-scan .`. Le modèle à 200 DPI fourni se trouve dans `scan_service/template_page1.png`.
-2. Déployer l'image sur un hébergement de votre choix, accessible **en HTTPS** depuis Supabase. Configurer `DOCTRINE_SCAN_VALIDATOR_SECRET` avec un secret aléatoire d'au moins 32 caractères ; `PORT` définit le port HTTP interne, 8080 par défaut. Un proxy HTTPS doit protéger le trafic externe : le service lui-même ne chiffre pas HTTP. Il reçoit des fiches pouvant contenir des données personnelles ; choisir un hébergeur approprié, ne pas journaliser les corps des requêtes ni les en-têtes d'autorisation, et prévoir les mesures de confidentialité nécessaires. Ne jamais placer le secret dans le dépôt ou le navigateur.
-3. Configurer les secrets Supabase `DOCTRINE_SCAN_VALIDATOR_URL` (URL HTTPS complète se terminant par `/validate`) et `DOCTRINE_SCAN_VALIDATOR_SECRET` (la même valeur que sur le service), puis déployer `supabase functions deploy doctrine-submit-fiche --no-verify-jwt`. La fonction vérifie elle-même la session du candidat. Le service répond à `GET /health` pour son contrôle de disponibilité ; seul `POST /validate` accepte les PDF et exige le secret.
-4. Vérifier en conditions réelles une fiche scannée conforme, une fiche non conforme et une panne du service avant ouverture aux candidats. Tant que le service ou ses secrets ne sont pas configurés, **les nouvelles transmissions sont bloquées**. Ne pas supprimer les protections RLS de `supabase/fiche-submissions.sql`.
-
-Le service accepte une fiche à la fois, de 10 Mo et 20 pages maximum ; chaque page doit rester dans les dimensions configurées dans `worker.py`. Il interrompt le processus de validation après 40 secondes et supprime le fichier temporaire à la fin du traitement normal. Configurer également des limites mémoire/CPU, une protection réseau et une rotation/nettoyage du stockage temporaire de l'hébergeur, notamment après un arrêt brutal. Les droits aux anciens corrigés restent inchangés.
-
-Installation dans l'environnement Python du backend :
-
-```powershell
-python -m pip install opencv-python pypdf pdf2image numpy
-```
-
-Il faut également installer **Poppler**, dont `pdfinfo` et `pdftoppm`, et placer son répertoire `bin` dans `PATH` ou le fournir avec `--poppler-path`. Par exemple, pour préparer le modèle à partir du PDF vierge fourni :
-
-```powershell
-python -c "from pdf2image import convert_from_path; convert_from_path(r'C:\chemin\modele.pdf', dpi=200, first_page=1, last_page=1)[0].convert('L').save('template_page1.png')"
-```
-
-Le PDF modèle fourni est une planche de deux pages ; la page d'examen est sur la moitié droite. Pour son rendu de première page de **3308 × 2339 pixels à 200 DPI**, la zone indicative de la mention est `1670 720 45 230` (`x y largeur hauteur`). Ces coordonnées sont relatives à la planche entière, y compris si la copie importée ne contient que la page droite. Le choix automatique suppose une planche en paysage ou une page droite en portrait, correctement orientée ; `--layout spread` ou `--layout right` permet de préciser le cadrage. Toute autre référence, résolution ou zone nécessite un nouveau réglage.
-
-```powershell
-python scripts\validate_exam_scan.py C:\chemin\copie.pdf --template C:\chemin\template_page1.png --roi 1670 720 45 230 --poppler-path C:\chemin\poppler\bin
-```
-
-Dans le backend :
-
-```python
-from scripts.validate_exam_scan import validate_exam_scan
-
-resultat = validate_exam_scan(
-    "copie.pdf", "template_page1.png", (1670, 720, 45, 230),
-    poppler_path=r"C:\chemin\poppler\bin",
-)
-```
-
-Les codes comprennent `NOT_A_SCAN`, `INVALID_TEMPLATE`, `FILE_ERROR`, `PDF_ERROR`, `CONFIGURATION_ERROR`, `DEPENDENCY_ERROR` et `PROCESSING_ERROR`. Une erreur technique n'est pas une preuve de non-conformité : distinguer ces codes dans le backend. Pour exécuter les tests synthétiques : `python -m unittest discover -s scripts -p 'test_validate_exam_scan.py' -v`.
-
 
 ## Proxy Google Drive (visionneuse sécurisée)
 
@@ -114,7 +68,7 @@ La page `index.html` est l’entrée unique du site et de la PWA. Après le spla
 
 La page d’application affiche le dernier module consulté et le suivi détaillé des dossiers et corrigés, conservé localement sur l’appareil. Le journal des clics sur les liens de documents, y compris les clics identifiés comme téléchargements, est centralisé dans Supabase pour l’administration. Chaque module propose le même retour à la liste des modules.
 
-Dans le module 4, le menu d’accès reprend les dossiers du module 3. Après avoir choisi un dossier, le candidat sélectionne sa fiche scannée en PDF puis la transmet : si elle passe le contrôle et que l'envoi réussit, seul le corrigé du dossier choisi est alors affiché. La sélection est locale et temporaire ; les liens Drive accessibles directement restent soumis à leurs propres autorisations.
+Dans le module 4, le menu d’accès reprend les dossiers du module 3. Après avoir choisi un dossier, le candidat sélectionne sa fiche en PDF, DOC ou DOCX puis la transmet : seul le corrigé du dossier choisi est alors affiché. La sélection est locale et temporaire ; les liens Drive accessibles directement restent soumis à leurs propres autorisations.
 
 - la PWA démarre sur `index.html` et reste installable sur un hébergement statique compatible HTTPS, y compris GitHub Pages pour ce dépôt
 - le manifeste `manifest.webmanifest` utilise des chemins relatifs pour fonctionner à la racine ou sous `/DOCTRINE/`

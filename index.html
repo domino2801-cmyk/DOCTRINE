@@ -456,10 +456,9 @@
                     <option value="">Dossier rédigé dans le module 3…</option>
                 </select>
                 <button id="openCorrectionUpload" type="button">Ouvrir le téléversement</button>
-                <label class="visually-hidden" for="correctionFile">Fiche rédigée scannée (PDF)</label>
-                <input id="correctionFile" class="visually-hidden" name="correctionFile" type="file" accept=".pdf,application/pdf" tabindex="-1" aria-hidden="true">
+                <label class="visually-hidden" for="correctionFile">Fiche rédigée (PDF, DOC ou DOCX)</label>
+                <input id="correctionFile" class="visually-hidden" name="correctionFile" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" tabindex="-1" aria-hidden="true">
                 <p id="correctionFileName" aria-live="polite">Aucun fichier sélectionné.</p>
-                <p>Transmettez votre fiche manuscrite scannée au format PDF (10 Mo maximum). Un contrôle automatique vérifie le document avant son envoi.</p>
                 <button type="submit">Transmettre ma fiche</button>
             </form>
             <p id="correctionGateStatus" style="color:#c0392b;" role="status" aria-live="polite"></p>
