@@ -67,10 +67,15 @@ test('comparison validates identical pages and exact 88 percent boundary', async
 });
 
 test('comparison rejects incorrect page count and dimensions', async () => {
-    const count = await comparePdf(pdfjsFor({}, { pages: 1 }), new Uint8Array(), new Uint8Array());
-    assert.match(count.error, /Reçu: 1/);
+    for (const pages of [1, 3]) {
+        const count = await comparePdf(pdfjsFor({}, { pages }), new Uint8Array(), new Uint8Array());
+        assert.deepEqual(count, {
+            conforme: false,
+            error: 'Le document doit faire strictement 2 pages.'
+        });
+    }
     const dimensions = await comparePdf(pdfjsFor({}, { width: 73 }), new Uint8Array(), new Uint8Array());
-    assert.match(dimensions.error, /dimensions/);
+    assert.equal(dimensions.error, 'utiliser la fiche du module 3.2. Fiche Outil de Rédaction comme gabarit');
 });
 
 test('reference download sends authentication and reports failures', async () => {
