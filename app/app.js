@@ -16,6 +16,7 @@ const module1Key = 'module1_validated';
     let networkStatusTimer = null;
     let transmittedDossiers = new Set();
     let correctionGateElement = null;
+    let correctionVerificationGeneration = 0;
 
     function isDossierDone(id) {
         const dossier = document.querySelector('.mod-body[data-mod="3"] input[data-dossier="' + id + '"]');
@@ -127,7 +128,24 @@ const module1Key = 'module1_validated';
         if (fileInput) fileInput.value = '';
         if (fileName) fileName.textContent = 'Aucun fichier sélectionné.';
         if (status) status.textContent = '';
+        resetCorrectionVerification();
         updateCorrectionAccess();
+    }
+
+    function resetCorrectionVerification() {
+        correctionVerificationGeneration++;
+        const container = document.getElementById('correctionVerification');
+        if (container) container.hidden = true;
+    }
+
+    function updateCorrectionVerification(value, label) {
+        const container = document.getElementById('correctionVerification');
+        const progress = document.getElementById('correctionVerificationProgress');
+        const text = document.getElementById('correctionVerificationLabel');
+        if (!container || !progress || !text) return;
+        container.hidden = false;
+        progress.value = value;
+        text.textContent = label + ' : ' + value + ' %';
     }
 
     function setActiveModuleButton(id) {
@@ -814,12 +832,14 @@ const module1Key = 'module1_validated';
                 dossierSelect.addEventListener('change', function() {
                     fileInput.value = '';
                     fileName.textContent = 'Aucun fichier sélectionné.';
+                    resetCorrectionVerification();
                     updateCorrectionAccess();
                 });
                 fileInput.addEventListener('change', function() {
                     fileName.textContent = fileInput.files && fileInput.files[0]
                         ? fileInput.files[0].name
                         : 'Aucun fichier sélectionné.';
+                    resetCorrectionVerification();
                     updateCorrectionAccess();
                 });
             }
@@ -851,8 +871,15 @@ const module1Key = 'module1_validated';
                 if (submitButton) submitButton.disabled = true;
                 dossierSelect.disabled = true;
                 if (openUploadButton) openUploadButton.disabled = true;
+                resetCorrectionVerification();
+                const verificationGeneration = correctionVerificationGeneration;
                 if (status) status.textContent = 'Envoi de la fiche en cours…';
                 const dossierId = dossierSelect.value;
+                let verificationProgress = null;
+                if (/\.pdf$/i.test(file.name)) {
+                    verificationProgress = 0;
+                    updateCorrectionVerification(0, 'Vérification en cours');
+                }
 
                 auth.jeton().then(function(jeton) {
                     if (!jeton) throw new Error('Session expirée : reconnectez-vous.');
@@ -867,7 +894,12 @@ const module1Key = 'module1_validated';
                                 throw new Error('Impossible de charger le lecteur PDF. Vérifiez votre connexion puis réessayez.');
                             })])
                                 .then(function(values) {
-                                    return values[0].validateGabarit(file, auth, jeton, values[1]);
+                                    return values[0].validateGabarit(file, auth, jeton, values[1], function(value) {
+                                        verificationProgress = value;
+                                        if (verificationGeneration === correctionVerificationGeneration) {
+                                            updateCorrectionVerification(value, value === 100 ? 'Vérification terminée' : 'Vérification en cours');
+                                        }
+                                    });
                                 }).then(function(data) {
                                 if (!data.conforme) {
                                     throw new Error('Fiche non conforme : ' + (data.error || data.message || 'utilisez le gabarit officiel.'));
@@ -896,6 +928,9 @@ const module1Key = 'module1_validated';
                     });
                 }).catch(function(error) {
                     console.error('Erreur de validation ou de transmission de la fiche', error);
+                    if (verificationGeneration === correctionVerificationGeneration && verificationProgress !== null && verificationProgress < 100) {
+                        updateCorrectionVerification(verificationProgress, 'Vérification interrompue');
+                    }
                     updateCorrectionAccess();
                     if (status) status.textContent = error.message || 'Envoi impossible. Réessayez.';
                 }).finally(function() {

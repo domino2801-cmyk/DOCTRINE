@@ -462,6 +462,10 @@
                 <button type="submit">Transmettre ma fiche</button>
             </form>
             <p id="correctionGateStatus" style="color:#c0392b;" role="status" aria-live="polite"></p>
+            <div id="correctionVerification" class="correction-verification" hidden>
+                <label id="correctionVerificationLabel" for="correctionVerificationProgress">Vérification en cours : 0 %</label>
+                <progress id="correctionVerificationProgress" max="100" value="0" aria-labelledby="correctionVerificationLabel"></progress>
+            </div>
         </section>
 
         <!-- SECONDE BARRE DE PROGRESSION POUR LE MODULE 4 -->
