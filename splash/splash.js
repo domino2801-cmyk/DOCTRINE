@@ -9,7 +9,8 @@
         rechargement = sessionStorage.getItem('splash-skip') === '1';
         sessionStorage.removeItem('splash-skip');
     } catch (e) { /* stockage indisponible */ }
-    if (reduit || rechargement) {
+    var accesQcm = new URLSearchParams(window.location.search).get('from') === 'qcm-major' && window.opener;
+    if (reduit || rechargement || accesQcm) {
         splash.remove();
         return;
     }

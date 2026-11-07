@@ -11,11 +11,19 @@
     var SIGNUP_URL = 'https://qcm-major.fr';
     var STORAGE_KEY = 'doctrine-auth';
     var MARGE_S = 60;
+    var ORIGINES_QCM = ['https://qcm-major.fr', 'https://www.qcm-major.fr'];
+    var accesQcm = new URLSearchParams(window.location.search).get('from') === 'qcm-major' && window.opener;
+    var sessionRelais = null;
+    var relaisActif = false;
+    var generationRelais = 0;
+    var demandeRelais = null;
+    var numeroDemande = 0;
 
     var root = document.documentElement;
     root.classList.add('auth-locked');
 
     function lire() {
+        if (relaisActif) return sessionRelais;
         try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch (e) { return null; }
     }
     function ecrire(s) {
@@ -23,6 +31,37 @@
     }
     function effacer() {
         try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    }
+
+    function demanderSessionQcm() {
+        if (!window.opener || window.opener.closed) return Promise.resolve(null);
+        if (demandeRelais) return demandeRelais;
+        demandeRelais = new Promise(function (resolve) {
+            var id = String(++numeroDemande);
+            var timer = setTimeout(function () {
+                window.removeEventListener('message', recevoir);
+                resolve(null);
+            }, 5000);
+            function recevoir(event) {
+                if (event.source !== window.opener || ORIGINES_QCM.indexOf(event.origin) === -1 ||
+                    !event.data || event.data.type !== 'doctrine-session-response' || event.data.id !== id) return;
+                clearTimeout(timer);
+                window.removeEventListener('message', recevoir);
+                resolve(event.data);
+            }
+            window.addEventListener('message', recevoir);
+            ORIGINES_QCM.forEach(function (origine) {
+                window.opener.postMessage({ type: 'doctrine-session-request', id: id }, origine);
+            });
+        }).then(function (data) {
+            if (!data || typeof data.access_token !== 'string' ||
+                !Number.isFinite(data.expires_at) || data.expires_at <= Date.now() / 1000) return null;
+            return appel('/user', { methode: 'GET', jeton: data.access_token }).then(function (user) {
+                if (!estConfirme(user)) return null;
+                return { access_token: data.access_token, expires_at: data.expires_at, email: user.email || '' };
+            });
+        }).finally(function () { demandeRelais = null; });
+        return demandeRelais;
     }
 
     function appel(chemin, options) {
@@ -114,6 +153,27 @@
 
     // Retourne une session valide, ou null. Hors ligne, une session mémorisée reste acceptée.
     function verifier() {
+        if (relaisActif) {
+            if (!sessionRelais) return Promise.resolve(null);
+            if (sessionRelais.expires_at - MARGE_S > Date.now() / 1000) {
+                return Promise.resolve(sessionRelais);
+            }
+            var generation = generationRelais;
+            return demanderSessionQcm().catch(function (err) {
+                console.warn('Renouvellement de la session QCM-MAJOR impossible.', err);
+                return null;
+            }).then(function (s) {
+                if (generation !== generationRelais) return null;
+                sessionRelais = s;
+                if (!s && gate) {
+                    document.querySelectorAll('#auth-logout, .auth-toolbar-logout').forEach(function (n) { n.remove(); });
+                    verrouiller();
+                    message.textContent = 'Session QCM-MAJOR indisponible. Connectez-vous à nouveau.';
+                    document.dispatchEvent(new CustomEvent('doctrine:logout'));
+                }
+                return s;
+            });
+        }
         var s = lire();
         if (!s || !s.refresh_token) return Promise.resolve(null);
         var enCours = s.expires_at - MARGE_S > Date.now() / 1000
@@ -257,6 +317,9 @@
                 }
                 var s = sessionDepuis(data);
                 if (!s.email) s.email = email;
+                generationRelais++;
+                relaisActif = false;
+                sessionRelais = null;
                 ecrire(s);
                 gate.querySelector('#auth-mdp').value = '';
                 bouton.textContent = 'Fermeture en cours…';
@@ -270,10 +333,15 @@
     }
 
     function deconnecter() {
+        var sessionQcm = relaisActif;
         var s = lire();
+        generationRelais++;
+        relaisActif = false;
+        sessionRelais = null;
+        accesQcm = false;
         effacer();
         document.querySelectorAll('#auth-logout, .auth-toolbar-logout').forEach(function (n) { n.remove(); });
-        if (s && s.access_token) appel('/logout', { jeton: s.access_token }).catch(function () {});
+        if (!sessionQcm && s && s.access_token) appel('/logout', { jeton: s.access_token }).catch(function () {});
         verrouiller();
         document.dispatchEvent(new CustomEvent('doctrine:logout'));
     }
@@ -319,8 +387,17 @@
 
     function demarrer() {
         construire();
-        verifier().then(function (s) {
+        var sessionInitiale = accesQcm ? demanderSessionQcm().then(function (s) {
+            sessionRelais = s;
+            relaisActif = !!s;
+            return s;
+        }).catch(function (err) {
+            console.warn('Connexion via QCM-MAJOR impossible.', err);
+            return null;
+        }) : verifier();
+        sessionInitiale.then(function (s) {
             if (s) deverrouiller(s); else montrerFormulaire();
+            if (!s && accesQcm) message.textContent = 'Connexion automatique indisponible. Utilisez vos identifiants QCM-MAJOR.';
         });
     }
 

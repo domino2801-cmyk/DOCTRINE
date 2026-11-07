@@ -56,6 +56,7 @@ Tant que la fonction n'est pas déployée, la visionneuse se rabat sur l'aperçu
 
 L’accès à l’application demande une connexion avec les identifiants QCM-MAJOR.FR, vérifiés auprès du même projet Supabase.
 
+- depuis le lien de la page Aide de QCM-MAJOR, l'armoire s'ouvre sans splash ni nouvelle saisie : un jeton d'accès est transmis uniquement à l'onglet ouvert et vérifié par Supabase ; le mot de passe et le jeton de rafraîchissement ne sont pas transmis. Garder l'onglet QCM-MAJOR ouvert permet de renouveler l'accès ; sinon, une reconnexion est demandée à expiration. Si l'ouverture automatique échoue, l'écran de connexion habituel reste disponible ;
 - compte valide et email confirmé : accès immédiat, sans nouvelle inscription, et session conservée (jeton de rafraîchissement) ;
 - compte inexistant ou mot de passe incorrect : accès refusé avec un lien pour créer le compte sur QCM-MAJOR.FR ;
 - l’écran permet d’afficher ou de masquer le mot de passe saisi ;
