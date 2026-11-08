@@ -59,7 +59,7 @@
                 !Number.isFinite(data.expires_at) || data.expires_at <= Date.now() / 1000) return null;
             return appel('/user', { methode: 'GET', jeton: data.access_token }).then(function (user) {
                 if (!estConfirme(user)) return null;
-                return { access_token: data.access_token, expires_at: data.expires_at, email: user.email || '' };
+                return { access_token: data.access_token, expires_at: data.expires_at, email: user.email || '', user_id: user.id };
             });
         }).finally(function () { demandeRelais = null; });
         return demandeRelais;
@@ -384,6 +384,39 @@
         jeton: function () { return verifier().then(function (s) { return s ? s.access_token : null; }); },
         estAdmin: function () { var s = lire(); return !!(s && s.access_token && estAdmin(s.access_token)); },
         email: function () { var s = lire(); return s ? s.email : ''; },
+        retourQcm: function () {
+            if (!relaisActif || !sessionRelais || !sessionRelais.user_id ||
+                sessionRelais.expires_at <= Date.now() / 1000 || !window.opener || window.opener.closed) return false;
+            var status = document.getElementById('qcm-return-status');
+            var id = String(++numeroDemande);
+            var timer;
+            function terminer(message) {
+                clearTimeout(timer);
+                window.removeEventListener('message', recevoirRetour);
+                if (status) status.textContent = message;
+            }
+            function recevoirRetour(event) {
+                if (event.source !== window.opener || ORIGINES_QCM.indexOf(event.origin) === -1 ||
+                    !event.data || event.data.type !== 'doctrine-return-response' || event.data.id !== id) return;
+                terminer(event.data.ok ? '' : 'Retour automatique impossible. Ouvrez le lien dans un nouvel onglet et reconnectez-vous si nécessaire.');
+            }
+            try {
+                if (status) status.textContent = 'Retour vers QCM-MAJOR en cours…';
+                window.addEventListener('message', recevoirRetour);
+                timer = setTimeout(function () {
+                    terminer('QCM-MAJOR ne répond pas. Actualisez cet onglet ou ouvrez le lien dans un nouvel onglet.');
+                }, 5000);
+                ORIGINES_QCM.forEach(function (origine) {
+                    window.opener.postMessage({ type: 'doctrine-return-to-qcm', id: id, user_id: sessionRelais.user_id }, origine);
+                });
+                window.opener.focus();
+                return true;
+            } catch (err) {
+                terminer('');
+                console.warn('Retour vers QCM-MAJOR impossible.', err);
+                return false;
+            }
+        },
         specialite: chargerSpecialite
     };
 
