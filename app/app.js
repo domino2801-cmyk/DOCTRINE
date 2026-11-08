@@ -17,6 +17,7 @@ const module1Key = 'module1_validated';
     let transmittedDossiers = new Set();
     let correctionGateElement = null;
     let correctionVerificationGeneration = 0;
+    let qcmModuleAccess = false;
 
     function isDossierDone(id) {
         const dossier = document.querySelector('.mod-body[data-mod="3"] input[data-dossier="' + id + '"]');
@@ -42,6 +43,7 @@ const module1Key = 'module1_validated';
     }
 
     function canOpenModule(id) {
+        if (qcmModuleAccess) return true;
         if (id === 'module1') return true;
         if (!isModule1Unlocked()) return false;
         return id !== 'module4' || isModule4Unlocked();
@@ -192,7 +194,7 @@ const module1Key = 'module1_validated';
             const btn = document.getElementById(id);
             if (!btn) return;
             const moduleId = Object.keys(moduleButtonMap).find(key => moduleButtonMap[key] === id);
-            const isOpenable = isUnlocked && canOpenModule(moduleId);
+            const isOpenable = canOpenModule(moduleId);
             btn.disabled = !isOpenable;
             btn.style.opacity = isOpenable ? '1' : '0.5';
             btn.style.cursor = isOpenable ? 'pointer' : 'not-allowed';
@@ -204,7 +206,7 @@ const module1Key = 'module1_validated';
         });
 
         if (lockWarning) {
-            lockWarning.style.display = isUnlocked ? 'none' : 'block';
+            lockWarning.style.display = isUnlocked || qcmModuleAccess ? 'none' : 'block';
         }
         updateModuleNavigation();
         updateResumeModule(getLastModule());
@@ -233,7 +235,7 @@ const module1Key = 'module1_validated';
     }
 
     function navigateModule(id) {
-        if (id === 'module4' && isModule1Unlocked() && !isModule4Unlocked()) {
+        if (id === 'module4' && isModule1Unlocked() && !canOpenModule(id)) {
             const currentModal = Array.from(document.querySelectorAll('.modal')).find(function(item) {
                 return item.style.display === 'block';
             });
@@ -244,11 +246,11 @@ const module1Key = 'module1_validated';
 
     function openModal(id) {
         if (!Object.prototype.hasOwnProperty.call(moduleButtonMap, id)) return;
-        if (id === 'module4' && isModule1Unlocked() && !isModule4Unlocked()) {
+        if (id === 'module4' && isModule1Unlocked() && !canOpenModule(id)) {
             alert('Marquez au moins un dossier « Fait » dans le module 3 pour accéder au module 4.');
             return;
         }
-        if (id === 'module1' || isModule1Unlocked()) {
+        if (canOpenModule(id)) {
             const modal = document.getElementById('modal-' + id);
             if (!modal) return;
             const currentModal = Array.from(document.querySelectorAll('.modal')).find(function(item) {
@@ -294,7 +296,17 @@ const module1Key = 'module1_validated';
     }
 
     document.addEventListener('doctrine:login', function(event) {
-        if (event.detail && event.detail.accesQcm) openModal('module1');
+        qcmModuleAccess = Boolean(event.detail && event.detail.accesQcm);
+        updateModuleLockUI();
+    });
+
+    document.addEventListener('doctrine:logout', function() {
+        qcmModuleAccess = false;
+        document.querySelectorAll('.modal').forEach(function(modal) {
+            if (!canOpenModule(modal.id.replace('modal-', ''))) modal.style.display = 'none';
+        });
+        setActiveModuleButton(null);
+        updateModuleLockUI();
     });
 
     function getLastModule() {
@@ -314,15 +326,14 @@ const module1Key = 'module1_validated';
         button.textContent = id === 'module1' && !getModule1State()
             ? 'Commencer le module 1'
             : 'Reprendre le module ' + number;
-        description.textContent = id === 'module1' && !getModule1State()
+        description.textContent = id === 'module1' && !getModule1State() && !qcmModuleAccess
             ? 'Commencez par le module 1 pour débloquer la suite.'
             : 'Votre dernier module consulté : module ' + number + '.';
     }
 
     function resumeLastModule() {
         let id = getLastModule();
-        if (id !== 'module1' && !isModule1Unlocked()) id = 'module1';
-        else if (id === 'module4' && !isModule4Unlocked()) id = 'module3';
+        if (!canOpenModule(id)) id = id === 'module4' && isModule1Unlocked() ? 'module3' : 'module1';
         openModal(id);
     }
 
