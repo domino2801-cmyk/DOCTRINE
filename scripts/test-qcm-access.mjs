@@ -5,9 +5,12 @@ import vm from 'node:vm';
 
 const authSource = await readFile(new URL('../auth/auth.js', import.meta.url), 'utf8');
 const splashSource = await readFile(new URL('../splash/splash.js', import.meta.url), 'utf8');
+const splashCss = await readFile(new URL('../splash/splash.css', import.meta.url), 'utf8');
+const appSource = await readFile(new URL('../app/app.js', import.meta.url), 'utf8');
 
-function fixture({ confirmed = true, reply = true } = {}) {
+function fixture({ confirmed = true, reply = true, relay = true, loadApp = false } = {}) {
     const handlers = new Map();
+    const documentHandlers = new Map();
     const events = [];
     const requests = [];
     const classes = new Set();
@@ -24,6 +27,11 @@ function fixture({ confirmed = true, reply = true } = {}) {
         }
     });
     const gate = element();
+    const modal = {
+        id: 'modal-module1', style: { display: 'none' }, scrollTop: 0,
+        querySelectorAll: () => [], querySelector: () => null
+    };
+    let gateHiddenOnAppend;
     const opener = {
         closed: false,
         postMessage(data, origin) {
@@ -40,7 +48,7 @@ function fixture({ confirmed = true, reply = true } = {}) {
         for (const callback of [...(handlers.get(type) || [])]) callback(event);
     }
     const window = {
-        opener, location: { search: '?from=qcm-major' },
+        opener: relay ? opener : null, location: { search: relay ? '?from=qcm-major' : '' },
         addEventListener(type, cb) { handlers.set(type, [...(handlers.get(type) || []), cb]); },
         removeEventListener(type, cb) { handlers.set(type, (handlers.get(type) || []).filter(fn => fn !== cb)); },
         matchMedia: () => ({ matches: false })
@@ -49,25 +57,32 @@ function fixture({ confirmed = true, reply = true } = {}) {
         readyState: 'complete',
         documentElement: { classList: { add: name => classes.add(name), remove: name => classes.delete(name) } },
         createElement: () => gate,
-        body: { appendChild() {} },
-        getElementById: () => null,
-        querySelectorAll: () => [],
-        dispatchEvent: event => events.push(event.type)
+        body: { appendChild(node) { if (node === gate) gateHiddenOnAppend = node.hidden; } },
+        getElementById: id => loadApp && id === modal.id ? modal : null,
+        querySelectorAll: selector => loadApp && selector === '.modal' ? [modal] : [],
+        addEventListener(type, cb) { documentHandlers.set(type, [...(documentHandlers.get(type) || []), cb]); },
+        dispatchEvent(event) {
+            events.push(event.type);
+            for (const callback of documentHandlers.get(event.type) || []) callback(event);
+        }
     };
     const storage = new Map();
     const fetches = [];
     class Clock extends Date { static now() { return now; } }
-    vm.runInNewContext(authSource, {
+    const context = vm.createContext({
         window, document, URLSearchParams, Date: Clock, Promise, Number, console, setTimeout, clearTimeout,
-        CustomEvent: class { constructor(type) { this.type = type; } },
+        CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options?.detail; } },
         localStorage: { getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) },
         fetch: async (url, options) => {
             fetches.push({ url, options });
             return { ok: true, json: async () => ({ id: 'user', email: 'user@example.test', email_confirmed_at: confirmed ? 'yes' : null }) };
         }
     });
+    vm.runInContext(authSource, context);
+    if (loadApp) vm.runInContext(appSource, context);
     return {
-        window, document, classes, elements, events, requests, fetches, storage, opener, dispatch,
+        window, document, classes, elements, events, requests, fetches, storage, opener, dispatch, gate, modal,
+        get gateHiddenOnAppend() { return gateHiddenOnAppend; },
         advance(ms) { now += ms; },
         renewExpiry() { tokenExpiry = now / 1000 + 3600; }
     };
@@ -108,9 +123,36 @@ test('la perte de l’onglet QCM verrouille l’armoire au renouvellement', asyn
 
 test('un compte non confirmé ne déverrouille pas l’armoire', async () => {
     const f = fixture({ confirmed: false });
+    assert.equal(f.gateHiddenOnAppend, true);
     await settle();
     assert.equal(f.classes.has('auth-locked'), true);
+    assert.equal(f.gate.hidden, false);
     assert.match(f.elements.get('#auth-message').textContent, /Connexion automatique indisponible/);
+});
+
+test('la session QCM vérifiée ouvre directement le module 1 sans valider sa progression', async () => {
+    const f = fixture({ loadApp: true });
+    f.storage.set('bm4-last-module', 'module6');
+    assert.equal(f.gateHiddenOnAppend, true);
+    assert.equal(f.modal.style.display, 'none');
+    await settle();
+    assert.equal(f.modal.style.display, 'block');
+    assert.equal(f.gate.hidden, true);
+    assert.equal(f.storage.get('bm4-last-module'), 'module1');
+    assert.equal(f.storage.has('module1_validated'), false);
+});
+
+test('un échec du relais et une connexion ordinaire ne déclenchent pas l’ouverture du module 1', async () => {
+    const failed = fixture({ confirmed: false, loadApp: true });
+    await settle();
+    assert.equal(failed.modal.style.display, 'none');
+    assert.equal(failed.gate.hidden, false);
+
+    const ordinary = fixture({ relay: false, loadApp: true });
+    await settle();
+    assert.equal(ordinary.gateHiddenOnAppend, false);
+    ordinary.document.dispatchEvent({ type: 'doctrine:login', detail: { accesQcm: false } });
+    assert.equal(ordinary.modal.style.display, 'none');
 });
 
 test('les messages non autorisés ne peuvent pas fournir de session', async () => {
@@ -139,4 +181,5 @@ test('le splash est supprimé pour une ouverture depuis QCM avec opener', () => 
         sessionStorage: { getItem: () => null, removeItem() {} }, URLSearchParams
     });
     assert.equal(removed, true);
+    assert.match(splashCss, /html\.auth-acces-qcm\s+#splash\s*\{\s*display:\s*none/);
 });

@@ -7,6 +7,8 @@
     transition: opacity 0.7s ease;
 }
 
+html.auth-acces-qcm #splash { display: none; }
+
 #splash::before {
     content: "";
     position: absolute;

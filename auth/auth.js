@@ -21,6 +21,7 @@
 
     var root = document.documentElement;
     root.classList.add('auth-locked');
+    if (accesQcm) root.classList.add('auth-acces-qcm');
 
     function lire() {
         if (relaisActif) return sessionRelais;
@@ -212,6 +213,7 @@
     function construire() {
         gate = document.createElement('div');
         gate.id = 'auth-gate';
+        gate.hidden = !!accesQcm;
         gate.innerHTML =
             '<div class="auth-stage">' +
             '<div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="auth-titre">' +
@@ -273,7 +275,7 @@
         root.classList.remove('auth-locked');
         if (gate) gate.hidden = true;
         ajouterDeconnexion(s);
-        document.dispatchEvent(new CustomEvent('doctrine:login'));
+        document.dispatchEvent(new CustomEvent('doctrine:login', { detail: { accesQcm: relaisActif } }));
     }
 
     function fermerArmoirePuisDeverrouiller(s) {
