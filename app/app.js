@@ -293,6 +293,10 @@ const module1Key = 'module1_validated';
         }
     }
 
+    document.addEventListener('doctrine:login', function(event) {
+        if (event.detail && event.detail.accesQcm) openModal('module1');
+    });
+
     function getLastModule() {
         try {
             const id = localStorage.getItem(lastModuleKey);
