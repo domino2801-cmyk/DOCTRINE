@@ -27,10 +27,14 @@ function fixture({ confirmed = true, reply = true, relay = true, loadApp = false
         }
     });
     const gate = element();
-    const modal = {
-        id: 'modal-module1', style: { display: 'none' }, scrollTop: 0,
+    const modals = Array.from({ length: 7 }, (_, index) => ({
+        id: 'modal-module' + (index + 1), style: { display: 'none' }, scrollTop: 0,
         querySelectorAll: () => [], querySelector: () => null
-    };
+    }));
+    const buttons = Array.from({ length: 7 }, () => ({
+        style: {}, disabled: false, classList: { toggle() {} }, setAttribute() {}, focus() {}
+    }));
+    const warning = { style: {} };
     let gateHiddenOnAppend;
     const opener = {
         closed: false,
@@ -60,8 +64,16 @@ function fixture({ confirmed = true, reply = true, relay = true, loadApp = false
         documentElement: { classList: { add: name => classes.add(name), remove: name => classes.delete(name) } },
         createElement: () => gate,
         body: { appendChild(node) { if (node === gate) gateHiddenOnAppend = node.hidden; } },
-        getElementById: id => loadApp && id === modal.id ? modal : null,
-        querySelectorAll: selector => loadApp && selector === '.modal' ? [modal] : [],
+        getElementById(id) {
+            if (!loadApp) return null;
+            if (id === 'lockWarning') return warning;
+            const modal = modals.find(item => item.id === id);
+            if (modal) return modal;
+            const match = id.match(/^btn-mod([1-7])$/);
+            return match ? buttons[Number(match[1]) - 1] : null;
+        },
+        querySelector: () => null,
+        querySelectorAll: selector => loadApp && selector === '.modal' ? modals : [],
         addEventListener(type, cb) { documentHandlers.set(type, [...(documentHandlers.get(type) || []), cb]); },
         dispatchEvent(event) {
             events.push(event.type);
@@ -70,9 +82,11 @@ function fixture({ confirmed = true, reply = true, relay = true, loadApp = false
     };
     const storage = new Map();
     const fetches = [];
+    const alerts = [];
     class Clock extends Date { static now() { return now; } }
     const context = vm.createContext({
         window, document, URLSearchParams, Date: Clock, Promise, Number, console, setTimeout, clearTimeout,
+        alert: message => alerts.push(message),
         CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options?.detail; } },
         localStorage: { getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) },
         fetch: async (url, options) => {
@@ -83,7 +97,8 @@ function fixture({ confirmed = true, reply = true, relay = true, loadApp = false
     vm.runInContext(authSource, context);
     if (loadApp) vm.runInContext(appSource, context);
     return {
-        window, document, classes, elements, events, requests, fetches, storage, opener, dispatch, gate, modal,
+        window, document, classes, elements, events, requests, fetches, storage, opener, dispatch, gate,
+        modal: modals[0], modals, buttons, warning, context, alerts,
         get gateHiddenOnAppend() { return gateHiddenOnAppend; },
         advance(ms) { now += ms; },
         renewExpiry() { tokenExpiry = now / 1000 + 3600; }
@@ -181,16 +196,33 @@ test('un compte non confirmé ne déverrouille pas l’armoire', async () => {
     assert.match(f.elements.get('#auth-message').textContent, /Connexion automatique indisponible/);
 });
 
-test('la session QCM vérifiée ouvre directement le module 1 sans valider sa progression', async () => {
+test('la session QCM vérifiée donne accès aux sept modules sans valider la progression', async () => {
     const f = fixture({ loadApp: true });
     f.storage.set('bm4-last-module', 'module6');
     assert.equal(f.gateHiddenOnAppend, true);
     assert.equal(f.modal.style.display, 'none');
     await settle();
-    assert.equal(f.modal.style.display, 'block');
+    assert.equal(f.modal.style.display, 'none');
     assert.equal(f.gate.hidden, true);
-    assert.equal(f.storage.get('bm4-last-module'), 'module1');
+    assert.equal(f.storage.get('bm4-last-module'), 'module6');
+    assert.equal(f.warning.style.display, 'none');
+    assert.ok(f.buttons.every(button => !button.disabled));
     assert.equal(f.storage.has('module1_validated'), false);
+    for (let i = 1; i <= 7; i++) {
+        vm.runInContext(`openModal('module${i}')`, f.context);
+        assert.equal(f.modals[i - 1].style.display, 'block');
+    }
+    vm.runInContext("navigateModule('module4')", f.context);
+    assert.equal(f.modals[3].style.display, 'block');
+    f.document.dispatchEvent({ type: 'doctrine:logout' });
+    assert.equal(f.modals[3].style.display, 'none');
+    assert.ok(f.buttons.slice(1).every(button => button.disabled));
+    assert.equal(f.warning.style.display, 'block');
+    assert.equal(f.storage.has('module1_validated'), false);
+    f.document.dispatchEvent({ type: 'doctrine:login', detail: { accesQcm: false } });
+    vm.runInContext("openModal('module2')", f.context);
+    assert.equal(f.modals[1].style.display, 'none');
+    assert.equal(f.alerts.length, 1);
 });
 
 test('un échec du relais et une connexion ordinaire ne déclenchent pas l’ouverture du module 1', async () => {
