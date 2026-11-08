@@ -371,51 +371,6 @@ html.auth-locked body {
 
 #auth-gate .auth-pied a:hover { color: #ffc0ad; }
 
-#auth-logout {
-    position: fixed;
-    right: 10px;
-    bottom: 10px;
-    z-index: 900;
-    padding: 7px 12px;
-    border: 1px solid rgba(11, 34, 64, 0.25);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
-    color: #0b2240;
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-#auth-logout:hover { border-color: #a82025; background: #fff; color: #a82025; }
-
-.modal-toolbar .auth-toolbar-logout {
-    margin-left: auto;
-    padding: 8px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 7px;
-    background: rgba(168, 32, 37, 0.55);
-    color: #fff;
-    font: inherit;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.modal-toolbar .auth-toolbar-logout:hover { background: #a82025; }
-
-@media (max-width: 768px) {
-    .modal-toolbar .auth-toolbar-logout {
-        order: 1;
-        padding: 7px 8px;
-        font-size: 0.78rem;
-    }
-
-    .modal-toolbar > .module-nav-controls {
-        order: 2;
-        flex: 1 0 100%;
-    }
-}
-
 @media (max-width: 480px) {
     #auth-gate .auth-card { padding: 17px 16px 15px; }
     #auth-gate .auth-card::after { top: 15px; right: 16px; }

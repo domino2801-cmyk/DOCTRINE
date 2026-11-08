@@ -342,8 +342,7 @@
         justify-content: center;
         gap: 6px;
     }
-    .modal-toolbar .module-nav-controls > button,
-    .modal-toolbar > .auth-toolbar-logout {
+    .modal-toolbar .module-nav-controls > button {
         box-sizing: border-box;
         height: 58px;
     }
@@ -1831,8 +1830,7 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
         }
 
         .modal > .modal-toolbar > span,
-        .modal > .modal-toolbar .module-nav-controls > button,
-        .modal > .modal-toolbar > .auth-toolbar-logout {
+        .modal > .modal-toolbar .module-nav-controls > button {
             height: 44px;
             min-height: 0;
             font-size: 0.64rem;
@@ -1864,13 +1862,6 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
             width: 26px;
             min-width: 26px;
             padding-inline: 0;
-        }
-
-        .modal > .modal-toolbar > .auth-toolbar-logout {
-            order: 3;
-            flex: 0 0 auto;
-            margin: 0;
-            padding: 4px 6px;
         }
 
         .modal-content > h2 {

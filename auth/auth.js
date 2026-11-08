@@ -167,7 +167,6 @@
                 if (generation !== generationRelais) return null;
                 sessionRelais = s;
                 if (!s && gate) {
-                    document.querySelectorAll('#auth-logout, .auth-toolbar-logout').forEach(function (n) { n.remove(); });
                     verrouiller();
                     message.textContent = 'Session QCM-MAJOR indisponible. Connectez-vous à nouveau.';
                     document.dispatchEvent(new CustomEvent('doctrine:logout'));
@@ -271,10 +270,9 @@
         if (champ && !champ.value) champ.focus();
     }
 
-    function deverrouiller(s) {
+    function deverrouiller() {
         root.classList.remove('auth-locked');
         if (gate) gate.hidden = true;
-        ajouterDeconnexion(s);
         document.dispatchEvent(new CustomEvent('doctrine:login', { detail: { accesQcm: relaisActif } }));
     }
 
@@ -288,7 +286,7 @@
             setTimeout(function () {
                 bouton.disabled = false;
                 bouton.textContent = 'Se connecter';
-                deverrouiller(s);
+                deverrouiller();
             }, 700);
         }, mouvementReduit ? 0 : 1800);
     }
@@ -332,41 +330,6 @@
                 bouton.disabled = false;
                 bouton.textContent = 'Se connecter';
             });
-    }
-
-    function deconnecter() {
-        var sessionQcm = relaisActif;
-        var s = lire();
-        generationRelais++;
-        relaisActif = false;
-        sessionRelais = null;
-        accesQcm = false;
-        effacer();
-        document.querySelectorAll('#auth-logout, .auth-toolbar-logout').forEach(function (n) { n.remove(); });
-        if (!sessionQcm && s && s.access_token) appel('/logout', { jeton: s.access_token }).catch(function () {});
-        verrouiller();
-        document.dispatchEvent(new CustomEvent('doctrine:logout'));
-    }
-
-    function ajouterDeconnexion(s) {
-        if (document.getElementById('auth-logout')) return;
-        var b = document.createElement('button');
-        b.id = 'auth-logout';
-        b.type = 'button';
-        b.textContent = 'Déconnexion';
-        b.title = s && s.email ? 'Connecté : ' + s.email : 'Se déconnecter';
-        b.addEventListener('click', deconnecter);
-        document.body.appendChild(b);
-        // Même bouton dans la barre de chaque module, aligné à droite.
-        document.querySelectorAll('.modal-toolbar').forEach(function (barre) {
-            var t = document.createElement('button');
-            t.type = 'button';
-            t.className = 'auth-toolbar-logout';
-            t.textContent = 'Déconnexion';
-            t.title = b.title;
-            t.addEventListener('click', deconnecter);
-            barre.appendChild(t);
-        });
     }
 
     // Rôle lu dans le JWT pour l'affichage uniquement : seule la RLS Supabase fait foi.
@@ -446,7 +409,7 @@
             return null;
         }) : verifier();
         sessionInitiale.then(function (s) {
-            if (s) deverrouiller(s); else montrerFormulaire();
+            if (s) deverrouiller(); else montrerFormulaire();
             if (!s && accesQcm) message.textContent = 'Connexion automatique indisponible. Utilisez vos identifiants QCM-MAJOR.';
         });
     }
