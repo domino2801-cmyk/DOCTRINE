@@ -587,7 +587,18 @@ const module1Key = 'module1_validated';
         });
     }
 
+    function setupQcmReturnLink() {
+        document.addEventListener('click', function(event) {
+            if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+            const link = event.target?.closest?.('#modal-module5 .qcm-acces a[href]');
+            if (!link) return;
+            if (link.protocol !== 'https:' || !['qcm-major.fr', 'www.qcm-major.fr'].includes(link.hostname)) return;
+            if (window.DoctrineAuth && window.DoctrineAuth.retourQcm()) event.preventDefault();
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
+        setupQcmReturnLink();
         harmonizePartCards();
         document.addEventListener('doctrine:content-updated', harmonizePartCards);
         let specialtyRows =  [...document.querySelectorAll('#modal-module6 [data-specialty-row]')];

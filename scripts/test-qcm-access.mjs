@@ -34,9 +34,11 @@ function fixture({ confirmed = true, reply = true, relay = true, loadApp = false
     let gateHiddenOnAppend;
     const opener = {
         closed: false,
+        focused: false,
+        focus() { this.focused = true; },
         postMessage(data, origin) {
             requests.push({ data, origin });
-            if (reply && origin === 'https://qcm-major.fr') {
+            if (reply && origin === 'https://qcm-major.fr' && data.type === 'doctrine-session-request') {
                 queueMicrotask(() => dispatch('message', {
                     source: opener, origin,
                     data: { type: 'doctrine-session-response', id: data.id, access_token: 'access', expires_at: tokenExpiry }
@@ -119,6 +121,55 @@ test('la perte de l’onglet QCM verrouille l’armoire au renouvellement', asyn
     assert.equal(f.classes.has('auth-locked'), true);
     assert.match(f.elements.get('#auth-message').textContent, /Session QCM-MAJOR indisponible/);
     assert.equal(await f.window.DoctrineAuth.jeton(), null);
+});
+
+test('le retour réutilise uniquement la session QCM vérifiée et son onglet', async () => {
+    const f = fixture();
+    assert.equal(f.window.DoctrineAuth.retourQcm(), false);
+    await settle();
+    assert.equal(f.window.DoctrineAuth.retourQcm(), true);
+    assert.equal(f.opener.focused, true);
+    const messages = f.requests.filter(request => request.data.type === 'doctrine-return-to-qcm');
+    assert.equal(messages.length, 2);
+    assert.deepEqual(messages.map(message => message.data.user_id), ['user', 'user']);
+    assert.equal(messages.some(message => 'access_token' in message.data), false);
+    f.dispatch('message', {
+        source: f.opener, origin: 'https://qcm-major.fr',
+        data: { type: 'doctrine-return-response', id: messages[0].data.id, ok: true }
+    });
+    f.opener.closed = true;
+    assert.equal(f.window.DoctrineAuth.retourQcm(), false);
+    const ordinary = fixture({ relay: false });
+    await settle();
+    assert.equal(ordinary.window.DoctrineAuth.retourQcm(), false);
+});
+
+test('le lien du module 5 conserve la navigation normale si le retour ne peut être utilisé', () => {
+    const start = appSource.indexOf('    function setupQcmReturnLink()');
+    const end = appSource.indexOf("    document.addEventListener('DOMContentLoaded'", start);
+    assert.ok(start >= 0 && end > start);
+    let handler;
+    let allowed = true;
+    const context = vm.createContext({
+        document: { addEventListener: (_type, callback) => { handler = callback; } },
+        window: { DoctrineAuth: { retourQcm: () => allowed } }
+    });
+    vm.runInContext(appSource.slice(start, end) + '\nsetupQcmReturnLink();', context);
+    let prevented = false;
+    const link = { protocol: 'https:', hostname: 'qcm-major.fr' };
+    const event = { button: 0, target: { closest: () => link }, preventDefault() { prevented = true; } };
+    handler(event);
+    assert.equal(prevented, true);
+    prevented = false;
+    allowed = false;
+    handler(event);
+    assert.equal(prevented, false);
+    allowed = true;
+    handler({ ...event, ctrlKey: true });
+    assert.equal(prevented, false);
+    link.hostname = 'example.test';
+    handler(event);
+    assert.equal(prevented, false);
 });
 
 test('un compte non confirmé ne déverrouille pas l’armoire', async () => {
