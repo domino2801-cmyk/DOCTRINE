@@ -395,21 +395,36 @@
                 window.removeEventListener('message', recevoirRetour);
                 if (status) status.textContent = message;
             }
+            function ouvrirQcm() {
+                window.location.assign(SIGNUP_URL);
+            }
             function recevoirRetour(event) {
                 if (event.source !== window.opener || ORIGINES_QCM.indexOf(event.origin) === -1 ||
                     !event.data || event.data.type !== 'doctrine-return-response' || event.data.id !== id) return;
-                terminer(event.data.ok ? '' : 'Retour automatique impossible. Ouvrez le lien dans un nouvel onglet et reconnectez-vous si nécessaire.');
+                terminer('');
+                if (!event.data.ok) {
+                    ouvrirQcm();
+                    return;
+                }
+                setTimeout(function () {
+                    if (!window.closed) ouvrirQcm();
+                }, 300);
+                try {
+                    window.close();
+                } catch (error) {
+                    console.warn('Fermeture de l’Armoire impossible, retour direct vers QCM-MAJOR.', error);
+                }
             }
             try {
                 if (status) status.textContent = 'Retour vers QCM-MAJOR en cours…';
                 window.addEventListener('message', recevoirRetour);
                 timer = setTimeout(function () {
-                    terminer('QCM-MAJOR ne répond pas. Actualisez cet onglet ou ouvrez le lien dans un nouvel onglet.');
+                    terminer('');
+                    ouvrirQcm();
                 }, 5000);
                 ORIGINES_QCM.forEach(function (origine) {
                     window.opener.postMessage({ type: 'doctrine-return-to-qcm', id: id, user_id: sessionRelais.user_id }, origine);
                 });
-                window.opener.focus();
                 return true;
             } catch (err) {
                 terminer('');

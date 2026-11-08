@@ -604,7 +604,11 @@ const module1Key = 'module1_validated';
             const link = event.target?.closest?.('#modal-module5 .qcm-acces a[href]');
             if (!link) return;
             if (link.protocol !== 'https:' || !['qcm-major.fr', 'www.qcm-major.fr'].includes(link.hostname)) return;
-            if (window.DoctrineAuth && window.DoctrineAuth.retourQcm()) event.preventDefault();
+            if (window.DoctrineAuth && window.DoctrineAuth.retourQcm()) {
+                event.preventDefault();
+            } else {
+                link.target = '_self';
+            }
         });
     }
 

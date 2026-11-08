@@ -7,8 +7,9 @@ const authSource = await readFile(new URL('../auth/auth.js', import.meta.url), '
 const splashSource = await readFile(new URL('../splash/splash.js', import.meta.url), 'utf8');
 const splashCss = await readFile(new URL('../splash/splash.css', import.meta.url), 'utf8');
 const appSource = await readFile(new URL('../app/app.js', import.meta.url), 'utf8');
+const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 
-function fixture({ confirmed = true, reply = true, relay = true, loadApp = false } = {}) {
+function fixture({ confirmed = true, reply = true, relay = true, loadApp = false, closeWorks = true } = {}) {
     const handlers = new Map();
     const documentHandlers = new Map();
     const events = [];
@@ -54,7 +55,10 @@ function fixture({ confirmed = true, reply = true, relay = true, loadApp = false
         for (const callback of [...(handlers.get(type) || [])]) callback(event);
     }
     const window = {
-        opener: relay ? opener : null, location: { search: relay ? '?from=qcm-major' : '' },
+        opener: relay ? opener : null,
+        closed: false,
+        location: { search: relay ? '?from=qcm-major' : '', assign(url) { this.navigated = url; } },
+        close() { if (closeWorks) this.closed = true; },
         addEventListener(type, cb) { handlers.set(type, [...(handlers.get(type) || []), cb]); },
         removeEventListener(type, cb) { handlers.set(type, (handlers.get(type) || []).filter(fn => fn !== cb)); },
         matchMedia: () => ({ matches: false })
@@ -143,7 +147,6 @@ test('le retour réutilise uniquement la session QCM vérifiée et son onglet', 
     assert.equal(f.window.DoctrineAuth.retourQcm(), false);
     await settle();
     assert.equal(f.window.DoctrineAuth.retourQcm(), true);
-    assert.equal(f.opener.focused, true);
     const messages = f.requests.filter(request => request.data.type === 'doctrine-return-to-qcm');
     assert.equal(messages.length, 2);
     assert.deepEqual(messages.map(message => message.data.user_id), ['user', 'user']);
@@ -152,6 +155,7 @@ test('le retour réutilise uniquement la session QCM vérifiée et son onglet', 
         source: f.opener, origin: 'https://qcm-major.fr',
         data: { type: 'doctrine-return-response', id: messages[0].data.id, ok: true }
     });
+    assert.equal(f.window.closed, true);
     f.opener.closed = true;
     assert.equal(f.window.DoctrineAuth.retourQcm(), false);
     const ordinary = fixture({ relay: false });
@@ -159,7 +163,45 @@ test('le retour réutilise uniquement la session QCM vérifiée et son onglet', 
     assert.equal(ordinary.window.DoctrineAuth.retourQcm(), false);
 });
 
+test('si la fermeture est bloquée, le retour confirmé ouvre QCM dans l’onglet courant', async () => {
+    const f = fixture({ closeWorks: false });
+    await settle();
+    const timers = [];
+    f.context.setTimeout = callback => { timers.push(callback); return timers.length; };
+    f.context.clearTimeout = () => {};
+    assert.equal(f.window.DoctrineAuth.retourQcm(), true);
+    const request = f.requests.find(item => item.data.type === 'doctrine-return-to-qcm');
+    f.dispatch('message', {
+        source: f.opener, origin: 'https://qcm-major.fr',
+        data: { type: 'doctrine-return-response', id: request.data.id, ok: true }
+    });
+    timers.at(-1)();
+    assert.equal(f.window.location.navigated, 'https://qcm-major.fr');
+});
+
+test('un refus ou une absence de réponse ouvre QCM dans l’onglet courant', async () => {
+    for (const response of ['refus', 'timeout']) {
+        const f = fixture();
+        await settle();
+        const timers = [];
+        f.context.setTimeout = callback => { timers.push(callback); return timers.length; };
+        f.context.clearTimeout = () => {};
+        assert.equal(f.window.DoctrineAuth.retourQcm(), true);
+        const request = f.requests.find(item => item.data.type === 'doctrine-return-to-qcm');
+        if (response === 'refus') {
+            f.dispatch('message', {
+                source: f.opener, origin: 'https://qcm-major.fr',
+                data: { type: 'doctrine-return-response', id: request.data.id, ok: false }
+            });
+        } else {
+            timers[0]();
+        }
+        assert.equal(f.window.location.navigated, 'https://qcm-major.fr');
+    }
+});
+
 test('le lien du module 5 conserve la navigation normale si le retour ne peut être utilisé', () => {
+    assert.match(html, /id="qcm-return-link" href="https:\/\/qcm-major\.fr" class="btn-link">/);
     const start = appSource.indexOf('    function setupQcmReturnLink()');
     const end = appSource.indexOf("    document.addEventListener('DOMContentLoaded'", start);
     assert.ok(start >= 0 && end > start);
@@ -171,7 +213,7 @@ test('le lien du module 5 conserve la navigation normale si le retour ne peut ê
     });
     vm.runInContext(appSource.slice(start, end) + '\nsetupQcmReturnLink();', context);
     let prevented = false;
-    const link = { protocol: 'https:', hostname: 'qcm-major.fr' };
+    const link = { protocol: 'https:', hostname: 'qcm-major.fr', target: '_blank' };
     const event = { button: 0, target: { closest: () => link }, preventDefault() { prevented = true; } };
     handler(event);
     assert.equal(prevented, true);
@@ -179,6 +221,7 @@ test('le lien du module 5 conserve la navigation normale si le retour ne peut ê
     allowed = false;
     handler(event);
     assert.equal(prevented, false);
+    assert.equal(link.target, '_self');
     allowed = true;
     handler({ ...event, ctrlKey: true });
     assert.equal(prevented, false);
