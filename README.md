@@ -12,7 +12,7 @@ favicon.ico
 icons/                   icônes PWA (192, 512, maskable, apple-touch)
 viewer/                  visionneuse intégrée des documents Google Drive
 supabase/functions/      fonctions drive-proxy (Drive) et doctrine-report-push (alertes)
-splash/                  splash animé et cadre de connexion (CSS, JS, images, police)
+splash/                  ressources graphiques de connexion
 auth/                    écran de connexion (Supabase, comptes QCM-MAJOR.FR)
 admin/                   interface administrateur (édition des modules)
 supabase/                scripts SQL pour le contenu et le suivi des consultations
@@ -56,7 +56,7 @@ Tant que la fonction n'est pas déployée, la visionneuse se rabat sur l'aperçu
 
 L’accès à l’application demande une connexion avec les identifiants QCM-MAJOR.FR, vérifiés auprès du même projet Supabase.
 
-- depuis le lien de la page Aide de QCM-MAJOR, tous les modules sont accessibles depuis l'accueil, sans splash ni écran de connexion et sans valider automatiquement la progression. Les conditions d'accès aux corrigés restent applicables. Un jeton d'accès est transmis uniquement à l'onglet ouvert et vérifié par Supabase ; le mot de passe et le jeton de rafraîchissement ne sont pas transmis. Garder l'onglet QCM-MAJOR ouvert permet de renouveler l'accès ; sinon, une reconnexion est demandée à expiration. Si l'ouverture automatique échoue, l'écran de connexion habituel et les règles de progression habituelles restent applicables ;
+- depuis le lien de la page Aide de QCM-MAJOR, tous les modules sont accessibles depuis l'accueil, sans écran de connexion et sans valider automatiquement la progression. Les conditions d'accès aux corrigés restent applicables. Un jeton d'accès est transmis uniquement à l'onglet ouvert et vérifié par Supabase ; le mot de passe et le jeton de rafraîchissement ne sont pas transmis. Garder l'onglet QCM-MAJOR ouvert permet de renouveler l'accès ; sinon, une reconnexion est demandée à expiration. Si l'ouverture automatique échoue, l'écran de connexion habituel et les règles de progression habituelles restent applicables ;
 - dans ce parcours, le lien du module 5 revient à l'onglet QCM-MAJOR d'origine et ferme l'Armoire après confirmation, sans interrompre une partie en cours. Si le navigateur empêche la fermeture ou si l'onglet d'origine ne répond pas, QCM-MAJOR s'ouvre dans l'onglet actuel ; une connexion peut alors être nécessaire et une partie en cours reste dans son onglet d'origine. Le lien ouvre aussi QCM-MAJOR dans l'onglet actuel lorsque l'Armoire a été ouverte indépendamment ;
 - compte valide et email confirmé : accès immédiat, sans nouvelle inscription, et session conservée (jeton de rafraîchissement) ;
 - compte inexistant ou mot de passe incorrect : accès refusé avec un lien pour créer le compte sur QCM-MAJOR.FR ;
@@ -66,7 +66,7 @@ L’accès à l’application demande une connexion avec les identifiants QCM-MA
 
 ## PWA
 
-La page `index.html` est l’entrée unique du site et de la PWA. Après le splash et la connexion, l’application BM4 s’affiche directement. L’ancienne URL `INDEX BM4V2.HTML` redirige vers cette page.
+La page `index.html` est l’entrée unique du site et de la PWA. Après la connexion, l’application BM4 s’affiche directement. L’ancienne URL `INDEX BM4V2.HTML` redirige vers cette page.
 
 La page d’application affiche le dernier module consulté et le suivi détaillé des dossiers et corrigés, conservé localement sur l’appareil. Le journal des clics sur les liens de documents, y compris les clics identifiés comme téléchargements, est centralisé dans Supabase pour l’administration. Chaque module propose le même retour à la liste des modules.
 
@@ -87,8 +87,7 @@ Les tests de cette comparaison se lancent avec `node --test scripts/test-validat
 - les liens Google Drive (fichiers et dossiers) des modules s'ouvrent dans une visionneuse intégrée avec bouton **⬇ Télécharger** (le téléchargement est enregistré dans le suivi admin) ; le candidat n'ouvre jamais Drive (Ctrl/⌘/Maj+clic mis à part). Voir « Proxy Google Drive » ci-dessous
 - les liens externes Google Drive et `https://Qcm-major.fr` restent des ressources réseau et ne sont pas préchargés ni mis en cache
 - en cas de mise à jour du service worker, un message indique qu’il faut fermer puis rouvrir l’application pour récupérer la nouvelle version
-- au démarrage, `index.html` affiche à chaque chargement un splash animé « Couteau Suisse BM4 » (dossier `splash/`, précaché par le service worker) : environ 6 s, fermable d’un toucher et désactivé si `prefers-reduced-motion` est actif
-- l’écran de connexion est entouré par `splash/connexion-cadre.png` ; le fond latéral reprend les couleurs des bords du cadre pour se fondre avec lui. Les deux images sont précachées pour rester disponibles hors ligne
+- l’écran de connexion utilise des ressources graphiques précachées pour rester disponibles hors ligne
 
 ## Installation GitHub Pages
 

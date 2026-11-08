@@ -4,10 +4,9 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 const authSource = await readFile(new URL('../auth/auth.js', import.meta.url), 'utf8');
-const splashSource = await readFile(new URL('../splash/splash.js', import.meta.url), 'utf8');
-const splashCss = await readFile(new URL('../splash/splash.css', import.meta.url), 'utf8');
 const appSource = await readFile(new URL('../app/app.js', import.meta.url), 'utf8');
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+const serviceWorker = await readFile(new URL('../sw.js', import.meta.url), 'utf8');
 
 function fixture({ confirmed = true, reply = true, relay = true, loadApp = false, closeWorks = true } = {}) {
     const handlers = new Map();
@@ -298,14 +297,8 @@ test('les messages non autorisés ne peuvent pas fournir de session', async () =
     assert.equal(await f.window.DoctrineAuth.jeton(), 'valid');
 });
 
-test('le splash est supprimé pour une ouverture depuis QCM avec opener', () => {
-    let removed = false;
-    const splash = { remove() { removed = true; } };
-    vm.runInNewContext(splashSource, {
-        document: { getElementById: () => splash },
-        window: { location: { search: '?from=qcm-major' }, opener: {}, matchMedia: () => ({ matches: false }) },
-        sessionStorage: { getItem: () => null, removeItem() {} }, URLSearchParams
-    });
-    assert.equal(removed, true);
-    assert.match(splashCss, /html\.auth-acces-qcm\s+#splash\s*\{\s*display:\s*none/);
+test('aucun écran de démarrage n’est chargé ou précaché', () => {
+    assert.doesNotMatch(html, /id=["']splash["']|splash\/splash\.(?:css|js)/);
+    assert.doesNotMatch(serviceWorker, /splash\/splash\.(?:css|js)|armoire-(?:ouverte|fermee|splash)\.png/);
+    assert.doesNotMatch(appSource, /splash-skip/);
 });

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bm4-shell-v108';
+const CACHE_NAME = 'bm4-shell-v109';
 const APP_SHELL_URL = new URL('./index.html', self.location.href).toString();
 const LEGACY_APP_URL = new URL('./INDEX%20BM4V2.HTML', self.location.href).toString();
 const SHELL_ASSETS = [
@@ -10,11 +10,6 @@ const SHELL_ASSETS = [
   new URL('./icons/apple-touch-icon.png', self.location.href).toString(),
   new URL('./icons/icon-512.png', self.location.href).toString(),
   new URL('./icons/icon-maskable-512.png', self.location.href).toString(),
-  new URL('./splash/splash.css', self.location.href).toString(),
-  new URL('./splash/splash.js', self.location.href).toString(),
-  new URL('./icons/armoire-splash.png', self.location.href).toString(),
-  new URL('./splash/armoire-ouverte.png', self.location.href).toString(),
-  new URL('./splash/armoire-fermee.png', self.location.href).toString(),
   new URL('./splash/connexion-cadre.png', self.location.href).toString(),
   new URL('./splash/connexion-fond-lateraux.png', self.location.href).toString(),
   new URL('./splash/auth-closing-open.png', self.location.href).toString(),

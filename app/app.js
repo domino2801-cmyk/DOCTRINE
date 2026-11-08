@@ -485,7 +485,6 @@ const module1Key = 'module1_validated';
                 navigator.serviceWorker.addEventListener('controllerchange', function() {
                     if (reloadedForUpdate) return;
                     reloadedForUpdate = true;
-                    try { sessionStorage.setItem('splash-skip', '1'); } catch (e) { /* stockage indisponible */ }
                     window.location.reload();
                 });
             }

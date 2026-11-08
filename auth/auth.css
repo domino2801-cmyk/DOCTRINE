@@ -1,4 +1,4 @@
-html.auth-locked body > *:not(#auth-gate):not(#splash):not(#auth-closing) { display: none !important; }
+html.auth-locked body > *:not(#auth-gate):not(#auth-closing) { display: none !important; }
 html.auth-locked body {
     background: #101914;
 }
