@@ -15,6 +15,7 @@ const module1Key = 'module1_validated';
     let deferredInstallPrompt = null;
     let networkStatusTimer = null;
     let transmittedDossiers = new Set();
+    let correctionAccessEventsLogged = new Set();
     let correctionGateElement = null;
     let correctionVerificationGeneration = 0;
     let qcmModuleAccess = false;
@@ -26,6 +27,47 @@ const module1Key = 'module1_validated';
 
     function isAdminUser() {
         return !!(window.DoctrineAuth && window.DoctrineAuth.estAdmin && window.DoctrineAuth.estAdmin());
+    }
+
+    function afficherStatutSynchronisationProgression(message, erreur) {
+        const status = document.getElementById('progressionSyncStatus');
+        if (!status) return;
+        status.textContent = message;
+        status.hidden = !message;
+        status.classList.toggle('progression-sync-error', Boolean(erreur));
+    }
+
+    function enregistrerEvenementProgression(typeEvenement, moduleId, dossierId) {
+        const auth = window.DoctrineAuth;
+        if (!auth || isAdminUser()) return;
+
+        auth.jeton().then(function(token) {
+            if (!token) throw new Error('Session authentifiée indisponible.');
+            const event = { event_type: typeEvenement, module_id: moduleId };
+            if (dossierId !== undefined && dossierId !== null) event.dossier = Number(dossierId);
+            return fetch(auth.url + '/rest/v1/doctrine_progress_events', {
+                method: 'POST',
+                headers: {
+                    apikey: auth.key,
+                    Authorization: 'Bearer ' + token,
+                    'Content-Type': 'application/json',
+                    Prefer: 'return=minimal'
+                },
+                body: JSON.stringify(event),
+                keepalive: true
+            }).then(function(response) {
+                if (!response.ok) {
+                    return response.text().then(function(detail) {
+                        throw new Error('HTTP ' + response.status + (detail ? ' : ' + detail : ''));
+                    });
+                }
+            });
+        }).then(function() {
+            afficherStatutSynchronisationProgression('Étape synchronisée avec votre compte.', false);
+        }).catch(function(error) {
+            console.error('Échec de l’enregistrement de la progression DOCTRINE.', error);
+            afficherStatutSynchronisationProgression('Étape non synchronisée. Vérifiez votre connexion puis réessayez.', true);
+        });
     }
 
     // Un dossier du module 4 n'est consultable que s'il est marqué « Fait » dans le module 3 (sauf admin).
@@ -86,6 +128,13 @@ const module1Key = 'module1_validated';
             list.querySelectorAll('.dossier-item').forEach(function(row) {
                 const box = row.querySelector('input[data-corrige]');
                 row.hidden = !box || !canViewCorrige(box.getAttribute('data-corrige'));
+                if (!row.hidden && box) {
+                    const dossier = String(box.getAttribute('data-corrige'));
+                    if (!correctionAccessEventsLogged.has(dossier)) {
+                        correctionAccessEventsLogged.add(dossier);
+                        enregistrerEvenementProgression('correction_accessible', '4', dossier);
+                    }
+                }
             });
         }
         const moduleBody = document.querySelector('.mod-body[data-mod="4"]');
@@ -165,6 +214,16 @@ const module1Key = 'module1_validated';
             return localStorage.getItem(module1Key) === 'true';
         } catch (error) {
             return false;
+        }
+    }
+
+    function enregistrerDossierTermine(id) {
+        enregistrerEvenementProgression('dossier_completed', '3', id);
+        const dossiers = Array.from(document.querySelectorAll('.mod-body[data-mod="3"] input[data-dossier]'));
+        if (dossiers.length > 0 && dossiers.every(function(box) {
+            return box.closest('.dossier-item')?.querySelector('[data-study-status]')?.value === 'mastered';
+        })) {
+            enregistrerEvenementProgression('module_completed', '3');
         }
     }
 
@@ -284,6 +343,7 @@ const module1Key = 'module1_validated';
                 heading.setAttribute('tabindex', '-1');
                 heading.focus({ preventScroll: true });
             }
+            enregistrerEvenementProgression('module_started', id.replace('module', ''));
             try {
                 localStorage.setItem(lastModuleKey, id);
             } catch (error) {
@@ -297,11 +357,14 @@ const module1Key = 'module1_validated';
 
     document.addEventListener('doctrine:login', function(event) {
         qcmModuleAccess = Boolean(event.detail && event.detail.accesQcm);
+        correctionAccessEventsLogged = new Set();
         updateModuleLockUI();
     });
 
     document.addEventListener('doctrine:logout', function() {
         qcmModuleAccess = false;
+        correctionAccessEventsLogged = new Set();
+        transmittedDossiers = new Set();
         document.querySelectorAll('.modal').forEach(function(modal) {
             if (!canOpenModule(modal.id.replace('modal-', ''))) modal.style.display = 'none';
         });
@@ -812,6 +875,7 @@ const module1Key = 'module1_validated';
                         return;
                     }
                     setModule1State(true);
+                    enregistrerEvenementProgression('module_completed', '1');
                     updateModuleLockUI();
                 }).catch(function() {
                     box.disabled = false;
@@ -991,6 +1055,7 @@ const module1Key = 'module1_validated';
         document.addEventListener('doctrine:login', loadTransmittedDossiers);
         document.addEventListener('doctrine:logout', function() {
             transmittedDossiers = new Set();
+            correctionAccessEventsLogged = new Set();
             updateCorrectionAccess();
         });
 
@@ -1192,11 +1257,13 @@ const module1Key = 'module1_validated';
                 saveStudyValue(studyStorageKey(group.kind, id, 'status'), status);
                 box.checked = status !== 'todo';
                 saveStudyValue(group.legacyPrefix + id, String(box.checked));
+                if (group.kind === 'dossier' && status === 'mastered') enregistrerDossierTermine(id);
                 refreshProgress();
             } else if (target === box) {
                 const status = box.checked ? group.checkedStatus : 'todo';
                 saveStudyValue(studyStorageKey(group.kind, id, 'status'), status);
                 saveStudyValue(group.legacyPrefix + id, String(box.checked));
+                if (group.kind === 'dossier' && status === 'mastered') enregistrerDossierTermine(id);
                 refreshProgress();
             }
         });

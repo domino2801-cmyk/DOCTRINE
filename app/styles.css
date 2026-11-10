@@ -253,6 +253,7 @@
         accent-color: #256044;
     }
     .study-progress-text { font-size: 0.82rem; }
+    .study-progress-text.progression-sync-error { color: #b42318; }
     .preface-section {
         max-width: 900px;
         width: 100%;
