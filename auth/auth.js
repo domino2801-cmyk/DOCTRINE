@@ -235,7 +235,7 @@
             '<a href="' + SIGNUP_URL + '" target="_blank" rel="noopener">Créez-le sur QCM-MAJOR.FR</a>' +
             ' puis revenez ici avec les mêmes identifiants. Aucune nouvelle inscription n’est nécessaire.</p>' +
             '</div>' +
-            '<div class="auth-porte" aria-hidden="true"><img src="splash/auth-closing-door-layer.png" alt=""></div>' +
+            '<div class="auth-porte" aria-hidden="true"><img src="auth/closing-door-layer.png" alt=""></div>' +
             '</div>';
         document.body.appendChild(gate);
         form = gate.querySelector('#auth-form');
