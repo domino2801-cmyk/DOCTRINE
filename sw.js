@@ -7,7 +7,6 @@ const SHELL_ASSETS = [
   new URL('./manifest.webmanifest', self.location.href).toString(),
   new URL('./favicon.ico', self.location.href).toString(),
   new URL('./icons/icon-192.png', self.location.href).toString(),
-  new URL('./icons/apple-touch-icon.png', self.location.href).toString(),
   new URL('./icons/icon-512.png', self.location.href).toString(),
   new URL('./icons/icon-maskable-512.png', self.location.href).toString(),
   new URL('./auth/closing-open.png', self.location.href).toString(),
