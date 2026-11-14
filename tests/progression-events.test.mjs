@@ -18,6 +18,7 @@ test("progress event table accepts only candidate-owned events with server times
     assert.match(migration, /user_id = auth\.uid\(\)/i);
     assert.match(migration, /new\.user_id := auth\.uid\(\)/i);
     assert.match(migration, /new\.created_at := now\(\)/i);
+    assert.match(migration, /create extension if not exists pg_cron/i);
     assert.match(migration, /where created_at < now\(\) - interval '12 months'/i);
 });
 

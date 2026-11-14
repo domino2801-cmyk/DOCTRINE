@@ -1,5 +1,6 @@
 -- Journal des étapes de progression DOCTRINE visibles par l'administration QCM-MAJOR.
--- À exécuter après fiche-submissions.sql dans le projet Supabase partagé.
+-- À exécuter en entier dans SQL Editor du projet Supabase partagé avec QCM-MAJOR.
+-- Le fichier est stocké dans le dossier supabase/ du dépôt DOCTRINE.
 
 create table if not exists public.doctrine_progress_events (
     id              bigint generated always as identity primary key,
@@ -57,6 +58,8 @@ drop trigger if exists doctrine_progress_events_set_identity
 create trigger doctrine_progress_events_set_identity
     before insert on public.doctrine_progress_events
     for each row execute function public.doctrine_progress_events_set_identity();
+
+create extension if not exists pg_cron with schema pg_catalog;
 
 select cron.unschedule(jobid)
 from cron.job

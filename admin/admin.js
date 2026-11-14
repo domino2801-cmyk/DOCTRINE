@@ -155,12 +155,38 @@
         return contenu.innerHTML;
     }
 
+    // Le marqueur évite de recréer une section supprimée par un administrateur.
+    function assurerMrgModule2(html) {
+        var contenu = document.createElement('template');
+        contenu.innerHTML = html;
+        if (contenu.content.querySelector('[data-module2-mrg-version]')) return contenu.innerHTML;
+
+        var modele = document.createElement('template');
+        modele.innerHTML = defauts['2'] || '';
+        var marqueur = modele.content.querySelector('[data-module2-mrg-version]');
+        var section = modele.content.querySelector('[data-module2-mrg]');
+        if (!marqueur || !section) {
+            console.error('Impossible de trouver le modèle de la section MRG du module 2.');
+            return contenu.innerHTML;
+        }
+        contenu.content.appendChild(marqueur.cloneNode(true));
+        var sectionExistante = contenu.content.querySelector('[data-module2-mrg]') ||
+            Array.from(contenu.content.querySelectorAll('p > strong')).some(function (titre) {
+                var texte = titre.textContent.trim().toLowerCase();
+                return texte.startsWith('2.3.') && (/\bmrg\b/.test(texte) || texte.indexOf('raisonnement général') !== -1);
+            });
+        if (!sectionExistante) contenu.content.appendChild(section.cloneNode(true));
+        return contenu.innerHTML;
+    }
+
     function appliquer(n, html) {
         var el = corps(n);
         if (!el) return;
         var correctionGate = n === '4' && el.querySelector('#correctionGate');
         if (correctionGate) correctionGate.remove();
-        el.innerHTML = assainir(n === '6' ? assurerSpecialitesModule6(html) : html);
+        if (n === '2') html = assurerMrgModule2(html);
+        if (n === '6') html = assurerSpecialitesModule6(html);
+        el.innerHTML = assainir(html);
         if (n === '4') {
             el.querySelectorAll('li').forEach(function (ligne) {
                 var texte = ligne.querySelector(':scope > span');
