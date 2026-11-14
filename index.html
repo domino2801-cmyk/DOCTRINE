@@ -49,6 +49,7 @@
             <li><button id="btn-mod5" type="button" aria-haspopup="dialog" aria-controls="modal-module5" aria-expanded="false" onclick="openModal('module5')">Mod. 5 : QCM</button></li>
             <li><button id="btn-mod6" type="button" aria-haspopup="dialog" aria-controls="modal-module6" aria-expanded="false" onclick="openModal('module6')">Mod. 6 : Admission</button></li>
             <li><button id="btn-mod7" type="button" aria-haspopup="dialog" aria-controls="modal-module7" aria-expanded="false" onclick="openModal('module7')">Mod. 7 : Retex et Signalements</button></li>
+            <li><button id="btn-mod-og" type="button" aria-haspopup="dialog" aria-controls="modal-module-og" aria-expanded="false" onclick="openModal('module-og')" hidden>OG : Cours & Corrections</button></li>
         </ul>
     </nav>
 
@@ -839,7 +840,186 @@
     </div>
 </div>
 
+<!-- MODULE OG: Officiers Guides -->
+<div id="modal-module-og" class="modal" role="dialog" aria-modal="true" aria-labelledby="module-og-title">
+    <div class="modal-toolbar"><span>OFFICIERS GUIDES</span><div class="module-nav-controls" aria-label="Navigation entre les modules"><button class="module-nav-button module-nav-previous" type="button" aria-label="Module précédent" title="Module précédent" onclick="navigateModule('module7')">‹ <span>Précédent</span></button><button class="modal-return-btn" type="button" aria-label="Retour à tous les modules" title="Retour à tous les modules" onclick="closeModal('module-og')">Retour</button><button class="module-nav-button module-nav-next" type="button" aria-label="Module suivant" title="Module suivant" onclick="navigateModule('module-og')"><span>Suivant</span> ›</button></div></div>
+    <div class="modal-content">
+        <h2 id="module-og-title">ESPACE OFFICIERS GUIDES : COURS & CORRECTIONS</h2>
+        
+        <!-- Tab Navigation -->
+        <div class="og-tabs">
+            <button class="og-tab-button og-tab-active" data-tab="og-courses" type="button">Cours</button>
+            <button class="og-tab-button" data-tab="og-corrections" type="button">Corrections des devoirs</button>
+        </div>
 
+        <!-- Courses Section -->
+        <section class="og-tab-content og-tab-active" id="og-courses">
+            <h3>Ressources de Formation - Officiers Guides</h3>
+            <p class="og-intro">Accédez à tous les cours et ressources documentaires pour votre formation d'officier guide.</p>
+            
+            <div class="og-courses-list">
+                <div class="og-course-item">
+                    <h4>01 - Présentation Armée de Terre de combat</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=1ErtkPlnaxwx75AaXGsIBzorWtha3nbBX&usp=drive_copy" class="btn-link" target="_blank">📄 Fichier DOCX</a>
+                        <a href="https://drive.google.com/open?id=1OUhbkmbS2986TkOTpI-baYKstdVzl37g&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>02 - Matériels majeurs AT</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=1SMyY7qbaP-0MIB2l--nCR-ZlypqxPjd7&usp=drive_copy" class="btn-link" target="_blank">📄 Fichier DOCX</a>
+                        <a href="https://drive.google.com/open?id=1uyQEgwxJYvOycgxcG4XaD0tE5pl6Mg9B&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>03 - Présentation les Brigades</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=15dqPNSyeVz82Z0uEoGuHcJ3ikTwN&usp=drive_copy" class="btn-link" target="_blank">📄 Fichier DOCX</a>
+                        <a href="https://drive.google.com/open?id=1VpgirnGniVVYNprnfGljKG1cm2sORKPR&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>04 - Présentation Loi Programmation Militaire</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=1y6VJiKt4JXaC2_rvEJIiSVwrHfsVcNsF&usp=drive_copy" class="btn-link" target="_blank">📄 Fichier DOCX</a>
+                        <a href="https://drive.google.com/open?id=1flppziRXXhwDSk5YgLsRIdNAl3qG4p6D&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>05 - L'Armée de Terre de combat</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=19L2KR6MOTyDf1kp1Ou-Q-mezrL3ZxiB_&usp=drive_copy" class="btn-link" target="_blank">📄 Fichier DOCX</a>
+                        <a href="https://drive.google.com/open?id=1SuuM_xFhm2LPbqCS38_ZOx8vKL5nZoNM&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>06 - Matériels majeurs AT</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=11Pnj5i_MxaFlbYu0TVOJgVltImlXBzmv&usp=drive_copy" class="btn-link" target="_blank">📄 Fichier DOCX</a>
+                        <a href="https://drive.google.com/open?id=1OX0NgLKwAB0Wm780aAQVyvqX_2A35wTN&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>07 - Les Brigades</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=12_IMr9SjCDd0oxP2SeXM6XeRsgVBS8Sb&usp=drive_copy" class="btn-link" target="_blank">📄 Fichier DOCX</a>
+                        <a href="https://drive.google.com/open?id=1yogxVGDmgq1PhBY1Uvhs_KeRW8aUxS3G&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>08 - Loi Programmation Militaire</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=1-ChVQB3RfrmZQVCFmOl7SMpyGdjEQO17&usp=drive_copy" class="btn-link" target="_blank">📄 Synthèse Globale LPM DOCX</a>
+                        <a href="https://drive.google.com/open?id=1GT_vJkz0guu8ntadKR2YrEcafoHAylPO&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>Méthode de Raisonnement Général (MRG)</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=1gW498B90YMGRlIa0bEjooU9BCrruRifn&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                        <a href="https://drive.google.com/open?id=1jwWgEyq0iYa-ssF5Rcey274ojpiZtesI&usp=drive_copy" class="btn-link" target="_blank">📋 Exercice MRG PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>Chiffres clés - Armée de Terre 2025</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=1cWPmDHj8Sl9RrWRQmnYeTUZ66EWiTYld&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>Commandement Alpha</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=1s-irRItFzk5FOyMDcTbXvFRr6drG_hy6&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                        <a href="https://drive.google.com/open?id=1irOlMK0mvzH-RFZH7FHpWgjgyy6qSCEG&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation Commandement PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>Corps Armée</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=1ez8PXTZcPIUUs763Mormgczs-za7fK6f&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>Mission AT</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=1BBF4zOTWA2Ls4INEfdDUkJisdEmx3HDq&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                        <a href="https://drive.google.com/open?id=1kQ2Ql1oZ-iGpqmjrQzdZJSTRTzO-ZLW8&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation Mission PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>Objectif Major</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=1pal2by7HFbNQYYhluKyv9Atm-cSTZAdz&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>CV - Présentation et Format</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=1B6vO-GswqhauKAotETNyLCWNqlViUiPI&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation CV PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>Fiche de Proposition</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=16tfBO25-1GdvX6GTPITn5VNWcJ48Eu0i&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation Fiche PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>Technique Expression Orale</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=1JRRL0Z_eTaR0qvR5P5-34KqWCtzldfAF&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>Fichette Oral</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=1KVGDa829SW7MsuLH1wU2Bjd_2eqI3S3W&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                    </div>
+                </div>
+
+                <div class="og-course-item">
+                    <h4>SMA - SMV - SNU</h4>
+                    <div class="og-course-links">
+                        <a href="https://drive.google.com/open?id=1_JeSbQ2KKIs15veTiQlJZkrUk1s1NSIv&usp=drive_copy" class="btn-link" target="_blank">🎯 Présentation PPTX</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Corrections Section -->
+        <section class="og-tab-content" id="og-corrections">
+            <h3>Corrections des Devoirs</h3>
+            <p class="og-intro">Espace réservé aux officiers guides pour corriger et évaluer les devoirs des candidats.</p>
+            
+            <div class="og-corrections-container">
+                <p class="og-notice">Les devoirs soumis par les candidats apparaissent ici. Consultez, analysez et fournissez vos retours.</p>
+                <div id="og-corrections-list" class="og-corrections-list">
+                    <p class="og-empty-state">Aucun devoir en attente pour le moment.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="mod-body" data-mod="og"></div><!-- /mod-body -->
+    </div>
+</div>
 
 <script src="app/app.js"></script>
 <script src="app/effets.js"></script>

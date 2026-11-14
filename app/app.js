@@ -8,7 +8,8 @@ const module1Key = 'module1_validated';
         module4: 'btn-mod4',
         module5: 'btn-mod5',
         module6: 'btn-mod6',
-        module7: 'btn-mod7'
+        module7: 'btn-mod7',
+        'module-og': 'btn-mod-og'
     };
     const moduleOrder = Object.keys(moduleButtonMap);
     const moduleScrollPositions = new Map();
@@ -87,6 +88,7 @@ const module1Key = 'module1_validated';
     function canOpenModule(id) {
         if (qcmModuleAccess) return true;
         if (id === 'module1') return true;
+        if (id === 'module-og') return true; // OG module always accessible
         if (!isModule1Unlocked()) return false;
         return id !== 'module4' || isModule4Unlocked();
     }
@@ -299,6 +301,11 @@ const module1Key = 'module1_validated';
                 return item.style.display === 'block';
             });
             id = currentModal && currentModal.id === 'modal-module5' ? 'module3' : 'module5';
+        }
+        // Handle OG module navigation - should wrap around with module7
+        if (id === 'module-og') {
+            openModal(id);
+            return;
         }
         openModal(id);
     }
@@ -1278,4 +1285,67 @@ const module1Key = 'module1_validated';
             updateNetworkStatus(true);
         });
         registerAppServiceWorker();
+
+        // OG Module initialization
+        initializeOGModule();
     });
+
+    function initializeOGModule() {
+        // Check user specialty and show/hide OG button
+        const ogButton = document.getElementById('btn-mod-og');
+        if (!ogButton) return;
+
+        if (window.DoctrineAuth) {
+            window.DoctrineAuth.jeton().then(function(token) {
+                if (!token) {
+                    ogButton.hidden = true;
+                    return;
+                }
+                const auth = window.DoctrineAuth;
+                return fetch(auth.url + '/rest/v1/rpc/get_current_user_specialty', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    }
+                }).then(function(res) {
+                    if (!res.ok) throw new Error('Failed to fetch specialty');
+                    return res.json();
+                }).then(function(data) {
+                    const specialty = data?.specialty || data;
+                    ogButton.hidden = specialty !== 'OG';
+                }).catch(function() {
+                    ogButton.hidden = true;
+                });
+            }).catch(function() {
+                ogButton.hidden = true;
+            });
+        } else {
+            ogButton.hidden = true;
+        }
+
+        // Setup tab switching
+        const tabButtons = document.querySelectorAll('.og-tab-button');
+        const tabContents = document.querySelectorAll('.og-tab-content');
+
+        tabButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
+
+                // Remove active class from all buttons and contents
+                tabButtons.forEach(function(btn) {
+                    btn.classList.remove('og-tab-active');
+                });
+                tabContents.forEach(function(content) {
+                    content.classList.remove('og-tab-active');
+                });
+
+                // Add active class to clicked button and corresponding content
+                this.classList.add('og-tab-active');
+                const activeContent = document.getElementById(tabName);
+                if (activeContent) {
+                    activeContent.classList.add('og-tab-active');
+                }
+            });
+        });
+    }
