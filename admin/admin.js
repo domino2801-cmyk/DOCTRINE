@@ -26,6 +26,7 @@
     var suiviEntete;
     var suiviCandidat = null;
     var suiviCandidatNom = '';
+    var suiviCandidatUserId = null;
     var suiviDeclencheur;
     var consultations = [];
     var consultationsOffset = 0;
@@ -837,6 +838,15 @@
         titres.appendChild(suiviTitre);
         titres.appendChild(element('p', '', 'Les téléchargements correspondent à un clic sur un lien identifié comme téléchargement ; leur réussite ne peut pas être confirmée.'));
         var actions = element('div', 'adm-views-actions');
+        var btnSpecialite = element('button', 'adm-views-specialty', 'Spécialité');
+        btnSpecialite.type = 'button';
+        btnSpecialite.addEventListener('click', function() {
+            if (suiviCandidatUserId) {
+                ouvrirDialogueModifierSpecialite(suiviCandidatUserId, suiviCandidatNom);
+            } else {
+                alert('Impossible de récupérer l\'ID utilisateur du candidat.');
+            }
+        });
         suiviActualiser = element('button', 'adm-views-close', 'Actualiser');
         suiviActualiser.type = 'button';
         suiviActualiser.addEventListener('click', function() {
@@ -849,7 +859,7 @@
         var fermer = element('button', 'adm-views-close', 'Fermer');
         fermer.type = 'button';
         fermer.addEventListener('click', fermerSuivi);
-        actions.append(suiviActualiser, fermer);
+        actions.append(btnSpecialite, suiviActualiser, fermer);
         entete.append(titres, actions);
 
         suiviRetour = element('button', 'adm-views-close', '← Tous les candidats');
@@ -858,6 +868,7 @@
         suiviRetour.addEventListener('click', function() {
             suiviCandidat = null;
             suiviCandidatNom = '';
+            suiviCandidatUserId = null;
             suiviRecherche.value = '';
             afficherConsultations();
         });
@@ -965,6 +976,16 @@
         });
         suiviRetour.hidden = false;
         suiviTitre.textContent = 'Consultations de ' + suiviCandidatNom;
+        
+        // Extract user_id from consultations for this candidate
+        suiviCandidatUserId = null;
+        for (var i = 0; i < consultations.length; i++) {
+            if (identifiantCandidat(consultations[i]) === suiviCandidat && consultations[i].user_id) {
+                suiviCandidatUserId = consultations[i].user_id;
+                break;
+            }
+        }
+        
         suiviRecherche.placeholder = 'Filtrer par module ou document';
         definirEntetes(['Module', 'Document', 'Action', 'Date']);
         suiviBody.replaceChildren();
@@ -1035,6 +1056,65 @@
         suiviDialogue.hidden = false;
         suiviRecherche.focus();
         if (!consultations.length && !consultationsCompletes) chargerConsultations();
+    }
+
+    function ouvrirDialogueModifierSpecialite(userId, email) {
+        if (!userId) {
+            alert('Impossible de récupérer l\'ID utilisateur.');
+            return;
+        }
+        
+        var a = auth();
+        if (!a || typeof a.jeton !== 'function') {
+            alert('Non authentifié.');
+            return;
+        }
+
+        a.jeton().then(function(token) {
+            if (!token) throw new Error('Token indisponible');
+            
+            // Afficher un prompt pour sélectionner la nouvelle spécialité
+            var specialites = ['INF', 'BLD', 'ART', 'GEN', 'AER', 'EMP', 'SIC', 'CYB', 'RENS', 'ADM', 'GRH', 'PBF', 'MVT', 'MAI', 'COM', 'RHL', 'EPS', 'SAN', 'FSP', 'EMIA', 'OG'];
+            var nouveleSpec = prompt('Sélectionnez la nouvelle spécialité pour ' + email + ' :\n\n' + specialites.join(', ') + '\n\nEntrez le code :', '');
+            
+            if (!nouveleSpec) return; // Annulation
+            
+            nouveleSpec = nouveleSpec.trim().toUpperCase();
+            if (specialites.indexOf(nouveleSpec) === -1) {
+                alert('Spécialité invalide. Veuillez utiliser l\'un des codes proposés.');
+                return;
+            }
+            
+            // Confirmation avant modification
+            if (!confirm('Êtes-vous sûr de vouloir changer la spécialité en ' + nouveleSpec + ' ?')) {
+                return;
+            }
+            
+            // Appel API pour mettre à jour la spécialité
+            return fetch(a.url + '/rest/v1/rpc/update_candidate_specialty', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    p_user_id: userId,
+                    p_new_specialty: nouveleSpec
+                })
+            }).then(function(res) {
+                if (!res.ok) throw new Error('Erreur ' + res.status + ' : ' + res.statusText);
+                return res.json();
+            }).then(function(data) {
+                alert('Spécialité modifiée avec succès en ' + nouveleSpec + ' pour ' + email);
+                // Rafraîchir l'affichage
+                afficherConsultations();
+            }).catch(function(err) {
+                alert('Erreur lors de la modification : ' + (err.message || 'Erreur inconnue'));
+                console.error('Erreur modification spécialité:', err);
+            });
+        }).catch(function(err) {
+            alert('Erreur d\'authentification : ' + (err.message || 'Erreur inconnue'));
+        });
     }
 
     function fermerSuivi() {

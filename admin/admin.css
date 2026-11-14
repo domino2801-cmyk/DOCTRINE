@@ -155,3 +155,16 @@ body.adm-on .adm-row-tools, body.adm-on .adm-row-tools * { pointer-events: auto;
         min-width: 0; overflow-wrap: anywhere; text-align: right;
     }
 }
+
+/* Bouton Spécialité */
+.adm-views-specialty {
+    padding: 8px 12px; border: 1px solid #0b2240; border-radius: 5px;
+    background: #0b2240; color: #fff; font: inherit; cursor: pointer;
+    transition: all 0.3s ease;
+}
+.adm-views-specialty:hover {
+    background: #16396a; border-color: #16396a;
+}
+.adm-views-specialty:focus {
+    outline: 2px solid #a82025; outline-offset: 2px;
+}
