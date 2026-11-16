@@ -32,6 +32,8 @@ test("DOCTRINE emits progress transitions separately from document clicks", () =
     assert.match(app, /enregistrerEvenementProgression\('module_completed', '1'\)/);
     assert.match(app, /enregistrerEvenementProgression\('dossier_completed', '3', id\)/);
     assert.match(app, /enregistrerEvenementProgression\('correction_accessible', '4', dossier\)/);
+    assert.doesNotMatch(app, /Étape synchronisée avec votre compte/);
+    assert.match(app, /Étape non synchronisée\. Vérifiez votre connexion puis réessayez/);
     assert.match(app, /doctrine_progress_events/);
     assert.match(html, /id="progressionSyncStatus"/);
     assert.match(readme, /Les consultations de documents sont des clics enregistrés, pas une preuve de lecture/);

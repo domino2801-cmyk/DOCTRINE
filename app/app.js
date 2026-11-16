@@ -75,8 +75,6 @@ const module1Key = 'module1_validated';
                     });
                 }
             });
-        }).then(function() {
-            afficherStatutSynchronisationProgression('Étape synchronisée avec votre compte.', false);
         }).catch(function(error) {
             console.error('Échec de l’enregistrement de la progression DOCTRINE.', error);
             afficherStatutSynchronisationProgression('Étape non synchronisée. Vérifiez votre connexion puis réessayez.', true);
