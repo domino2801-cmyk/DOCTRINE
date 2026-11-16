@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <base href="../">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#3b4432">
+    <meta name="description" content="Espace Officier Guide BM4 — suivi sécurisé des candidats rattachés.">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="stylesheet" href="auth/auth.css">
+    <link rel="stylesheet" href="app/guide-module8.css">
+    <script src="auth/auth.js"></script>
+    <script src="app/guide-module8.js" defer></script>
+    <title>Espace Officier Guide BM4 — DOCTRINE</title>
+</head>
+<body class="guide-module8-page">
+    <main id="guideModule8App" class="guide-app" hidden>
+        <header class="guide-header">
+            <a class="guide-back" href="index.html">← Retour à DOCTRINE</a>
+            <div class="guide-header-line">
+                <div>
+                    <p class="guide-kicker">QCM-MAJOR / DOCTRINE</p>
+                    <h1>ESPACE OFFICIER GUIDE — Suivi de Cohortes BM4</h1>
+                </div>
+                <span id="guideIdentityBadge" class="guide-identity">Guide : chargement…</span>
+            </div>
+        </header>
+
+        <section class="guide-toolbar" aria-label="Filtres de cohorte">
+            <label>
+                Candidat
+                <select id="guideCandidateFilter">
+                    <option value="">Tous mes candidats (0)</option>
+                </select>
+            </label>
+            <label>
+                Période
+                <select id="guidePeriodFilter">
+                    <option value="30">30 derniers jours</option>
+                    <option value="7">7 derniers jours</option>
+                    <option value="0">Tout</option>
+                </select>
+            </label>
+            <button id="guideAssignOpen" class="guide-button guide-button-primary" type="button">+ Rattacher un candidat</button>
+            <button id="guideRefresh" class="guide-button" type="button">Actualiser</button>
+        </section>
+
+        <p id="guideStatus" class="guide-status" role="status" aria-live="polite"></p>
+
+        <section class="guide-panel" aria-labelledby="guideCohortTitle">
+            <div class="guide-panel-heading">
+                <div>
+                    <p class="guide-kicker">SYNTHÈSE OPÉRATIONNELLE</p>
+                    <h2 id="guideCohortTitle">Vue d’ensemble de la cohorte</h2>
+                </div>
+                <span id="guideCohortCount" class="guide-count">0 candidat</span>
+            </div>
+            <div class="guide-table-wrap">
+                <table class="guide-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Candidat</th>
+                            <th scope="col">Statut QCM-MAJOR</th>
+                            <th scope="col">Productions</th>
+                            <th scope="col">Dernière activité</th>
+                            <th scope="col"><span class="sr-only">Actions</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="guideCohortRows"></tbody>
+                </table>
+            </div>
+            <div id="guideCohortCards" class="guide-cohort-cards"></div>
+            <p id="guideEmptyCohort" class="guide-empty" hidden>Aucun candidat n’est encore rattaché à votre cohorte.</p>
+        </section>
+
+        <section id="guideCandidateDetail" class="guide-panel guide-detail-panel" aria-labelledby="guideDetailTitle" hidden>
+            <div class="guide-panel-heading guide-detail-heading">
+                <div>
+                    <p class="guide-kicker">DOSSIER CANDIDAT</p>
+                    <h2 id="guideDetailTitle">Sélectionnez un candidat</h2>
+                    <p id="guideDetailSubtitle" class="guide-muted"></p>
+                </div>
+                <select id="guideDetailCandidate" aria-label="Candidat sélectionné"></select>
+            </div>
+            <div class="guide-tabs" role="tablist" aria-label="Détails du candidat">
+                <button id="guideTabComplete" class="guide-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="guidePanelComplete" data-guide-tab="complete">Vue complète &amp; Productions</button>
+                <button id="guideTabQcm" class="guide-tab" type="button" role="tab" aria-selected="false" aria-controls="guidePanelQcm" data-guide-tab="qcm">Historique QCM par thème</button>
+                <button id="guideTabAdmission" class="guide-tab" type="button" role="tab" aria-selected="false" aria-controls="guidePanelAdmission" data-guide-tab="admission">Journal Oral &amp; Sport</button>
+            </div>
+
+            <div id="guidePanelComplete" class="guide-tab-panel is-active" role="tabpanel" aria-labelledby="guideTabComplete" data-guide-panel="complete">
+                <section class="guide-section" aria-labelledby="guideQcmSummaryTitle">
+                    <h3 id="guideQcmSummaryTitle">A. Performance QCM-MAJOR</h3>
+                    <div class="guide-metric-grid">
+                        <article class="guide-metric"><span>Moyenne générale</span><strong id="guideAverage">—</strong></article>
+                        <article class="guide-metric"><span>Évolution sur 30 jours</span><strong id="guideTrend">—</strong></article>
+                        <article class="guide-metric"><span>Palier maximal</span><strong id="guideMaxLevel">—</strong></article>
+                    </div>
+                    <div id="guideStrengths" class="guide-theme-summary"></div>
+                </section>
+                <section class="guide-section" aria-labelledby="guideProgressTitle">
+                    <h3 id="guideProgressTitle">B. Progression DOCTRINE</h3>
+                    <div id="guideProgressModules" class="guide-progress-grid"></div>
+                </section>
+                <section class="guide-section" aria-labelledby="guideSubmissionsTitle">
+                    <div class="guide-section-heading">
+                        <h3 id="guideSubmissionsTitle">C. Productions écrites à évaluer — Module 3</h3>
+                        <span id="guideProductionCount" class="guide-count">0 / 8 fiches validées</span>
+                    </div>
+                    <p id="guideReviewAlert" class="guide-alert" hidden></p>
+                    <div id="guideSubmissions" class="guide-submissions"></div>
+                </section>
+            </div>
+
+            <div id="guidePanelQcm" class="guide-tab-panel" role="tabpanel" aria-labelledby="guideTabQcm" data-guide-panel="qcm" hidden>
+                <section class="guide-section">
+                    <h3>Historique QCM-MAJOR par thème</h3>
+                    <p class="guide-muted">Résultats sauvegardés pour le candidat sélectionné.</p>
+                    <div id="guideThemeHistory" class="guide-theme-history"></div>
+                </section>
+            </div>
+
+            <div id="guidePanelAdmission" class="guide-tab-panel" role="tabpanel" aria-labelledby="guideTabAdmission" data-guide-panel="admission" hidden>
+                <section class="guide-section">
+                    <h3>D. Suivi Admission — Module 6 Oral &amp; Sport</h3>
+                    <form id="guideAdmissionForm" class="guide-admission-form">
+                        <label>Date CCPM<input id="guideCcpmDate" type="date"></label>
+                        <label>Note CCPM<input id="guideCcpmScore" type="number" step="0.01"></label>
+                        <label class="guide-checkbox"><input id="guideCcpmValidated" type="checkbox"> CCPM validé</label>
+                        <label>Oraux blancs réalisés<input id="guideOralsDone" type="number" min="0" max="100" step="1"></label>
+                        <label>Objectif d’oraux<input id="guideOralsTarget" type="number" min="1" max="100" step="1" value="4"></label>
+                        <label>Prochain oral<input id="guideNextOral" type="datetime-local"></label>
+                        <label class="guide-full-width">Observations générales<textarea id="guideNotes" rows="5" maxlength="4000"></textarea></label>
+                        <p id="guideAdmissionStatus" class="guide-form-status" role="status" aria-live="polite"></p>
+                        <button class="guide-button guide-button-primary" type="submit">Enregistrer le suivi admission</button>
+                    </form>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <section id="guideAccessState" class="guide-access-state" role="status" aria-live="polite">
+        <h1>Vérification des droits d’accès…</h1>
+        <p>Cette interface est réservée aux officiers guides et aux administrateurs DOCTRINE.</p>
+    </section>
+
+    <dialog id="guideAssignDialog" class="guide-dialog" aria-labelledby="guideAssignTitle">
+        <form id="guideAssignForm">
+            <div class="guide-dialog-heading">
+                <div><p class="guide-kicker">COHORTE BM4</p><h2 id="guideAssignTitle">Rattacher un candidat</h2></div>
+                <button class="guide-icon-button" type="button" data-guide-close="guideAssignDialog" aria-label="Fermer">×</button>
+            </div>
+            <label for="guideCandidateSearch">Matricule, nom ou adresse e-mail</label>
+            <div class="guide-search-row">
+                <input id="guideCandidateSearch" type="search" minlength="3" maxlength="120" autocomplete="off" required>
+                <button class="guide-button guide-button-primary" type="submit">Rechercher</button>
+            </div>
+            <p class="guide-muted">Saisissez au moins 3 caractères. La recherche ne retourne que des comptes candidats confirmés.</p>
+            <p id="guideSearchStatus" class="guide-form-status" role="status" aria-live="polite"></p>
+            <div id="guideSearchResults" class="guide-search-results"></div>
+        </form>
+    </dialog>
+
+    <dialog id="guideReviewDialog" class="guide-dialog guide-review-dialog" aria-labelledby="guideReviewTitle">
+        <div class="guide-dialog-heading">
+            <div><p class="guide-kicker">ÉVALUATION BM4</p><h2 id="guideReviewTitle">Fiche candidate</h2></div>
+            <button class="guide-icon-button" type="button" data-guide-close="guideReviewDialog" aria-label="Fermer">×</button>
+        </div>
+        <div class="guide-review-layout">
+            <div class="guide-pdf-pane">
+                <iframe id="guidePdfPreview" title="Aperçu de la fiche PDF" src="about:blank"></iframe>
+                <p id="guidePdfStatus" class="guide-form-status" role="status" aria-live="polite"></p>
+            </div>
+            <form id="guideReviewForm" class="guide-review-form">
+                <input id="guideReviewSubmissionId" type="hidden">
+                <label>Forme / 6<input id="guideFormGrade" type="number" min="0" max="6" step="0.01" required></label>
+                <label>Fond / 14<input id="guideContentGrade" type="number" min="0" max="14" step="0.01" required></label>
+                <p class="guide-review-total">Note finale <strong id="guideFinalGrade">0,00 / 20</strong></p>
+                <label>Décision
+                    <select id="guideReviewDecision" required>
+                        <option value="valide">Validé</option>
+                        <option value="a_reprendre">À reprendre</option>
+                    </select>
+                </label>
+                <label>Commentaires du guide<textarea id="guideReviewComment" rows="7" maxlength="4000"></textarea></label>
+                <p id="guideReviewStatus" class="guide-form-status" role="status" aria-live="polite"></p>
+                <button class="guide-button guide-button-primary" type="submit">Enregistrer l’évaluation</button>
+            </form>
+        </div>
+    </dialog>
+</body>
+</html>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bm4-shell-v111';
+const CACHE_NAME = 'bm4-shell-v112';
 const APP_SHELL_URL = new URL('./index.html', self.location.href).toString();
 const LEGACY_APP_URL = new URL('./INDEX%20BM4V2.HTML', self.location.href).toString();
 const SHELL_ASSETS = [
@@ -13,6 +13,9 @@ const SHELL_ASSETS = [
   new URL('./auth/closing-door-layer.png', self.location.href).toString(),
   new URL('./app/styles.css', self.location.href).toString(),
   new URL('./app/app.js', self.location.href).toString(),
+  new URL('./app/guide-module8.html', self.location.href).toString(),
+  new URL('./app/guide-module8.css', self.location.href).toString(),
+  new URL('./app/guide-module8.js', self.location.href).toString(),
   new URL('./app/validate-gabarit.mjs', self.location.href).toString(),
   new URL('./app/vendor/pixelmatch.mjs', self.location.href).toString(),
   new URL('./app/effets.js', self.location.href).toString(),

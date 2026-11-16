@@ -10,7 +10,7 @@ Vous pouvez aussi ouvrir directement [DOCTRINE sur GitHub Pages](https://domino2
 
 ## Les modules
 
-L’Armoire propose sept modules :
+L’Armoire propose sept modules aux candidats et un espace réservé aux officiers guides et aux administrateurs :
 
 1. **Cadre institutionnel et RETEX**
 2. **Base documentaire et cadre doctrinal**
@@ -19,6 +19,7 @@ L’Armoire propose sept modules :
 5. **Entraînement intensif au QCM doctrinal**
 6. **Préparation à l’admission : oral et sport**
 7. **RETEX et signalements**
+8. **Poste de commandement Officier Guide BM4** — suivi des candidats rattachés, évaluations des fiches et suivi admission. Cette entrée n’est visible que pour les comptes ayant le rôle `guide`, `officier_guide` ou `admin`.
 
 Validez le module 1 pour poursuivre. Dans le module 3, la barre de progression atteint 100 % lorsque la moitié des dossiers (8 sur 16) est marquée **« Fait »** ; les autres exercices restent accessibles. Le suivi indique le module entièrement terminé quand les 16 dossiers sont faits. Dans le module 4, les candidats accèdent au corrigé d’un dossier après l’avoir marqué **« Fait »** dans le module 3 et transmis sa fiche ; les comptes de spécialité **OG** y accèdent directement. Les liens Google Drive s’ouvrent dans une visionneuse intégrée ; leur accès et le téléchargement dépendent des autorisations disponibles.
 
@@ -42,6 +43,7 @@ Le site est développé en HTML, CSS et JavaScript sans étape de compilation. S
 | Suivi des consultations | Exécuter `supabase/documentation-consultations.sql`. Le script configure aussi la purge des événements de plus de 12 mois. |
 | RETEX et signalements | Exécuter `supabase/retex-signalements.sql`. Les candidats peuvent consulter leur propre RETEX ; les administrateurs traitent les signalements. |
 | Envoi des fiches et accès aux corrigés | Exécuter `supabase/fiche-submissions.sql`, configurer `RESEND_API_KEY`, vérifier `DESTINATAIRE` dans `supabase/functions/doctrine-submit-fiche/index.ts`, puis déployer `doctrine-submit-fiche`. |
+| Poste de commandement Officier Guide | Après `fiche-submissions.sql`, `documentation-consultations.sql`, `progression-events.sql` et les migrations QCM-MAJOR, exécuter `supabase/guide_module8.sql` dans le SQL Editor, puis déployer `doctrine-submit-fiche` pour activer l’archivage PDF. Attribuer le rôle avec `select public.set_doctrine_user_role('UUID-UTILISATEUR', 'guide');` (ou `officier_guide`) et reconnecter le compte ; seuls les administrateurs Supabase ou les sessions admin peuvent appeler cette fonction. |
 | Notifications de signalement | Exécuter `supabase/retex-notifications.sql`, configurer les secrets VAPID et `DOCTRINE_REPORT_PUSH_WEBHOOK_SECRET`, puis déployer `doctrine-report-push` et renseigner les secrets correspondants dans Supabase Vault. |
 | Documents Drive privés | Déployer `drive-proxy` avec `GOOGLE_SERVICE_ACCOUNT_JSON`, après avoir accordé au compte de service Google l’accès en lecture au dossier documentaire. |
 

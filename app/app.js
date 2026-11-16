@@ -1064,9 +1064,14 @@ const module1Key = 'module1_validated';
                         if (!response.ok) throw new Error(data.error || 'Envoi impossible (HTTP ' + response.status + ').');
                         transmittedDossiers.add(String(dossierId));
                         updateCorrectionAccess();
-                        if (status) status.textContent = canViewCorrige(dossierId)
-                            ? 'Fiche transmise : le corrigé du dossier est désormais disponible.'
-                            : 'Fiche transmise. Marquez ce dossier « Fait » dans le module 3 pour afficher son corrigé.';
+                        const deliveryStatus = data.archived
+                            ? 'Fiche transmise par e-mail et PDF archivé.'
+                            : 'Fiche transmise par e-mail.';
+                        const correctionStatus = canViewCorrige(dossierId)
+                            ? ' Le corrigé du dossier est désormais disponible.'
+                            : ' Marquez ce dossier « Fait » dans le module 3 pour afficher son corrigé.';
+                        if (status) status.textContent = deliveryStatus + correctionStatus +
+                            (data.warning ? ' ' + data.warning : '');
                         document.querySelector('#corrigeList .dossier-item:not([hidden])')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     });
                 }).catch(function(error) {
