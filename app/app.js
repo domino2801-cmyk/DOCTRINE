@@ -20,6 +20,8 @@ const module1Key = 'module1_validated';
     let correctionGateElement = null;
     let correctionVerificationGeneration = 0;
     let qcmModuleAccess = false;
+    let ogCorrectionAccess = false;
+    let ogCorrectionAccessRequestId = 0;
 
     function isDossierDone(id) {
         const dossier = document.querySelector('.mod-body[data-mod="3"] input[data-dossier="' + id + '"]');
@@ -28,6 +30,10 @@ const module1Key = 'module1_validated';
 
     function isAdminUser() {
         return !!(window.DoctrineAuth && window.DoctrineAuth.estAdmin && window.DoctrineAuth.estAdmin());
+    }
+
+    function isOgCorrectionAllowed() {
+        return ogCorrectionAccess || window.__doctrineOgCorrectionAccess === true;
     }
 
     function afficherStatutSynchronisationProgression(message, erreur) {
@@ -94,7 +100,36 @@ const module1Key = 'module1_validated';
     }
 
     function canViewCorrige(id) {
-        return !!id && (isAdminUser() || (isDossierDone(id) && transmittedDossiers.has(String(id))));
+        return !!id && (
+            isAdminUser() ||
+            isOgCorrectionAllowed() ||
+            (isDossierDone(id) && transmittedDossiers.has(String(id)))
+        );
+    }
+
+    function loadOgCorrectionAccess() {
+        const requestId = ++ogCorrectionAccessRequestId;
+        ogCorrectionAccess = false;
+        updateCorrectionAccess();
+        const auth = window.DoctrineAuth;
+        if (!auth || typeof auth.specialite !== 'function') {
+            return Promise.resolve();
+        }
+        return auth.specialite().then(function(specialty) {
+            if (requestId !== ogCorrectionAccessRequestId) return;
+            ogCorrectionAccess = String(specialty || '').trim().toUpperCase() === 'OG';
+            updateCorrectionAccess();
+        }, function() {
+            if (requestId !== ogCorrectionAccessRequestId) return;
+            ogCorrectionAccess = false;
+            updateCorrectionAccess();
+        });
+    }
+
+    function resetOgCorrectionAccess() {
+        ogCorrectionAccessRequestId++;
+        ogCorrectionAccess = false;
+        updateCorrectionAccess();
     }
 
     function hasCorrectionAccess() {
@@ -365,6 +400,7 @@ const module1Key = 'module1_validated';
     document.addEventListener('doctrine:login', function(event) {
         qcmModuleAccess = Boolean(event.detail && event.detail.accesQcm);
         correctionAccessEventsLogged = new Set();
+        loadOgCorrectionAccess();
         updateModuleLockUI();
     });
 
@@ -372,6 +408,7 @@ const module1Key = 'module1_validated';
         qcmModuleAccess = false;
         correctionAccessEventsLogged = new Set();
         transmittedDossiers = new Set();
+        resetOgCorrectionAccess();
         document.querySelectorAll('.modal').forEach(function(modal) {
             if (!canOpenModule(modal.id.replace('modal-', ''))) modal.style.display = 'none';
         });

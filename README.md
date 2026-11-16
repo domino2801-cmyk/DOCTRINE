@@ -20,7 +20,7 @@ L’Armoire propose sept modules :
 6. **Préparation à l’admission : oral et sport**
 7. **RETEX et signalements**
 
-Validez le module 1 pour poursuivre. Le module 4 est conditionné à la progression dans le module 3 : marquez le dossier correspondant **« Fait »** et transmettez sa fiche pour accéder à son corrigé. Les liens Google Drive s’ouvrent dans une visionneuse intégrée ; leur accès et le téléchargement dépendent des autorisations disponibles.
+Validez le module 1 pour poursuivre. Dans le module 4, les candidats accèdent au corrigé d’un dossier après l’avoir marqué **« Fait »** dans le module 3 et transmis sa fiche ; les comptes de spécialité **OG** y accèdent directement. Les liens Google Drive s’ouvrent dans une visionneuse intégrée ; leur accès et le téléchargement dépendent des autorisations disponibles.
 
 Les états détaillés des dossiers restent conservés sur l’appareil. À partir de l’installation du journal Supabase, les démarrages de modules, la validation du module 1, le passage d’un dossier à « Fait » et l’accès à un corrigé sont aussi enregistrés comme événements associés au compte. Le module 3 est indiqué terminé lorsque tous ses dossiers sont marqués « Fait ». Les transmissions de fiches proviennent de leur enregistrement serveur. Les consultations de documents sont des clics enregistrés, pas une preuve de lecture. Ces événements de progression sont des déclarations d’activité, pas une validation inviolable du travail ; ils sont conservés au maximum 12 mois. Les événements antérieurs à l’installation ne sont pas reconstitués à partir du stockage local.
 

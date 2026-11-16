@@ -22,7 +22,8 @@ function createFixture() {
         url: 'https://example.test',
         key: 'public',
         jeton: async () => 'token',
-        estAdmin: () => false
+        estAdmin: () => false,
+        specialite: async () => ''
     };
     let submissions = [];
     const document = {
@@ -49,7 +50,7 @@ function createFixture() {
         window: { DoctrineAuth: auth },
         fetch: async () => ({ ok: true, json: async () => ({ dossiers: submissions }) })
     });
-    vm.runInContext(source.slice(0, boundary) + '\nglobalThis.testAccess = { updateCorrectionAccess, loadTransmittedDossiers };', context);
+    vm.runInContext(source.slice(0, boundary) + '\nglobalThis.testAccess = { updateCorrectionAccess, loadTransmittedDossiers, loadOgCorrectionAccess, resetOgCorrectionAccess };', context);
     return { statuses, rows, list, auth, access: context.testAccess, setSubmissions: values => { submissions = values; } };
 }
 
@@ -87,4 +88,38 @@ test('administrators retain access to all corrections', () => {
     fixture.access.updateCorrectionAccess();
     assert.equal(fixture.list.hidden, false);
     assert.deepEqual(fixture.rows.map(row => row.hidden), [false, false]);
+});
+
+test('OG candidates see corrections without completing or transmitting dossiers', async () => {
+    const fixture = createFixture();
+    fixture.auth.specialite = async () => ' og ';
+    await fixture.access.loadOgCorrectionAccess();
+    assert.equal(fixture.list.hidden, false);
+    assert.deepEqual(fixture.rows.map(row => row.hidden), [false, false]);
+
+    fixture.access.resetOgCorrectionAccess();
+    assert.equal(fixture.list.hidden, true);
+    assert.deepEqual(fixture.rows.map(row => row.hidden), [true, true]);
+});
+
+test('non-OG candidates do not receive direct correction access', async () => {
+    const fixture = createFixture();
+    fixture.auth.specialite = async () => 'INF';
+    await fixture.access.loadOgCorrectionAccess();
+    assert.equal(fixture.list.hidden, true);
+    assert.deepEqual(fixture.rows.map(row => row.hidden), [true, true]);
+});
+
+test('a late specialty response after logout cannot restore OG access', async () => {
+    const fixture = createFixture();
+    let resolveSpecialty;
+    fixture.auth.specialite = () => new Promise(resolve => { resolveSpecialty = resolve; });
+    const pending = fixture.access.loadOgCorrectionAccess();
+
+    fixture.access.resetOgCorrectionAccess();
+    resolveSpecialty('OG');
+    await pending;
+
+    assert.equal(fixture.list.hidden, true);
+    assert.deepEqual(fixture.rows.map(row => row.hidden), [true, true]);
 });
