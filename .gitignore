@@ -4,3 +4,4 @@ desktop.ini
 /Icon
 ._*
 supabase/.temp/
+.env
