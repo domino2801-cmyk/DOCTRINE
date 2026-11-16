@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import vm from "node:vm";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9,6 +10,10 @@ const app = readFileSync(path.join(root, "app", "app.js"), "utf8");
 const html = readFileSync(path.join(root, "index.html"), "utf8");
 const readme = readFileSync(path.join(root, "README.md"), "utf8");
 const migration = readFileSync(path.join(root, "supabase", "progression-events.sql"), "utf8");
+const boundary = app.indexOf("    function updateCorrectionDossierOptions()");
+if (boundary < 0) throw new Error("Study progress functions not found");
+const progressContext = vm.createContext({ window: {} });
+vm.runInContext(app.slice(0, boundary) + "\nglobalThis.calculateDossierProgress = calculateDossierProgress;", progressContext);
 
 test("progress event table accepts only candidate-owned events with server timestamps", () => {
     assert.match(migration, /create table if not exists public\.doctrine_progress_events/i);
@@ -31,4 +36,12 @@ test("DOCTRINE emits progress transitions separately from document clicks", () =
     assert.match(html, /id="progressionSyncStatus"/);
     assert.match(readme, /Les consultations de documents sont des clics enregistrés, pas une preuve de lecture/);
     assert.match(readme, /Les événements antérieurs à l’installation ne sont pas reconstitués/);
+});
+
+test("the exercise progress reaches 100 percent after half the dossiers while remaining capped", () => {
+    const progress = progressContext.calculateDossierProgress;
+    assert.equal(progress(7, 16), 88);
+    assert.equal(progress(8, 16), 100);
+    assert.equal(progress(12, 16), 100);
+    assert.equal(progress(0, 0), 0);
 });

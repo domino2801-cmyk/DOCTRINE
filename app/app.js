@@ -28,6 +28,12 @@ const module1Key = 'module1_validated';
         return dossier?.closest('.dossier-item')?.querySelector('[data-study-status]')?.value === 'mastered';
     }
 
+    function calculateDossierProgress(completed, total) {
+        const target = Math.ceil(total / 2);
+        if (!target) return 0;
+        return Math.min(100, Math.round((completed / target) * 100));
+    }
+
     function isAdminUser() {
         return !!(window.DoctrineAuth && window.DoctrineAuth.estAdmin && window.DoctrineAuth.estAdmin());
     }
@@ -1242,18 +1248,27 @@ const module1Key = 'module1_validated';
             const allItems = [];
             studyGroups.forEach(function(group) {
                 const boxes = document.querySelectorAll('.dossier-item input[' + group.attr + ']');
-                let done = 0;
+                let started = 0;
+                let completed = 0;
                 boxes.forEach(function(box) {
                     const item = ensureStudyControls(box, group);
                     if (!item) return;
                     if (group.kind === 'dossier') allItems.push(item);
-                    if (item.status !== 'todo') done++;
+                    if (item.status !== 'todo') started++;
+                    if (item.status === 'mastered') completed++;
                 });
-                const pct = Math.round((done / boxes.length) * 100) || 0;
+                const pct = group.kind === 'dossier'
+                    ? calculateDossierProgress(completed, boxes.length)
+                    : (Math.round((started / boxes.length) * 100) || 0);
                 const bar = document.getElementById(group.bar);
                 const txt = document.getElementById(group.text);
                 if (bar) bar.style.width = pct + '%';
-                if (txt) txt.innerText = group.label + pct + '%';
+                if (txt) {
+                    txt.innerText = group.kind === 'dossier'
+                        ? group.label + pct + '% — ' + completed + ' / ' + boxes.length +
+                            ' dossiers faits (objectif : ' + Math.ceil(boxes.length / 2) + ')'
+                        : group.label + pct + '%';
+                }
             });
             updateCorrectionAccess();
             updateCorrectionDossierOptions();
