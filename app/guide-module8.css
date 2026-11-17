@@ -495,6 +495,46 @@
     color: var(--guide-olive);
 }
 
+.guide-rubric-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+    padding: 14px;
+    background: linear-gradient(145deg, rgba(45, 59, 49, .72), rgba(24, 35, 32, .84));
+    border: 1px solid rgba(165, 190, 170, .16);
+    border-left: 3px solid #d9a95f;
+    border-radius: 8px;
+}
+
+.guide-rubric-card h4 {
+    margin: 5px 0;
+    color: var(--guide-olive);
+}
+
+.guide-rubric-card p:last-child {
+    margin-bottom: 0;
+    color: var(--guide-muted);
+    font-size: .84rem;
+    line-height: 1.5;
+}
+
+.guide-rubric-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.guide-rubric-actions .guide-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    text-decoration: none;
+}
+
 .guide-review-label {
     display: inline-block;
     margin-top: 5px;
@@ -790,6 +830,18 @@
         grid-template-columns: 1fr;
     }
 
+    .guide-rubric-card {
+        grid-template-columns: 1fr;
+    }
+
+    .guide-rubric-actions {
+        justify-content: stretch;
+    }
+
+    .guide-rubric-actions .guide-button {
+        flex: 1 1 180px;
+    }
+
     .guide-submission-card .guide-button {
         width: 100%;
     }
@@ -839,6 +891,11 @@
     }
 
     .guide-submission-card .guide-row-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .guide-rubric-actions {
+        display: grid;
         grid-template-columns: 1fr;
     }
 

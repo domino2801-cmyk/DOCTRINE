@@ -69,6 +69,22 @@ test("l’archive PDF est privée et signable uniquement par le candidat ou son 
     assert.match(sql, /doctrine_can_access_candidate_path\(name\)/);
 });
 
+test("la grille interactive BM4 est ouvrable, téléchargeable et précachée", async () => {
+    const rubricPath = "app/grille-evaluation-synthese-bm4-interactive.pdf";
+    const [rubric, serviceWorker] = await Promise.all([
+        readFile(new URL(rubricPath, root)),
+        read("sw.js")
+    ]);
+    const rubricContent = rubric.toString("latin1");
+
+    assert.match(page, /class="guide-rubric-card"[\s\S]*Grille interactive d’évaluation BM4/);
+    assert.match(page, /href="grille-evaluation-synthese-bm4-interactive\.pdf" target="_blank" rel="noopener">Ouvrir la grille/);
+    assert.match(page, /href="grille-evaluation-synthese-bm4-interactive\.pdf" download>Télécharger une copie vierge/);
+    assert.ok(rubricContent.startsWith("%PDF-"), "the integrated file must be a PDF");
+    assert.match(rubricContent, /\/AcroForm\b/, "the PDF must retain its interactive form");
+    assert.match(serviceWorker, /new URL\('\.\/app\/grille-evaluation-synthese-bm4-interactive\.pdf'/);
+});
+
 test("les deux types de fiches sont identifiés, enregistrés séparément et limités aux bons usages", () => {
     const submissionsSql = readFile(new URL("supabase/fiche-submissions.sql", root), "utf8");
     const driveProxy = readFile(new URL("supabase/functions/drive-proxy/index.ts", root), "utf8");

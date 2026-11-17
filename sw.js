@@ -16,6 +16,7 @@ const SHELL_ASSETS = [
   new URL('./app/guide-module8.html', self.location.href).toString(),
   new URL('./app/guide-module8.css', self.location.href).toString(),
   new URL('./app/guide-module8.js', self.location.href).toString(),
+  new URL('./app/grille-evaluation-synthese-bm4-interactive.pdf', self.location.href).toString(),
   new URL('./app/validate-gabarit.mjs', self.location.href).toString(),
   new URL('./app/vendor/pixelmatch.mjs', self.location.href).toString(),
   new URL('./app/effets.js', self.location.href).toString(),
