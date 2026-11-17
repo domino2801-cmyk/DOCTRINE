@@ -505,7 +505,7 @@ begin
     )
     select
         cp.id as candidate_id,
-        cp.email as email,
+        cp.email::text as email,
         cp.label as display_name,
         cp.grade_value as grade,
         cp.unit_value as unit,
