@@ -456,6 +456,54 @@
     .correction-gate-status { margin: 6px 0 0; font-size: 0.85rem; }
     .correction-gate-status:empty { display: none; }
     #supportOralGate { margin-top: 12px; }
+    .candidate-guide-code-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px 16px;
+        max-width: 72ch;
+        margin: 18px auto;
+        padding: 16px;
+        border: 1px solid rgba(165, 190, 170, 0.2);
+        border-left: 4px solid #67b78d;
+        border-radius: 9px;
+        background: linear-gradient(145deg, rgba(45, 59, 49, 0.82), rgba(24, 35, 32, 0.9));
+        color: #e0e8df;
+        color-scheme: dark;
+    }
+    .candidate-guide-code-kicker { margin: 0; color: #a9d8b8; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; }
+    .candidate-guide-code-card h3 { margin: 2px 0 6px; color: #f0f5ec; font-size: 1.08rem; }
+    .candidate-guide-code-card > div > p:not(.candidate-guide-code-kicker) { margin: 0 0 10px; color: #c1d0c4; }
+    .candidate-guide-code-value {
+        display: block;
+        overflow-wrap: anywhere;
+        padding: 10px 12px;
+        border: 1px solid rgba(165, 190, 170, 0.24);
+        border-radius: 7px;
+        background: rgba(5, 13, 10, 0.64);
+        color: #f2f7ee;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 0.95rem;
+        font-weight: 700;
+        user-select: all;
+    }
+    .candidate-guide-code-copy {
+        padding: 10px 14px;
+        border: 1px solid rgba(165, 190, 170, 0.26);
+        border-radius: 7px;
+        background: linear-gradient(145deg, #385640, #243c30);
+        color: #f1f5ed;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .candidate-guide-code-copy:disabled { opacity: 0.55; cursor: not-allowed; }
+    .candidate-guide-code-copy:focus-visible { outline: 2px solid #83d8d8; outline-offset: 3px; }
+    .candidate-guide-code-status { grid-column: 1 / -1; min-height: 1.2em; margin: 0; color: #a9d8b8; font-size: 0.85rem; }
+    @media (max-width: 640px) {
+        .candidate-guide-code-card { grid-template-columns: 1fr; }
+        .candidate-guide-code-copy { justify-self: start; }
+    }
     .correction-verification { margin-top: 8px; }
     .correction-verification[hidden] { display: none; }
     .correction-verification label { display: block; margin-bottom: 4px; font-size: 0.85rem; }

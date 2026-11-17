@@ -126,6 +126,17 @@ test("l’entrée Module 8 est conditionnelle et la page propose les parcours de
     assert.deepEqual(missingPageIds, []);
 });
 
+test("le Module 1 affiche le code UUID du candidat à transmettre à son Officier Guide", () => {
+    assert.match(index, /id="candidateGuideCodeCard"[\s\S]*1\.5\.[\s\S]*Code pour Officier Guide/);
+    assert.match(index, /id="candidateGuideUuid" class="candidate-guide-code-value"/);
+    assert.match(index, /id="copyCandidateGuideUuid"[^>]*>Copier mon UUID/);
+    assert.ok(index.indexOf('id="candidateGuideCodeCard"') > index.indexOf('</div><!-- /mod-body -->'));
+    assert.ok(index.indexOf('id="candidateGuideCodeCard"') < index.indexOf('id="chkModule1Valid"'));
+    assert.match(appScript, /auth\.identifiant\(\)/);
+    assert.match(appScript, /doctrine:login[\s\S]*refreshCandidateGuideCode/);
+    assert.match(appScript, /navigator\.clipboard\.writeText\(userId\)/);
+});
+
 test("les seuils QCM et l’inactivité produisent les badges attendus", () => {
     const match = script.match(/function candidateStatus\(candidate\) \{[\s\S]*?\n    \}/);
     assert.ok(match, "candidateStatus must remain available for the cohort status calculation");

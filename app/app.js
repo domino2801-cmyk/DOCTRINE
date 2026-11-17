@@ -23,6 +23,7 @@ const module1Key = 'module1_validated';
     let qcmModuleAccess = false;
     let ogCorrectionAccess = false;
     let ogCorrectionAccessRequestId = 0;
+    let candidateGuideCodeRequestId = 0;
 
     function isDossierDone(id) {
         const dossier = document.querySelector('.mod-body[data-mod="3"] input[data-dossier="' + id + '"]');
@@ -37,6 +38,42 @@ const module1Key = 'module1_validated';
 
     function isAdminUser() {
         return !!(window.DoctrineAuth && window.DoctrineAuth.estAdmin && window.DoctrineAuth.estAdmin());
+    }
+
+    function refreshCandidateGuideCode() {
+        const output = document.getElementById('candidateGuideUuid');
+        const copyButton = document.getElementById('copyCandidateGuideUuid');
+        const status = document.getElementById('candidateGuideUuidStatus');
+        if (!output || !copyButton) return;
+
+        const requestId = ++candidateGuideCodeRequestId;
+        copyButton.disabled = true;
+        delete copyButton.dataset.uuid;
+        output.textContent = 'Chargement de votre UUID…';
+        if (status) status.textContent = '';
+        const auth = window.DoctrineAuth;
+        if (!auth || typeof auth.identifiant !== 'function') {
+            output.textContent = 'UUID indisponible.';
+            if (status) status.textContent = 'Connexion DOCTRINE indisponible. Rechargez la page.';
+            return;
+        }
+        auth.identifiant().then(function(userId) {
+            if (requestId !== candidateGuideCodeRequestId) return;
+            if (!userId) {
+                output.textContent = 'UUID indisponible.';
+                if (status) status.textContent = 'Connectez-vous pour afficher votre code candidat.';
+                return;
+            }
+            output.textContent = userId;
+            copyButton.dataset.uuid = userId;
+            copyButton.disabled = false;
+            if (status) status.textContent = '';
+        }).catch(function(error) {
+            if (requestId !== candidateGuideCodeRequestId) return;
+            console.error('Chargement du code UUID candidat impossible.', error);
+            output.textContent = 'UUID indisponible.';
+            if (status) status.textContent = 'Impossible de charger votre code. Rechargez la page.';
+        });
     }
 
     function isOgCorrectionAllowed() {
@@ -220,6 +257,37 @@ const module1Key = 'module1_validated';
         });
         updateCorrectionAccess();
     }
+
+    document.getElementById('copyCandidateGuideUuid')?.addEventListener('click', async function(event) {
+        const button = event.currentTarget;
+        const userId = button.dataset.uuid;
+        const status = document.getElementById('candidateGuideUuidStatus');
+        if (!userId) return;
+        try {
+            if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+                throw new Error('La copie dans le presse-papiers n’est pas disponible.');
+            }
+            await navigator.clipboard.writeText(userId);
+            if (status) status.textContent = 'UUID copié.';
+        } catch (error) {
+            console.error('Copie du code UUID impossible.', error);
+            if (status) status.textContent = 'Copie impossible. Sélectionnez le code affiché pour le copier.';
+        }
+    });
+    document.addEventListener('doctrine:login', refreshCandidateGuideCode);
+    document.addEventListener('doctrine:logout', function() {
+        candidateGuideCodeRequestId++;
+        const output = document.getElementById('candidateGuideUuid');
+        const copyButton = document.getElementById('copyCandidateGuideUuid');
+        const status = document.getElementById('candidateGuideUuidStatus');
+        if (output) output.textContent = 'Connectez-vous pour afficher votre UUID.';
+        if (copyButton) {
+            copyButton.disabled = true;
+            delete copyButton.dataset.uuid;
+        }
+        if (status) status.textContent = '';
+    });
+    refreshCandidateGuideCode();
 
     function resetCorrectionGate() {
         [
