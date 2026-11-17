@@ -266,10 +266,10 @@ Deno.serve(async (request) => {
             return jsonResponse({ error: "Chemin de fiche invalide." }, 400);
         }
 
-        const apiKey = Deno.env.get("GEMINI_API_KEY");
+        const apiKey = Deno.env.get("GOOGLE_API_KEY") || Deno.env.get("GEMINI_API_KEY");
         if (!apiKey) {
-            console.error("Gemini correction is missing GEMINI_API_KEY.");
-            return jsonResponse({ error: "Configuration Gemini manquante sur le serveur." }, 503);
+            console.error("Gemini correction is missing GOOGLE_API_KEY or GEMINI_API_KEY.");
+            return jsonResponse({ error: "Clé Google AI manquante dans les secrets du serveur." }, 503);
         }
 
         const { data: pdf, error: downloadError } = await database.storage.from(BUCKET).download(submission.storage_path);

@@ -97,7 +97,7 @@ test("la correction Gemini reste une proposition serveur limitée aux fiches de 
     assert.match(script, /\/functions\/v1\/correct-fiche-ai/);
     assert.match(script, /await api\('\/rest\/v1\/fiche_reviews\?on_conflict=/);
     assert.doesNotMatch(script, /GEMINI_API_KEY/);
-    assert.match(aiFunction, /Deno\.env\.get\("GEMINI_API_KEY"\)/);
+    assert.match(aiFunction, /Deno\.env\.get\("GOOGLE_API_KEY"\)\s*\|\|\s*Deno\.env\.get\("GEMINI_API_KEY"\)/);
     assert.match(aiFunction, /submission\.submission_type !== "proposition"/);
     assert.match(aiFunction, /from\("guide_candidates"\)[\s\S]*eq\("guide_id", userData\.user\.id\)[\s\S]*eq\("candidate_id", submission\.user_id\)/);
     assert.match(aiFunction, /form_grade: \{ type: "number", minimum: 0, maximum: 6 \}/);
