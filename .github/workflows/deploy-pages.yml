@@ -40,6 +40,8 @@ jobs:
         run: node --test scripts/test-qcm-access.mjs
       - name: Test QCM-MAJOR authentication relay
         run: node --test tests/auth-relay.test.mjs
+      - name: Test Module 8 access and cohort flow
+        run: node --test tests/guide-module8.test.mjs
 
   deploy:
     needs: test

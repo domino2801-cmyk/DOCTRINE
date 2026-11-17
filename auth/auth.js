@@ -13,6 +13,7 @@
     var MARGE_S = 60;
     var ORIGINES_QCM = ['https://qcm-major.fr', 'https://www.qcm-major.fr'];
     var accesQcm = new URLSearchParams(window.location.search).get('from') === 'qcm-major';
+    var accesIntegre = new URLSearchParams(window.location.search).get('embedded') === '1';
     var sessionRelais = null;
     var relaisActif = false;
     var generationRelais = 0;
@@ -167,8 +168,44 @@
             });
     }
 
+    function sessionDepuisParent() {
+        if (!accesIntegre || window.parent === window) return Promise.resolve(null);
+        var authParent;
+        try {
+            authParent = window.parent.DoctrineAuth;
+        } catch (error) {
+            console.warn('Lecture de la session DOCTRINE parente impossible.', error);
+            return Promise.resolve(null);
+        }
+        if (!authParent || typeof authParent.jeton !== 'function') return Promise.resolve(null);
+        return Promise.resolve().then(function () {
+            return authParent.jeton();
+        }).then(function (jeton) {
+            if (typeof jeton !== 'string') return null;
+            var expiresAt = expirationDuJeton(jeton);
+            if (!Number.isFinite(expiresAt) || expiresAt <= Date.now() / 1000) return null;
+            return {
+                access_token: jeton,
+                expires_at: expiresAt,
+                email: typeof authParent.email === 'function' ? authParent.email() : ''
+            };
+        }).catch(function (error) {
+            console.warn('Récupération de la session DOCTRINE intégrée impossible.', error);
+            return null;
+        });
+    }
+
     // Retourne une session valide, ou null. Hors ligne, une session mémorisée reste acceptée.
     function verifier() {
+        if (accesIntegre && window.parent !== window) {
+            return sessionDepuisParent().then(function (s) {
+                return s || verifierSessionLocale();
+            });
+        }
+        return verifierSessionLocale();
+    }
+
+    function verifierSessionLocale() {
         if (relaisActif) {
             if (!sessionRelais) return Promise.resolve(null);
             if (sessionRelais.expires_at - MARGE_S > Date.now() / 1000) {
