@@ -49,7 +49,7 @@
             <li><button id="btn-mod5" type="button" aria-haspopup="dialog" aria-controls="modal-module5" aria-expanded="false" onclick="openModal('module5')">Mod. 5 : QCM</button></li>
             <li><button id="btn-mod6" type="button" aria-haspopup="dialog" aria-controls="modal-module6" aria-expanded="false" onclick="openModal('module6')">Mod. 6 : Admission</button></li>
             <li><button id="btn-mod7" type="button" aria-haspopup="dialog" aria-controls="modal-module7" aria-expanded="false" onclick="openModal('module7')">Mod. 7 : Retex et Signalements</button></li>
-            <li id="guideModule8Nav" hidden><button id="btn-mod8" type="button" onclick="window.location.assign('app/guide-module8.html')">Mod. 8 : Officier guide</button></li>
+            <li id="guideModule8Nav" hidden><button id="btn-mod8" type="button" aria-haspopup="dialog" aria-controls="modal-module8" aria-expanded="false" onclick="openModal('module8')">Mod. 8 : Officier guide</button></li>
             <li><button id="btn-mod-og" type="button" aria-haspopup="dialog" aria-controls="modal-module-og" aria-expanded="false" onclick="openModal('module-og')" hidden>OG : Cours & Corrections</button></li>
         </ul>
     </nav>
@@ -718,7 +718,7 @@
 
 <!-- MODALE 7 -->
 <div id="modal-module7" class="modal" role="dialog" aria-modal="true" aria-labelledby="module7-title">
-    <div class="modal-toolbar"><span>MODULE 7</span><div class="module-nav-controls" aria-label="Navigation entre les modules"><button class="module-nav-button module-nav-previous" type="button" aria-label="Module précédent" title="Module précédent" onclick="navigateModule('module6')">‹ <span>Précédent</span></button><button class="modal-return-btn" type="button" aria-label="Retour à tous les modules" title="Retour à tous les modules" onclick="closeModal('module7')">Retour</button><button class="module-nav-button module-nav-next" type="button" aria-label="Module suivant" title="Module suivant" onclick="navigateModule('module7')"><span>Suivant</span> ›</button></div></div>
+    <div class="modal-toolbar"><span>MODULE 7</span><div class="module-nav-controls" aria-label="Navigation entre les modules"><button class="module-nav-button module-nav-previous" type="button" aria-label="Module précédent" title="Module précédent" onclick="navigateModule('module6')">‹ <span>Précédent</span></button><button class="modal-return-btn" type="button" aria-label="Retour à tous les modules" title="Retour à tous les modules" onclick="closeModal('module7')">Retour</button><button class="module-nav-button module-nav-next" type="button" aria-label="Module suivant" title="Module suivant" onclick="navigateModule('module8')"><span>Suivant</span> ›</button></div></div>
     <div class="modal-content">
         <h2 id="module7-title">MODULE 7 : RETEX ET SIGNALEMENTS</h2>
 <section class="part-card fiche-card" id="retexCard">
@@ -839,6 +839,15 @@
 
 <div class="mod-body" data-mod="7"></div><!-- /mod-body -->
 
+    </div>
+</div>
+
+<!-- MODULE 8: Officier guide BM4 -->
+<div id="modal-module8" class="modal" role="dialog" aria-modal="true" aria-labelledby="module8-title">
+    <div class="modal-toolbar"><span>MODULE 8</span><div class="module-nav-controls" aria-label="Navigation entre les modules"><button class="module-nav-button module-nav-previous" type="button" aria-label="Module précédent" title="Module précédent" onclick="navigateModule('module7')">‹ <span>Précédent</span></button><button class="modal-return-btn" type="button" aria-label="Retour à tous les modules" title="Retour à tous les modules" onclick="closeModal('module8')">Retour</button><button class="module-nav-button module-nav-next" type="button" aria-label="Module suivant" title="Module suivant" onclick="navigateModule('module8')"><span>Suivant</span> ›</button></div></div>
+    <div class="modal-content module8-modal-content">
+        <h2 id="module8-title">MODULE 8 : OFFICIER GUIDE</h2>
+        <iframe id="guideModule8Frame" class="module8-frame" title="Espace Officier Guide BM4" src="about:blank" data-src="app/guide-module8.html?embedded=1"></iframe>
     </div>
 </div>
 

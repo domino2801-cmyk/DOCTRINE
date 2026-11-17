@@ -1,6 +1,10 @@
 (function () {
     'use strict';
 
+    if (new URLSearchParams(window.location.search).get('embedded') === '1') {
+        document.body.classList.add('is-embedded');
+    }
+
     const GUIDE_ROLES = new Set(['guide', 'officier_guide']);
     const STALE_AFTER_DAYS = 14;
     const auth = window.DoctrineAuth;
@@ -44,7 +48,13 @@
     }
 
     function updateNavigation(allowed) {
-        if (nav) nav.hidden = !allowed;
+        if (!nav) return;
+        nav.hidden = !allowed;
+        if (!app) {
+            document.dispatchEvent(new CustomEvent('doctrine:guide-access-change', {
+                detail: { allowed: allowed }
+            }));
+        }
     }
 
     function setStatus(element, message, kind) {

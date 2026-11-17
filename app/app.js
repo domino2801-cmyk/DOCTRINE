@@ -9,6 +9,7 @@ const module1Key = 'module1_validated';
         module5: 'btn-mod5',
         module6: 'btn-mod6',
         module7: 'btn-mod7',
+        module8: 'btn-mod8',
         'module-og': 'btn-mod-og'
     };
     const moduleOrder = Object.keys(moduleButtonMap);
@@ -96,6 +97,10 @@ const module1Key = 'module1_validated';
     }
 
     function canOpenModule(id) {
+        if (id === 'module8') {
+            const guideModule8Nav = document.getElementById('guideModule8Nav');
+            return Boolean(guideModule8Nav && !guideModule8Nav.hidden);
+        }
         if (qcmModuleAccess) return true;
         if (id === 'module1') return true;
         if (id === 'module-og') return true; // OG module always accessible
@@ -312,10 +317,14 @@ const module1Key = 'module1_validated';
         updateResumeModule(getLastModule());
     }
 
-    // Tant que le module 4 est verrouillé, la navigation le saute (3 ↔ 5).
+    // Les modules verrouillés ou réservés sont ignorés par les flèches.
     function neighborModule(index, step) {
         let target = index + step;
-        while (target >= 0 && target < moduleOrder.length && moduleOrder[target] === 'module4' && !canOpenModule('module4')) {
+        while (target >= 0 && target < moduleOrder.length && (
+            moduleOrder[target] === 'module-og' ||
+            (moduleOrder[target] === 'module4' && !canOpenModule('module4')) ||
+            (moduleOrder[target] === 'module8' && !canOpenModule('module8'))
+        )) {
             target += step;
         }
         return target >= 0 && target < moduleOrder.length ? moduleOrder[target] : null;
@@ -368,6 +377,13 @@ const module1Key = 'module1_validated';
                     content: currentContent ? currentContent.scrollTop : 0
                 });
             }
+            if (id === 'module8') {
+                const guideFrame = document.getElementById('guideModule8Frame');
+                if (guideFrame && !guideFrame.dataset.loaded && guideFrame.dataset.src) {
+                    guideFrame.src = guideFrame.dataset.src;
+                    guideFrame.dataset.loaded = 'true';
+                }
+            }
             document.querySelectorAll('.modal').forEach(function(item) {
                 if (item !== modal) item.style.display = 'none';
             });
@@ -389,7 +405,7 @@ const module1Key = 'module1_validated';
                 heading.setAttribute('tabindex', '-1');
                 heading.focus({ preventScroll: true });
             }
-            enregistrerEvenementProgression('module_started', id.replace('module', ''));
+            if (id !== 'module8') enregistrerEvenementProgression('module_started', id.replace('module', ''));
             try {
                 localStorage.setItem(lastModuleKey, id);
             } catch (error) {
@@ -405,6 +421,14 @@ const module1Key = 'module1_validated';
         qcmModuleAccess = Boolean(event.detail && event.detail.accesQcm);
         correctionAccessEventsLogged = new Set();
         loadOgCorrectionAccess();
+        updateModuleLockUI();
+    });
+
+    document.addEventListener('doctrine:guide-access-change', function(event) {
+        if (!event.detail?.allowed) {
+            const guideModal = document.getElementById('modal-module8');
+            if (guideModal && guideModal.style.display === 'block') closeModal('module8');
+        }
         updateModuleLockUI();
     });
 

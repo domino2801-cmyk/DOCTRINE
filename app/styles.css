@@ -314,6 +314,14 @@
         max-height: calc(100dvh - 112px);
         overflow-y: auto;
     }
+    .module8-frame {
+        display: block;
+        width: 100%;
+        height: calc(100dvh - 190px);
+        min-height: 420px;
+        border: 0;
+        background: #f4f5f0;
+    }
     h2 {
         color: var(--primary-blue);
         border-bottom: 2px solid var(--accent-red);

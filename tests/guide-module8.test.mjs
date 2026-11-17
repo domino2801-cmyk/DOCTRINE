@@ -6,13 +6,14 @@ import vm from "node:vm";
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 
-const [sql, edgeFunction, index, page, styles, script] = await Promise.all([
+const [sql, edgeFunction, index, page, styles, script, appScript] = await Promise.all([
     read("supabase/guide_module8.sql"),
     read("supabase/functions/doctrine-submit-fiche/index.ts"),
     read("index.html"),
     read("app/guide-module8.html"),
     read("app/guide-module8.css"),
-    read("app/guide-module8.js")
+    read("app/guide-module8.js"),
+    read("app/app.js")
 ]);
 
 test("les fonctions de cohorte autorisent les admins et limitent les guides aux rattachements", () => {
@@ -64,8 +65,18 @@ test("la soumission conserve l’envoi e-mail et archive les PDF sous le dossier
 
 test("l’entrée Module 8 est conditionnelle et la page propose les parcours demandés", () => {
     assert.match(index, /id="guideModule8Nav" hidden/);
-    assert.match(index, /app\/guide-module8\.html/);
+    assert.match(index, /id="btn-mod8"[^>]*onclick="openModal\('module8'\)"/);
+    assert.match(index, /id="modal-module8"[\s\S]*navigateModule\('module7'\)[\s\S]*id="module8-title"[\s\S]*data-src="app\/guide-module8\.html\?embedded=1"/);
+    assert.match(index, /onclick="navigateModule\('module8'\)"><span>Suivant<\/span>/);
     assert.match(index, /app\/guide-module8\.js/);
+    assert.match(appScript, /module8: 'btn-mod8'/);
+    assert.match(appScript, /if \(id === 'module8'\) \{\s+const guideModule8Nav = document\.getElementById\('guideModule8Nav'\);\s+return Boolean\(guideModule8Nav && !guideModule8Nav\.hidden\);/);
+    assert.match(appScript, /if \(id === 'module8'\) \{\s+const guideFrame = document\.getElementById\('guideModule8Frame'\);[\s\S]*guideFrame\.src = guideFrame\.dataset\.src/);
+    assert.match(appScript, /if \(id !== 'module8'\) enregistrerEvenementProgression\('module_started'/);
+    assert.match(script, /doctrine:guide-access-change/);
+    assert.match(page, /<h1>ESPACE OFFICIER GUIDE<\/h1>/);
+    assert.doesNotMatch(page, /Suivi de Cohortes BM4/);
+    assert.match(styles, /\.guide-module8-page\.is-embedded \.guide-header\s*\{\s*display:\s*none;/);
     assert.match(script, /GUIDE_ROLES = new Set\(\['guide', 'officier_guide'\]\)/);
     assert.match(script, /admin \|\| GUIDE_ROLES\.has\(role\)/);
     assert.match(page, /Tous mes candidats/);

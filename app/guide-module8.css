@@ -20,6 +20,25 @@
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.guide-module8-page.is-embedded {
+    min-height: 0;
+    background: transparent;
+}
+
+.guide-module8-page.is-embedded .guide-app {
+    width: 100%;
+    margin: 0;
+    padding: 0 0 20px;
+}
+
+.guide-module8-page.is-embedded .guide-header {
+    display: none;
+}
+
+.guide-module8-page.is-embedded .guide-toolbar {
+    margin-top: 0;
+}
+
 .guide-module8-page *,
 .guide-module8-page *::before,
 .guide-module8-page *::after {
