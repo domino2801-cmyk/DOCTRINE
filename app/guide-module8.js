@@ -374,12 +374,21 @@
                 formatDate(submission.created_at) + ' · ' + decision));
             card.appendChild(description);
             const button = element('button', 'guide-button guide-button-primary',
-                isOralSupport ? 'Ouvrir le support oral' : 'Ouvrir PDF & Noter');
+                isOralSupport ? 'Ouvrir le support oral' : 'Ouvrir la fiche de proposition');
             button.type = 'button';
             button.disabled = !submission.storage_path;
             if (!submission.storage_path) button.title = 'Cette fiche a été transmise avant l’archivage des PDF.';
-            button.addEventListener('click', function () { openReview(candidate, submission); });
-            card.appendChild(button);
+            button.addEventListener('click', function () { openSubmission(candidate, submission); });
+            const actions = element('div', 'guide-row-actions');
+            actions.appendChild(button);
+            if (!isOralSupport) {
+                const reviewButton = element('button', 'guide-button', 'Évaluer');
+                reviewButton.type = 'button';
+                reviewButton.disabled = !submission.storage_path;
+                reviewButton.addEventListener('click', function () { openReview(candidate, submission); });
+                actions.appendChild(reviewButton);
+            }
+            card.appendChild(actions);
             container.appendChild(card);
         });
     }
@@ -542,32 +551,8 @@
         return new URL(signedUrl, auth.url).href;
     }
 
-    async function openReview(candidate, submission) {
-        const dialog = document.getElementById('guideReviewDialog');
-        const title = document.getElementById('guideReviewTitle');
-        const frame = document.getElementById('guidePdfPreview');
-        const pdfStatus = document.getElementById('guidePdfStatus');
-        const reviewStatus = document.getElementById('guideReviewStatus');
-        const isOralSupport = submission.submission_type === 'support_oral';
-        const review = isOralSupport ? {} : (submission.reviews || [])[0] || {};
-        const reviewForm = document.getElementById('guideReviewForm');
-        const layout = dialog?.querySelector('.guide-review-layout');
-        const kicker = dialog?.querySelector('.guide-kicker');
-        if (reviewForm) reviewForm.hidden = isOralSupport;
-        if (layout) layout.classList.toggle('is-readonly', isOralSupport);
-        if (kicker) kicker.textContent = isOralSupport ? 'CONSULTATION — SUPPORT ORAL' : 'ÉVALUATION BM4';
-        if (title) title.textContent = candidateName(candidate.candidate) + ' — ' +
-            (isOralSupport ? 'Support oral' : 'Fiche de proposition') + ' — Dossier ' + submission.dossier;
-        document.getElementById('guideReviewSubmissionId').value = submission.id;
-        document.getElementById('guideFormGrade').value = review.form_grade ?? '';
-        document.getElementById('guideContentGrade').value = review.content_grade ?? '';
-        document.getElementById('guideReviewDecision').value = review.status === 'a_reprendre' ? 'a_reprendre' : 'valide';
-        document.getElementById('guideReviewComment').value = review.comment || '';
-        updateFinalGrade();
-        frame.src = 'about:blank';
-        setStatus(pdfStatus, 'Génération d’une URL sécurisée…');
-        setStatus(reviewStatus, '');
-        if (dialog && !dialog.open) dialog.showModal();
+    async function openSubmission(candidate, submission) {
+        const status = document.getElementById('guideStatus');
         try {
             const path = submission.storage_path.split('/').map(encodeURIComponent).join('/');
             const signed = await api('/storage/v1/object/sign/candidate-fiches/' + path, {
@@ -576,11 +561,37 @@
             });
             const signedUrl = signed.signedURL || signed.signedUrl;
             if (!signedUrl) throw new Error('URL PDF signée manquante dans la réponse Storage.');
-            frame.src = relativeStorageUrl(signedUrl);
-            setStatus(pdfStatus, 'PDF accessible pendant 5 minutes.', 'success');
+            const viewer = window.parent !== window && window.parent.DoctrineViewer
+                ? window.parent.DoctrineViewer
+                : window.DoctrineViewer;
+            if (!viewer || typeof viewer.openSignedPdf !== 'function') {
+                throw new Error('La visionneuse PDF est indisponible. Rechargez la page.');
+            }
+            const title = candidateName(candidate.candidate) + ' — ' +
+                (submission.submission_type === 'support_oral' ? 'Support oral' : 'Fiche de proposition') +
+                ' — Dossier ' + submission.dossier;
+            await viewer.openSignedPdf(relativeStorageUrl(signedUrl), title, '8');
+            setStatus(status, '');
         } catch (error) {
-            setStatus(pdfStatus, error.message || 'Ouverture sécurisée du PDF impossible.', 'error');
+            setStatus(status, error.message || 'Ouverture sécurisée du PDF impossible.', 'error');
         }
+    }
+
+    function openReview(candidate, submission) {
+        const dialog = document.getElementById('guideReviewDialog');
+        const title = document.getElementById('guideReviewTitle');
+        const reviewStatus = document.getElementById('guideReviewStatus');
+        const review = (submission.reviews || [])[0] || {};
+        if (title) title.textContent = candidateName(candidate.candidate) + ' — ' +
+            'Fiche de proposition — Dossier ' + submission.dossier;
+        document.getElementById('guideReviewSubmissionId').value = submission.id;
+        document.getElementById('guideFormGrade').value = review.form_grade ?? '';
+        document.getElementById('guideContentGrade').value = review.content_grade ?? '';
+        document.getElementById('guideReviewDecision').value = review.status === 'a_reprendre' ? 'a_reprendre' : 'valide';
+        document.getElementById('guideReviewComment').value = review.comment || '';
+        updateFinalGrade();
+        setStatus(reviewStatus, '');
+        if (dialog && !dialog.open) dialog.showModal();
     }
 
     function updateFinalGrade() {
@@ -742,10 +753,6 @@
             dialog.addEventListener('click', function (event) {
                 if (event.target === dialog) dialog.close();
             });
-        });
-        document.getElementById('guideReviewDialog')?.addEventListener('close', function () {
-            const frame = document.getElementById('guidePdfPreview');
-            if (frame) frame.src = 'about:blank';
         });
     }
 

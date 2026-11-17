@@ -317,10 +317,9 @@
     .module8-frame {
         display: block;
         width: 100%;
-        height: calc(100dvh - 190px);
-        min-height: 420px;
+        height: clamp(240px, calc(100dvh - 280px), 760px);
         border: 0;
-        background: #f4f5f0;
+        background: transparent;
     }
     h2 {
         color: var(--primary-blue);
@@ -1297,6 +1296,7 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
             padding: 24px;
             --modal-padding: 24px;
         }
+        .module8-frame { height: clamp(180px, calc(100dvh - 250px), 680px); }
     }
 
     /* RESPONSIVE MOBILE */

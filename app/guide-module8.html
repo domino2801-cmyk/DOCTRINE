@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#3b4432">
+    <meta name="theme-color" content="#20352b">
     <meta name="description" content="Espace Officier Guide BM4 — suivi sécurisé des candidats rattachés.">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="manifest" href="../manifest.webmanifest">
     <link rel="stylesheet" href="../auth/auth.css">
+    <link rel="stylesheet" href="../viewer/viewer.css">
     <link rel="stylesheet" href="guide-module8.css">
     <script src="../auth/auth.js"></script>
+    <script src="../viewer/viewer.js" defer></script>
     <script src="guide-module8.js" defer></script>
     <title>Espace Officier Guide BM4 — DOCTRINE</title>
 </head>
@@ -167,27 +169,21 @@
             <div><p class="guide-kicker">ÉVALUATION BM4</p><h2 id="guideReviewTitle">Fiche candidate</h2></div>
             <button class="guide-icon-button" type="button" data-guide-close="guideReviewDialog" aria-label="Fermer">×</button>
         </div>
-        <div class="guide-review-layout">
-            <div class="guide-pdf-pane">
-                <iframe id="guidePdfPreview" title="Aperçu de la fiche PDF" src="about:blank"></iframe>
-                <p id="guidePdfStatus" class="guide-form-status" role="status" aria-live="polite"></p>
-            </div>
-            <form id="guideReviewForm" class="guide-review-form">
-                <input id="guideReviewSubmissionId" type="hidden">
-                <label>Forme / 6<input id="guideFormGrade" type="number" min="0" max="6" step="0.01" required></label>
-                <label>Fond / 14<input id="guideContentGrade" type="number" min="0" max="14" step="0.01" required></label>
-                <p class="guide-review-total">Note finale <strong id="guideFinalGrade">0,00 / 20</strong></p>
-                <label>Décision
-                    <select id="guideReviewDecision" required>
-                        <option value="valide">Validé</option>
-                        <option value="a_reprendre">À reprendre</option>
-                    </select>
-                </label>
-                <label>Commentaires du guide<textarea id="guideReviewComment" rows="7" maxlength="4000"></textarea></label>
-                <p id="guideReviewStatus" class="guide-form-status" role="status" aria-live="polite"></p>
-                <button class="guide-button guide-button-primary" type="submit">Enregistrer l’évaluation</button>
-            </form>
-        </div>
+        <form id="guideReviewForm" class="guide-review-form">
+            <input id="guideReviewSubmissionId" type="hidden">
+            <label>Forme / 6<input id="guideFormGrade" type="number" min="0" max="6" step="0.01" required></label>
+            <label>Fond / 14<input id="guideContentGrade" type="number" min="0" max="14" step="0.01" required></label>
+            <p class="guide-review-total">Note finale <strong id="guideFinalGrade">0,00 / 20</strong></p>
+            <label>Décision
+                <select id="guideReviewDecision" required>
+                    <option value="valide">Validé</option>
+                    <option value="a_reprendre">À reprendre</option>
+                </select>
+            </label>
+            <label>Commentaires du guide<textarea id="guideReviewComment" rows="7" maxlength="4000"></textarea></label>
+            <p id="guideReviewStatus" class="guide-form-status" role="status" aria-live="polite"></p>
+            <button class="guide-button guide-button-primary" type="submit">Enregistrer l’évaluation</button>
+        </form>
     </dialog>
 </body>
 </html>

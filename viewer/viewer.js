@@ -448,6 +448,59 @@
         else afficherFichier(cible.id, libelle, { module: module, url: urlOrigine });
     }
 
+    function ouvrirPdfSigne(url, nom, module) {
+        var urlSupabase;
+        var urlDocument;
+        try {
+            urlSupabase = new URL(auth().url);
+            urlDocument = new URL(url, urlSupabase);
+        } catch (e) {
+            return Promise.reject(new Error('URL PDF invalide.'));
+        }
+        if (urlDocument.protocol !== 'https:' || urlDocument.origin !== urlSupabase.origin ||
+            !urlDocument.pathname.startsWith('/storage/v1/object/sign/candidate-fiches/') ||
+            !urlDocument.searchParams.has('token')) {
+            return Promise.reject(new Error('URL PDF signée non autorisée.'));
+        }
+
+        construire();
+        dernierFocus = document.activeElement;
+        contexteModule = module || '';
+        dossierCourant = null;
+        panneau.hidden = false;
+        document.body.classList.add('dv-open');
+        panneau.querySelector('.dv-btn:last-child').focus();
+
+        var numero = ++requete;
+        libererObjet();
+        titre.textContent = nom || 'Document PDF';
+        retour.hidden = true;
+        message('Chargement du document…');
+        return fetch(urlDocument.href).then(function (r) {
+            if (!r.ok) throw new Error('Réponse Storage ' + r.status);
+            var type = (r.headers.get('Content-Type') || '').split(';')[0];
+            if (type !== 'application/pdf') throw new Error('Le fichier reçu n’est pas un PDF.');
+            return r.blob();
+        }).then(function (blob) {
+            if (numero !== requete) return;
+            urlObjet = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+            courant = {
+                nom: nomSur(nom || 'document.pdf'),
+                url: urlSupabase.origin + '/storage/v1/object/sign/candidate-fiches/',
+                module: module || ''
+            };
+            if (!/\.pdf$/i.test(courant.nom)) courant.nom += '.pdf';
+            titre.textContent = courant.nom;
+            telecharger.hidden = false;
+            montrer('application/pdf', urlObjet, null);
+        }).catch(function (error) {
+            if (numero === requete) message('Impossible d’ouvrir ce PDF. Vérifiez vos droits puis réessayez.', true);
+            throw error;
+        });
+    }
+
+    window.DoctrineViewer = { openSignedPdf: ouvrirPdfSigne };
+
     function fermer() {
         if (!panneau) return;
         requete++;

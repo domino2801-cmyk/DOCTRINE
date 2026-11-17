@@ -6,7 +6,7 @@ import vm from "node:vm";
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 
-const [sql, edgeFunction, index, page, styles, script, appScript, adminScript, ogAccessPatch, shortCodePatch] = await Promise.all([
+const [sql, edgeFunction, index, page, styles, script, appScript, adminScript, viewerScript, ogAccessPatch, shortCodePatch, appStyles] = await Promise.all([
     read("supabase/guide_module8.sql"),
     read("supabase/functions/doctrine-submit-fiche/index.ts"),
     read("index.html"),
@@ -15,8 +15,10 @@ const [sql, edgeFunction, index, page, styles, script, appScript, adminScript, o
     read("app/guide-module8.js"),
     read("app/app.js"),
     read("admin/admin.js"),
+    read("viewer/viewer.js"),
     read("supabase/guide_module8-og-access.sql"),
-    read("supabase/guide_module8-short-code.sql")
+    read("supabase/guide_module8-short-code.sql"),
+    read("app/styles.css")
 ]);
 
 test("les fonctions de cohorte autorisent les admins et limitent les guides aux rattachements", () => {
@@ -83,8 +85,26 @@ test("les deux types de fiches sont identifiés, enregistrés séparément et li
         assert.match(sql, /'submission_type', submission\.submission_type/);
         assert.match(sql, /submission\.submission_type = 'proposition'/);
         assert.match(script, /Fiche support oral/);
-        assert.match(script, /isOralSupport \? 'Ouvrir le support oral' : 'Ouvrir PDF & Noter'/);
-        assert.match(script, /layout\.classList\.toggle\('is-readonly', isOralSupport\)/);
+        assert.match(script, /isOralSupport \? 'Ouvrir le support oral' : 'Ouvrir la fiche de proposition'/);
+        assert.match(script, /openSubmission\(candidate, submission\)/);
+        assert.match(script, /reviewButton = element\('button', 'guide-button', 'Évaluer'\)/);
+        assert.match(script, /viewer\.openSignedPdf\(relativeStorageUrl\(signedUrl\), title, '8'\)/);
+        assert.match(page, /viewer\/viewer\.css/);
+        assert.match(page, /viewer\/viewer\.js/);
+        assert.match(page, /theme-color" content="#20352b"/);
+        assert.match(page, /id="guideReviewForm" class="guide-review-form"/);
+        assert.doesNotMatch(page, /guidePdfPreview|guidePdfStatus/);
+        assert.match(styles, /--guide-paper: #141c19/);
+        assert.match(styles, /border-bottom: 3px solid #b52e35/);
+        assert.match(styles, /@media \(max-width: 767px\)/);
+        assert.match(styles, /@media \(max-width: 440px\)/);
+        assert.match(styles, /\.guide-module8-page\.is-embedded \.guide-app\s*\{\s*padding: 0 8px 18px;/);
+        assert.match(appStyles, /\.module8-frame\s*\{[^}]*height: clamp\(240px, calc\(100dvh - 280px\), 760px\)/);
+        assert.match(appStyles, /\.module8-frame \{ height: clamp\(180px, calc\(100dvh - 250px\), 680px\); \}/);
+        assert.match(viewerScript, /window\.DoctrineViewer = \{ openSignedPdf: ouvrirPdfSigne \}/);
+        assert.match(viewerScript, /urlDocument\.pathname\.startsWith\('\/storage\/v1\/object\/sign\/candidate-fiches\/'\)/);
+        assert.match(viewerScript, /new Blob\(\[blob\], \{ type: 'application\/pdf' \}\)/);
+        assert.match(viewerScript, /telecharger\.hidden = false/);
         assert.match(adminScript, /var supportOralGate = n === '4' && el\.querySelector\('#supportOralGate'\)/);
         assert.match(adminScript, /var submissionGates = \[correctionGate, supportOralGate\]/);
         assert.match(adminScript, /\.adm-ui:not\(#correctionGate\):not\(#supportOralGate\)/);
