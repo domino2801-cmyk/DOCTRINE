@@ -453,8 +453,9 @@
     .correction-gate form > p { grid-column: 1 / -1; }
     .correction-gate form > p { order: 3; margin: 0; font-size: 0.85rem; line-height: 1.3; }
     .correction-gate form > button { order: 2; padding-inline: 6px; font-size: 0.8rem; line-height: 1.15; }
-    #correctionGateStatus { margin: 6px 0 0; font-size: 0.85rem; }
-    #correctionGateStatus:empty { display: none; }
+    .correction-gate-status { margin: 6px 0 0; font-size: 0.85rem; }
+    .correction-gate-status:empty { display: none; }
+    #supportOralGate { margin-top: 12px; }
     .correction-verification { margin-top: 8px; }
     .correction-verification[hidden] { display: none; }
     .correction-verification label { display: block; margin-bottom: 4px; font-size: 0.85rem; }

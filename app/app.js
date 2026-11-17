@@ -190,10 +190,12 @@ const module1Key = 'module1_validated';
     function updateCorrectionDossierOptions() {
         const gate = correctionGateElement;
         const moduleBody = document.querySelector('.mod-body[data-mod="4"]');
-        const dossierSelect = gate && gate.querySelector('#correctionDossier');
-        if (!gate || !moduleBody || !dossierSelect) return;
+        const dossierSelects = [
+            gate && gate.querySelector('#correctionDossier'),
+            document.getElementById('supportOralDossier')
+        ].filter(Boolean);
+        if (!gate || !moduleBody || !dossierSelects.length) return;
 
-        const currentValue = dossierSelect.value;
         const heading = Array.from(moduleBody.querySelectorAll('p > strong')).find(function(element) {
             return element.textContent.trim().startsWith('4.2.');
         });
@@ -202,29 +204,37 @@ const module1Key = 'module1_validated';
         else if (progress) progress.before(gate);
 
         const dossiers = document.querySelectorAll('.mod-body[data-mod="3"] input[data-dossier]');
-        dossierSelect.replaceChildren(new Option('Dossier rédigé dans le module 3…', ''));
-        dossiers.forEach(function(box) {
-            const name = box.closest('.dossier-item')?.querySelector(':scope > label > span')?.textContent.trim();
-            const id = box.getAttribute('data-dossier');
-            if (!name || !id || !isDossierAvailable(id)) return;
-            dossierSelect.add(new Option(name, id));
+        dossierSelects.forEach(function(dossierSelect) {
+            const currentValue = dossierSelect.value;
+            dossierSelect.replaceChildren(new Option('Dossier rédigé dans le module 3…', ''));
+            dossiers.forEach(function(box) {
+                const name = box.closest('.dossier-item')?.querySelector(':scope > label > span')?.textContent.trim();
+                const id = box.getAttribute('data-dossier');
+                if (!name || !id || !isDossierAvailable(id)) return;
+                dossierSelect.add(new Option(name, id));
+            });
+            dossierSelect.value = Array.from(dossierSelect.options).some(function(option) {
+                return option.value === currentValue;
+            }) ? currentValue : '';
+            dossierSelect.disabled = dossierSelect.options.length <= 1;
         });
-        dossierSelect.value = Array.from(dossierSelect.options).some(function(option) {
-            return option.value === currentValue;
-        }) ? currentValue : '';
-        dossierSelect.disabled = dossierSelect.options.length <= 1;
         updateCorrectionAccess();
     }
 
     function resetCorrectionGate() {
-        const dossierSelect = document.getElementById('correctionDossier');
-        const fileInput = document.getElementById('correctionFile');
-        const fileName = document.getElementById('correctionFileName');
-        const status = document.getElementById('correctionGateStatus');
-        if (dossierSelect) dossierSelect.value = '';
-        if (fileInput) fileInput.value = '';
-        if (fileName) fileName.textContent = 'Aucun fichier sélectionné.';
-        if (status) status.textContent = '';
+        [
+            ['correctionDossier', 'correctionFile', 'correctionFileName', 'correctionGateStatus'],
+            ['supportOralDossier', 'supportOralFile', 'supportOralFileName', 'supportOralGateStatus']
+        ].forEach(function(ids) {
+            const dossierSelect = document.getElementById(ids[0]);
+            const fileInput = document.getElementById(ids[1]);
+            const fileName = document.getElementById(ids[2]);
+            const status = document.getElementById(ids[3]);
+            if (dossierSelect) dossierSelect.value = '';
+            if (fileInput) fileInput.value = '';
+            if (fileName) fileName.textContent = 'Aucun fichier sélectionné.';
+            if (status) status.textContent = '';
+        });
         resetCorrectionVerification();
         updateCorrectionAccess();
     }
@@ -243,6 +253,154 @@ const module1Key = 'module1_validated';
         container.hidden = false;
         progress.value = value;
         text.textContent = label + ' : ' + value + ' %';
+    }
+
+    function bindFicheSubmissionForm(config) {
+        const form = document.getElementById(config.formId);
+        const dossierSelect = document.getElementById(config.dossierId);
+        const fileInput = document.getElementById(config.fileId);
+        const fileName = document.getElementById(config.fileNameId);
+        const openUploadButton = document.getElementById(config.openButtonId);
+        const status = document.getElementById(config.statusId);
+        if (!form || !dossierSelect || !fileInput || !fileName) return;
+
+        if (openUploadButton) {
+            openUploadButton.addEventListener('click', function() {
+                if (!dossierSelect.value) {
+                    if (status) status.textContent = 'Choisissez d’abord un dossier du module 3.';
+                    dossierSelect.focus();
+                    return;
+                }
+                if (status) status.textContent = '';
+                fileInput.click();
+            });
+        }
+
+        dossierSelect.addEventListener('change', function() {
+            fileInput.value = '';
+            fileName.textContent = 'Aucun fichier sélectionné.';
+            if (config.validateGabarit) resetCorrectionVerification();
+            updateCorrectionAccess();
+        });
+        fileInput.addEventListener('change', function() {
+            fileName.textContent = fileInput.files && fileInput.files[0]
+                ? fileInput.files[0].name
+                : 'Aucun fichier sélectionné.';
+            if (config.validateGabarit) resetCorrectionVerification();
+        });
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const file = fileInput.files && fileInput.files[0];
+            const dossierId = dossierSelect.value;
+            if (!dossierId) {
+                if (status) status.textContent = 'Choisissez le dossier correspondant dans le module 3.';
+                dossierSelect.focus();
+                return;
+            }
+            if (!isDossierAvailable(dossierId)) {
+                updateCorrectionAccess();
+                if (status) status.textContent = 'Ce dossier n’est pas marqué « Fait » dans le module 3 : terminez-le avant de transmettre votre fiche.';
+                return;
+            }
+            if (!file || !/\.(pdf|docx?)$/i.test(file.name)) {
+                if (status) status.textContent = 'Ouvrez le téléversement et choisissez un fichier PDF, DOC ou DOCX.';
+                return;
+            }
+
+            const auth = window.DoctrineAuth;
+            const submitButton = form.querySelector('button[type="submit"]');
+            if (!auth || typeof auth.jeton !== 'function') {
+                if (status) status.textContent = 'Connexion indisponible : impossible de transmettre la fiche.';
+                return;
+            }
+            if (submitButton) submitButton.disabled = true;
+            dossierSelect.disabled = true;
+            if (openUploadButton) openUploadButton.disabled = true;
+            if (config.validateGabarit) resetCorrectionVerification();
+            const verificationGeneration = config.validateGabarit ? correctionVerificationGeneration : null;
+            if (status) status.textContent = config.label + ' du dossier ' + dossierId + ' : transmission en cours…';
+            const isPdf = /\.pdf$/i.test(file.name);
+            let verificationProgress = null;
+            if (config.validateGabarit && isPdf) {
+                verificationProgress = 0;
+                updateCorrectionVerification(0, 'Vérification en cours');
+            }
+
+            auth.jeton().then(function(jeton) {
+                if (!jeton) throw new Error('Session expirée : reconnectez-vous.');
+                const validation = config.validateGabarit && isPdf
+                    ? (function() {
+                        if (status) status.textContent = 'Vérification du gabarit de la fiche de proposition…';
+                        if (typeof window.DoctrinePdfLoader !== 'function') {
+                            throw new Error('Le lecteur PDF est indisponible. Rechargez la page.');
+                        }
+                        return Promise.all([import('./validate-gabarit.mjs'), window.DoctrinePdfLoader().catch(function(error) {
+                            console.error('Chargement du lecteur PDF impossible', error);
+                            throw new Error('Impossible de charger le lecteur PDF. Vérifiez votre connexion puis réessayez.');
+                        })])
+                            .then(function(values) {
+                                return values[0].validateGabarit(file, auth, jeton, values[1], function(value) {
+                                    verificationProgress = value;
+                                    if (verificationGeneration === correctionVerificationGeneration) {
+                                        updateCorrectionVerification(value, value === 100 ? 'Vérification terminée' : 'Vérification en cours');
+                                    }
+                                });
+                            }).then(function(data) {
+                                if (!data.conforme) {
+                                    throw new Error('Fiche de proposition non conforme : ' + (data.error || data.message || 'utilisez le gabarit officiel.'));
+                                }
+                                if (status) status.textContent = 'Gabarit officiel validé (' + data.score + '%). Transmission en cours…';
+                            });
+                    })()
+                    : Promise.resolve();
+                return validation.then(function() {
+                    const body = new FormData();
+                    body.append('file', file);
+                    body.append('dossier', dossierId);
+                    body.append('submission_type', config.submissionType);
+                    return fetch(auth.url + '/functions/v1/doctrine-submit-fiche', {
+                        method: 'POST',
+                        headers: { apikey: auth.key, Authorization: 'Bearer ' + jeton },
+                        body: body
+                    });
+                });
+            }).then(function(response) {
+                return response.json().catch(function() { return {}; }).then(function(data) {
+                    if (!response.ok) throw new Error(data.error || 'Envoi impossible (HTTP ' + response.status + ').');
+                    if (data.recorded !== true || data.submission_type !== config.submissionType) {
+                        throw new Error('Le serveur n’a pas confirmé le type de fiche enregistré. N’effectuez pas un nouvel envoi ; contactez l’administration.');
+                    }
+                    if (config.submissionType === 'proposition') {
+                        transmittedDossiers.add(String(dossierId));
+                        updateCorrectionAccess();
+                    }
+                    let message = config.label + ' du dossier ' + dossierId + ' transmise par e-mail et enregistrée dans le suivi.';
+                    if (data.archived) message += ' PDF archivé.';
+                    if (config.submissionType === 'proposition') {
+                        message += canViewCorrige(dossierId)
+                            ? ' Le corrigé du dossier est désormais disponible.'
+                            : ' Marquez ce dossier « Fait » dans le module 3 pour afficher son corrigé.';
+                    }
+                    if (status) status.textContent = message + (data.warning ? ' ' + data.warning : '');
+                    if (config.submissionType === 'proposition') {
+                        document.querySelector('#corrigeList .dossier-item:not([hidden])')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                });
+            }).catch(function(error) {
+                console.error('Erreur de validation ou de transmission de la fiche', error);
+                if (verificationGeneration === correctionVerificationGeneration &&
+                    verificationProgress !== null && verificationProgress < 100) {
+                    updateCorrectionVerification(verificationProgress, 'Vérification interrompue');
+                }
+                if (config.submissionType === 'proposition') updateCorrectionAccess();
+                if (status) status.textContent = error.message || 'Envoi impossible. Réessayez.';
+            }).finally(function() {
+                if (submitButton) submitButton.disabled = false;
+                dossierSelect.disabled = dossierSelect.options.length <= 1;
+                if (openUploadButton) openUploadButton.disabled = false;
+            });
+        });
     }
 
     function setActiveModuleButton(id) {
@@ -974,144 +1132,29 @@ const module1Key = 'module1_validated';
         updateCorrectionAccess();
         updateCorrectionDossierOptions();
 
-        const correctionUploadForm = document.getElementById('correctionUploadForm');
-        if (correctionUploadForm) {
-            const dossierSelect = document.getElementById('correctionDossier');
-            const fileInput = document.getElementById('correctionFile');
-            const fileName = document.getElementById('correctionFileName');
-            const openUploadButton = document.getElementById('openCorrectionUpload');
-            if (openUploadButton && fileInput && dossierSelect) {
-                openUploadButton.addEventListener('click', function() {
-                    const status = document.getElementById('correctionGateStatus');
-                    if (!dossierSelect.value) {
-                        if (status) status.textContent = 'Choisissez d’abord un dossier du module 3.';
-                        dossierSelect.focus();
-                        return;
-                    }
-                    if (status) status.textContent = '';
-                    fileInput.click();
-                });
-            }
-            document.querySelector('.mod-body[data-mod="3"]')?.addEventListener('change', updateCorrectionDossierOptions);
-            if (dossierSelect && fileInput && fileName) {
-                dossierSelect.addEventListener('change', function() {
-                    fileInput.value = '';
-                    fileName.textContent = 'Aucun fichier sélectionné.';
-                    resetCorrectionVerification();
-                    updateCorrectionAccess();
-                });
-                fileInput.addEventListener('change', function() {
-                    fileName.textContent = fileInput.files && fileInput.files[0]
-                        ? fileInput.files[0].name
-                        : 'Aucun fichier sélectionné.';
-                    resetCorrectionVerification();
-                    updateCorrectionAccess();
-                });
-            }
-            correctionUploadForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-                const status = document.getElementById('correctionGateStatus');
-                const file = fileInput && fileInput.files && fileInput.files[0];
-                if (!dossierSelect || !dossierSelect.value) {
-                    if (status) status.textContent = 'Choisissez le dossier correspondant dans le module 3.';
-                    dossierSelect?.focus();
-                    return;
-                }
-                if (!isDossierAvailable(dossierSelect.value)) {
-                    updateCorrectionAccess();
-                    if (status) status.textContent = 'Ce dossier n’est pas marqué « Fait » dans le module 3 : terminez-le avant d’ouvrir son corrigé.';
-                    return;
-                }
-                if (!file || !/\.(pdf|docx?)$/i.test(file.name)) {
-                    if (status) status.textContent = 'Ouvrez le téléversement et choisissez un fichier PDF, DOC ou DOCX.';
-                    return;
-                }
-
-                const auth = window.DoctrineAuth;
-                const submitButton = correctionUploadForm.querySelector('button[type="submit"]');
-                if (!auth || typeof auth.jeton !== 'function') {
-                    if (status) status.textContent = 'Connexion indisponible : impossible de transmettre la fiche.';
-                    return;
-                }
-                if (submitButton) submitButton.disabled = true;
-                dossierSelect.disabled = true;
-                if (openUploadButton) openUploadButton.disabled = true;
-                resetCorrectionVerification();
-                const verificationGeneration = correctionVerificationGeneration;
-                if (status) status.textContent = 'Envoi de la fiche en cours…';
-                const dossierId = dossierSelect.value;
-                let verificationProgress = null;
-                if (/\.pdf$/i.test(file.name)) {
-                    verificationProgress = 0;
-                    updateCorrectionVerification(0, 'Vérification en cours');
-                }
-
-                auth.jeton().then(function(jeton) {
-                    if (!jeton) throw new Error('Session expirée : reconnectez-vous.');
-                    const validation = /\.pdf$/i.test(file.name)
-                        ? (function() {
-                            if (status) status.textContent = 'Vérification du gabarit PDF…';
-                            if (typeof window.DoctrinePdfLoader !== 'function') {
-                                throw new Error('Le lecteur PDF est indisponible. Rechargez la page.');
-                            }
-                            return Promise.all([import('./validate-gabarit.mjs'), window.DoctrinePdfLoader().catch(function(error) {
-                                console.error('Chargement du lecteur PDF impossible', error);
-                                throw new Error('Impossible de charger le lecteur PDF. Vérifiez votre connexion puis réessayez.');
-                            })])
-                                .then(function(values) {
-                                    return values[0].validateGabarit(file, auth, jeton, values[1], function(value) {
-                                        verificationProgress = value;
-                                        if (verificationGeneration === correctionVerificationGeneration) {
-                                            updateCorrectionVerification(value, value === 100 ? 'Vérification terminée' : 'Vérification en cours');
-                                        }
-                                    });
-                                }).then(function(data) {
-                                if (!data.conforme) {
-                                    throw new Error('Fiche non conforme : ' + (data.error || data.message || 'utilisez le gabarit officiel.'));
-                                }
-                                if (status) status.textContent = 'Gabarit officiel validé (' + data.score + '%). Transmission de la fiche en cours…';
-                            });
-                        })()
-                        : Promise.resolve();
-                    return validation.then(function() {
-                        const body = new FormData();
-                        body.append('file', file);
-                        body.append('dossier', dossierId);
-                        return fetch(auth.url + '/functions/v1/doctrine-submit-fiche', {
-                            method: 'POST',
-                            headers: { apikey: auth.key, Authorization: 'Bearer ' + jeton },
-                            body: body
-                        });
-                    });
-                }).then(function(response) {
-                    return response.json().catch(function() { return {}; }).then(function(data) {
-                        if (!response.ok) throw new Error(data.error || 'Envoi impossible (HTTP ' + response.status + ').');
-                        transmittedDossiers.add(String(dossierId));
-                        updateCorrectionAccess();
-                        const deliveryStatus = data.archived
-                            ? 'Fiche transmise par e-mail et PDF archivé.'
-                            : 'Fiche transmise par e-mail.';
-                        const correctionStatus = canViewCorrige(dossierId)
-                            ? ' Le corrigé du dossier est désormais disponible.'
-                            : ' Marquez ce dossier « Fait » dans le module 3 pour afficher son corrigé.';
-                        if (status) status.textContent = deliveryStatus + correctionStatus +
-                            (data.warning ? ' ' + data.warning : '');
-                        document.querySelector('#corrigeList .dossier-item:not([hidden])')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    });
-                }).catch(function(error) {
-                    console.error('Erreur de validation ou de transmission de la fiche', error);
-                    if (verificationGeneration === correctionVerificationGeneration && verificationProgress !== null && verificationProgress < 100) {
-                        updateCorrectionVerification(verificationProgress, 'Vérification interrompue');
-                    }
-                    updateCorrectionAccess();
-                    if (status) status.textContent = error.message || 'Envoi impossible. Réessayez.';
-                }).finally(function() {
-                    if (submitButton) submitButton.disabled = false;
-                    dossierSelect.disabled = dossierSelect.options.length <= 1;
-                    if (openUploadButton) openUploadButton.disabled = false;
-                });
-            });
-        }
+        bindFicheSubmissionForm({
+            formId: 'correctionUploadForm',
+            dossierId: 'correctionDossier',
+            fileId: 'correctionFile',
+            fileNameId: 'correctionFileName',
+            openButtonId: 'openCorrectionUpload',
+            statusId: 'correctionGateStatus',
+            submissionType: 'proposition',
+            label: 'Fiche de proposition',
+            validateGabarit: true
+        });
+        bindFicheSubmissionForm({
+            formId: 'supportOralUploadForm',
+            dossierId: 'supportOralDossier',
+            fileId: 'supportOralFile',
+            fileNameId: 'supportOralFileName',
+            openButtonId: 'openSupportOralUpload',
+            statusId: 'supportOralGateStatus',
+            submissionType: 'support_oral',
+            label: 'Fiche support oral',
+            validateGabarit: false
+        });
+        document.querySelector('.mod-body[data-mod="3"]')?.addEventListener('change', updateCorrectionDossierOptions);
 
         const module4 = document.getElementById('modal-module4');
         if (module4) {

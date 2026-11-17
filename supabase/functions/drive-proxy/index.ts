@@ -73,7 +73,7 @@ async function fichesTransmises(candidatId: string): Promise<Set<number>> {
   const cle = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   if (!url || !cle) throw new Error('Configuration Supabase manquante');
   const r = await fetch(
-    `${url}/rest/v1/doctrine_fiche_submissions?user_id=eq.${encodeURIComponent(candidatId)}&select=dossier`,
+    `${url}/rest/v1/doctrine_fiche_submissions?user_id=eq.${encodeURIComponent(candidatId)}&submission_type=eq.proposition&select=dossier`,
     { headers: { apikey: cle, Authorization: `Bearer ${cle}` } },
   );
   if (!r.ok) throw new Error('Lecture des fiches transmises impossible');

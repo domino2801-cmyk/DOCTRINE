@@ -470,22 +470,36 @@
         <p><strong>4.2. Corrigés Types (Modèles conformes de Fiches de Synthèse et Supports Oraux) :</strong></p>
 
         <section id="correctionGate" class="correction-gate adm-ui" aria-labelledby="correction-gate-title">
-            <h3 id="correction-gate-title">Accès aux corrigés</h3>
+            <h3 id="correction-gate-title">Fiche de proposition — accès aux corrigés</h3>
             <form id="correctionUploadForm">
                 <select id="correctionDossier" name="correctionDossier" aria-label="Dossier rédigé dans le module 3" required>
                     <option value="">Dossier rédigé dans le module 3…</option>
                 </select>
                 <button id="openCorrectionUpload" type="button">Ouvrir le téléversement</button>
-                <label class="visually-hidden" for="correctionFile">Fiche rédigée (PDF, DOC ou DOCX)</label>
+                <label class="visually-hidden" for="correctionFile">Fiche de proposition (PDF, DOC ou DOCX)</label>
                 <input id="correctionFile" class="visually-hidden" name="correctionFile" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" tabindex="-1" aria-hidden="true">
                 <p id="correctionFileName" aria-live="polite">Aucun fichier sélectionné.</p>
                 <button type="submit">Transmettre ma fiche</button>
             </form>
-            <p id="correctionGateStatus" style="color:#c0392b;" role="status" aria-live="polite"></p>
+            <p id="correctionGateStatus" class="correction-gate-status" role="status" aria-live="polite"></p>
             <div id="correctionVerification" class="correction-verification" hidden>
                 <label id="correctionVerificationLabel" for="correctionVerificationProgress">Vérification en cours : 0 %</label>
                 <progress id="correctionVerificationProgress" max="100" value="0" aria-labelledby="correctionVerificationLabel"></progress>
             </div>
+        </section>
+        <section id="supportOralGate" class="correction-gate adm-ui" aria-labelledby="support-oral-gate-title">
+            <h3 id="support-oral-gate-title">Fiche support oral</h3>
+            <form id="supportOralUploadForm">
+                <select id="supportOralDossier" name="supportOralDossier" aria-label="Dossier du support oral" required>
+                    <option value="">Dossier rédigé dans le module 3…</option>
+                </select>
+                <button id="openSupportOralUpload" type="button">Ouvrir le téléversement</button>
+                <label class="visually-hidden" for="supportOralFile">Fiche support oral (PDF, DOC ou DOCX)</label>
+                <input id="supportOralFile" class="visually-hidden" name="supportOralFile" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" tabindex="-1" aria-hidden="true">
+                <p id="supportOralFileName" aria-live="polite">Aucun fichier sélectionné.</p>
+                <button type="submit">Transmettre mon support oral</button>
+            </form>
+            <p id="supportOralGateStatus" class="correction-gate-status" role="status" aria-live="polite"></p>
         </section>
 
         <!-- SECONDE BARRE DE PROGRESSION POUR LE MODULE 4 -->

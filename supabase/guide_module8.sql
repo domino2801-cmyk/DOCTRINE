@@ -111,8 +111,8 @@ create policy guide_candidates_read_own
 drop policy if exists guide_candidates_insert_own on public.guide_candidates;
 drop policy if exists guide_candidates_delete_own on public.guide_candidates;
 
--- Les soumissions existantes ont une clé (user_id, dossier). L'identifiant
--- UUID permet d'attacher les évaluations sans casser le mécanisme historique.
+-- Chaque type de fiche est une soumission distincte ; l'identifiant UUID
+-- permet d'attacher les évaluations aux fiches de proposition.
 alter table public.doctrine_fiche_submissions
     add column if not exists id uuid default gen_random_uuid();
 alter table public.doctrine_fiche_submissions
@@ -185,6 +185,7 @@ create policy fiche_reviews_candidate_read_own
             select 1
             from public.doctrine_fiche_submissions submission
             where submission.id = submission_id
+              and submission.submission_type = 'proposition'
               and submission.user_id = auth.uid()
         )
     );
@@ -198,6 +199,7 @@ create policy fiche_reviews_guide_read_assigned
             select 1
             from public.doctrine_fiche_submissions submission
             where submission.id = submission_id
+              and submission.submission_type = 'proposition'
               and public.doctrine_can_access_candidate(submission.user_id)
         )
     );
@@ -212,6 +214,7 @@ create policy fiche_reviews_guide_insert_assigned
             select 1
             from public.doctrine_fiche_submissions submission
             where submission.id = submission_id
+              and submission.submission_type = 'proposition'
               and public.doctrine_can_access_candidate(submission.user_id)
         )
     );
@@ -225,6 +228,7 @@ create policy fiche_reviews_guide_update_assigned
             select 1
             from public.doctrine_fiche_submissions submission
             where submission.id = submission_id
+              and submission.submission_type = 'proposition'
               and public.doctrine_can_access_candidate(submission.user_id)
         )
     )
@@ -235,6 +239,7 @@ create policy fiche_reviews_guide_update_assigned
             select 1
             from public.doctrine_fiche_submissions submission
             where submission.id = submission_id
+              and submission.submission_type = 'proposition'
               and public.doctrine_can_access_candidate(submission.user_id)
         )
     );
@@ -704,6 +709,7 @@ begin
                         select jsonb_agg(jsonb_build_object(
                             'id', submission.id,
                             'dossier', submission.dossier,
+                            'submission_type', submission.submission_type,
                             'created_at', submission.created_at,
                             'storage_path', submission.storage_path,
                             'reviews', coalesce((

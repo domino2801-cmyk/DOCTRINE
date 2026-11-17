@@ -130,11 +130,17 @@
         return scores.length ? scores.reduce(function (sum, score) { return sum + score; }, 0) / scores.length : null;
     }
 
-    function validDossierCount(candidate) {
+    function proposalSubmissions(candidate) {
         const submissions = candidate.doctrine && Array.isArray(candidate.doctrine.submissions)
             ? candidate.doctrine.submissions : [];
+        return submissions.filter(function (submission) {
+            return submission.submission_type !== 'support_oral';
+        });
+    }
+
+    function validDossierCount(candidate) {
         const valid = new Set();
-        submissions.forEach(function (submission) {
+        proposalSubmissions(candidate).forEach(function (submission) {
             const review = (submission.reviews || [])[0];
             if (review && review.status === 'valide') valid.add(String(submission.dossier));
         });
@@ -142,9 +148,7 @@
     }
 
     function reworkCount(candidate) {
-        const submissions = candidate.doctrine && Array.isArray(candidate.doctrine.submissions)
-            ? candidate.doctrine.submissions : [];
-        return new Set(submissions.filter(function (submission) {
+        return new Set(proposalSubmissions(candidate).filter(function (submission) {
             const review = (submission.reviews || [])[0];
             return review && review.status === 'a_reprendre';
         }).map(function (submission) { return String(submission.dossier); })).size;
@@ -309,13 +313,20 @@
             return doc.document_title;
         }).filter(Boolean)).size;
         const submissions = doctrine.submissions || [];
+        const proposalCount = submissions.filter(function (submission) {
+            return submission.submission_type !== 'support_oral';
+        }).length;
+        const oralSupportCount = submissions.filter(function (submission) {
+            return submission.submission_type === 'support_oral';
+        }).length;
         const corrections = new Set(events.filter(function (event) {
             return event.module_id === '4' && event.event_type === 'correction_accessible';
         }).map(function (event) { return String(event.dossier); })).size;
         [
             ['Module 1', moduleOneDone ? 'Validé' : 'Non validé'],
             ['Module 2', documents + ' document(s) lu(s)'],
-            ['Module 3', submissions.length + ' dossier(s) déposé(s)'],
+            ['Fiches de proposition', proposalCount + ' dépôt(s)'],
+            ['Supports oraux', oralSupportCount + ' dépôt(s)'],
             ['Module 4', corrections + ' corrigé(s) débloqué(s)']
         ].forEach(function (item) {
             const card = element('article', 'guide-progress-card');
@@ -331,7 +342,11 @@
         if (!container) return;
         container.replaceChildren();
         const submissions = candidate.doctrine?.submissions || [];
-        if (count) count.textContent = Math.min(8, validDossierCount(candidate)) + ' / 8 fiches validées';
+        const oralSupportCount = submissions.filter(function (submission) {
+            return submission.submission_type === 'support_oral';
+        }).length;
+        if (count) count.textContent = Math.min(8, validDossierCount(candidate)) +
+            ' / 8 propositions validées · ' + oralSupportCount + ' support(s) oral(aux) transmis';
         const needsWork = reworkCount(candidate);
         if (alert) {
             alert.hidden = needsWork === 0;
@@ -344,16 +359,21 @@
         submissions.forEach(function (submission) {
             const card = element('article', 'guide-submission-card');
             const description = element('div');
-            description.appendChild(element('strong', '', 'Dossier ' + submission.dossier));
-            const review = (submission.reviews || [])[0];
-            const decision = review
-                ? (review.status === 'valide' ? 'Validé' : review.status === 'a_reprendre' ? 'À reprendre' : 'En attente')
-                    + (review.grade === null || review.grade === undefined ? '' : ' · ' + Number(review.grade).toFixed(2) + ' / 20')
-                : 'En attente d’évaluation';
+            const isOralSupport = submission.submission_type === 'support_oral';
+            description.appendChild(element('strong', '', (isOralSupport ? 'Fiche support oral' : 'Fiche de proposition') +
+                ' — Dossier ' + submission.dossier));
+            const review = isOralSupport ? null : (submission.reviews || [])[0];
+            const decision = isOralSupport
+                ? 'Consultation uniquement'
+                : review
+                    ? (review.status === 'valide' ? 'Validé' : review.status === 'a_reprendre' ? 'À reprendre' : 'En attente')
+                        + (review.grade === null || review.grade === undefined ? '' : ' · ' + Number(review.grade).toFixed(2) + ' / 20')
+                    : 'En attente d’évaluation';
             description.appendChild(element('span', 'guide-review-label',
                 formatDate(submission.created_at) + ' · ' + decision));
             card.appendChild(description);
-            const button = element('button', 'guide-button guide-button-primary', 'Ouvrir PDF & Noter');
+            const button = element('button', 'guide-button guide-button-primary',
+                isOralSupport ? 'Ouvrir le support oral' : 'Ouvrir PDF & Noter');
             button.type = 'button';
             button.disabled = !submission.storage_path;
             if (!submission.storage_path) button.title = 'Cette fiche a été transmise avant l’archivage des PDF.';
@@ -527,8 +547,16 @@
         const frame = document.getElementById('guidePdfPreview');
         const pdfStatus = document.getElementById('guidePdfStatus');
         const reviewStatus = document.getElementById('guideReviewStatus');
-        const review = (submission.reviews || [])[0] || {};
-        if (title) title.textContent = candidateName(candidate.candidate) + ' — Dossier ' + submission.dossier;
+        const isOralSupport = submission.submission_type === 'support_oral';
+        const review = isOralSupport ? {} : (submission.reviews || [])[0] || {};
+        const reviewForm = document.getElementById('guideReviewForm');
+        const layout = dialog?.querySelector('.guide-review-layout');
+        const kicker = dialog?.querySelector('.guide-kicker');
+        if (reviewForm) reviewForm.hidden = isOralSupport;
+        if (layout) layout.classList.toggle('is-readonly', isOralSupport);
+        if (kicker) kicker.textContent = isOralSupport ? 'CONSULTATION — SUPPORT ORAL' : 'ÉVALUATION BM4';
+        if (title) title.textContent = candidateName(candidate.candidate) + ' — ' +
+            (isOralSupport ? 'Support oral' : 'Fiche de proposition') + ' — Dossier ' + submission.dossier;
         document.getElementById('guideReviewSubmissionId').value = submission.id;
         document.getElementById('guideFormGrade').value = review.form_grade ?? '';
         document.getElementById('guideContentGrade').value = review.content_grade ?? '';

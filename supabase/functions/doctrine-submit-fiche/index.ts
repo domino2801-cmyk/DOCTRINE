@@ -51,14 +51,21 @@ Deno.serve(async (request) => {
 
         if (request.method === "GET") {
             const { data, error } = await database.from("doctrine_fiche_submissions")
-                .select("dossier").eq("user_id", userData.user.id);
+                .select("dossier,submission_type,created_at").eq("user_id", userData.user.id);
             if (error) throw error;
-            return response({ dossiers: (data || []).map((row) => row.dossier) });
+            const submissions = data || [];
+            return response({
+                dossiers: submissions
+                    .filter((row) => row.submission_type === "proposition")
+                    .map((row) => row.dossier),
+                submissions
+            });
         }
 
         const form = await request.formData();
         const file = form.get("file");
         const dossier = String(form.get("dossier") || "").trim();
+        const submissionType = String(form.get("submission_type") || "proposition").trim();
         if (!(file instanceof File) || !EXTENSIONS.test(file.name)) {
             return response({ error: "Fichier PDF, DOC ou DOCX requis" }, 400);
         }
@@ -66,6 +73,10 @@ Deno.serve(async (request) => {
             return response({ error: "Le fichier doit faire moins de 10 Mo" }, 400);
         }
         if (!/^\d{1,3}$/.test(dossier)) return response({ error: "Dossier invalide" }, 400);
+        if (submissionType !== "proposition" && submissionType !== "support_oral") {
+            return response({ error: "Type de fiche invalide" }, 400);
+        }
+        const submissionLabel = submissionType === "proposition" ? "Fiche de proposition" : "Fiche support oral";
 
         const { data: profile } = await database.from("profiles")
             .select("name").eq("id", userData.user.id).maybeSingle();
@@ -82,13 +93,14 @@ Deno.serve(async (request) => {
                 .select("id,storage_path")
                 .eq("user_id", userData.user.id)
                 .eq("dossier", Number(dossier))
+                .eq("submission_type", submissionType)
                 .maybeSingle();
         if (previousSubmissionError) throw previousSubmissionError;
 
         let storagePath: string | null = null;
         if (isPdf) {
             const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
-            storagePath = `${userData.user.id}/${dossier}_${timestamp}.pdf`;
+            storagePath = `${userData.user.id}/${submissionType}_${dossier}_${timestamp}.pdf`;
             const { error: uploadError } = await database.storage
                 .from(FICHE_BUCKET)
                 .upload(storagePath, fileBytes, {
@@ -117,9 +129,9 @@ Deno.serve(async (request) => {
                 body: JSON.stringify({
                     from: Deno.env.get("DOCTRINE_MAIL_FROM") || "DOCTRINE <onboarding@resend.dev>",
                     to: [DESTINATAIRE],
-                    subject: `envoi du dossier ${dossier}`,
-                    text: `Bonjour, veuillez trouver ci joint le devoir de : ${pseudo}`,
-                    html: `<p>Bonjour, veuillez trouver ci joint le devoir de : ${escapeHtml(pseudo)}</p>`,
+                    subject: `DOCTRINE — ${submissionLabel} — dossier ${dossier}`,
+                    text: `${submissionLabel} — dossier ${dossier}\nCandidat : ${pseudo}`,
+                    html: `<p>${escapeHtml(submissionLabel)} — dossier ${dossier}<br>Candidat : ${escapeHtml(pseudo)}</p>`,
                     attachments: [{ filename: file.name.slice(0, 150), content: attachment }]
                 })
             });
@@ -137,8 +149,9 @@ Deno.serve(async (request) => {
             .upsert({
                 user_id: userData.user.id,
                 dossier: Number(dossier),
+                submission_type: submissionType,
                 storage_path: storagePath
-            }, { onConflict: "user_id,dossier" })
+            }, { onConflict: "user_id,dossier,submission_type" })
             .select("id")
             .single();
         if (recordError) {
@@ -167,6 +180,8 @@ Deno.serve(async (request) => {
 
         return response({
             ok: true,
+            recorded: true,
+            submission_type: submissionType,
             archived: isPdf,
             ...(warnings.length ? { warning: warnings.join(" ") } : {})
         });

@@ -55,9 +55,30 @@ test("l’archive PDF est privée et signable uniquement par le candidat ou son 
     assert.match(sql, /doctrine_can_access_candidate_path\(name\)/);
 });
 
+test("les deux types de fiches sont identifiés, enregistrés séparément et limités aux bons usages", () => {
+    const submissionsSql = readFile(new URL("supabase/fiche-submissions.sql", root), "utf8");
+    const driveProxy = readFile(new URL("supabase/functions/drive-proxy/index.ts", root), "utf8");
+    return Promise.all([submissionsSql, driveProxy]).then(([schema, proxy]) => {
+        assert.match(schema, /submission_type in \('proposition', 'support_oral'\)/);
+        assert.match(schema, /primary key \(user_id, dossier, submission_type\)/i);
+        assert.match(edgeFunction, /row\.submission_type === "proposition"/);
+        assert.match(edgeFunction, /subject: `DOCTRINE — \$\{submissionLabel\} — dossier \$\{dossier\}`/);
+        assert.match(edgeFunction, /onConflict: "user_id,dossier,submission_type"/);
+        assert.match(edgeFunction, /submission_type: submissionType/);
+        assert.match(proxy, /submission_type=eq\.proposition/);
+        assert.match(appScript, /body\.append\('submission_type', config\.submissionType\)/);
+        assert.match(appScript, /if \(config\.submissionType === 'proposition'\) \{\s+transmittedDossiers\.add/);
+        assert.match(sql, /'submission_type', submission\.submission_type/);
+        assert.match(sql, /submission\.submission_type = 'proposition'/);
+        assert.match(script, /Fiche support oral/);
+        assert.match(script, /isOralSupport \? 'Ouvrir le support oral' : 'Ouvrir PDF & Noter'/);
+        assert.match(script, /layout\.classList\.toggle\('is-readonly', isOralSupport\)/);
+    });
+});
+
 test("la soumission conserve l’envoi e-mail et archive les PDF sous le dossier du candidat", () => {
     assert.match(edgeFunction, /fileBytes\.subarray\(0, 5\).*"%PDF-"/);
-    assert.match(edgeFunction, /storagePath = `\$\{userData\.user\.id\}\/\$\{dossier\}_\$\{timestamp\}\.pdf`/);
+    assert.match(edgeFunction, /storagePath = `\$\{userData\.user\.id\}\/\$\{submissionType\}_\$\{dossier\}_\$\{timestamp\}\.pdf`/);
     assert.match(edgeFunction, /\.from\(FICHE_BUCKET\)\s*\.upload\(storagePath, fileBytes/);
     assert.match(edgeFunction, /https:\/\/api\.resend\.com\/emails/);
     assert.match(edgeFunction, /storage_path: storagePath/);

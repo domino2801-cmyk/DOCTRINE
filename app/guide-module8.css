@@ -653,12 +653,20 @@
     padding: 0 10px;
 }
 
+.guide-review-layout.is-readonly {
+    grid-template-columns: minmax(0, 1fr);
+}
+
 .guide-review-form {
     display: grid;
     align-content: start;
     gap: 12px;
     overflow-y: auto;
     padding: 4px;
+}
+
+.guide-review-form[hidden] {
+    display: none;
 }
 
 .guide-review-total {
