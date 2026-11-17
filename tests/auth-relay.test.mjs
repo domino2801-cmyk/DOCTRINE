@@ -17,24 +17,6 @@ test("le relais QCM récupère l’expiration depuis le jeton si elle manque dan
     assert.ok(Number.isNaN(expirationDuJeton("invalid")));
 });
 
-test("l’identifiant du candidat est lu du claim sub du JWT", () => {
-    const match = source.match(/function identifiantDuJeton\(jeton\) \{[\s\S]*?\n    \}/);
-    assert.ok(match);
-    const decode = value => Buffer.from(value, "base64").toString("binary");
-    const warnings = [];
-    const identifiantDuJeton = vm.runInNewContext(`(${match[0]})`, {
-        atob: decode,
-        console: { warn: (...args) => warnings.push(args) }
-    });
-    const userId = "e536bcd8-4fb9-4bab-9eaa-08920e57f2c1";
-    const payload = Buffer.from(JSON.stringify({ sub: userId })).toString("base64url");
-
-    assert.equal(identifiantDuJeton(`header.${payload}.signature`), userId);
-    assert.equal(identifiantDuJeton("invalid"), "");
-    assert.equal(warnings.length, 1);
-    assert.match(source, /identifiant: function \(\) \{\s+return verifier\(\)\.then\(function \(s\) \{\s+return s \? \(s\.user_id \|\| identifiantDuJeton\(s\.access_token\)\) : '';/);
-});
-
 test("un accès lancé depuis QCM-MAJOR ne revient pas au formulaire mot de passe si le relais échoue", () => {
     assert.match(source, /get\('from'\) === 'qcm-major'/);
     assert.match(source, /if \(accesQcm\) \{\s+afficherEchecRelaisQcm\(\);\s+return;/);

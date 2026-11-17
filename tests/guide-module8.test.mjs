@@ -6,7 +6,7 @@ import vm from "node:vm";
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 
-const [sql, edgeFunction, index, page, styles, script, appScript, adminScript, ogAccessPatch] = await Promise.all([
+const [sql, edgeFunction, index, page, styles, script, appScript, adminScript, ogAccessPatch, shortCodePatch] = await Promise.all([
     read("supabase/guide_module8.sql"),
     read("supabase/functions/doctrine-submit-fiche/index.ts"),
     read("index.html"),
@@ -15,7 +15,8 @@ const [sql, edgeFunction, index, page, styles, script, appScript, adminScript, o
     read("app/guide-module8.js"),
     read("app/app.js"),
     read("admin/admin.js"),
-    read("supabase/guide_module8-og-access.sql")
+    read("supabase/guide_module8-og-access.sql"),
+    read("supabase/guide_module8-short-code.sql")
 ]);
 
 test("les fonctions de cohorte autorisent les admins et limitent les guides aux rattachements", () => {
@@ -26,6 +27,13 @@ test("les fonctions de cohorte autorisent les admins et limitent les guides aux 
     assert.doesNotMatch(sql, /grant select, insert, delete on public\.guide_candidates to authenticated/i);
     assert.match(sql, /create or replace function public\.doctrine_can_access_candidate/);
     assert.match(sql, /assignment\.guide_id = auth\.uid\(\)[\s\S]*assignment\.candidate_id = p_candidate_id/);
+    assert.match(sql, /create table if not exists public\.doctrine_candidate_guide_codes[\s\S]*code text not null unique check \(code ~ '\^\[A-HJ-NP-Z2-9\]\{8\}\$'\)/);
+    assert.match(sql, /create or replace function public\.get_doctrine_candidate_guide_code\(\)[\s\S]*pg_catalog\.get_bit[\s\S]*grant execute on function public\.get_doctrine_candidate_guide_code\(\) to authenticated/);
+    assert.match(sql, /create or replace function public\.assign_guide_candidate_by_code\(p_code text\)[\s\S]*public\.doctrine_is_guide\(\)[\s\S]*code_row\.code = candidate_code[\s\S]*perform public\.assign_guide_candidate\(candidate_id\)/);
+    assert.match(shortCodePatch, /create table if not exists public\.doctrine_candidate_guide_codes/);
+    assert.match(shortCodePatch, /create or replace function public\.get_doctrine_candidate_guide_code\(\)/);
+    assert.match(shortCodePatch, /create or replace function public\.assign_guide_candidate_by_code\(p_code text\)/);
+    assert.match(shortCodePatch, /revoke all on public\.doctrine_candidate_guide_codes from public, anon, authenticated/);
     assert.match(sql, /create or replace function public\.doctrine_is_guide\(\)[\s\S]*auth\.jwt\(\) -> 'app_metadata' ->> 'specialty'[\s\S]*'OG'/);
     assert.match(ogAccessPatch, /public\.doctrine_is_guide\(\)[\s\S]*auth\.jwt\(\) -> 'app_metadata' ->> 'specialty'[\s\S]*'OG'/);
     assert.match(sql, /create or replace function public\.search_guide_candidates\(p_query text\)/);
@@ -109,8 +117,9 @@ test("l’entrée Module 8 est conditionnelle et la page propose les parcours de
     assert.match(script, /GUIDE_ROLES = new Set\(\['guide', 'officier_guide'\]\)/);
     assert.match(script, /specialty === 'OG'/);
     assert.match(script, /admin \|\| GUIDE_ROLES\.has\(role\)/);
-    assert.match(page, /UUID du compte candidat \(communiqué par le candidat\)/);
-    assert.match(page, /pattern="\[0-9a-fA-F\]\{8\}-\[0-9a-fA-F\]\{4\}-\[0-9a-fA-F\]\{4\}-\[0-9a-fA-F\]\{4\}-\[0-9a-fA-F\]\{12\}"/);
+    assert.match(page, /Code candidat de 8 caractères \(communiqué par le candidat\)/);
+    assert.match(page, /pattern="\[A-HJ-NP-Za-hj-np-z2-9\]\{8\}"/);
+    assert.match(script, /assign_guide_candidate_by_code/);
     assert.match(script, /assignCandidate\(query, attach\)/);
     assert.match(page, /Tous mes candidats/);
     assert.match(page, /7 derniers jours/);
@@ -126,15 +135,17 @@ test("l’entrée Module 8 est conditionnelle et la page propose les parcours de
     assert.deepEqual(missingPageIds, []);
 });
 
-test("le Module 1 affiche le code UUID du candidat à transmettre à son Officier Guide", () => {
+test("le Module 1 affiche un code candidat court au style des cartes existantes", () => {
     assert.match(index, /id="candidateGuideCodeCard"[\s\S]*1\.5\.[\s\S]*Code pour Officier Guide/);
-    assert.match(index, /id="candidateGuideUuid" class="candidate-guide-code-value"/);
-    assert.match(index, /id="copyCandidateGuideUuid"[^>]*>Copier mon UUID/);
+    assert.match(index, /id="candidateGuideCode" class="candidate-guide-code-value"/);
+    assert.match(index, /id="copyCandidateGuideCode"[^>]*>Copier mon code/);
+    assert.match(index, /id="candidateGuideCodeCard" class="candidate-guide-code-card dossier-item"/);
     assert.ok(index.indexOf('id="candidateGuideCodeCard"') > index.indexOf('</div><!-- /mod-body -->'));
     assert.ok(index.indexOf('id="candidateGuideCodeCard"') < index.indexOf('id="chkModule1Valid"'));
-    assert.match(appScript, /auth\.identifiant\(\)/);
+    assert.match(appScript, /get_doctrine_candidate_guide_code/);
+    assert.match(appScript, /\^\[A-HJ-NP-Z2-9\]\{8\}\$/);
     assert.match(appScript, /doctrine:login[\s\S]*refreshCandidateGuideCode/);
-    assert.match(appScript, /navigator\.clipboard\.writeText\(userId\)/);
+    assert.match(appScript, /navigator\.clipboard\.writeText\(code\)/);
 });
 
 test("les seuils QCM et l’inactivité produisent les badges attendus", () => {

@@ -97,21 +97,8 @@
             access_token: data.access_token,
             refresh_token: data.refresh_token,
             expires_at: data.expires_at || Math.floor(Date.now() / 1000) + (data.expires_in || 3600),
-            email: user.email || '',
-            user_id: user.id || ''
+            email: user.email || ''
         };
-    }
-
-    function identifiantDuJeton(jeton) {
-        try {
-            var payload = jeton.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-            payload += '='.repeat((4 - payload.length % 4) % 4);
-            var userId = JSON.parse(atob(payload)).sub;
-            return typeof userId === 'string' ? userId : '';
-        } catch (error) {
-            console.warn('Lecture de l’identifiant candidat depuis la session impossible.', error);
-            return '';
-        }
     }
 
     function chargerProfil(s, user, colonne) {
@@ -453,11 +440,6 @@
         url: SUPABASE_URL,
         key: SUPABASE_KEY,
         jeton: function () { return verifier().then(function (s) { return s ? s.access_token : null; }); },
-        identifiant: function () {
-            return verifier().then(function (s) {
-                return s ? (s.user_id || identifiantDuJeton(s.access_token)) : '';
-            });
-        },
         estAdmin: function () { var s = lire(); return !!(s && s.access_token && estAdmin(s.access_token)); },
         email: function () { var s = lire(); return s ? s.email : ''; },
         retourQcm: function () {

@@ -664,31 +664,35 @@
         event.preventDefault();
         const form = event.currentTarget;
         if (!form.reportValidity()) return;
-        const query = document.getElementById('guideCandidateSearch').value.trim();
+        const query = document.getElementById('guideCandidateSearch').value.trim().toUpperCase();
         const status = document.getElementById('guideSearchStatus');
         const results = document.getElementById('guideSearchResults');
         results.replaceChildren();
         const item = element('article', 'guide-search-result');
         const description = element('div');
-        description.appendChild(element('strong', '', 'UUID du candidat'));
+        description.appendChild(element('strong', '', 'Code candidat'));
         description.appendChild(element('small', '', query));
-        const attach = element('button', 'guide-button guide-button-primary', 'Rattacher cet UUID');
+        const attach = element('button', 'guide-button guide-button-primary', 'Rattacher ce code');
         attach.type = 'button';
         attach.addEventListener('click', function () { assignCandidate(query, attach); });
         item.append(description, attach);
         results.appendChild(item);
-        setStatus(status, 'Vérifiez que cet UUID a bien été communiqué par le candidat.');
+        setStatus(status, 'Vérifiez que ce code vous a bien été communiqué par le candidat.');
     }
 
-    async function assignCandidate(candidateId, button) {
+    async function assignCandidate(candidateCode, button) {
         button.disabled = true;
         const status = document.getElementById('guideSearchStatus');
         setStatus(status, 'Rattachement du candidat…');
         try {
-            await api('/rest/v1/rpc/assign_guide_candidate', {
+            const candidateId = await api('/rest/v1/rpc/assign_guide_candidate_by_code', {
                 method: 'POST',
-                body: { p_candidate_id: candidateId }
+                body: { p_code: candidateCode }
             });
+            if (typeof candidateId !== 'string' ||
+                !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(candidateId)) {
+                throw new Error('Le service de rattachement a retourné un identifiant candidat invalide.');
+            }
             selectedCandidateId = candidateId;
             document.getElementById('guideCandidateFilter').value = '';
             document.getElementById('guideAssignDialog').close();

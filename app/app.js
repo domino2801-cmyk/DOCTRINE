@@ -40,39 +40,60 @@ const module1Key = 'module1_validated';
         return !!(window.DoctrineAuth && window.DoctrineAuth.estAdmin && window.DoctrineAuth.estAdmin());
     }
 
+    async function fetchCandidateGuideCode() {
+        const auth = window.DoctrineAuth;
+        if (!auth || typeof auth.jeton !== 'function') {
+            throw new Error('Connexion DOCTRINE indisponible.');
+        }
+        const token = await auth.jeton();
+        if (!token) return '';
+        const response = await fetch(auth.url.replace(/\/$/, '') + '/rest/v1/rpc/get_doctrine_candidate_guide_code', {
+            method: 'POST',
+            headers: {
+                apikey: auth.key,
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: '{}'
+        });
+        const payload = await response.json().catch(function() { return null; });
+        if (!response.ok) {
+            throw new Error(payload && (payload.message || payload.msg) ||
+                'Code candidat indisponible (HTTP ' + response.status + ').');
+        }
+        if (typeof payload !== 'string' || !/^[A-HJ-NP-Z2-9]{8}$/.test(payload)) {
+            throw new Error('Le service a retourné un code candidat invalide.');
+        }
+        return payload;
+    }
+
     function refreshCandidateGuideCode() {
-        const output = document.getElementById('candidateGuideUuid');
-        const copyButton = document.getElementById('copyCandidateGuideUuid');
-        const status = document.getElementById('candidateGuideUuidStatus');
+        const output = document.getElementById('candidateGuideCode');
+        const copyButton = document.getElementById('copyCandidateGuideCode');
+        const status = document.getElementById('candidateGuideCodeStatus');
         if (!output || !copyButton) return;
 
         const requestId = ++candidateGuideCodeRequestId;
         copyButton.disabled = true;
-        delete copyButton.dataset.uuid;
-        output.textContent = 'Chargement de votre UUID…';
+        delete copyButton.dataset.code;
+        output.textContent = 'Génération de votre code…';
         if (status) status.textContent = '';
-        const auth = window.DoctrineAuth;
-        if (!auth || typeof auth.identifiant !== 'function') {
-            output.textContent = 'UUID indisponible.';
-            if (status) status.textContent = 'Connexion DOCTRINE indisponible. Rechargez la page.';
-            return;
-        }
-        auth.identifiant().then(function(userId) {
+        fetchCandidateGuideCode().then(function(code) {
             if (requestId !== candidateGuideCodeRequestId) return;
-            if (!userId) {
-                output.textContent = 'UUID indisponible.';
+            if (!code) {
+                output.textContent = 'Code indisponible.';
                 if (status) status.textContent = 'Connectez-vous pour afficher votre code candidat.';
                 return;
             }
-            output.textContent = userId;
-            copyButton.dataset.uuid = userId;
+            output.textContent = code;
+            copyButton.dataset.code = code;
             copyButton.disabled = false;
             if (status) status.textContent = '';
         }).catch(function(error) {
             if (requestId !== candidateGuideCodeRequestId) return;
-            console.error('Chargement du code UUID candidat impossible.', error);
-            output.textContent = 'UUID indisponible.';
-            if (status) status.textContent = 'Impossible de charger votre code. Rechargez la page.';
+            console.error('Chargement du code candidat impossible.', error);
+            output.textContent = 'Code indisponible.';
+            if (status) status.textContent = 'Service de code indisponible. Contactez un administrateur.';
         });
     }
 
@@ -258,32 +279,32 @@ const module1Key = 'module1_validated';
         updateCorrectionAccess();
     }
 
-    document.getElementById('copyCandidateGuideUuid')?.addEventListener('click', async function(event) {
+    document.getElementById('copyCandidateGuideCode')?.addEventListener('click', async function(event) {
         const button = event.currentTarget;
-        const userId = button.dataset.uuid;
-        const status = document.getElementById('candidateGuideUuidStatus');
-        if (!userId) return;
+        const code = button.dataset.code;
+        const status = document.getElementById('candidateGuideCodeStatus');
+        if (!code) return;
         try {
             if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
                 throw new Error('La copie dans le presse-papiers n’est pas disponible.');
             }
-            await navigator.clipboard.writeText(userId);
-            if (status) status.textContent = 'UUID copié.';
+            await navigator.clipboard.writeText(code);
+            if (status) status.textContent = 'Code copié.';
         } catch (error) {
-            console.error('Copie du code UUID impossible.', error);
+            console.error('Copie du code candidat impossible.', error);
             if (status) status.textContent = 'Copie impossible. Sélectionnez le code affiché pour le copier.';
         }
     });
     document.addEventListener('doctrine:login', refreshCandidateGuideCode);
     document.addEventListener('doctrine:logout', function() {
         candidateGuideCodeRequestId++;
-        const output = document.getElementById('candidateGuideUuid');
-        const copyButton = document.getElementById('copyCandidateGuideUuid');
-        const status = document.getElementById('candidateGuideUuidStatus');
-        if (output) output.textContent = 'Connectez-vous pour afficher votre UUID.';
+        const output = document.getElementById('candidateGuideCode');
+        const copyButton = document.getElementById('copyCandidateGuideCode');
+        const status = document.getElementById('candidateGuideCodeStatus');
+        if (output) output.textContent = 'Connectez-vous pour afficher votre code.';
         if (copyButton) {
             copyButton.disabled = true;
-            delete copyButton.dataset.uuid;
+            delete copyButton.dataset.code;
         }
         if (status) status.textContent = '';
     });

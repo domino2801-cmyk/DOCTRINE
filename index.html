@@ -167,15 +167,15 @@
         </ul>
 
 </div><!-- /mod-body --><!-- Bloc de validation de lecture obligatoire -->
-        <section id="candidateGuideCodeCard" class="candidate-guide-code-card" aria-labelledby="candidate-guide-code-title">
+        <section id="candidateGuideCodeCard" class="candidate-guide-code-card dossier-item" aria-labelledby="candidate-guide-code-title">
             <div>
                 <p class="candidate-guide-code-kicker">1.5.</p>
                 <h3 id="candidate-guide-code-title">Code pour Officier Guide</h3>
-                <p>Communiquez ce code ID UUID à votre Officier Guide pour qu’il puisse vous rattacher à sa cohorte.</p>
-                <output id="candidateGuideUuid" class="candidate-guide-code-value" aria-live="polite">Chargement de votre UUID…</output>
+                <p>Communiquez ce code de 8 caractères à votre Officier Guide pour qu’il puisse vous rattacher à sa cohorte.</p>
+                <output id="candidateGuideCode" class="candidate-guide-code-value" aria-live="polite">Génération de votre code…</output>
             </div>
-            <button id="copyCandidateGuideUuid" class="candidate-guide-code-copy" type="button" disabled>Copier mon UUID</button>
-            <p id="candidateGuideUuidStatus" class="candidate-guide-code-status" role="status" aria-live="polite"></p>
+            <button id="copyCandidateGuideCode" class="candidate-guide-code-copy" type="button" disabled>Copier mon code</button>
+            <p id="candidateGuideCodeStatus" class="candidate-guide-code-status" role="status" aria-live="polite"></p>
         </section>
         <div style="margin-top: 30px; padding: 15px; background-color: #f8fafc; border: 2px dashed #0b2240; border-radius: 6px; display: flex; align-items: center; gap: 12px; font-weight: bold; width: 100%; box-sizing: border-box;">
             <input type="checkbox" id="chkModule1Valid" style="transform: scale(1.3); cursor: pointer;">

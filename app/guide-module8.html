@@ -151,12 +151,12 @@
                 <div><p class="guide-kicker">COHORTE BM4</p><h2 id="guideAssignTitle">Rattacher un candidat</h2></div>
                 <button class="guide-icon-button" type="button" data-guide-close="guideAssignDialog" aria-label="Fermer">×</button>
             </div>
-            <label for="guideCandidateSearch">UUID du compte candidat (communiqué par le candidat)</label>
+            <label for="guideCandidateSearch">Code candidat de 8 caractères (communiqué par le candidat)</label>
             <div class="guide-search-row">
-                <input id="guideCandidateSearch" type="text" minlength="36" maxlength="36" pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" required>
-                <button class="guide-button guide-button-primary" type="submit">Vérifier l’UUID</button>
+                <input id="guideCandidateSearch" type="text" minlength="8" maxlength="8" pattern="[A-HJ-NP-Za-hj-np-z2-9]{8}" placeholder="ABCD2345" autocomplete="off" autocapitalize="characters" spellcheck="false" required>
+                <button class="guide-button guide-button-primary" type="submit">Vérifier le code</button>
             </div>
-            <p class="guide-muted">Saisissez l’UUID exact transmis par le candidat, puis confirmez le rattachement.</p>
+            <p class="guide-muted">Saisissez le code transmis par le candidat, puis confirmez le rattachement.</p>
             <p id="guideSearchStatus" class="guide-form-status" role="status" aria-live="polite"></p>
             <div id="guideSearchResults" class="guide-search-results"></div>
         </form>
