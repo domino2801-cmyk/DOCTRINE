@@ -6,14 +6,15 @@ import vm from "node:vm";
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 
-const [sql, edgeFunction, index, page, styles, script, appScript] = await Promise.all([
+const [sql, edgeFunction, index, page, styles, script, appScript, adminScript] = await Promise.all([
     read("supabase/guide_module8.sql"),
     read("supabase/functions/doctrine-submit-fiche/index.ts"),
     read("index.html"),
     read("app/guide-module8.html"),
     read("app/guide-module8.css"),
     read("app/guide-module8.js"),
-    read("app/app.js")
+    read("app/app.js"),
+    read("admin/admin.js")
 ]);
 
 test("les fonctions de cohorte autorisent les admins et limitent les guides aux rattachements", () => {
@@ -73,6 +74,10 @@ test("les deux types de fiches sont identifiés, enregistrés séparément et li
         assert.match(script, /Fiche support oral/);
         assert.match(script, /isOralSupport \? 'Ouvrir le support oral' : 'Ouvrir PDF & Noter'/);
         assert.match(script, /layout\.classList\.toggle\('is-readonly', isOralSupport\)/);
+        assert.match(adminScript, /var supportOralGate = n === '4' && el\.querySelector\('#supportOralGate'\)/);
+        assert.match(adminScript, /var submissionGates = \[correctionGate, supportOralGate\]/);
+        assert.match(adminScript, /\.adm-ui:not\(#correctionGate\):not\(#supportOralGate\)/);
+        assert.match(adminScript, /corpsEl\.querySelector\('#supportOralGate'\)/);
     });
 });
 

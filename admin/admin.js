@@ -184,7 +184,9 @@
         var el = corps(n);
         if (!el) return;
         var correctionGate = n === '4' && el.querySelector('#correctionGate');
+        var supportOralGate = n === '4' && el.querySelector('#supportOralGate');
         if (correctionGate) correctionGate.remove();
+        if (supportOralGate) supportOralGate.remove();
         if (n === '2') html = assurerMrgModule2(html);
         if (n === '6') html = assurerSpecialitesModule6(html);
         el.innerHTML = assainir(html);
@@ -199,14 +201,24 @@
             });
         }
         if (n === '3') assurerOutilsEtude(el);
-        if (correctionGate) {
-            var storedGate = el.querySelector('#correctionGate');
-            if (storedGate) storedGate.remove();
+        if (correctionGate || supportOralGate) {
+            var submissionGates = [correctionGate, supportOralGate].filter(Boolean);
+            submissionGates.forEach(function (gate) {
+                var storedGate = el.querySelector('#' + gate.id);
+                if (storedGate) storedGate.remove();
+            });
             var heading = Array.from(el.querySelectorAll('p > strong')).find(function (element) {
                 return element.textContent.trim().startsWith('4.2.');
             });
-            if (heading) heading.closest('p').after(correctionGate);
-            else el.appendChild(correctionGate);
+            var anchor = heading && heading.closest('p');
+            if (anchor) {
+                submissionGates.forEach(function (gate) {
+                    anchor.after(gate);
+                    anchor = gate;
+                });
+            } else {
+                submissionGates.forEach(function (gate) { el.appendChild(gate); });
+            }
         }
         courant[n] = nettoye(el);
         if (n === '1' || n === '4' || n === '6') {
@@ -564,8 +576,9 @@
 
     function decorer(corpsEl) {
         corpsEl.contentEditable = 'true';
-        var correctionGate = corpsEl.querySelector('#correctionGate');
-        if (correctionGate) correctionGate.contentEditable = 'false';
+        [corpsEl.querySelector('#correctionGate'), corpsEl.querySelector('#supportOralGate')].forEach(function (gate) {
+            if (gate) gate.contentEditable = 'false';
+        });
         corpsEl.querySelectorAll('li, .align-row, .dossier-item').forEach(function (ligne) {
             if (ligne.closest('.difficulty-scale')) return;
             if (ligne.querySelector(':scope > .adm-row-tools')) return;
@@ -674,7 +687,7 @@
             if (!c) return;
             c.removeAttribute('contenteditable');
             if (restaurer) appliquer(n, courant[n]);
-            else c.querySelectorAll('.adm-ui:not(#correctionGate)').forEach(function (x) { x.remove(); });
+            else c.querySelectorAll('.adm-ui:not(#correctionGate):not(#supportOralGate)').forEach(function (x) { x.remove(); });
         });
         rafraichirProgression();
         var filtreSortie = document.getElementById('dossierDifficultyFilter');
