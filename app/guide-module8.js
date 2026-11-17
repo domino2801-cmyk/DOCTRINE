@@ -36,12 +36,13 @@
         if (!claims) return null;
         const metadata = claims.app_metadata || {};
         const role = String(metadata.role || '').trim().toLowerCase();
+        const specialty = String(metadata.specialty || '').trim().toUpperCase();
         const admin = role === 'admin' || metadata.bm4_admin === true ||
             metadata.bm4_admin === 'true' || metadata.bm4_admin === 1 || metadata.bm4_admin === '1';
         return {
             token: token,
             userId: claims.sub || '',
-            allowed: admin || GUIDE_ROLES.has(role),
+            allowed: admin || GUIDE_ROLES.has(role) || specialty === 'OG',
             isAdmin: admin,
             profile: metadata
         };
@@ -667,33 +668,16 @@
         const status = document.getElementById('guideSearchStatus');
         const results = document.getElementById('guideSearchResults');
         results.replaceChildren();
-        setStatus(status, 'Recherche en cours…');
-        try {
-            const rows = await api('/rest/v1/rpc/search_guide_candidates', {
-                method: 'POST',
-                body: { p_query: query }
-            });
-            if (!Array.isArray(rows) || rows.length === 0) {
-                setStatus(status, 'Aucun candidat correspondant.', 'success');
-                return;
-            }
-            setStatus(status, rows.length + ' résultat(s).');
-            rows.forEach(function (candidate) {
-                const item = element('article', 'guide-search-result');
-                const description = element('div');
-                description.appendChild(element('strong', '', candidate.display_name || candidate.email || 'Candidat'));
-                description.appendChild(element('small', '',
-                    [candidate.grade, candidate.unit, candidate.specialty, candidate.matricule, candidate.email]
-                        .filter(Boolean).join(' · ')));
-                const attach = element('button', 'guide-button guide-button-primary', 'Rattacher');
-                attach.type = 'button';
-                attach.addEventListener('click', function () { assignCandidate(candidate.candidate_id, attach); });
-                item.append(description, attach);
-                results.appendChild(item);
-            });
-        } catch (error) {
-            setStatus(status, error.message || 'Recherche impossible.', 'error');
-        }
+        const item = element('article', 'guide-search-result');
+        const description = element('div');
+        description.appendChild(element('strong', '', 'UUID du candidat'));
+        description.appendChild(element('small', '', query));
+        const attach = element('button', 'guide-button guide-button-primary', 'Rattacher cet UUID');
+        attach.type = 'button';
+        attach.addEventListener('click', function () { assignCandidate(query, attach); });
+        item.append(description, attach);
+        results.appendChild(item);
+        setStatus(status, 'Vérifiez que cet UUID a bien été communiqué par le candidat.');
     }
 
     async function assignCandidate(candidateId, button) {
@@ -770,10 +754,10 @@
             if (!isAuthorized) {
                 if (accessState) {
                     accessState.querySelector('h1').textContent = access
-                        ? 'Accès réservé aux officiers guides et aux administrateurs.'
+                        ? 'Accès réservé aux comptes de spécialité OG, aux officiers guides et aux administrateurs.'
                         : 'Connexion DOCTRINE requise.';
                     accessState.querySelector('p').textContent = access
-                        ? 'Votre compte ne dispose pas du rôle guide ou administrateur.'
+                        ? 'Votre compte doit avoir la spécialité OG ou le rôle guide/officier_guide.'
                         : 'Connectez-vous avec votre compte QCM-MAJOR, puis revenez dans cet espace.';
                 }
                 return;

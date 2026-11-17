@@ -30,7 +30,8 @@ security invoker
 set search_path = ''
 as $$
     select coalesce(
-        (auth.jwt() -> 'app_metadata' ->> 'role') in ('guide', 'officier_guide'),
+        (auth.jwt() -> 'app_metadata' ->> 'role') in ('guide', 'officier_guide')
+        or upper(trim(coalesce(auth.jwt() -> 'app_metadata' ->> 'specialty', ''))) = 'OG',
         false
     );
 $$;

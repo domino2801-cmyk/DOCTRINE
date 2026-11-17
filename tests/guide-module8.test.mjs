@@ -6,7 +6,7 @@ import vm from "node:vm";
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 
-const [sql, edgeFunction, index, page, styles, script, appScript, adminScript] = await Promise.all([
+const [sql, edgeFunction, index, page, styles, script, appScript, adminScript, ogAccessPatch] = await Promise.all([
     read("supabase/guide_module8.sql"),
     read("supabase/functions/doctrine-submit-fiche/index.ts"),
     read("index.html"),
@@ -14,7 +14,8 @@ const [sql, edgeFunction, index, page, styles, script, appScript, adminScript] =
     read("app/guide-module8.css"),
     read("app/guide-module8.js"),
     read("app/app.js"),
-    read("admin/admin.js")
+    read("admin/admin.js"),
+    read("supabase/guide_module8-og-access.sql")
 ]);
 
 test("les fonctions de cohorte autorisent les admins et limitent les guides aux rattachements", () => {
@@ -25,6 +26,8 @@ test("les fonctions de cohorte autorisent les admins et limitent les guides aux 
     assert.doesNotMatch(sql, /grant select, insert, delete on public\.guide_candidates to authenticated/i);
     assert.match(sql, /create or replace function public\.doctrine_can_access_candidate/);
     assert.match(sql, /assignment\.guide_id = auth\.uid\(\)[\s\S]*assignment\.candidate_id = p_candidate_id/);
+    assert.match(sql, /create or replace function public\.doctrine_is_guide\(\)[\s\S]*auth\.jwt\(\) -> 'app_metadata' ->> 'specialty'[\s\S]*'OG'/);
+    assert.match(ogAccessPatch, /public\.doctrine_is_guide\(\)[\s\S]*auth\.jwt\(\) -> 'app_metadata' ->> 'specialty'[\s\S]*'OG'/);
     assert.match(sql, /create or replace function public\.search_guide_candidates\(p_query text\)/);
     assert.match(sql, /cp\.id as candidate_id[\s\S]*cp\.email::text as email[\s\S]*cp\.label as display_name[\s\S]*cp\.matricule_value as matricule/i);
     assert.match(sql, /create or replace function public\.get_guide_candidate_dashboard/);
@@ -104,7 +107,11 @@ test("l’entrée Module 8 est conditionnelle et la page propose les parcours de
     assert.doesNotMatch(page, /Suivi de Cohortes BM4/);
     assert.match(styles, /\.guide-module8-page\.is-embedded \.guide-header\s*\{\s*display:\s*none;/);
     assert.match(script, /GUIDE_ROLES = new Set\(\['guide', 'officier_guide'\]\)/);
+    assert.match(script, /specialty === 'OG'/);
     assert.match(script, /admin \|\| GUIDE_ROLES\.has\(role\)/);
+    assert.match(page, /UUID du compte candidat \(communiqué par le candidat\)/);
+    assert.match(page, /pattern="\[0-9a-fA-F\]\{8\}-\[0-9a-fA-F\]\{4\}-\[0-9a-fA-F\]\{4\}-\[0-9a-fA-F\]\{4\}-\[0-9a-fA-F\]\{12\}"/);
+    assert.match(script, /assignCandidate\(query, attach\)/);
     assert.match(page, /Tous mes candidats/);
     assert.match(page, /7 derniers jours/);
     assert.match(page, /30 derniers jours/);
