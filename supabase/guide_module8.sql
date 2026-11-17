@@ -504,13 +504,13 @@ begin
         from candidate_profiles cp
     )
     select
-        cp.id,
-        cp.email,
-        cp.label,
-        cp.grade_value,
-        cp.unit_value,
-        cp.specialty_value,
-        cp.matricule_value
+        cp.id as candidate_id,
+        cp.email as email,
+        cp.label as display_name,
+        cp.grade_value as grade,
+        cp.unit_value as unit,
+        cp.specialty_value as specialty,
+        cp.matricule_value as matricule
     from candidate_labels cp
     where (
             cp.email ilike '%' || search_text || '%'

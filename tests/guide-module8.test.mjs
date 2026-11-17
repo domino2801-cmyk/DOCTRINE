@@ -23,6 +23,8 @@ test("les fonctions de cohorte autorisent les admins et limitent les guides aux 
     assert.doesNotMatch(sql, /grant select, insert, delete on public\.guide_candidates to authenticated/i);
     assert.match(sql, /create or replace function public\.doctrine_can_access_candidate/);
     assert.match(sql, /assignment\.guide_id = auth\.uid\(\)[\s\S]*assignment\.candidate_id = p_candidate_id/);
+    assert.match(sql, /create or replace function public\.search_guide_candidates\(p_query text\)/);
+    assert.match(sql, /cp\.id as candidate_id[\s\S]*cp\.label as display_name[\s\S]*cp\.matricule_value as matricule/i);
     assert.match(sql, /create or replace function public\.get_guide_candidate_dashboard/);
     assert.match(sql, /candidate_assignment\.guide_id = auth\.uid\(\)/);
     assert.match(sql, /not public\.doctrine_can_access_candidate\(p_candidate_id\)/);
