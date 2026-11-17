@@ -15,6 +15,7 @@
     let candidates = [];
     let selectedCandidateId = '';
     let requestGeneration = 0;
+    let aiCorrectionGeneration = 0;
     let isAuthorized = false;
     let pageBindingsAttached = false;
 
@@ -387,6 +388,15 @@
                 reviewButton.disabled = !submission.storage_path;
                 reviewButton.addEventListener('click', function () { openReview(candidate, submission); });
                 actions.appendChild(reviewButton);
+
+                const aiButton = element('button', 'guide-button', 'Correction IA');
+                aiButton.type = 'button';
+                aiButton.disabled = !submission.storage_path;
+                aiButton.title = 'Transmettre le PDF à Google Gemini pour obtenir une proposition à vérifier.';
+                aiButton.addEventListener('click', function () {
+                    runAiCorrection(candidate, submission, aiButton);
+                });
+                actions.appendChild(aiButton);
             }
             card.appendChild(actions);
             container.appendChild(card);
@@ -578,20 +588,141 @@
     }
 
     function openReview(candidate, submission) {
+        const generation = ++aiCorrectionGeneration;
         const dialog = document.getElementById('guideReviewDialog');
         const title = document.getElementById('guideReviewTitle');
         const reviewStatus = document.getElementById('guideReviewStatus');
+        const aiResult = document.getElementById('guideAiCorrectionResult');
         const review = (submission.reviews || [])[0] || {};
         if (title) title.textContent = candidateName(candidate.candidate) + ' — ' +
             'Fiche de proposition — Dossier ' + submission.dossier;
         document.getElementById('guideReviewSubmissionId').value = submission.id;
+        if (aiResult) {
+            aiResult.replaceChildren();
+            aiResult.hidden = true;
+        }
         document.getElementById('guideFormGrade').value = review.form_grade ?? '';
         document.getElementById('guideContentGrade').value = review.content_grade ?? '';
         document.getElementById('guideReviewDecision').value = review.status === 'a_reprendre' ? 'a_reprendre' : 'valide';
         document.getElementById('guideReviewComment').value = review.comment || '';
+        const saveButton = document.querySelector('#guideReviewForm button[type="submit"]');
+        if (saveButton) saveButton.disabled = false;
         updateFinalGrade();
         setStatus(reviewStatus, '');
         if (dialog && !dialog.open) dialog.showModal();
+        return generation;
+    }
+
+    function formatAiFeedback(suggestion) {
+        const lines = [
+            'Proposition Gemini — à vérifier',
+            'Forme : ' + suggestion.form_grade + ' / 6 — ' + suggestion.form_observations,
+            ...suggestion.criteria.map(function (criterion) {
+                return criterion.label + ' : ' + criterion.grade + ' / ' + criterion.max_grade +
+                    ' — ' + criterion.observation;
+            }),
+            'Points forts : ' + (suggestion.strengths.length ? suggestion.strengths.join('; ') : 'non précisés'),
+            'Axes de progrès : ' + (suggestion.improvements.length ? suggestion.improvements.join('; ') : 'non précisés'),
+            'Synthèse : ' + suggestion.overall_comment
+        ];
+        return lines.join('\n');
+    }
+
+    function renderAiCorrection(suggestion) {
+        const panel = document.getElementById('guideAiCorrectionResult');
+        const status = document.getElementById('guideReviewStatus');
+        if (!panel) return;
+        panel.replaceChildren();
+        panel.hidden = false;
+        panel.appendChild(element('h3', '', 'Proposition de correction IA'));
+
+        if (!suggestion.readable) {
+            panel.appendChild(element('p', 'guide-ai-disclaimer',
+                'Aucune note n’a été reprise : le document doit être vérifié manuellement.'));
+            panel.appendChild(element('p', '', suggestion.limitations || 'Le document est incomplet ou illisible.'));
+            return;
+        }
+
+        const criteria = element('ul', 'guide-ai-criteria');
+        suggestion.criteria.forEach(function (criterion) {
+            const item = element('li');
+            item.appendChild(element('strong', '', criterion.label + ' — ' +
+                criterion.grade + ' / ' + criterion.max_grade));
+            item.appendChild(element('p', '', criterion.observation));
+            if (criterion.evidence) {
+                item.appendChild(element('p', '', 'Indice à vérifier : ' + criterion.evidence));
+            }
+            criteria.appendChild(item);
+        });
+        panel.append(
+            element('p', 'guide-ai-disclaimer',
+                'Suggestion non enregistrée. Vérifiez la fiche et les notes avant de valider.'),
+            element('p', '', 'Forme : ' + suggestion.form_grade + ' / 6 · Fond : ' +
+                suggestion.content_grade + ' / 14 · Fiabilité estimée : ' + suggestion.confidence),
+            element('p', '', suggestion.form_observations),
+            criteria,
+            element('h4', '', 'Points forts'),
+            element('p', '', suggestion.strengths.length ? suggestion.strengths.join(' · ') : 'Non précisés'),
+            element('h4', '', 'Axes de progrès'),
+            element('p', '', suggestion.improvements.length ? suggestion.improvements.join(' · ') : 'Non précisés'),
+            element('p', '', suggestion.overall_comment)
+        );
+
+        const addCommentButton = element('button', 'guide-button', 'Ajouter la synthèse aux commentaires');
+        addCommentButton.type = 'button';
+        addCommentButton.addEventListener('click', function () {
+            const comment = document.getElementById('guideReviewComment');
+            const feedback = formatAiFeedback(suggestion);
+            const prefix = comment.value.trim() ? comment.value.trim() + '\n\n' : '';
+            if (prefix.length + feedback.length > comment.maxLength) {
+                setStatus(status, 'La synthèse dépasse la limite de commentaires. Raccourcissez-la avant de l’ajouter.', 'error');
+                return;
+            }
+            comment.value = prefix + feedback;
+            comment.focus();
+            setStatus(status, 'Synthèse ajoutée. Relisez et modifiez le commentaire avant l’enregistrement.', 'success');
+        });
+        panel.appendChild(addCommentButton);
+    }
+
+    async function runAiCorrection(candidate, submission, button) {
+        const generation = openReview(candidate, submission);
+        const status = document.getElementById('guideReviewStatus');
+        const panel = document.getElementById('guideAiCorrectionResult');
+        const dialog = document.getElementById('guideReviewDialog');
+        const saveButton = document.querySelector('#guideReviewForm button[type="submit"]');
+        if (button) button.disabled = true;
+        if (saveButton) saveButton.disabled = true;
+        if (panel) {
+            panel.replaceChildren(element('p', '', 'Analyse du PDF par Google Gemini…'));
+            panel.hidden = false;
+        }
+        setStatus(status, 'La fiche est transmise à Google Gemini pour préparer une proposition de correction.');
+        try {
+            const suggestion = await api('/functions/v1/correct-fiche-ai', {
+                method: 'POST',
+                body: { submission_id: submission.id }
+            });
+            if (generation !== aiCorrectionGeneration || !dialog.open ||
+                document.getElementById('guideReviewSubmissionId').value !== submission.id) return;
+            if (suggestion.readable) {
+                document.getElementById('guideFormGrade').value = String(suggestion.form_grade);
+                document.getElementById('guideContentGrade').value = String(suggestion.content_grade);
+                updateFinalGrade();
+            }
+            renderAiCorrection(suggestion);
+            setStatus(status, suggestion.readable
+                ? 'Proposition générée. Vérifiez les critères et confirmez ou modifiez les notes.'
+                : 'Le PDF ne peut pas être évalué automatiquement. Vérifiez-le manuellement.',
+            suggestion.readable ? 'success' : 'error');
+        } catch (error) {
+            if (generation !== aiCorrectionGeneration || !dialog.open) return;
+            if (panel) panel.hidden = true;
+            setStatus(status, error.message || 'Correction IA impossible.', 'error');
+        } finally {
+            if (button) button.disabled = false;
+            if (generation === aiCorrectionGeneration && saveButton) saveButton.disabled = false;
+        }
     }
 
     function updateFinalGrade() {
@@ -733,6 +864,9 @@
         });
         document.getElementById('guideAdmissionForm')?.addEventListener('submit', saveAdmission);
         document.getElementById('guideReviewForm')?.addEventListener('submit', saveReview);
+        document.getElementById('guideReviewDialog')?.addEventListener('close', function () {
+            aiCorrectionGeneration += 1;
+        });
         document.getElementById('guideFormGrade')?.addEventListener('input', updateFinalGrade);
         document.getElementById('guideContentGrade')?.addEventListener('input', updateFinalGrade);
         document.getElementById('guideAssignOpen')?.addEventListener('click', function () {

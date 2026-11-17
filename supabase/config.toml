@@ -7,5 +7,8 @@ verify_jwt = false
 [functions.doctrine-submit-fiche]
 verify_jwt = false
 
+[functions.correct-fiche-ai]
+verify_jwt = false
+
 [functions.validate-gabarit]
 verify_jwt = false

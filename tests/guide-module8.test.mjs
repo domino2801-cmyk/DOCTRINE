@@ -85,6 +85,27 @@ test("la grille interactive BM4 est ouvrable, téléchargeable et précachée", 
     assert.match(serviceWorker, /new URL\('\.\/app\/grille-evaluation-synthese-bm4-interactive\.pdf'/);
 });
 
+test("la correction Gemini reste une proposition serveur limitée aux fiches de proposition", async () => {
+    const [aiFunction, supabaseConfig] = await Promise.all([
+        read("supabase/functions/correct-fiche-ai/index.ts"),
+        read("supabase/config.toml")
+    ]);
+
+    assert.match(page, /Google Gemini ; sa proposition doit être vérifiée par le guide/);
+    assert.match(page, /id="guideAiCorrectionResult"[^>]*hidden/);
+    assert.match(script, /element\('button', 'guide-button', 'Correction IA'\)/);
+    assert.match(script, /\/functions\/v1\/correct-fiche-ai/);
+    assert.match(script, /await api\('\/rest\/v1\/fiche_reviews\?on_conflict=/);
+    assert.doesNotMatch(script, /GEMINI_API_KEY/);
+    assert.match(aiFunction, /Deno\.env\.get\("GEMINI_API_KEY"\)/);
+    assert.match(aiFunction, /submission\.submission_type !== "proposition"/);
+    assert.match(aiFunction, /from\("guide_candidates"\)[\s\S]*eq\("guide_id", userData\.user\.id\)[\s\S]*eq\("candidate_id", submission\.user_id\)/);
+    assert.match(aiFunction, /form_grade: \{ type: "number", minimum: 0, maximum: 6 \}/);
+    assert.match(aiFunction, /"Introduction", 3[\s\S]*"Problématique et données", 3[\s\S]*"Solutions réalisables", 4[\s\S]*"Avis et conclusion", 4/);
+    assert.match(aiFunction, /store: false/);
+    assert.match(supabaseConfig, /\[functions\.correct-fiche-ai\]\s*\nverify_jwt = false/);
+});
+
 test("les deux types de fiches sont identifiés, enregistrés séparément et limités aux bons usages", () => {
     const submissionsSql = readFile(new URL("supabase/fiche-submissions.sql", root), "utf8");
     const driveProxy = readFile(new URL("supabase/functions/drive-proxy/index.ts", root), "utf8");
