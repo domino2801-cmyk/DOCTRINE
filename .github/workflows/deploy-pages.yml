@@ -38,6 +38,8 @@ jobs:
         run: node --test tests/progression-events.test.mjs
       - name: Test QCM-MAJOR access
         run: node --test scripts/test-qcm-access.mjs
+      - name: Test QCM-MAJOR authentication relay
+        run: node --test tests/auth-relay.test.mjs
 
   deploy:
     needs: test

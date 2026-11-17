@@ -137,7 +137,8 @@ test('la perte de l’onglet QCM verrouille l’armoire au renouvellement', asyn
     f.advance(3550000);
     assert.equal(await f.window.DoctrineAuth.jeton(), null);
     assert.equal(f.classes.has('auth-locked'), true);
-    assert.match(f.elements.get('#auth-message').textContent, /Session QCM-MAJOR indisponible/);
+    assert.match(f.elements.get('#auth-etat').textContent, /session QCM-MAJOR a expiré/);
+    assert.equal(f.elements.get('#auth-form').hidden, true);
     assert.equal(await f.window.DoctrineAuth.jeton(), null);
 });
 
@@ -235,7 +236,8 @@ test('un compte non confirmé ne déverrouille pas l’armoire', async () => {
     await settle();
     assert.equal(f.classes.has('auth-locked'), true);
     assert.equal(f.gate.hidden, false);
-    assert.match(f.elements.get('#auth-message').textContent, /Connexion automatique indisponible/);
+    assert.match(f.elements.get('#auth-etat').textContent, /Connexion automatique indisponible/);
+    assert.equal(f.elements.get('#auth-form').hidden, true);
 });
 
 test('la session QCM vérifiée donne accès aux sept modules sans valider la progression', async () => {

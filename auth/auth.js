@@ -12,7 +12,7 @@
     var STORAGE_KEY = 'doctrine-auth';
     var MARGE_S = 60;
     var ORIGINES_QCM = ['https://qcm-major.fr', 'https://www.qcm-major.fr'];
-    var accesQcm = new URLSearchParams(window.location.search).get('from') === 'qcm-major' && window.opener;
+    var accesQcm = new URLSearchParams(window.location.search).get('from') === 'qcm-major';
     var sessionRelais = null;
     var relaisActif = false;
     var generationRelais = 0;
@@ -42,7 +42,7 @@
             var timer = setTimeout(function () {
                 window.removeEventListener('message', recevoir);
                 resolve(null);
-            }, 5000);
+            }, 15000);
             function recevoir(event) {
                 if (event.source !== window.opener || ORIGINES_QCM.indexOf(event.origin) === -1 ||
                     !event.data || event.data.type !== 'doctrine-session-response' || event.data.id !== id) return;
@@ -55,11 +55,15 @@
                 window.opener.postMessage({ type: 'doctrine-session-request', id: id }, origine);
             });
         }).then(function (data) {
-            if (!data || typeof data.access_token !== 'string' ||
-                !Number.isFinite(data.expires_at) || data.expires_at <= Date.now() / 1000) return null;
+            if (!data || typeof data.access_token !== 'string') return null;
+            var expiresAt = Number(data.expires_at);
+            if (!Number.isFinite(expiresAt) || expiresAt <= Date.now() / 1000) {
+                expiresAt = expirationDuJeton(data.access_token);
+            }
+            if (!Number.isFinite(expiresAt) || expiresAt <= Date.now() / 1000) return null;
             return appel('/user', { methode: 'GET', jeton: data.access_token }).then(function (user) {
                 if (!estConfirme(user)) return null;
-                return { access_token: data.access_token, expires_at: data.expires_at, email: user.email || '', user_id: user.id };
+                return { access_token: data.access_token, expires_at: expiresAt, email: user.email || '', user_id: user.id };
             });
         }).finally(function () { demandeRelais = null; });
         return demandeRelais;
@@ -142,6 +146,17 @@
         return !!(user && (user.email_confirmed_at || user.confirmed_at));
     }
 
+    function expirationDuJeton(jeton) {
+        try {
+            var payload = jeton.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+            payload += '='.repeat((4 - payload.length % 4) % 4);
+            var expiration = JSON.parse(atob(payload)).exp;
+            return typeof expiration === 'number' ? expiration : NaN;
+        } catch (e) {
+            return NaN;
+        }
+    }
+
     function rafraichir(s) {
         return appel('/token?grant_type=refresh_token', { corps: { refresh_token: s.refresh_token } })
             .then(function (data) {
@@ -207,7 +222,7 @@
         return 'Service de connexion indisponible. Réessayez plus tard.';
     }
 
-    var gate, form, message, bouton, pied;
+    var gate, form, message, bouton, pied, boutonRelais;
 
     function construire() {
         gate = document.createElement('div');
@@ -220,6 +235,7 @@
             '<h1 id="auth-titre">Connexion</h1>' +
             '<p class="auth-intro">Utilisez vos identifiants QCM-MAJOR.FR.</p>' +
             '<p class="auth-etat" id="auth-etat">Vérification de votre session…</p>' +
+            '<button type="button" class="auth-retry-qcm" id="auth-retry-qcm" hidden>Réessayer la connexion automatique</button>' +
             '<form id="auth-form" novalidate hidden>' +
             '<label for="auth-email">Adresse email</label>' +
             '<input id="auth-email" type="email" autocomplete="username" inputmode="email" required>' +
@@ -242,7 +258,9 @@
         message = gate.querySelector('#auth-message');
         bouton = gate.querySelector('#auth-submit');
         pied = gate.querySelector('#auth-pied');
+        boutonRelais = gate.querySelector('#auth-retry-qcm');
         form.addEventListener('submit', soumettre);
+        boutonRelais.addEventListener('click', relancerConnexionQcm);
         gate.querySelector('#auth-toggle-password').addEventListener('click', function () {
             var champ = gate.querySelector('#auth-mdp');
             var afficher = champ.type === 'password';
@@ -261,6 +279,10 @@
     }
 
     function montrerFormulaire() {
+        if (accesQcm) {
+            afficherEchecRelaisQcm();
+            return;
+        }
         gate.querySelector('#auth-etat').hidden = true;
         form.hidden = false;
         pied.hidden = false;
@@ -268,6 +290,38 @@
         ouvrirPorte();
         var champ = gate.querySelector('#auth-email');
         if (champ && !champ.value) champ.focus();
+    }
+
+    function afficherEchecRelaisQcm(texte) {
+        var etat = gate.querySelector('#auth-etat');
+        etat.textContent = texte || 'Connexion automatique indisponible. Gardez QCM-MAJOR ouvert puis réessayez depuis « Armoire numérique de campagne ».';
+        etat.hidden = false;
+        etat.classList.add('auth-etat-echec');
+        root.classList.add('auth-locked');
+        form.hidden = true;
+        pied.hidden = true;
+        boutonRelais.hidden = false;
+        boutonRelais.disabled = false;
+        boutonRelais.textContent = 'Réessayer la connexion automatique';
+        gate.hidden = false;
+        ouvrirPorte();
+    }
+
+    function relancerConnexionQcm() {
+        boutonRelais.disabled = true;
+        boutonRelais.textContent = 'Connexion en cours…';
+        var etat = gate.querySelector('#auth-etat');
+        etat.textContent = 'Vérification de votre session QCM-MAJOR…';
+        etat.classList.remove('auth-etat-echec');
+        demanderSessionQcm().then(function (s) {
+            if (!s) throw new Error('Session QCM-MAJOR introuvable.');
+            sessionRelais = s;
+            relaisActif = true;
+            deverrouiller();
+        }).catch(function (err) {
+            console.warn('Nouvelle tentative de connexion via QCM-MAJOR impossible.', err);
+            afficherEchecRelaisQcm();
+        });
     }
 
     function deverrouiller() {
@@ -292,6 +346,10 @@
     }
 
     function verrouiller() {
+        if (accesQcm) {
+            afficherEchecRelaisQcm('La session QCM-MAJOR a expiré. Gardez QCM-MAJOR ouvert puis réessayez la connexion automatique.');
+            return;
+        }
         root.classList.add('auth-locked');
         var mdp = gate.querySelector('#auth-mdp');
         if (mdp) mdp.value = '';
@@ -409,8 +467,9 @@
             return null;
         }) : verifier();
         sessionInitiale.then(function (s) {
-            if (s) deverrouiller(); else montrerFormulaire();
-            if (!s && accesQcm) message.textContent = 'Connexion automatique indisponible. Utilisez vos identifiants QCM-MAJOR.';
+            if (s) deverrouiller();
+            else if (accesQcm) afficherEchecRelaisQcm();
+            else montrerFormulaire();
         });
     }
 

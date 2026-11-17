@@ -4,7 +4,7 @@ DOCTRINE, l’Armoire numérique de campagne, rassemble les ressources de prépa
 
 ## Accéder à l’Armoire
 
-Depuis le centre de QCM-MAJOR, choisissez **« Armoire numérique de campagne »**. L’Armoire s’ouvre dans un nouvel onglet et peut récupérer temporairement la session active pour vous connecter automatiquement. Gardez QCM-MAJOR ouvert pour permettre le renouvellement de la session. Si la connexion automatique ne fonctionne pas, utilisez vos identifiants QCM-MAJOR.
+Depuis le centre de QCM-MAJOR, connectez-vous puis choisissez **« Armoire numérique de campagne »** : l’Armoire reprend automatiquement la session active, sans ressaisir vos identifiants. Gardez QCM-MAJOR ouvert pour permettre le renouvellement de la session. Un accès direct par favori ou adresse ne transporte pas la session QCM-MAJOR.
 
 Vous pouvez aussi ouvrir directement [DOCTRINE sur GitHub Pages](https://domino2801-cmyk.github.io/DOCTRINE/), puis vous connecter avec votre compte QCM-MAJOR. Depuis le parcours lancé par QCM-MAJOR, le module 5 propose un retour à l’application d’origine sans interrompre une partie en cours.
 
