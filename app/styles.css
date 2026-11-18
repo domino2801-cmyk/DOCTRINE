@@ -456,16 +456,16 @@
     .correction-gate-status:empty { display: none; }
     #supportOralGate { margin-top: 12px; }
     .candidate-guide-code-card {
-        max-width: 72ch;
         width: 100%;
-        margin: 18px auto;
+        margin: 0;
         box-sizing: border-box;
         color-scheme: dark;
     }
     .candidate-guide-code-card.dossier-item {
         display: block;
-        padding: 12px 16px;
+        padding: 10px 12px;
     }
+    .candidate-guide-code-item { margin-top: 25px; }
     .candidate-guide-code-heading {
         display: flex;
         justify-content: space-between;

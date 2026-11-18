@@ -253,7 +253,7 @@ test("le Module 1 affiche un code candidat court au style des cartes existantes"
     assert.match(index, /id="copyCandidateGuideCode"[^>]*>Copier mon code/);
     assert.match(index, /id="candidateGuideCodeCard" class="candidate-guide-code-card dossier-item"/);
     assert.match(index, /id="candidateGuideCodeCard"[\s\S]*?<div class="candidate-guide-code-heading">[\s\S]*?<h3 id="candidate-guide-code-title">1\.5\. Code pour Officier Guide<\/h3>[\s\S]*?<button id="copyCandidateGuideCode"[\s\S]*?<\/div>\s*<ul class="candidate-guide-code-description">\s*<li>[\s\S]*?<output id="candidateGuideCode"/);
-    assert.ok(index.indexOf('id="candidateGuideCodeCard"') > index.indexOf('</div><!-- /mod-body -->'));
+    assert.ok(index.indexOf('id="candidateGuideCodeCard"') < index.indexOf('</div><!-- /mod-body -->'));
     assert.ok(index.indexOf('id="candidateGuideCodeCard"') < index.indexOf('id="chkModule1Valid"'));
     assert.match(appScript, /get_doctrine_candidate_guide_code/);
     assert.match(appScript, /\^\[A-HJ-NP-Z2-9\]\{8\}\$/);
