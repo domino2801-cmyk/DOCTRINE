@@ -122,7 +122,7 @@ drop policy if exists guide_candidates_insert_own on public.guide_candidates;
 drop policy if exists guide_candidates_delete_own on public.guide_candidates;
 
 -- Chaque type de fiche est une soumission distincte ; l'identifiant UUID
--- permet d'attacher les évaluations aux fiches de proposition.
+-- permet d'attacher une évaluation détaillée à chaque fiche.
 alter table public.doctrine_fiche_submissions
     add column if not exists id uuid default gen_random_uuid();
 alter table public.doctrine_fiche_submissions
@@ -144,12 +144,16 @@ create table if not exists public.fiche_reviews (
     form_grade numeric(4, 2) check (form_grade is null or form_grade between 0 and 6),
     content_grade numeric(4, 2) check (content_grade is null or content_grade between 0 and 14),
     grade numeric(4, 2) check (grade is null or grade between 0 and 20),
+    rubric_scores jsonb not null default '{}'::jsonb,
     status text not null default 'en_attente'
         check (status in ('en_attente', 'a_reprendre', 'valide')),
     comment text not null default '',
     reviewed_at timestamptz not null default now(),
     constraint fiche_reviews_submission_guide_key unique (submission_id, guide_id)
 );
+
+alter table public.fiche_reviews
+    add column if not exists rubric_scores jsonb not null default '{}'::jsonb;
 
 create index if not exists fiche_reviews_guide_reviewed_idx
     on public.fiche_reviews (guide_id, reviewed_at desc);
@@ -159,12 +163,89 @@ create index if not exists fiche_reviews_submission_idx
 create or replace function public.fiche_reviews_set_identity()
 returns trigger
 language plpgsql
+security definer
 set search_path = ''
 as $$
+declare
+    submission_type text;
+    required_keys text[];
 begin
     if auth.uid() is not null then
         new.guide_id := auth.uid();
     end if;
+    select submission.submission_type
+    into submission_type
+    from public.doctrine_fiche_submissions submission
+    where submission.id = new.submission_id;
+
+    if submission_type is null then
+        raise exception 'La fiche à évaluer est introuvable.'
+            using errcode = '22023';
+    end if;
+    if jsonb_typeof(new.rubric_scores) is distinct from 'object' then
+        raise exception 'Le détail des critères doit être un objet JSON.'
+            using errcode = '22023';
+    end if;
+
+    if new.rubric_scores <> '{}'::jsonb then
+        if submission_type = 'proposition' then
+            required_keys := array['form', 'introduction', 'problematique_donnees', 'solutions', 'avis_conclusion'];
+            if not (new.rubric_scores ?& required_keys) or exists (
+                select 1
+                from jsonb_each(new.rubric_scores) score
+                where not (score.key = any(required_keys))
+                   or jsonb_typeof(score.value) is distinct from 'number'
+            ) then
+                raise exception 'Les critères de la fiche de proposition sont incomplets ou invalides.'
+                    using errcode = '22023';
+            end if;
+            if (new.rubric_scores ->> 'form')::numeric not between 0 and 6
+               or (new.rubric_scores ->> 'introduction')::numeric not between 0 and 3
+               or (new.rubric_scores ->> 'problematique_donnees')::numeric not between 0 and 3
+               or (new.rubric_scores ->> 'solutions')::numeric not between 0 and 4
+               or (new.rubric_scores ->> 'avis_conclusion')::numeric not between 0 and 4 then
+                raise exception 'Une note de la fiche de proposition dépasse le barème.'
+                    using errcode = '22023';
+            end if;
+            new.form_grade := round((new.rubric_scores ->> 'form')::numeric, 2);
+            new.content_grade := round(
+                (new.rubric_scores ->> 'introduction')::numeric
+                + (new.rubric_scores ->> 'problematique_donnees')::numeric
+                + (new.rubric_scores ->> 'solutions')::numeric
+                + (new.rubric_scores ->> 'avis_conclusion')::numeric,
+                2
+            );
+        elsif submission_type = 'support_oral' then
+            required_keys := array['operatoire_forme', 'introduction', 'argumentaire', 'conclusion'];
+            if not (new.rubric_scores ?& required_keys) or exists (
+                select 1
+                from jsonb_each(new.rubric_scores) score
+                where not (score.key = any(required_keys))
+                   or jsonb_typeof(score.value) is distinct from 'number'
+            ) then
+                raise exception 'Les critères du support oral sont incomplets ou invalides.'
+                    using errcode = '22023';
+            end if;
+            if (new.rubric_scores ->> 'operatoire_forme')::numeric not between 0 and 6
+               or (new.rubric_scores ->> 'introduction')::numeric not between 0 and 4
+               or (new.rubric_scores ->> 'argumentaire')::numeric not between 0 and 7
+               or (new.rubric_scores ->> 'conclusion')::numeric not between 0 and 3 then
+                raise exception 'Une note du support oral dépasse le barème.'
+                    using errcode = '22023';
+            end if;
+            new.form_grade := round((new.rubric_scores ->> 'operatoire_forme')::numeric, 2);
+            new.content_grade := round(
+                (new.rubric_scores ->> 'introduction')::numeric
+                + (new.rubric_scores ->> 'argumentaire')::numeric
+                + (new.rubric_scores ->> 'conclusion')::numeric,
+                2
+            );
+        else
+            raise exception 'Type de fiche non évaluable.'
+                using errcode = '22023';
+        end if;
+    end if;
+
     if new.form_grade is not null and new.content_grade is not null then
         new.grade := round(new.form_grade + new.content_grade, 2);
     elsif new.status <> 'en_attente' then
@@ -182,6 +263,7 @@ drop trigger if exists fiche_reviews_set_identity on public.fiche_reviews;
 create trigger fiche_reviews_set_identity
     before insert or update on public.fiche_reviews
     for each row execute function public.fiche_reviews_set_identity();
+revoke all on function public.fiche_reviews_set_identity() from public, anon, authenticated;
 
 alter table public.fiche_reviews enable row level security;
 revoke all on public.fiche_reviews from public, anon, authenticated;
@@ -195,7 +277,7 @@ create policy fiche_reviews_candidate_read_own
             select 1
             from public.doctrine_fiche_submissions submission
             where submission.id = submission_id
-              and submission.submission_type = 'proposition'
+              and submission.submission_type in ('proposition', 'support_oral')
               and submission.user_id = auth.uid()
         )
     );
@@ -209,7 +291,7 @@ create policy fiche_reviews_guide_read_assigned
             select 1
             from public.doctrine_fiche_submissions submission
             where submission.id = submission_id
-              and submission.submission_type = 'proposition'
+              and submission.submission_type in ('proposition', 'support_oral')
               and public.doctrine_can_access_candidate(submission.user_id)
         )
     );
@@ -224,7 +306,7 @@ create policy fiche_reviews_guide_insert_assigned
             select 1
             from public.doctrine_fiche_submissions submission
             where submission.id = submission_id
-              and submission.submission_type = 'proposition'
+              and submission.submission_type in ('proposition', 'support_oral')
               and public.doctrine_can_access_candidate(submission.user_id)
         )
     );
@@ -238,7 +320,7 @@ create policy fiche_reviews_guide_update_assigned
             select 1
             from public.doctrine_fiche_submissions submission
             where submission.id = submission_id
-              and submission.submission_type = 'proposition'
+              and submission.submission_type in ('proposition', 'support_oral')
               and public.doctrine_can_access_candidate(submission.user_id)
         )
     )
@@ -249,7 +331,7 @@ create policy fiche_reviews_guide_update_assigned
             select 1
             from public.doctrine_fiche_submissions submission
             where submission.id = submission_id
-              and submission.submission_type = 'proposition'
+              and submission.submission_type in ('proposition', 'support_oral')
               and public.doctrine_can_access_candidate(submission.user_id)
         )
     );
@@ -843,6 +925,7 @@ begin
                                     'grade', review.grade,
                                     'form_grade', review.form_grade,
                                     'content_grade', review.content_grade,
+                                    'rubric_scores', review.rubric_scores,
                                     'status', review.status,
                                     'comment', review.comment,
                                     'reviewed_at', review.reviewed_at

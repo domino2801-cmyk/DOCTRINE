@@ -114,7 +114,7 @@
                         <div>
                             <p class="guide-kicker">OUTIL DE CORRECTION</p>
                             <h4 id="guideRubricTitle">Grille interactive d’évaluation BM4</h4>
-                            <p>La grille détaille la fiche de proposition (70 %) et le support oral (30 %), avec une synthèse pondérée. Pour enregistrer l’évaluation de la fiche dans DOCTRINE, reportez la forme (/6) et le fond (/14) dans le formulaire « Évaluer ». Après l’enregistrement, le guide peut télécharger le compte rendu PDF rempli. L’analyse IA transmet le PDF à Google Gemini ; sa proposition doit être vérifiée par le guide.</p>
+                            <p>Évaluez séparément la fiche de proposition (70 %) et le support oral (30 %) selon les critères de la grille. La moyenne pondérée de l’épreuve est disponible lorsque les deux fiches du dossier sont évaluées. La correction IA de la fiche de proposition transmet le PDF à Google Gemini ; sa proposition doit être vérifiée par le guide.</p>
                         </div>
                         <div class="guide-rubric-actions">
                             <a class="guide-button guide-button-primary" href="grille-evaluation-synthese-bm4-interactive.pdf" target="_blank" rel="noopener">Ouvrir la grille (PDF)</a>
@@ -183,9 +183,12 @@
         <form id="guideReviewForm" class="guide-review-form">
             <input id="guideReviewSubmissionId" type="hidden">
             <section id="guideAiCorrectionResult" class="guide-ai-result" aria-live="polite" hidden></section>
-            <label>Forme / 6<input id="guideFormGrade" type="number" min="0" max="6" step="0.01" required></label>
-            <label>Fond / 14<input id="guideContentGrade" type="number" min="0" max="14" step="0.01" required></label>
-            <p class="guide-review-total">Note finale <strong id="guideFinalGrade">0,00 / 20</strong></p>
+            <p id="guideReviewWeight" class="guide-muted"></p>
+            <p id="guideReviewLegacyNotice" class="guide-alert" hidden></p>
+            <div id="guideReviewCriteria" class="guide-review-criteria"></div>
+            <input id="guideFormGrade" type="hidden">
+            <input id="guideContentGrade" type="hidden">
+            <p class="guide-review-total"><span>Note de cette fiche</span><strong id="guideFinalGrade">À compléter / 20</strong></p>
             <label>Décision
                 <select id="guideReviewDecision" required>
                     <option value="valide">Validé</option>

@@ -114,7 +114,7 @@ export function createEvaluationPdf(report) {
     newPage();
     rectangle(0, 0, PAGE_WIDTH, 112, COLORS.green);
     text(MARGIN, 26, 19, "COMPTE RENDU D’ÉVALUATION", true, COLORS.white);
-    text(MARGIN, 58, 11, "Fiche de proposition — BM4", false, COLORS.white);
+    text(MARGIN, 58, 11, `${report.submissionLabel || "Fiche de proposition"} — BM4`, false, COLORS.white);
     text(MARGIN, 82, 9, `Édité le ${report.exportedAt}`, false, COLORS.white);
     cursor = 136;
 
@@ -135,15 +135,23 @@ export function createEvaluationPdf(report) {
     cursor += 22;
 
     sectionHeading("RÉSULTAT DE L’ÉVALUATION");
-    rectangle(MARGIN, cursor, PAGE_WIDTH - MARGIN * 2, 62, COLORS.paleGreen);
-    text(MARGIN + 14, cursor + 10, 9, "NOTE DE LA FICHE (HORS SUPPORT ORAL)", true, COLORS.green);
+    const hasWeightedGrade = Boolean(report.weightedGrade);
+    const resultHeight = hasWeightedGrade ? 78 : 62;
+    rectangle(MARGIN, cursor, PAGE_WIDTH - MARGIN * 2, resultHeight, COLORS.paleGreen);
+    text(MARGIN + 14, cursor + 10, 9, `NOTE DE LA FICHE (${report.weightPercent || 70} % DU TOTAL)`, true, COLORS.green);
     text(MARGIN + 14, cursor + 28, 17, `${report.finalGrade} / 20`, true, COLORS.green);
-    text(310, cursor + 20, 11, report.decision, true, COLORS.ink);
-    cursor += 78;
+    if (hasWeightedGrade) {
+        text(310, cursor + 12, 9, "SYNTHÈSE PONDÉRÉE 70/30", true, COLORS.green);
+        text(310, cursor + 30, 13, `${report.weightedGrade} / 20`, true, COLORS.green);
+        text(310, cursor + 50, 9, `Décision sur cette fiche : ${report.decision}`, true, COLORS.ink);
+    } else {
+        text(310, cursor + 20, 11, report.decision, true, COLORS.ink);
+    }
+    cursor += resultHeight + 16;
 
     [
-        ["Forme", `${report.formGrade} / 6`],
-        ["Fond", `${report.contentGrade} / 14`]
+        [report.formLabel || "Forme", `${report.formGrade} / 6`],
+        [report.contentLabel || "Fond", `${report.contentGrade} / 14`]
     ].forEach(([label, value]) => {
         ensureRoom(25);
         text(MARGIN, cursor, 10, label, true);
@@ -152,6 +160,17 @@ export function createEvaluationPdf(report) {
     });
     cursor += 8;
 
+    if (Array.isArray(report.criteria) && report.criteria.length) {
+        sectionHeading("DÉTAIL DE LA GRILLE BM4");
+        report.criteria.forEach((criterion) => {
+            ensureRoom(24);
+            text(MARGIN, cursor, 9, criterion.label, true);
+            text(PAGE_WIDTH - MARGIN - 70, cursor, 9, `${criterion.grade} / ${criterion.maxGrade}`);
+            cursor += 20;
+        });
+        cursor += 8;
+    }
+
     sectionHeading("COMMENTAIRES DE L’OFFICIER GUIDE");
     paragraph(report.comment);
     cursor += 12;
@@ -159,7 +178,10 @@ export function createEvaluationPdf(report) {
     ensureRoom(42);
     line(MARGIN, cursor, PAGE_WIDTH - MARGIN);
     cursor += 12;
-    paragraph(`Évaluation enregistrée le ${report.reviewedAt}. La note présentée porte uniquement sur la fiche de proposition.`, 8);
+    const summaryText = hasWeightedGrade
+        ? `Évaluation enregistrée le ${report.reviewedAt}. La synthèse BM4 combine la fiche de proposition à 70 % et le support oral à 30 %.`
+        : `Évaluation enregistrée le ${report.reviewedAt}. La synthèse pondérée sera disponible après l’évaluation de l’autre fiche du dossier.`;
+    paragraph(summaryText, 8);
 
     pages.forEach((page, index) => {
         page.push(

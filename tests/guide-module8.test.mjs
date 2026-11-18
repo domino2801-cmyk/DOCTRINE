@@ -53,8 +53,11 @@ test("les fonctions de cohorte autorisent les admins et limitent les guides aux 
 test("les notes et le suivi admission distinguent lecture candidat et écriture guide rattaché", () => {
     assert.match(sql, /create table if not exists public\.fiche_reviews/);
     assert.match(sql, /references public\.doctrine_fiche_submissions \(id\)/);
+    assert.match(sql, /rubric_scores jsonb not null default '\{\}'::jsonb/);
+    assert.match(sql, /security definer\s+set search_path = ''\s+as \$\$[\s\S]*new\.rubric_scores/);
     assert.match(sql, /create policy fiche_reviews_candidate_read_own/);
     assert.match(sql, /create policy fiche_reviews_guide_insert_assigned/);
+    assert.match(sql, /submission_type in \('proposition', 'support_oral'\)/);
     assert.match(sql, /create table if not exists public\.candidate_admission_tracking/);
     assert.match(sql, /candidate_admission_tracking_candidate_read_own/);
     assert.match(sql, /candidate_admission_tracking_guide_update_assigned/);
@@ -94,6 +97,12 @@ test("le compte rendu d’évaluation génère un PDF rempli avec des pages inde
         formGrade: "5,5",
         contentGrade: "12",
         finalGrade: "17,50",
+        submissionLabel: "Fiche support oral",
+        weightPercent: 30,
+        weightedGrade: "17,05",
+        formLabel: "Caractère opératoire et forme",
+        contentLabel: "Introduction, argumentaire et conclusion",
+        criteria: [{ label: "Argumentaire de conviction", grade: "5,5", maxGrade: 7 }],
         decision: "À reprendre",
         comment: "Bonne analyse.\nÀ préciser : les délais.",
         reviewedAt: "18 nov. 2026 à 07:00",
@@ -106,6 +115,9 @@ test("le compte rendu d’évaluation génère un PDF rempli avec des pages inde
     assert.ok(pdf.startsWith("%PDF-1.4"));
     assert.match(pdf, /Caporal Élodie Martin/);
     assert.match(pdf, /17,50 \/ 20/);
+    assert.match(pdf, /17,05 \/ 20/);
+    assert.match(pdf, /Fiche support oral/);
+    assert.match(pdf, /Argumentaire de conviction/);
     assert.match(pdf, /Bonne analyse/);
     assert.match(pdf, /À reprendre/);
     assert.match(pdf, /ÉVALUATION/);
@@ -117,7 +129,7 @@ test("le compte rendu d’évaluation génère un PDF rempli avec des pages inde
         assert.ok(pdf.startsWith(`${index} 0 obj\n`, offset), `object ${index} has a valid cross-reference offset`);
     }
     assert.match(page, /id="guideDownloadReview"/);
-    assert.match(page, /télécharger le compte rendu PDF rempli/);
+    assert.match(page, /id="guideDownloadReview"[^>]*>Télécharger le compte rendu PDF/);
     assert.match(page, /id="guideDownloadReview"[^>]*hidden/);
     assert.match(script, /document\.getElementById\('guideDownloadReview'\)\.hidden = false/);
     assert.match(script, /function markReviewDirty\(\)[\s\S]*savedReviewReport = null/);
@@ -175,7 +187,7 @@ test("les deux types de fiches sont identifiés, enregistrés séparément et li
         assert.match(appScript, /body\.append\('submission_type', config\.submissionType\)/);
         assert.match(appScript, /if \(config\.submissionType === 'proposition'\) \{\s+transmittedDossiers\.add/);
         assert.match(sql, /'submission_type', submission\.submission_type/);
-        assert.match(sql, /submission\.submission_type = 'proposition'/);
+        assert.match(sql, /submission\.submission_type in \('proposition', 'support_oral'\)/);
         assert.match(script, /Fiche support oral/);
         assert.match(script, /isOralSupport \? 'Ouvrir le support oral' : 'Ouvrir la fiche de proposition'/);
         assert.match(script, /openSubmission\(candidate, submission\)/);
@@ -185,6 +197,15 @@ test("les deux types de fiches sont identifiés, enregistrés séparément et li
         assert.match(page, /viewer\/viewer\.js/);
         assert.match(page, /theme-color" content="#20352b"/);
         assert.match(page, /id="guideReviewForm" class="guide-review-form"/);
+        assert.match(page, /id="guideReviewCriteria" class="guide-review-criteria"/);
+        assert.match(script, /weight: 70/);
+        assert.match(script, /weight: 30/);
+        assert.match(script, /key: 'form', label: 'Forme, présentation et langue', max: 6/);
+        assert.match(script, /key: 'argumentaire', label: 'Argumentaire de conviction', max: 7/);
+        assert.match(script, /propositionGrade \* 0\.7 \+ oralGrade \* 0\.3/);
+        assert.match(script, /rubric_scores: totals\.rubricScores/);
+        assert.match(script, /weightedSynthesisGrade\(submissions, submission\.dossier\)/);
+        assert.match(sql, /'rubric_scores', review\.rubric_scores/);
         assert.doesNotMatch(page, /guidePdfPreview|guidePdfStatus/);
         assert.match(styles, /--guide-paper: #141c19/);
         assert.match(styles, /border-bottom: 3px solid #b52e35/);

@@ -7,6 +7,33 @@
 
     const GUIDE_ROLES = new Set(['guide', 'officier_guide']);
     const STALE_AFTER_DAYS = 14;
+    const REVIEW_RUBRICS = {
+        proposition: {
+            label: 'Fiche de proposition',
+            weight: 70,
+            formLabel: 'Forme, présentation et langue',
+            contentLabel: 'Introduction, problématique, solutions et avis',
+            criteria: [
+                { key: 'form', label: 'Forme, présentation et langue', max: 6, group: 'form' },
+                { key: 'introduction', label: 'Introduction', max: 3, group: 'content' },
+                { key: 'problematique_donnees', label: 'Problématique et données', max: 3, group: 'content' },
+                { key: 'solutions', label: 'Solutions réalisables', max: 4, group: 'content' },
+                { key: 'avis_conclusion', label: 'Avis et conclusion', max: 4, group: 'content' }
+            ]
+        },
+        support_oral: {
+            label: 'Fiche support oral',
+            weight: 30,
+            formLabel: 'Caractère opératoire et forme',
+            contentLabel: 'Introduction, argumentaire et conclusion',
+            criteria: [
+                { key: 'operatoire_forme', label: 'Caractère opératoire et forme', max: 6, group: 'form' },
+                { key: 'introduction', label: 'Introduction structurée', max: 4, group: 'content' },
+                { key: 'argumentaire', label: 'Argumentaire de conviction', max: 7, group: 'content' },
+                { key: 'conclusion', label: 'Conclusion', max: 3, group: 'content' }
+            ]
+        }
+    };
     const auth = window.DoctrineAuth;
     const nav = document.getElementById('guideModule8Nav');
     const app = document.getElementById('guideModule8App');
@@ -23,6 +50,40 @@
     let savedReviewReport = null;
     let isAuthorized = false;
     let pageBindingsAttached = false;
+
+    function rubricFor(submission) {
+        return REVIEW_RUBRICS[submission?.submission_type] || REVIEW_RUBRICS.proposition;
+    }
+
+    function savedReviewFor(submission, overrideSubmission, overrideReview) {
+        return overrideSubmission && submission?.id === overrideSubmission.id
+            ? overrideReview
+            : (submission?.reviews || [])[0];
+    }
+
+    function reviewGrade(review) {
+        if (!review || review.grade === null || review.grade === undefined || review.grade === '') return null;
+        const grade = Number(review.grade);
+        return Number.isFinite(grade) && grade >= 0 && grade <= 20
+            ? Math.round(grade * 100) / 100
+            : null;
+    }
+
+    function weightedSynthesisGrade(submissions, dossier, overrideSubmission, overrideReview) {
+        const dossierSubmissions = submissions.filter(function (submission) {
+            return String(submission.dossier) === String(dossier);
+        });
+        const proposition = dossierSubmissions.find(function (submission) {
+            return submission.submission_type !== 'support_oral';
+        });
+        const oralSupport = dossierSubmissions.find(function (submission) {
+            return submission.submission_type === 'support_oral';
+        });
+        const propositionGrade = reviewGrade(savedReviewFor(proposition, overrideSubmission, overrideReview));
+        const oralGrade = reviewGrade(savedReviewFor(oralSupport, overrideSubmission, overrideReview));
+        if (propositionGrade === null || oralGrade === null) return null;
+        return Math.round((propositionGrade * 0.7 + oralGrade * 0.3) * 100) / 100;
+    }
 
     function decodeClaims(token) {
         try {
@@ -369,15 +430,31 @@
             const isOralSupport = submission.submission_type === 'support_oral';
             description.appendChild(element('strong', '', (isOralSupport ? 'Fiche support oral' : 'Fiche de proposition') +
                 ' — Dossier ' + submission.dossier));
-            const review = isOralSupport ? null : (submission.reviews || [])[0];
-            const decision = isOralSupport
-                ? 'Consultation uniquement'
-                : review
-                    ? (review.status === 'valide' ? 'Validé' : review.status === 'a_reprendre' ? 'À reprendre' : 'En attente')
-                        + (review.grade === null || review.grade === undefined ? '' : ' · ' + Number(review.grade).toFixed(2) + ' / 20')
-                    : 'En attente d’évaluation';
+            const review = (submission.reviews || [])[0];
+            const decision = review
+                ? (review.status === 'valide' ? 'Validé' : review.status === 'a_reprendre' ? 'À reprendre' : 'En attente')
+                    + (review.grade === null || review.grade === undefined ? '' : ' · ' + Number(review.grade).toFixed(2) + ' / 20')
+                : 'En attente d’évaluation';
             description.appendChild(element('span', 'guide-review-label',
                 formatDate(submission.created_at) + ' · ' + decision));
+            if (!isOralSupport) {
+                const weightedGrade = weightedSynthesisGrade(submissions, submission.dossier);
+                const oralSubmission = submissions.find(function (candidateSubmission) {
+                    return String(candidateSubmission.dossier) === String(submission.dossier)
+                        && candidateSubmission.submission_type === 'support_oral';
+                });
+                const oralReview = (oralSubmission?.reviews || [])[0];
+                const hasComponentGrade = reviewGrade(review) !== null || reviewGrade(oralReview) !== null;
+                if (weightedGrade !== null || hasComponentGrade) {
+                    description.appendChild(element('span', 'guide-review-label', weightedGrade === null
+                        ? reviewGrade(review) === null
+                            ? 'Synthèse pondérée 70/30 : note de la fiche de proposition manquante.'
+                            : 'Synthèse pondérée 70/30 : note du support oral manquante.'
+                        : 'Synthèse pondérée 70/30 : ' +
+                            weightedGrade.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) +
+                            ' / 20'));
+                }
+            }
             card.appendChild(description);
             const button = element('button', 'guide-button guide-button-primary',
                 isOralSupport ? 'Ouvrir le support oral' : 'Ouvrir la fiche de proposition');
@@ -387,13 +464,12 @@
             button.addEventListener('click', function () { openSubmission(candidate, submission); });
             const actions = element('div', 'guide-row-actions');
             actions.appendChild(button);
+            const reviewButton = element('button', 'guide-button', 'Évaluer');
+            reviewButton.type = 'button';
+            reviewButton.disabled = !submission.storage_path;
+            reviewButton.addEventListener('click', function () { openReview(candidate, submission); });
+            actions.appendChild(reviewButton);
             if (!isOralSupport) {
-                const reviewButton = element('button', 'guide-button', 'Évaluer');
-                reviewButton.type = 'button';
-                reviewButton.disabled = !submission.storage_path;
-                reviewButton.addEventListener('click', function () { openReview(candidate, submission); });
-                actions.appendChild(reviewButton);
-
                 const aiButton = element('button', 'guide-button', 'Correction IA');
                 aiButton.type = 'button';
                 aiButton.disabled = !submission.storage_path;
@@ -592,6 +668,79 @@
         }
     }
 
+    function renderReviewCriteria(submission, review) {
+        const container = document.getElementById('guideReviewCriteria');
+        const notice = document.getElementById('guideReviewLegacyNotice');
+        if (!container) return;
+        const rubric = rubricFor(submission);
+        const scores = review?.rubric_scores && typeof review.rubric_scores === 'object'
+            ? review.rubric_scores
+            : {};
+        container.replaceChildren();
+        rubric.criteria.forEach(function (criterion) {
+            const label = element('label', 'guide-review-criterion');
+            label.appendChild(element('span', '', criterion.label + ' — /' + criterion.max));
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = '0';
+            input.max = String(criterion.max);
+            input.step = '0.01';
+            input.required = true;
+            input.dataset.rubricScore = criterion.key;
+            input.setAttribute('aria-label', criterion.label + ' sur ' + criterion.max);
+            const savedScore = Number(scores[criterion.key]);
+            if (scores[criterion.key] !== undefined && Number.isFinite(savedScore) &&
+                savedScore >= 0 && savedScore <= criterion.max) {
+                input.value = String(savedScore);
+            }
+            label.appendChild(input);
+            container.appendChild(label);
+        });
+        if (notice) {
+            const isLegacyReview = reviewGrade(review) !== null && Object.keys(scores).length === 0;
+            notice.hidden = !isLegacyReview;
+            notice.textContent = isLegacyReview
+                ? 'Cette évaluation antérieure ne contient pas le détail de la grille. Renseignez les critères ci-dessus pour la mettre à jour.'
+                : '';
+        }
+        const weight = document.getElementById('guideReviewWeight');
+        if (weight) {
+            weight.textContent = 'Cette fiche compte pour ' + rubric.weight +
+                ' % de la synthèse BM4 ; l’autre fiche doit également être évaluée pour calculer la moyenne pondérée.';
+        }
+    }
+
+    function collectReviewScores() {
+        const rubric = rubricFor(activeReviewSubmission);
+        const rubricScores = {};
+        let formGrade = 0;
+        let contentGrade = 0;
+        let complete = true;
+        rubric.criteria.forEach(function (criterion) {
+            const input = document.querySelector('[data-rubric-score="' + criterion.key + '"]');
+            const value = input?.value ?? '';
+            if (value === '') {
+                complete = false;
+                return;
+            }
+            const score = Number(value);
+            if (!Number.isFinite(score) || score < 0 || score > criterion.max) {
+                complete = false;
+                return;
+            }
+            rubricScores[criterion.key] = score;
+            if (criterion.group === 'form') formGrade += score;
+            else contentGrade += score;
+        });
+        return {
+            rubricScores: rubricScores,
+            formGrade: Math.round(formGrade * 100) / 100,
+            contentGrade: Math.round(contentGrade * 100) / 100,
+            grade: Math.round((formGrade + contentGrade) * 100) / 100,
+            complete: complete && Object.keys(rubricScores).length === rubric.criteria.length
+        };
+    }
+
     function openReview(candidate, submission) {
         const generation = ++aiCorrectionGeneration;
         reviewContextGeneration += 1;
@@ -603,15 +752,15 @@
         const reviewStatus = document.getElementById('guideReviewStatus');
         const aiResult = document.getElementById('guideAiCorrectionResult');
         const review = (submission.reviews || [])[0] || {};
+        const rubric = rubricFor(submission);
         if (title) title.textContent = candidateName(candidate.candidate) + ' — ' +
-            'Fiche de proposition — Dossier ' + submission.dossier;
+            rubric.label + ' — Dossier ' + submission.dossier;
         document.getElementById('guideReviewSubmissionId').value = submission.id;
+        renderReviewCriteria(submission, review);
         if (aiResult) {
             aiResult.replaceChildren();
             aiResult.hidden = true;
         }
-        document.getElementById('guideFormGrade').value = review.form_grade ?? '';
-        document.getElementById('guideContentGrade').value = review.content_grade ?? '';
         document.getElementById('guideReviewDecision').value = review.status === 'a_reprendre' ? 'a_reprendre' : 'valide';
         document.getElementById('guideReviewComment').value = review.comment || '';
         savedReviewReport = review.reviewed_at
@@ -728,8 +877,15 @@
             if (generation !== aiCorrectionGeneration || !dialog.open ||
                 document.getElementById('guideReviewSubmissionId').value !== submission.id) return;
             if (suggestion.readable) {
-                document.getElementById('guideFormGrade').value = String(suggestion.form_grade);
-                document.getElementById('guideContentGrade').value = String(suggestion.content_grade);
+                const formInput = document.querySelector('[data-rubric-score="form"]');
+                if (formInput) formInput.value = String(suggestion.form_grade);
+                rubricFor(submission).criteria.filter(function (criterion) {
+                    return criterion.group === 'content';
+                }).forEach(function (criterion, index) {
+                    const input = document.querySelector('[data-rubric-score="' + criterion.key + '"]');
+                    const suggestedCriterion = suggestion.criteria[index];
+                    if (input && suggestedCriterion) input.value = String(suggestedCriterion.grade);
+                });
                 markReviewDirty();
                 updateFinalGrade();
             }
@@ -749,24 +905,46 @@
     }
 
     function updateFinalGrade() {
-        const formGrade = Number(document.getElementById('guideFormGrade')?.value);
-        const contentGrade = Number(document.getElementById('guideContentGrade')?.value);
-        const total = (Number.isFinite(formGrade) ? formGrade : 0) +
-            (Number.isFinite(contentGrade) ? contentGrade : 0);
+        const totals = collectReviewScores();
+        const formGrade = document.getElementById('guideFormGrade');
+        const contentGrade = document.getElementById('guideContentGrade');
+        if (formGrade) formGrade.value = totals.complete ? String(totals.formGrade) : '';
+        if (contentGrade) contentGrade.value = totals.complete ? String(totals.contentGrade) : '';
         const output = document.getElementById('guideFinalGrade');
-        if (output) output.textContent = total.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' / 20';
+        if (output) output.textContent = totals.complete
+            ? totals.grade.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' / 20'
+            : 'À compléter / 20';
     }
 
     function createReviewReport(candidate, submission, review, reviewedAt) {
         const guideBadge = document.getElementById('guideIdentityBadge');
+        const rubric = rubricFor(submission);
+        const submissions = candidate.doctrine?.submissions || [];
+        const weightedGrade = weightedSynthesisGrade(submissions, submission.dossier, submission, review);
         return {
             candidateName: candidateName(candidate.candidate),
             dossier: String(submission.dossier),
+            submissionLabel: rubric.label,
+            weightPercent: rubric.weight,
+            formLabel: rubric.formLabel,
+            contentLabel: rubric.contentLabel,
             guideName: guideBadge ? guideBadge.textContent.replace(/^Guide\s*:\s*/i, '').trim() : 'Non renseigné',
             formGrade: Number(review.form_grade).toLocaleString('fr-FR', { maximumFractionDigits: 2 }),
             contentGrade: Number(review.content_grade).toLocaleString('fr-FR', { maximumFractionDigits: 2 }),
             finalGrade: Number(review.grade ?? (Number(review.form_grade) + Number(review.content_grade)))
                 .toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+            weightedGrade: weightedGrade === null
+                ? ''
+                : weightedGrade.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+            criteria: rubric.criteria.filter(function (criterion) {
+                return Number.isFinite(Number(review.rubric_scores?.[criterion.key]));
+            }).map(function (criterion) {
+                return {
+                    label: criterion.label,
+                    grade: Number(review.rubric_scores[criterion.key]).toLocaleString('fr-FR', { maximumFractionDigits: 2 }),
+                    maxGrade: criterion.max
+                };
+            }),
             decision: review.status === 'a_reprendre' ? 'À reprendre' : 'Validé',
             comment: review.comment || '',
             reviewedAt: formatDate(reviewedAt),
@@ -807,9 +985,12 @@
         const form = event.currentTarget;
         if (!form.reportValidity()) return;
         const submissionId = document.getElementById('guideReviewSubmissionId').value;
-        const formGrade = Number(document.getElementById('guideFormGrade').value);
-        const contentGrade = Number(document.getElementById('guideContentGrade').value);
         const status = document.getElementById('guideReviewStatus');
+        const totals = collectReviewScores();
+        if (!totals.complete) {
+            setStatus(status, 'Renseignez une note valide pour chaque critère de la grille.', 'error');
+            return;
+        }
         const button = form.querySelector('button[type="submit"]');
         const contextGeneration = reviewContextGeneration;
         const editGeneration = reviewEditGeneration;
@@ -823,9 +1004,10 @@
                 prefer: 'resolution=merge-duplicates,return=representation',
                 body: {
                     submission_id: submissionId,
-                    form_grade: formGrade,
-                    content_grade: contentGrade,
-                    grade: formGrade + contentGrade,
+                    form_grade: totals.formGrade,
+                    content_grade: totals.contentGrade,
+                    grade: totals.grade,
+                    rubric_scores: totals.rubricScores,
                     status: decision,
                     comment: comment
                 }
@@ -834,9 +1016,10 @@
             if (contextGeneration === reviewContextGeneration && editGeneration === reviewEditGeneration &&
                 activeReviewCandidate && activeReviewSubmission) {
                 savedReviewReport = createReviewReport(activeReviewCandidate, activeReviewSubmission, {
-                    form_grade: savedRow?.form_grade ?? formGrade,
-                    content_grade: savedRow?.content_grade ?? contentGrade,
-                    grade: savedRow?.grade ?? formGrade + contentGrade,
+                    form_grade: savedRow?.form_grade ?? totals.formGrade,
+                    content_grade: savedRow?.content_grade ?? totals.contentGrade,
+                    grade: savedRow?.grade ?? totals.grade,
+                    rubric_scores: savedRow?.rubric_scores ?? totals.rubricScores,
                     status: savedRow?.status ?? decision,
                     comment: savedRow?.comment ?? comment
                 }, savedRow?.reviewed_at || new Date().toISOString());
@@ -954,16 +1137,16 @@
         document.getElementById('guideReviewForm')?.addEventListener('input', function (event) {
             if (event.target.id === 'guideReviewSubmissionId') return;
             markReviewDirty();
+            updateFinalGrade();
         });
         document.getElementById('guideReviewForm')?.addEventListener('change', function (event) {
             if (event.target.id === 'guideReviewSubmissionId') return;
             markReviewDirty();
+            updateFinalGrade();
         });
         document.getElementById('guideReviewDialog')?.addEventListener('close', function () {
             aiCorrectionGeneration += 1;
         });
-        document.getElementById('guideFormGrade')?.addEventListener('input', updateFinalGrade);
-        document.getElementById('guideContentGrade')?.addEventListener('input', updateFinalGrade);
         document.getElementById('guideAssignOpen')?.addEventListener('click', function () {
             const dialog = document.getElementById('guideAssignDialog');
             document.getElementById('guideCandidateSearch').value = '';

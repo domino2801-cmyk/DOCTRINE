@@ -746,6 +746,30 @@
     display: none;
 }
 
+.guide-review-criteria {
+    display: grid;
+    gap: 9px;
+}
+
+.guide-review-criterion {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 100px;
+    align-items: center;
+    gap: 10px !important;
+    padding: 9px 10px;
+    background: rgba(12, 20, 17, .42);
+    border: 1px solid rgba(176, 202, 183, .16);
+    border-radius: 6px;
+}
+
+.guide-review-criterion span {
+    line-height: 1.4;
+}
+
+.guide-review-criterion input {
+    width: 100%;
+}
+
 .guide-review-total {
     display: flex;
     align-items: center;
