@@ -85,6 +85,58 @@ test("la grille interactive BM4 est ouvrable, téléchargeable et précachée", 
     assert.match(serviceWorker, /new URL\('\.\/app\/grille-evaluation-synthese-bm4-interactive\.pdf'/);
 });
 
+test("le compte rendu d’évaluation génère un PDF rempli avec des pages indexées", async () => {
+    const { createEvaluationPdf } = await import("../app/evaluation-report.mjs");
+    const blob = createEvaluationPdf({
+        candidateName: "Caporal Élodie Martin",
+        dossier: "4",
+        guideName: "Commandant Léa Bernard",
+        formGrade: "5,5",
+        contentGrade: "12",
+        finalGrade: "17,50",
+        decision: "À reprendre",
+        comment: "Bonne analyse.\nÀ préciser : les délais.",
+        reviewedAt: "18 nov. 2026 à 07:00",
+        exportedAt: "18 nov. 2026 à 07:05"
+    });
+    const pdf = Buffer.from(await blob.arrayBuffer()).toString("latin1");
+    const xrefOffset = Number(pdf.match(/startxref\n(\d+)/)?.[1]);
+
+    assert.equal(blob.type, "application/pdf");
+    assert.ok(pdf.startsWith("%PDF-1.4"));
+    assert.match(pdf, /Caporal Élodie Martin/);
+    assert.match(pdf, /17,50 \/ 20/);
+    assert.match(pdf, /Bonne analyse/);
+    assert.match(pdf, /À reprendre/);
+    assert.match(pdf, /ÉVALUATION/);
+    assert.equal(pdf.slice(xrefOffset, xrefOffset + 4), "xref");
+    const xrefLines = pdf.slice(xrefOffset).split("\n");
+    const objectCount = Number(xrefLines[1].split(" ")[1]);
+    for (let index = 1; index < objectCount; index += 1) {
+        const offset = Number(xrefLines[index + 2].slice(0, 10));
+        assert.ok(pdf.startsWith(`${index} 0 obj\n`, offset), `object ${index} has a valid cross-reference offset`);
+    }
+    assert.match(page, /id="guideDownloadReview"/);
+    assert.match(page, /télécharger le compte rendu PDF rempli/);
+    assert.match(page, /id="guideDownloadReview"[^>]*hidden/);
+    assert.match(script, /document\.getElementById\('guideDownloadReview'\)\.hidden = false/);
+    assert.match(script, /function markReviewDirty\(\)[\s\S]*savedReviewReport = null/);
+    const multiPageBlob = createEvaluationPdf({
+        candidateName: "Caporal Élodie Martin",
+        dossier: "4",
+        guideName: "Commandant Léa Bernard",
+        formGrade: "5,5",
+        contentGrade: "12",
+        finalGrade: "17,50",
+        decision: "Validé",
+        comment: "Commentaire détaillé. ".repeat(220),
+        reviewedAt: "18 nov. 2026 à 07:00",
+        exportedAt: "18 nov. 2026 à 07:05"
+    });
+    const multiPagePdf = Buffer.from(await multiPageBlob.arrayBuffer()).toString("latin1");
+    assert.match(multiPagePdf, /\/Count 2/);
+});
+
 test("la correction Gemini reste une proposition serveur limitée aux fiches de proposition", async () => {
     const [aiFunction, supabaseConfig] = await Promise.all([
         read("supabase/functions/correct-fiche-ai/index.ts"),

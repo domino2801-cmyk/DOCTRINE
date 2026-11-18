@@ -16,6 +16,11 @@
     let selectedCandidateId = '';
     let requestGeneration = 0;
     let aiCorrectionGeneration = 0;
+    let reviewContextGeneration = 0;
+    let reviewEditGeneration = 0;
+    let activeReviewCandidate = null;
+    let activeReviewSubmission = null;
+    let savedReviewReport = null;
     let isAuthorized = false;
     let pageBindingsAttached = false;
 
@@ -589,6 +594,10 @@
 
     function openReview(candidate, submission) {
         const generation = ++aiCorrectionGeneration;
+        reviewContextGeneration += 1;
+        reviewEditGeneration = 0;
+        activeReviewCandidate = candidate;
+        activeReviewSubmission = submission;
         const dialog = document.getElementById('guideReviewDialog');
         const title = document.getElementById('guideReviewTitle');
         const reviewStatus = document.getElementById('guideReviewStatus');
@@ -605,6 +614,11 @@
         document.getElementById('guideContentGrade').value = review.content_grade ?? '';
         document.getElementById('guideReviewDecision').value = review.status === 'a_reprendre' ? 'a_reprendre' : 'valide';
         document.getElementById('guideReviewComment').value = review.comment || '';
+        savedReviewReport = review.reviewed_at
+            ? createReviewReport(candidate, submission, review, review.reviewed_at)
+            : null;
+        const downloadButton = document.getElementById('guideDownloadReview');
+        if (downloadButton) downloadButton.hidden = !savedReviewReport;
         const saveButton = document.querySelector('#guideReviewForm button[type="submit"]');
         if (saveButton) saveButton.disabled = false;
         updateFinalGrade();
@@ -626,6 +640,13 @@
             'Synthèse : ' + suggestion.overall_comment
         ];
         return lines.join('\n');
+    }
+
+    function markReviewDirty() {
+        reviewEditGeneration += 1;
+        savedReviewReport = null;
+        const downloadButton = document.getElementById('guideDownloadReview');
+        if (downloadButton) downloadButton.hidden = true;
     }
 
     function renderAiCorrection(suggestion) {
@@ -679,6 +700,7 @@
                 return;
             }
             comment.value = prefix + feedback;
+            markReviewDirty();
             comment.focus();
             setStatus(status, 'Synthèse ajoutée. Relisez et modifiez le commentaire avant l’enregistrement.', 'success');
         });
@@ -708,6 +730,7 @@
             if (suggestion.readable) {
                 document.getElementById('guideFormGrade').value = String(suggestion.form_grade);
                 document.getElementById('guideContentGrade').value = String(suggestion.content_grade);
+                markReviewDirty();
                 updateFinalGrade();
             }
             renderAiCorrection(suggestion);
@@ -734,6 +757,51 @@
         if (output) output.textContent = total.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' / 20';
     }
 
+    function createReviewReport(candidate, submission, review, reviewedAt) {
+        const guideBadge = document.getElementById('guideIdentityBadge');
+        return {
+            candidateName: candidateName(candidate.candidate),
+            dossier: String(submission.dossier),
+            guideName: guideBadge ? guideBadge.textContent.replace(/^Guide\s*:\s*/i, '').trim() : 'Non renseigné',
+            formGrade: Number(review.form_grade).toLocaleString('fr-FR', { maximumFractionDigits: 2 }),
+            contentGrade: Number(review.content_grade).toLocaleString('fr-FR', { maximumFractionDigits: 2 }),
+            finalGrade: Number(review.grade ?? (Number(review.form_grade) + Number(review.content_grade)))
+                .toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+            decision: review.status === 'a_reprendre' ? 'À reprendre' : 'Validé',
+            comment: review.comment || '',
+            reviewedAt: formatDate(reviewedAt),
+            exportedAt: formatDate(new Date().toISOString())
+        };
+    }
+
+    async function downloadReviewReport() {
+        const button = document.getElementById('guideDownloadReview');
+        const status = document.getElementById('guideReviewStatus');
+        if (!savedReviewReport || !button) return;
+        button.disabled = true;
+        try {
+            const { createEvaluationPdf } = await import('./evaluation-report.mjs');
+            const pdf = createEvaluationPdf(savedReviewReport);
+            const url = URL.createObjectURL(pdf);
+            const link = element('a');
+            const filename = savedReviewReport.candidateName
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '') || 'candidat';
+            link.href = url;
+            link.download = `evaluation-${filename}-dossier-${savedReviewReport.dossier}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+            setStatus(status, 'Compte rendu téléchargé.', 'success');
+        } catch (error) {
+            console.error('Génération du compte rendu PDF impossible.', error);
+            setStatus(status, 'Génération du compte rendu PDF impossible.', 'error');
+        } finally {
+            button.disabled = false;
+        }
+    }
+
     async function saveReview(event) {
         event.preventDefault();
         const form = event.currentTarget;
@@ -743,10 +811,14 @@
         const contentGrade = Number(document.getElementById('guideContentGrade').value);
         const status = document.getElementById('guideReviewStatus');
         const button = form.querySelector('button[type="submit"]');
+        const contextGeneration = reviewContextGeneration;
+        const editGeneration = reviewEditGeneration;
+        const comment = document.getElementById('guideReviewComment').value.trim();
+        const decision = document.getElementById('guideReviewDecision').value;
         if (button) button.disabled = true;
         setStatus(status, 'Enregistrement de l’évaluation…');
         try {
-            await api('/rest/v1/fiche_reviews?on_conflict=submission_id%2Cguide_id', {
+            const savedReview = await api('/rest/v1/fiche_reviews?on_conflict=submission_id%2Cguide_id', {
                 method: 'POST',
                 prefer: 'resolution=merge-duplicates,return=representation',
                 body: {
@@ -754,11 +826,25 @@
                     form_grade: formGrade,
                     content_grade: contentGrade,
                     grade: formGrade + contentGrade,
-                    status: document.getElementById('guideReviewDecision').value,
-                    comment: document.getElementById('guideReviewComment').value.trim()
+                    status: decision,
+                    comment: comment
                 }
             });
-            setStatus(status, 'Évaluation enregistrée.', 'success');
+            const savedRow = Array.isArray(savedReview) ? savedReview[0] : null;
+            if (contextGeneration === reviewContextGeneration && editGeneration === reviewEditGeneration &&
+                activeReviewCandidate && activeReviewSubmission) {
+                savedReviewReport = createReviewReport(activeReviewCandidate, activeReviewSubmission, {
+                    form_grade: savedRow?.form_grade ?? formGrade,
+                    content_grade: savedRow?.content_grade ?? contentGrade,
+                    grade: savedRow?.grade ?? formGrade + contentGrade,
+                    status: savedRow?.status ?? decision,
+                    comment: savedRow?.comment ?? comment
+                }, savedRow?.reviewed_at || new Date().toISOString());
+                document.getElementById('guideDownloadReview').hidden = false;
+                setStatus(status, 'Évaluation enregistrée.', 'success');
+            } else if (contextGeneration === reviewContextGeneration) {
+                setStatus(status, 'Évaluation enregistrée. Enregistrez les modifications en cours pour télécharger le compte rendu.', 'success');
+            }
             await loadDashboard();
         } catch (error) {
             setStatus(status, error.message || 'Enregistrement de l’évaluation impossible.', 'error');
@@ -864,6 +950,15 @@
         });
         document.getElementById('guideAdmissionForm')?.addEventListener('submit', saveAdmission);
         document.getElementById('guideReviewForm')?.addEventListener('submit', saveReview);
+        document.getElementById('guideDownloadReview')?.addEventListener('click', downloadReviewReport);
+        document.getElementById('guideReviewForm')?.addEventListener('input', function (event) {
+            if (event.target.id === 'guideReviewSubmissionId') return;
+            markReviewDirty();
+        });
+        document.getElementById('guideReviewForm')?.addEventListener('change', function (event) {
+            if (event.target.id === 'guideReviewSubmissionId') return;
+            markReviewDirty();
+        });
         document.getElementById('guideReviewDialog')?.addEventListener('close', function () {
             aiCorrectionGeneration += 1;
         });

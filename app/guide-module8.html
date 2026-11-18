@@ -114,7 +114,7 @@
                         <div>
                             <p class="guide-kicker">OUTIL DE CORRECTION</p>
                             <h4 id="guideRubricTitle">Grille interactive d’évaluation BM4</h4>
-                            <p>La grille détaille la fiche de proposition (70 %) et le support oral (30 %), avec une synthèse pondérée. Pour enregistrer l’évaluation de la fiche dans DOCTRINE, reportez la forme (/6) et le fond (/14) dans le formulaire « Évaluer ». L’analyse IA transmet le PDF à Google Gemini ; sa proposition doit être vérifiée par le guide.</p>
+                            <p>La grille détaille la fiche de proposition (70 %) et le support oral (30 %), avec une synthèse pondérée. Pour enregistrer l’évaluation de la fiche dans DOCTRINE, reportez la forme (/6) et le fond (/14) dans le formulaire « Évaluer ». Après l’enregistrement, le guide peut télécharger le compte rendu PDF rempli. L’analyse IA transmet le PDF à Google Gemini ; sa proposition doit être vérifiée par le guide.</p>
                         </div>
                         <div class="guide-rubric-actions">
                             <a class="guide-button guide-button-primary" href="grille-evaluation-synthese-bm4-interactive.pdf" target="_blank" rel="noopener">Ouvrir la grille (PDF)</a>
@@ -195,6 +195,7 @@
             <label>Commentaires du guide<textarea id="guideReviewComment" rows="7" maxlength="4000"></textarea></label>
             <p id="guideReviewStatus" class="guide-form-status" role="status" aria-live="polite"></p>
             <button class="guide-button guide-button-primary" type="submit">Enregistrer l’évaluation</button>
+            <button id="guideDownloadReview" class="guide-button" type="button" hidden>Télécharger le compte rendu PDF</button>
         </form>
     </dialog>
 </body>
