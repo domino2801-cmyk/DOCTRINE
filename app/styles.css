@@ -456,16 +456,26 @@
     .correction-gate-status:empty { display: none; }
     #supportOralGate { margin-top: 12px; }
     .candidate-guide-code-card {
+        max-width: 72ch;
         width: 100%;
-        margin: 0;
+        margin: 25px auto 0 !important;
         box-sizing: border-box;
         color-scheme: dark;
+        font-size: 0.98rem;
+        line-height: 1.65;
     }
     .candidate-guide-code-card.dossier-item {
         display: block;
-        padding: 10px 12px;
+        padding: 16px 18px;
     }
-    .candidate-guide-code-item { margin-top: 25px; }
+    .candidate-guide-code-card.part-card {
+        margin: 25px auto 0 !important;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-left: 4px solid #e5c158;
+        border-radius: 8px;
+        background: #0a1110;
+        color: #fff;
+    }
     .candidate-guide-code-heading {
         display: flex;
         justify-content: space-between;
@@ -522,6 +532,9 @@
     @media (max-width: 640px) {
         .candidate-guide-code-heading { flex-wrap: wrap; }
         .candidate-guide-code-copy { margin-left: auto; }
+    }
+    @media (max-width: 560px) {
+        .candidate-guide-code-card.dossier-item { padding: 14px 12px; }
     }
     .correction-verification { margin-top: 8px; }
     .correction-verification[hidden] { display: none; }
