@@ -463,44 +463,36 @@
         color-scheme: dark;
     }
     .candidate-guide-code-card.dossier-item {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
-        gap: 12px 16px;
-        padding: 12px;
+        display: block;
+        padding: 12px 16px;
     }
-    .candidate-guide-code-card > .candidate-guide-code-main { min-width: 0; }
     .candidate-guide-code-heading {
         display: flex;
-        align-items: baseline;
-        gap: 8px;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
         min-width: 0;
-        padding-bottom: 8px;
-        border-bottom: 1px solid rgba(165, 190, 170, 0.14);
+        margin-bottom: 8px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(229, 193, 88, 0.28);
     }
-    .candidate-guide-code-kicker {
+    .candidate-guide-code-heading h3 {
         margin: 0;
-        color: #a9d8b8;
-        font-size: 0.78rem;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        white-space: nowrap;
+        color: #e5c158;
+        font-size: 1.08rem;
     }
-    .candidate-guide-code-card h3 { margin: 0; color: #edf3e9; font-size: 1.08rem; }
     .candidate-guide-code-description {
-        margin: 8px 0 10px;
-        padding-left: 20px;
-        color: #c1d0c4;
+        margin: 10px 0 0;
+        padding-left: 24px;
+        color: #e0e8df;
     }
     .candidate-guide-code-description li { line-height: 1.55; }
-    .candidate-guide-code-action {
-        display: flex;
-        align-items: center;
-        width: auto;
-    }
     .candidate-guide-code-value {
         display: block;
         overflow-wrap: anywhere;
+        width: fit-content;
+        min-width: 9ch;
+        margin-top: 8px;
         padding: 10px 12px;
         border: 1px solid rgba(165, 190, 170, 0.24);
         border-radius: 7px;
@@ -512,11 +504,9 @@
         letter-spacing: 0.14em;
         text-align: center;
         user-select: all;
-        width: fit-content;
-        min-width: 9ch;
     }
     .candidate-guide-code-copy {
-        padding: 10px 14px;
+        padding: 8px 14px;
         border: 1px solid rgba(165, 190, 170, 0.26);
         border-radius: 7px;
         background: linear-gradient(145deg, #385640, #243c30);
@@ -527,10 +517,11 @@
     }
     .candidate-guide-code-copy:disabled { opacity: 0.55; cursor: not-allowed; }
     .candidate-guide-code-copy:focus-visible { outline: 2px solid #83d8d8; outline-offset: 3px; }
-    .candidate-guide-code-status { grid-column: 1 / -1; min-height: 1.2em; margin: 0; color: #a9d8b8; font-size: 0.85rem; }
+    .candidate-guide-code-status { margin: 8px 0 0; color: #a9d8b8; font-size: 0.85rem; }
+    .candidate-guide-code-status:empty { display: none; }
     @media (max-width: 640px) {
-        .candidate-guide-code-card.dossier-item { grid-template-columns: 1fr; }
-        .candidate-guide-code-copy { justify-self: start; }
+        .candidate-guide-code-heading { flex-wrap: wrap; }
+        .candidate-guide-code-copy { margin-left: auto; }
     }
     .correction-verification { margin-top: 8px; }
     .correction-verification[hidden] { display: none; }
