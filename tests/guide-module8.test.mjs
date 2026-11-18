@@ -103,6 +103,8 @@ test("la correction Gemini reste une proposition serveur limitée aux fiches de 
     assert.match(aiFunction, /form_grade: \{ type: "number", minimum: 0, maximum: 6 \}/);
     assert.match(aiFunction, /"Introduction", 3[\s\S]*"Problématique et données", 3[\s\S]*"Solutions réalisables", 4[\s\S]*"Avis et conclusion", 4/);
     assert.match(aiFunction, /store: false/);
+    assert.match(aiFunction, /Deno\.env\.get\("GEMINI_MODEL"\)\s*\|\|\s*DEFAULT_MODEL/);
+    assert.match(aiFunction, /geminiResponse\.text\(\)/);
     assert.match(supabaseConfig, /\[functions\.correct-fiche-ai\]\s*\nverify_jwt = false/);
 });
 

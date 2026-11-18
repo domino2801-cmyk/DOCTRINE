@@ -2,7 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
 const BUCKET = "candidate-fiches";
 const MAX_PDF_BYTES = 10 * 1024 * 1024;
-const MODEL = "gemini-3.8-flash";
+const DEFAULT_MODEL = "gemini-3.8-flash";
 const CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "authorization, apikey, content-type",
@@ -271,6 +271,11 @@ Deno.serve(async (request) => {
             console.error("Gemini correction is missing GOOGLE_API_KEY or GEMINI_API_KEY.");
             return jsonResponse({ error: "Clé Google AI manquante dans les secrets du serveur." }, 503);
         }
+        const model = (Deno.env.get("GEMINI_MODEL") || DEFAULT_MODEL).trim();
+        if (!/^gemini-[a-z0-9.-]+$/i.test(model)) {
+            console.error("Gemini correction has an invalid GEMINI_MODEL value.");
+            return jsonResponse({ error: "Configuration du modèle Gemini invalide." }, 503);
+        }
 
         const { data: pdf, error: downloadError } = await database.storage.from(BUCKET).download(submission.storage_path);
         if (downloadError || !pdf) {
@@ -291,10 +296,11 @@ Deno.serve(async (request) => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-goog-api-key": apiKey
+                    "x-goog-api-key": apiKey,
+                    "Api-Revision": "2026-05-20"
                 },
                 body: JSON.stringify({
-                    model: MODEL,
+                    model,
                     input: [
                         { type: "document", data: encodeBase64(pdfBytes), mime_type: "application/pdf" },
                         { type: "text", text: RUBRIC_PROMPT }
@@ -305,7 +311,6 @@ Deno.serve(async (request) => {
                         mime_type: "application/json",
                         schema: RESPONSE_SCHEMA
                     },
-                    generation_config: { max_output_tokens: 1800 },
                     store: false
                 }),
                 signal: AbortSignal.timeout(60000)
@@ -316,7 +321,9 @@ Deno.serve(async (request) => {
         }
 
         if (!geminiResponse.ok) {
-            console.error("Gemini correction API returned HTTP", geminiResponse.status);
+            const responseDetail = await geminiResponse.text().catch(() => "");
+            console.error("Gemini correction API returned HTTP", geminiResponse.status,
+                "model:", model, "detail:", responseDetail.slice(0, 2000));
             return jsonResponse({
                 error: geminiResponse.status === 429
                     ? "Quota Gemini atteint. Réessayez plus tard."
