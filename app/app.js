@@ -958,7 +958,7 @@ const module1Key = 'module1_validated';
     }
 
     function harmonizePartCards() {
-        document.querySelectorAll('.mod-body[data-mod="1"] > ul > li, .mod-body[data-mod="2"] > div, #modal-module6 .modal-list > li')
+        document.querySelectorAll('.mod-body[data-mod="1"] > ul > li, .mod-body[data-mod="2"] > div:not([hidden]), #modal-module6 .modal-list > li')
             .forEach(function(card) { card.classList.add('part-card'); });
 
         convertLegacyQcmCards();

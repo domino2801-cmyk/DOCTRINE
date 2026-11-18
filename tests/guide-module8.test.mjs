@@ -261,6 +261,11 @@ test("le Module 1 affiche un code candidat court au style des cartes existantes"
     assert.match(appScript, /navigator\.clipboard\.writeText\(code\)/);
 });
 
+test("le marqueur MRG masqué ne devient pas une carte visible du Module 2", () => {
+    assert.match(index, /<div data-module2-mrg-version="1" hidden><\/div>/);
+    assert.match(appScript, /\.mod-body\[data-mod="2"\] > div:not\(\[hidden\]\)/);
+});
+
 test("les seuils QCM et l’inactivité produisent les badges attendus", () => {
     const match = script.match(/function candidateStatus\(candidate\) \{[\s\S]*?\n    \}/);
     assert.ok(match, "candidateStatus must remain available for the cohort status calculation");
