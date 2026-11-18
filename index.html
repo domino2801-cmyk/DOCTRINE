@@ -168,13 +168,19 @@
 
 </div><!-- /mod-body --><!-- Bloc de validation de lecture obligatoire -->
         <section id="candidateGuideCodeCard" class="candidate-guide-code-card dossier-item" aria-labelledby="candidate-guide-code-title">
-            <div>
-                <p class="candidate-guide-code-kicker">1.5.</p>
-                <h3 id="candidate-guide-code-title">Code pour Officier Guide</h3>
-                <p>Communiquez ce code de 8 caractères à votre Officier Guide pour qu’il puisse vous rattacher à sa cohorte.</p>
+            <div class="candidate-guide-code-main">
+                <div class="candidate-guide-code-heading">
+                    <p class="candidate-guide-code-kicker">1.5.</p>
+                    <h3 id="candidate-guide-code-title">Code pour Officier Guide</h3>
+                </div>
+                <ul class="candidate-guide-code-description">
+                    <li>Communiquez ce code de 8 caractères à votre Officier Guide pour qu’il puisse vous rattacher à sa cohorte.</li>
+                </ul>
                 <output id="candidateGuideCode" class="candidate-guide-code-value" aria-live="polite">Génération de votre code…</output>
             </div>
-            <button id="copyCandidateGuideCode" class="candidate-guide-code-copy" type="button" disabled>Copier mon code</button>
+            <div class="candidate-guide-code-action">
+                <button id="copyCandidateGuideCode" class="candidate-guide-code-copy" type="button" disabled>Copier mon code</button>
+            </div>
             <p id="candidateGuideCodeStatus" class="candidate-guide-code-status" role="status" aria-live="polite"></p>
         </section>
         <div style="margin-top: 30px; padding: 15px; background-color: #f8fafc; border: 2px dashed #0b2240; border-radius: 6px; display: flex; align-items: center; gap: 12px; font-weight: bold; width: 100%; box-sizing: border-box;">
