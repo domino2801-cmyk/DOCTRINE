@@ -187,6 +187,21 @@ function extractOutputText(value: unknown) {
     return text;
 }
 
+function extractGenerateContentText(value: unknown) {
+    if (!isRecord(value) || !Array.isArray(value.candidates)) {
+        throw new Error("Réponse Gemini absente.");
+    }
+    const candidate = value.candidates.find((item) => isRecord(item));
+    if (!candidate || !isRecord(candidate.content) || !Array.isArray(candidate.content.parts)) {
+        throw new Error("Texte de correction absent de la réponse Gemini.");
+    }
+    const text = candidate.content.parts.flatMap((part) =>
+        isRecord(part) && typeof part.text === "string" ? [part.text] : []
+    ).join("\n");
+    if (!text) throw new Error("Texte de correction absent de la réponse Gemini.");
+    return text;
+}
+
 function encodeBase64(bytes: Uint8Array) {
     let binary = "";
     for (let offset = 0; offset < bytes.length; offset += 0x8000) {
@@ -291,6 +306,7 @@ Deno.serve(async (request) => {
         }
 
         let geminiResponse: Response;
+        let geminiApi: "interactions" | "generateContent" = "interactions";
         try {
             geminiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
                 method: "POST",
@@ -324,6 +340,47 @@ Deno.serve(async (request) => {
             const responseDetail = await geminiResponse.text().catch(() => "");
             console.error("Gemini correction API returned HTTP", geminiResponse.status,
                 "model:", model, "detail:", responseDetail.slice(0, 2000));
+            if (geminiResponse.status !== 429) {
+                try {
+                    geminiResponse = await fetch(
+                        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "x-goog-api-key": apiKey
+                            },
+                            body: JSON.stringify({
+                                systemInstruction: {
+                                    parts: [{ text: SYSTEM_INSTRUCTION }]
+                                },
+                                contents: [{
+                                    role: "user",
+                                    parts: [
+                                        { inlineData: { mimeType: "application/pdf", data: encodeBase64(pdfBytes) } },
+                                        { text: RUBRIC_PROMPT }
+                                    ]
+                                }],
+                                generationConfig: {
+                                    responseMimeType: "application/json",
+                                    responseSchema: RESPONSE_SCHEMA
+                                }
+                            }),
+                            signal: AbortSignal.timeout(60000)
+                        }
+                    );
+                    geminiApi = "generateContent";
+                } catch (error) {
+                    console.error("Gemini generateContent fallback failed.", error);
+                    return jsonResponse({ error: "Gemini ne répond pas. Réessayez dans quelques instants." }, 502);
+                }
+            }
+        }
+
+        if (!geminiResponse.ok) {
+            const responseDetail = await geminiResponse.text().catch(() => "");
+            console.error("Gemini correction fallback returned HTTP", geminiResponse.status,
+                "api:", geminiApi, "model:", model, "detail:", responseDetail.slice(0, 2000));
             return jsonResponse({
                 error: geminiResponse.status === 429
                     ? "Quota Gemini atteint. Réessayez plus tard."
@@ -334,7 +391,9 @@ Deno.serve(async (request) => {
         let correction: ReturnType<typeof parseCorrection>;
         try {
             const geminiPayload: unknown = await geminiResponse.json();
-            const outputText = extractOutputText(geminiPayload);
+            const outputText = geminiApi === "generateContent"
+                ? extractGenerateContentText(geminiPayload)
+                : extractOutputText(geminiPayload);
             correction = parseCorrection(JSON.parse(outputText));
         } catch (error) {
             console.error("Gemini correction response could not be validated.", error);

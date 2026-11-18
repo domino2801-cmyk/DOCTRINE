@@ -105,6 +105,7 @@ test("la correction Gemini reste une proposition serveur limitée aux fiches de 
     assert.match(aiFunction, /store: false/);
     assert.match(aiFunction, /Deno\.env\.get\("GEMINI_MODEL"\)\s*\|\|\s*DEFAULT_MODEL/);
     assert.match(aiFunction, /geminiResponse\.text\(\)/);
+    assert.match(aiFunction, /generateContent/);
     assert.match(supabaseConfig, /\[functions\.correct-fiche-ai\]\s*\nverify_jwt = false/);
 });
 
