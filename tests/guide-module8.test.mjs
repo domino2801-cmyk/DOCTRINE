@@ -439,8 +439,8 @@ test("les observations IA de la fichette affichent réellement les quatre critè
     assert.match(script, /element\('strong', 'guide-ai-criterion-title'/);
     assert.match(script, /element\('p', 'guide-ai-criterion-observation'/);
     assert.match(script, /element\('p', 'guide-ai-criterion-evidence'/);
-    assert.match(css, /\.guide-ai-criteria li\.guide-ai-criterion-card\s*\{[\s\S]*?border-left: 3px solid #d9a95f;[\s\S]*?border-radius: 8px;/);
-    assert.match(css, /\.guide-ai-criteria \.guide-ai-criterion-title/);
-    assert.match(css, /\.guide-ai-criteria \.guide-ai-criterion-observation/);
-    assert.match(css, /\.guide-ai-criteria \.guide-ai-criterion-evidence/);
+    assert.match(styles, /\.guide-ai-criteria li\.guide-ai-criterion-card\s*\{[\s\S]*?border-left: 3px solid #d9a95f;[\s\S]*?border-radius: 8px;/);
+    assert.match(styles, /\.guide-ai-criteria \.guide-ai-criterion-title/);
+    assert.match(styles, /\.guide-ai-criteria \.guide-ai-criterion-observation/);
+    assert.match(styles, /\.guide-ai-criteria \.guide-ai-criterion-evidence/);
 });
