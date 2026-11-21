@@ -495,8 +495,8 @@ test("les points clés du jury sont cochables manuellement et conservés pour le
 test("les cases du jury sont précochées selon les notes et restent modifiables par le guide", () => {
     assert.match(script, /form: \['p_form_pages', 'p_form_header', 'p_form_references', 'p_form_style'\]/);
     assert.match(script, /introduction: \['p_intro_context', 'p_intro_solution', 'p_intro_plan'\]/);
-    assert.match(script, /operatoire_forme: \['o_operatoire', 'o_five_cases', 'o_readability'\]/);
-    assert.match(script, /argumentaire: \['o_id123', 'o_demonstration', 'o_proofs', 'o_fact_analysis'\]/);
+    assert.match(script, /operatoire_forme: \['o_anti_copy', 'o_five_cases', 'o_operatoire', 'o_language'\]/);
+    assert.match(script, /argumentaire: \['o_demonstration', 'o_id123', 'o_id2', 'o_fact_analysis', 'o_proofs'\]/);
     assert.match(script, /const initial = hasSavedChecklist\s*\?\s*saved\s*:\s*automaticJuryChecklist/);
     assert.match(script, /if \(input\.dataset\.juryManual === 'true'\) return/);
     assert.match(script, /input\.addEventListener\('change', function \(\)/);
