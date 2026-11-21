@@ -22,8 +22,8 @@ const report = {
             type: "proposition",
             grade: 15.5,
             juryChecklist: [
-                { key: "p_form_pages", label: "La fiche respecte le calibrage de 4 pages maximum.", checked: true },
-                { key: "p_form_header", label: "L’en-tête comporte le timbre, le lieu et la date.", checked: false }
+                { key: "p_form_header", label: "Gabarit EM : timbre, destinataire réel, objet précis, références et pièces jointes.", checked: true },
+                { key: "p_form_readability", label: "Lisibilité : copie propre et aérée.", checked: false }
             ],
             rubricScores: {
                 form: 5.5,
@@ -51,7 +51,9 @@ const report = {
             type: "support_oral",
             grade: 16,
             juryChecklist: [
-                { key: "o_operatoire", label: "Le support est immédiatement exploitable à l’oral.", checked: true }
+                { key: "o_anti_copy", label: "Non-recopie : le support n’est pas un copier-coller miniature de la fiche état-major.", checked: true },
+                { key: "o_five_cases", label: "Gabarit e-Form : tableau structuré en cinq cases.", checked: false },
+                { key: "o_operatoire", label: "Exploitabilité orale : mots-clés et chiffres saillants.", checked: true }
             ],
             rubricScores: {
                 operatoire_forme: 5.5,
@@ -140,13 +142,17 @@ test("génère réellement la grille BM4 et vérifie les champs, notes et observ
     assert.match(value("points_forts"), /FICHETTE ORALE/);
     assert.ok(value("points_forts").indexOf("FICHE DE PROPOSITION") < value("points_forts").indexOf("FICHETTE ORALE"));
     assert.equal(value("axes_amelioration"), report.improvements);
-    assert.equal(reopened.getPageCount(), (await PDFDocument.load(templateBytes)).getPageCount() + 2, "le PDF doit ajouter une page de points clés pour chaque type de fiche évalué");
+    assert.equal(reopened.getPageCount(), (await PDFDocument.load(templateBytes)).getPageCount(), "le PDF doit conserver strictement les deux pages du modèle");
+    assert.equal(form.getCheckBox("cb_em_1_1").isChecked(), true, "le premier point de la fiche de proposition doit cocher la case déjà présente");
+    assert.equal(form.getCheckBox("cb_em_1_2").isChecked(), false, "un point non acquis doit rester décoché");
+    assert.equal(form.getCheckBox("cb_oral_1_1").isChecked(), true, "le point non-recopie oral doit cocher sa case existante");
+    assert.equal(form.getCheckBox("cb_oral_1_3").isChecked(), true, "le point exploitabilité orale doit cocher sa case existante");
 
     // Contrôle aussi le mode réellement utilisé en production : PDF aplati,
     // lisible sans formulaire interactif et sans champs AcroForm résiduels.
     const productionBlob = await createOfficialBm4Pdf(report, { PDFLib, templateBytes });
     const productionPdf = await PDFDocument.load(new Uint8Array(await productionBlob.arrayBuffer()));
-    assert.ok(productionPdf.getPageCount() >= 1, "le PDF final doit contenir au moins une page");
+    assert.equal(productionPdf.getPageCount(), (await PDFDocument.load(templateBytes)).getPageCount(), "le PDF final doit conserver les pages du modèle, sans ajout");
     assert.equal(productionPdf.getForm().getFields().length, 0, "les champs doivent être aplatis dans le PDF final");
 });
 
