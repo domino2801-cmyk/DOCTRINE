@@ -77,8 +77,13 @@ export function calculateBm4FontSize(text, options) {
 }
 
 function safeText(form, name, value, measureFont) {
+    let field;
     try {
-        const field = form.getTextField(name);
+        field = form.getTextField(name);
+    } catch (error) {
+        throw new Error(`Champ PDF BM4 introuvable ou incompatible « ${name} » : ${error.message}`);
+    }
+    try {
         let text = String(value ?? '');
 
         const max = field.getMaxLength();
@@ -117,7 +122,7 @@ function safeText(form, name, value, measureFont) {
             field.setFontSize(originalSize);
         }
     } catch (error) {
-        console.warn('Champ PDF BM4 ignoré : ' + name, error);
+        throw new Error(`Impossible de renseigner le champ PDF BM4 « ${name} » : ${error.message}`);
     }
 }
 
@@ -140,18 +145,27 @@ function evaluationByType(report, type) {
     return (report.evaluations || []).find((evaluation) => evaluation.type === type) || null;
 }
 
-export async function createOfficialBm4Pdf(report) {
-    if (!globalThis.PDFLib?.PDFDocument) {
-        throw new Error('La bibliothèque PDF n’est pas chargée. Vérifiez votre connexion puis réessayez.');
+export async function createOfficialBm4Pdf(report, options = {}) {
+    const PDFLib = options.PDFLib || globalThis.PDFLib;
+    if (!PDFLib?.PDFDocument) {
+        throw new Error('La bibliothèque PDF n’est pas chargée. Vérifiez le chargement de pdf-lib puis réessayez.');
     }
-    const response = await fetch(TEMPLATE_URL);
-    if (!response.ok) throw new Error('La grille PDF BM4 vierge est introuvable.');
-    const templateBytes = await response.arrayBuffer();
-    const pdfDoc = await globalThis.PDFLib.PDFDocument.load(templateBytes);
+    let templateBytes = options.templateBytes;
+    if (!templateBytes) {
+        let response;
+        try {
+            response = await fetch(TEMPLATE_URL);
+        } catch (error) {
+            throw new Error(`Impossible de télécharger la grille PDF BM4 vierge : ${error.message}`);
+        }
+        if (!response.ok) throw new Error(`Téléchargement de la grille PDF BM4 impossible (HTTP ${response.status}).`);
+        templateBytes = await response.arrayBuffer();
+    }
+    const pdfDoc = await PDFLib.PDFDocument.load(templateBytes);
     const form = pdfDoc.getForm();
     // Helvetica est également utilisée pour dessiner les apparences AcroForm :
     // les mesures et le rendu utilisent donc exactement les mêmes métriques.
-    const measureFont = await pdfDoc.embedFont(globalThis.PDFLib.StandardFonts.Helvetica);
+    const measureFont = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
     const setFieldText = (name, value) => safeText(form, name, value, measureFont);
     const proposition = evaluationByType(report, 'proposition');
     const oral = evaluationByType(report, 'support_oral');
@@ -193,7 +207,7 @@ export async function createOfficialBm4Pdf(report) {
     setFieldText('axes_amelioration', report.improvements || 'Non renseignés dans les observations validées.');
 
     form.updateFieldAppearances(measureFont);
-    form.flatten();
+    if (options.flatten !== false) form.flatten();
     const bytes = await pdfDoc.save({ useObjectStreams: false });
     return new Blob([bytes], { type: 'application/pdf' });
 }
