@@ -409,7 +409,7 @@ async function downloadDriveReference(file: Record<string, unknown>, token: stri
     if (!id || !mimeType || isCorrectionFileName(name)) return null;
 
     const nativeGoogle = mimeType.startsWith("application/vnd.google-apps.");
-    const isImage = /^image\\/(jpeg|png|webp)$/i.test(mimeType);
+    const isImage = /^image\/(jpeg|png|webp)$/i.test(mimeType);
     const isPdf = mimeType === "application/pdf";
     const isGoogleDoc = [
         "application/vnd.google-apps.document",
