@@ -82,8 +82,10 @@ function safeText(form, name, value, measureFont) {
         let text = String(value ?? '');
 
         const max = field.getMaxLength();
-        if (Number.isFinite(max) && max > 0) {
-            text = text.slice(0, max);
+        if (Number.isFinite(max) && max > 0 && text.length > max) {
+            // Le PDF officiel peut limiter la longueur d'un champ.
+            // On augmente cette limite plutôt que de supprimer la fin du commentaire.
+            field.setMaxLength(text.length);
         }
 
         const originalSize = field.getFontSize();
