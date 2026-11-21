@@ -381,6 +381,9 @@ test("la grille AcroForm officielle remplace le compte rendu et exige une valida
     assert.match(helper, /note_em_/);
     assert.match(helper, /note_oral_/);
     assert.match(helper, /moyenne_globale/);
+    assert.match(helper, /setFieldText\('total_em', formatGrade\(proposition\.grade\)\)/);
+    assert.match(helper, /setFieldText\('total_oral', formatGrade\(oral\.grade\)\)/);
+    assert.doesNotMatch(helper, /setFieldText\('total_(?:em|oral)',[^;]*\+ ['"] \/ 20/);
     assert.match(helper, /points_forts/);
     assert.match(helper, /axes_amelioration/);
     assert.match(helper, /form\.flatten\(\)/);
