@@ -121,7 +121,8 @@ test("génère réellement la grille BM4 et vérifie les champs, notes et observ
     // Les champs du débriefing sont des cases de notes, distinctes des commentaires.
     assert.equal(value("bilan_em"), "15,5");
     assert.equal(value("bilan_oral"), "16");
-    assert.equal(value("points_forts"), report.strengths);
+    assert.equal(value("points_forts"), "FICHE DE PROPOSITION\\nAnalyse structurée et propositions réalistes.\\n\\nFICHETTE ORALE\\nPrésentation orale claire et convaincante.");
+    assert.doesNotMatch(value("points_forts"), /FICHE DR/);
     assert.match(value("points_forts"), /FICHE DR — FICHE DE PROPOSITION/);
     assert.match(value("points_forts"), /FICHETTE ORALE/);
     assert.ok(value("points_forts").indexOf("FICHE DR") < value("points_forts").indexOf("FICHETTE ORALE"));
