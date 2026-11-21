@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bm4-shell-v115';
+const CACHE_NAME = 'bm4-shell-v116';
 const APP_SHELL_URL = new URL('./index.html', self.location.href).toString();
 const LEGACY_APP_URL = new URL('./INDEX%20BM4V2.HTML', self.location.href).toString();
 const SHELL_ASSETS = [
@@ -17,6 +17,7 @@ const SHELL_ASSETS = [
   new URL('./app/guide-module8.css', self.location.href).toString(),
   new URL('./app/guide-module8.js', self.location.href).toString(),
   new URL('./app/evaluation-report.mjs', self.location.href).toString(),
+  new URL('./app/bm4-official-pdf.mjs', self.location.href).toString(),
   new URL('./app/grille-evaluation-synthese-bm4-interactive.pdf', self.location.href).toString(),
   new URL('./app/validate-gabarit.mjs', self.location.href).toString(),
   new URL('./app/vendor/pixelmatch.mjs', self.location.href).toString(),
