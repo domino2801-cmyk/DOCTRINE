@@ -173,8 +173,27 @@ test("la correction Gemini est disponible pour les deux types de fiches avec val
     assert.match(aiFunction, /Annotation ou justification du premier critère oral absente/);
     assert.match(aiFunction, /const isOral = submission\.submission_type === "support_oral"/);
     assert.match(aiFunction, /ORAL_RUBRIC_PROMPT/);
-    assert.match(aiFunction, /DRIVE_DOSSIER_ROOT_ID/);
-    assert.match(aiFunction, /14lzOgouHdFP0mSdRo8__PotZ2v0R50QR/);
+    assert.match(aiFunction, /SUBJECT_DRIVE_FOLDER_IDS/);
+    assert.match(aiFunction, /getSubjectReferenceDocuments\(dossier: number\)/);
+    assert.match(aiFunction, /const subjectFolderId = SUBJECT_DRIVE_FOLDER_IDS\[Number\(dossier\)\]/);
+    for (const folderId of [
+        "1l6qZIdK6QVPHfVoGuCrkoJV5QGkVGcI_",
+        "1N2a49fE6JNu-59Hxa15Be99vr5BavI8E",
+        "11dhk9Y611V1i3ChYOWRvx09-9SLilVnJ",
+        "1qGUmuf4JsK-9TNmD7tAXyO2QEKDiE2ZW",
+        "12IBiJtiry-On0pON_0iuoJ59Pt_6AYS1",
+        "1tBRI8hjbNM-eVAgjVb9LjNK3hSuyQyAA",
+        "1_w3RI1xmAN0FCZeCEeVRXcRqvFi7ek_6",
+        "1vGE8GLEFHoX3_DjozDBR3x8ujArRV2a5",
+        "1drUZgFsAX7tRadB-FaxuDJ1EKXC9AonL",
+        "1Fn6pmTs981S3VrTwLtNCAj2j5_d7pDtH",
+        "1-m1qvnV4JvY6gm-dIPYno5xA-Qfc04IG",
+        "1cSmdKJJnmXXekUfSfeZZQ_OqZ-L5stbB",
+        "1iNMbYPCNSgiVVr2kS1y6tufkgogeucIw",
+        "1l0UcOA2jECtTlVzTKjsolP_CFRw_dkSA",
+        "1GVRpJ3TnpXSxBD9PLoUtaZ1A5BRsN-d_",
+        "13VVCZiKzxgW8Rldm1i2addC868scJELl"
+    ]) assert.ok(aiFunction.includes(folderId), `dossier Drive manquant : ${folderId}`);
     assert.match(aiFunction, /GOOGLE_SERVICE_ACCOUNT_JSON/);
     assert.match(aiFunction, /getSubjectReferenceDocuments\(Number\(submission\.dossier\)\)/);
     assert.match(aiFunction, /listDriveChildren\(folderId, token\)/);
