@@ -1,3 +1,4 @@
+import { extractOutputText, extractGenerateContentText } from "../supabase/functions/correct-fiche-ai/gemini-response.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -147,6 +148,29 @@ test("le compte rendu d’évaluation génère un PDF rempli avec des pages inde
     });
     const multiPagePdf = Buffer.from(await multiPageBlob.arrayBuffer()).toString("latin1");
     assert.match(multiPagePdf, /\/Count 2/);
+});
+
+test("l’extracteur Gemini lit les réponses Interactions actuelles et les anciens formats", () => {
+    const json = '{"readable":true}';
+    assert.equal(extractOutputText({
+        status: "completed",
+        steps: [
+            { type: "thought", content: [{ type: "text", text: "ne pas inclure" }] },
+            { type: "model_output", content: [{ type: "text", text: json }] }
+        ]
+    }), json);
+    assert.equal(extractOutputText({ output_text: "  " + json + "  " }), json);
+    assert.equal(extractOutputText({
+        outputs: [{ type: "text", text: json }]
+    }), json);
+    assert.equal(extractOutputText({
+        output: [{ type: "model_output", content: [{ type: "text", text: json }] }]
+    }), json);
+    assert.equal(extractGenerateContentText({
+        candidates: [{ content: { parts: [{ text: json }] } }]
+    }), json);
+    assert.throws(() => extractOutputText({ steps: [{ type: "thought", content: [] }] }),
+        /Texte de correction absent/);
 });
 
 test("la correction Gemini couvre les fiches de proposition et les supports oraux", async () => {
