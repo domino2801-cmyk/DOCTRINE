@@ -976,12 +976,15 @@
     }
 
     function extractFeedbackSection(comment, label, nextLabels) {
-        const source = String(comment || '');
+        const source = String(comment || '')
+            // Normalise les retours à la ligne enregistrés littéralement sous la forme « \n ».
+            .replace(/\\r\\n|\\n|\\r/g, '\n');
         const startPattern = new RegExp('(?:^|\n)' + label + '\\s*:\\s*', 'i');
         const match = startPattern.exec(source);
         if (!match) return '';
         const tail = source.slice(match.index + match[0].length);
-        const stop = new RegExp('\n(?:' + nextLabels.join('|') + ')\\s*:', 'i').exec(tail);
+        const stopLabels = [...nextLabels, 'Comparaison avec la fiche écrite'];
+        const stop = new RegExp('\n(?:' + stopLabels.join('|') + ')\\s*:', 'i').exec(tail);
         return (stop ? tail.slice(0, stop.index) : tail).trim();
     }
 
