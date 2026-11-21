@@ -4,9 +4,19 @@ function safeText(form, name, value) {
     try {
         const field = form.getTextField(name);
         let text = String(value ?? '');
+
         const max = field.getMaxLength();
-        if (Number.isFinite(max) && max > 0) text = text.slice(0, max);
+        if (Number.isFinite(max) && max > 0) {
+            text = text.slice(0, max);
+        }
+
+        const modelFontSize = field.getFontSize();
+
         field.setText(text);
+
+        if (Number.isFinite(modelFontSize) && modelFontSize > 0) {
+            field.setFontSize(modelFontSize);
+        }
     } catch (error) {
         console.warn('Champ PDF BM4 ignoré : ' + name, error);
     }
