@@ -458,3 +458,11 @@ test("les axes d’amélioration prioritaires sont séparés entre fiche de prop
     assert.match(script, /improvements: improvements/);
     assert.doesNotMatch(script, /improvements: extractFeedbackSection\\(combinedComments/);
 });
+
+test("les axes d’amélioration excluent les synthèses et la comparaison, même avec des retours \u00e0 la ligne échappés", () => {
+    const helperMatch = script.match(/function extractFeedbackSection\\(comment, label, nextLabels\\) \\{[\\s\\S]*?\\n    \\}/);
+    assert.ok(helperMatch, "le helper d’extraction doit exister");
+    const extract = vm.runInNewContext('(' + helperMatch[0].replace(/^    /gm, '') + ')');
+    const comment = String.raw`Axes de progrès: Premier axe; deuxième axe\\nSynthèse : Synthèse de la fiche.\\n\\nComparaison avec la fiche écrite : Comparaison détaillée.`;
+    assert.equal(extract(comment, "Axes de progrès", ["Synthèse", "Points forts"]), "Premier axe; deuxième axe");
+});
