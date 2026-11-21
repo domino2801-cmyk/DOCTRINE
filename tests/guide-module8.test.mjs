@@ -149,7 +149,7 @@ test("le compte rendu d’évaluation génère un PDF rempli avec des pages inde
     assert.match(multiPagePdf, /\/Count 2/);
 });
 
-test("la correction Gemini couvre les fiches de proposition et les supports oraux", async () => {
+test("la correction Gemini est réservée aux fiches de proposition", async () => {
     const [aiFunction, supabaseConfig] = await Promise.all([
         read("supabase/functions/correct-fiche-ai/index.ts"),
         read("supabase/config.toml")
@@ -162,7 +162,8 @@ test("la correction Gemini couvre les fiches de proposition et les supports orau
     assert.match(script, /await api\('\/rest\/v1\/fiche_reviews\?on_conflict=/);
     assert.doesNotMatch(script, /GEMINI_API_KEY/);
     assert.match(aiFunction, /Deno\.env\.get\("GOOGLE_API_KEY"\)\s*\|\|\s*Deno\.env\.get\("GEMINI_API_KEY"\)/);
-    assert.match(aiFunction, /submission\.submission_type !== "proposition" && submission\.submission_type !== "support_oral"/);
+    assert.match(aiFunction, /submission\.submission_type !== "proposition"[\s\S]*correction IA est réservée exclusivement aux fiches de proposition/i);
+    assert.doesNotMatch(aiFunction, /submission\.submission_type !== "proposition" && submission\.submission_type !== "support_oral"/);
     assert.match(aiFunction, /from\("guide_candidates"\)[\s\S]*eq\("guide_id", userData\.user\.id\)[\s\S]*eq\("candidate_id", submission\.user_id\)/);
     assert.match(aiFunction, /form_grade: \{ type: "number", minimum: 0, maximum: 6 \}/);
     assert.match(aiFunction, /"Introduction", 3[\s\S]*"Problématique et données", 3[\s\S]*"Solutions réalisables", 4[\s\S]*"Avis et conclusion", 4/);
