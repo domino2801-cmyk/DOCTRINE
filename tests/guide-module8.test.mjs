@@ -207,7 +207,7 @@ test("les deux types de fiches sont identifiés, enregistrés séparément et li
         assert.match(page, /id="guideReviewCriteria" class="guide-review-criteria"/);
         assert.match(script, /weight: 70/);
         assert.match(script, /weight: 30/);
-        assert.match(script, /key: 'form', label: 'Forme, présentation et langue', max: 6/);
+        assert.match(script, /key: 'form', label: '1. Forme, Présentation & Langue', max: 6/);
         assert.match(script, /key: 'argumentaire', label: 'Argumentaire ID1 \/ ID2 \/ ID3 et preuves', max: 7/);
         assert.match(script, /propositionGrade \* 0\.7 \+ oralGrade \* 0\.3/);
         assert.match(script, /rubric_scores: totals\.rubricScores/);
