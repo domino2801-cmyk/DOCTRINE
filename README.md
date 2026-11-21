@@ -44,9 +44,34 @@ Le site est développé en HTML, CSS et JavaScript sans étape de compilation. S
 | RETEX et signalements | Exécuter `supabase/retex-signalements.sql`. Les candidats peuvent consulter leur propre RETEX ; les administrateurs traitent les signalements. |
 | Envoi des fiches et accès aux corrigés | Exécuter `supabase/fiche-submissions.sql` avant de publier le nouveau formulaire, configurer `RESEND_API_KEY`, vérifier `DESTINATAIRE` dans `supabase/functions/doctrine-submit-fiche/index.ts`, puis déployer `doctrine-submit-fiche` avant la mise en ligne du frontend. La clé de soumission distingue la fiche de proposition du support oral ; seule une proposition transmise ouvre l’accès aux corrigés. |
 | Poste de commandement Officier Guide | Après `fiche-submissions.sql`, `documentation-consultations.sql`, `progression-events.sql` et les migrations QCM-MAJOR, exécuter `supabase/guide_module8.sql` dans le SQL Editor, puis déployer `doctrine-submit-fiche` pour activer l’archivage PDF. Pour une installation existante, réexécuter ce script afin d’activer l’évaluation détaillée des deux fiches et la moyenne pondérée 70/30 ; exécuter aussi `supabase/guide_module8-og-access.sql` et `supabase/guide_module8-short-code.sql` si nécessaire. Les comptes avec la spécialité sécurisée `OG` sont autorisés ; les autres guides peuvent conserver les rôles `guide` ou `officier_guide`. Le rattachement se fait en saisissant le code de 8 caractères fourni par le candidat. Après modification de la spécialité, reconnecter le compte pour renouveler son jeton. |
-| Correction assistée Gemini | Configurer `GOOGLE_API_KEY` ou `GEMINI_API_KEY`, `GOOGLE_SERVICE_ACCOUNT_JSON` et partager le dossier Drive de référence en lecture avec le `client_email` du compte de service. Le dossier racine des 16 sujets est `14lzOgouHdFP0mSdRo8__PotZ2v0R50QR` (surcharge possible avec `DRIVE_DOSSIER_ROOT_ID`). Déployer `correct-fiche-ai`. Pour chaque fiche de proposition ou fichette orale, la fonction identifie le sous-dossier `01` à `16`, parcourt ses sous-dossiers, récupère les PDF, Google Docs/Slides/Sheets exportés en PDF et images, et les transmet à Gemini avec la fiche du candidat. Les fichiers dont le nom identifie un corrigé sont exclus. La fichette orale est aussi comparée à la fiche de proposition archivée du même candidat et du même sujet si elle existe. Pour éviter une correction partielle, l’analyse est interrompue si le dossier dépasse 20 pièces, 15 Mo ou cinq niveaux de sous-dossiers. Gemini propose l’analyse et les notes ; l’Officier Guide vérifie, ajuste et enregistre la correction finale. |
+| Correction assistée Gemini | Configurer `GEMINI_API_KEY` (ou `GOOGLE_API_KEY`) et `GOOGLE_SERVICE_ACCOUNT_JSON`. Partager chacun des 16 dossiers Drive du tableau ci-dessous en lecture avec le `client_email` du compte de service. Déployer `correct-fiche-ai`. La fonction utilise directement l’identifiant du dossier correspondant au numéro transmis par l’application et parcourt ses sous-dossiers pour transmettre à Gemini les documents de référence admissibles avec la fiche du candidat. Les corrigés sont exclus. Pour la fichette orale, la fiche de proposition archivée du même candidat et du même sujet est aussi comparée si elle existe. L’analyse s’interrompt si le dossier dépasse 20 pièces, 15 Mo ou cinq niveaux de sous-dossiers. Gemini propose l’analyse et les notes ; l’Officier Guide vérifie, ajuste et enregistre la correction finale. |
 | Notifications de signalement | Exécuter `supabase/retex-notifications.sql`, configurer les secrets VAPID et `DOCTRINE_REPORT_PUSH_WEBHOOK_SECRET`, puis déployer `doctrine-report-push` et renseigner les secrets correspondants dans Supabase Vault. |
 | Documents Drive privés | Déployer `drive-proxy` avec `GOOGLE_SERVICE_ACCOUNT_JSON`, après avoir accordé au compte de service Google l’accès en lecture au dossier documentaire. |
+
+### Correspondance des 16 dossiers de référence Google Drive
+
+Les numéros ci-dessous sont ceux affichés dans le parcours candidat et utilisés par l’Officier Guide. **Le numéro est la clé de correspondance** : ne pas renuméroter les dossiers Drive indépendamment de l’application. Chaque dossier doit être partagé en lecture avec le compte de service Google.
+
+| N° dans l’application | Sujet affiché | Identifiant du dossier Drive |
+| ---: | --- | --- |
+| 1 | Vie et lumières | `1l6qZIdK6QVPHfVoGuCrkoJV5QGkVGcI_` |
+| 2 | Poste de Cdt 7e BB | `1N2a49fE6JNu-59Hxa15Be99vr5BavI8E` |
+| 3 | Armes Salle d’Honneur | `11dhk9Y611V1i3ChYOWRvx09-9SLilVnJ` |
+| 4 | Thémis | `1qGUmuf4JsK-9TNmD7tAXyO2QEKDiE2ZW` |
+| 5 | PMS Opérationnel | `12IBiJtiry-On0pON_0iuoJ59Pt_6AYS1` |
+| 6 | SMA / Tir SMA | `1tBRI8hjbNM-eVAgjVb9LjNK3hSuyQyAA` |
+| 7 | Toulaud Air Sport | `1vGE8GLEFHoX3_DjozDBR3x8ujArRV2a5` |
+| 8 | Opération Sentinelle | `1drUZgFsAX7tRadB-FaxuDJ1EKXC9AonL` |
+| 9 | ARMADA | `1Fn6pmTs981S3VrTwLtNCAj2j5_d7pDtH` |
+| 10 | Infrastructures | `1_w3RI1xmAN0FCZeCEeVRXcRqvFi7ek_6` |
+| 11 | Camp du Ruchard | `1-m1qvnV4JvY6gm-dIPYno5xA-Qfc04IG` |
+| 12 | Service national | `1cSmdKJJnmXXekUfSfeZZQ_OqZ-L5stbB` |
+| 13 | Désinformation / Complotisme | `1iNMbYPCNSgiVVr2kS1y6tufkgogeucIw` |
+| 14 | Bègles-Moissac | `1l0UcOA2jECtTlVzTKjsolP_CFRw_dkSA` |
+| 15 | MCO SCORPION / BITD | `1GVRpJ3TnpXSxBD9PLoUtaZ1A5BRsN-d_` |
+| 16 | Sécurisation face à la menace drone | `13VVCZiKzxgW8Rldm1i2addC868scJELl` |
+
+Les dossiers 7 à 10 suivent l’ordre réel de l’application : **7 Toulaud, 8 Sentinelle, 9 ARMADA, 10 Infrastructures**. Le test `tests/guide-module8.test.mjs` compare automatiquement les 16 identifiants de la fonction Edge aux liens de dossiers de `index.html` et échoue en cas de décalage.
 
 Les notifications push et le badge de l’application dépendent du navigateur et des autorisations de l’appareil. Sans le proxy Drive, la visionneuse utilise l’aperçu Drive : les fichiers doivent alors être accessibles publiquement.
 
