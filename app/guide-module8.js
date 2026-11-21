@@ -34,6 +34,40 @@
             ]
         }
     };
+    const JURY_CHECKLISTS = {
+        proposition: [
+            { key: 'p_form_pages', label: 'La fiche respecte le calibrage de 4 pages maximum.' },
+            { key: 'p_form_header', label: 'L’en-tête comporte le timbre/bureau, le lieu et la date, le destinataire et un objet percutant.' },
+            { key: 'p_form_references', label: 'Les références, annexes et pièces jointes sont clairement distinguées.' },
+            { key: 'p_form_style', label: 'Le style est militaire, direct, concis, impersonnel et correctement rédigé.' },
+            { key: 'p_intro_context', label: 'Le préambule présente le contexte, les échéances et les limites du dossier.' },
+            { key: 'p_intro_solution', label: 'L’idée maîtresse expose la solution retenue et un ou deux arguments.' },
+            { key: 'p_intro_plan', label: 'L’annonce de plan est présente et cohérente.' },
+            { key: 'p_problem_facts', label: 'La situation et les données sont factuelles, chiffrées et vérifiées.' },
+            { key: 'p_problem_level', label: 'La problématique est posée au bon niveau hiérarchique.' },
+            { key: 'p_problem_criteria', label: 'Les critères de choix (coûts, délais, légalité, patrimoine, résilience) sont pris en compte.' },
+            { key: 'p_solutions_three', label: 'Trois solutions distinctes, réalistes et classées sont proposées.' },
+            { key: 'p_solutions_details', label: 'Les moyens, coûts et délais de chaque solution sont précisés.' },
+            { key: 'p_solutions_risks', label: 'Les avantages, inconvénients et risques sont distingués.' },
+            { key: 'p_opinion', label: 'L’avis est affirmé, cohérent et démontre la supériorité de la solution retenue.' },
+            { key: 'p_risk_mitigation', label: 'Les inconvénients sont maîtrisés et les risques font l’objet de mesures d’atténuation.' },
+            { key: 'p_conclusion', label: 'La conclusion reformule la solution et précise les suites concrètes dans le périmètre du destinataire.' }
+        ],
+        support_oral: [
+            { key: 'o_operatoire', label: 'Le support est immédiatement exploitable à l’oral.' },
+            { key: 'o_five_cases', label: 'Le gabarit des cinq cases est respecté.' },
+            { key: 'o_readability', label: 'Le support est synthétique, lisible et les informations sont hiérarchisées.' },
+            { key: 'o_intro_five_points', label: 'L’introduction est structurée selon les cinq points attendus.' },
+            { key: 'o_intro_clarity', label: 'L’introduction est claire, concise et adaptée au sujet.' },
+            { key: 'o_id123', label: 'Les ID1, ID2 et ID3 sont explicitement articulées.' },
+            { key: 'o_demonstration', label: 'L’argumentaire développe une démonstration cohérente.' },
+            { key: 'o_proofs', label: 'Les affirmations sont appuyées par des preuves chiffrées vérifiables.' },
+            { key: 'o_fact_analysis', label: 'Les faits, l’analyse et les propositions sont clairement distingués.' },
+            { key: 'o_conclusion_clarity', label: 'La conclusion est claire et cohérente avec l’argumentaire.' },
+            { key: 'o_decision', label: 'La conclusion est orientée vers la décision ou les suites à donner.' },
+            { key: 'o_anti_copy', label: 'Le contrôle de cohérence avec la fiche écrite a été effectué lorsqu’une référence est disponible.' }
+        ]
+    };
     const auth = window.DoctrineAuth;
     const nav = document.getElementById('guideModule8Nav');
     const app = document.getElementById('guideModule8App');
@@ -709,6 +743,34 @@
         }
     }
 
+    function renderJuryChecklist(submission, review) {
+        const container = document.getElementById('guideJuryChecklistItems');
+        if (!container) return;
+        const checklist = JURY_CHECKLISTS[submission?.submission_type] || JURY_CHECKLISTS.proposition;
+        const saved = review?.jury_checklist && typeof review.jury_checklist === 'object'
+            ? review.jury_checklist
+            : {};
+        container.replaceChildren();
+        checklist.forEach(function (item) {
+            const label = element('label', 'guide-jury-check-item');
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.dataset.juryChecklist = item.key;
+            input.checked = saved[item.key] === true;
+            input.setAttribute('aria-label', item.label);
+            label.append(input, element('span', '', item.label));
+            container.appendChild(label);
+        });
+    }
+
+    function collectJuryChecklist() {
+        const checklist = {};
+        document.querySelectorAll('[data-jury-checklist]').forEach(function (input) {
+            checklist[input.dataset.juryChecklist] = input.checked;
+        });
+        return checklist;
+    }
+
     function collectReviewScores() {
         const rubric = rubricFor(activeReviewSubmission);
         const rubricScores = {};
@@ -756,6 +818,7 @@
             rubric.label + ' — Dossier ' + submission.dossier;
         document.getElementById('guideReviewSubmissionId').value = submission.id;
         renderReviewCriteria(submission, review);
+        renderJuryChecklist(submission, review);
         if (aiResult) {
             aiResult.replaceChildren();
             aiResult.hidden = true;
@@ -1144,6 +1207,7 @@
         const editGeneration = reviewEditGeneration;
         const comment = document.getElementById('guideReviewComment').value.trim();
         const decision = document.getElementById('guideReviewDecision').value;
+        const juryChecklist = collectJuryChecklist();
         if (button) button.disabled = true;
         setStatus(status, 'Enregistrement de l’évaluation…');
         try {
@@ -1156,6 +1220,7 @@
                     content_grade: totals.contentGrade,
                     grade: totals.grade,
                     rubric_scores: totals.rubricScores,
+                    jury_checklist: juryChecklist,
                     status: decision,
                     comment: comment
                 }
@@ -1168,6 +1233,7 @@
                     content_grade: savedRow?.content_grade ?? totals.contentGrade,
                     grade: savedRow?.grade ?? totals.grade,
                     rubric_scores: savedRow?.rubric_scores ?? totals.rubricScores,
+                    jury_checklist: savedRow?.jury_checklist ?? juryChecklist,
                     status: savedRow?.status ?? decision,
                     comment: savedRow?.comment ?? comment,
                     reviewed_at: savedRow?.reviewed_at || new Date().toISOString()
