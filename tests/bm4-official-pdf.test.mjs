@@ -103,7 +103,7 @@ test("génère réellement la grille BM4 et vérifie les champs, notes et observ
         assert.equal(value("note_em_" + (index + 1)), grade, "note écrite " + (index + 1));
         assert.equal(value("obs_em_" + (index + 1)), expectedWrittenObservations[index], "observation écrite " + (index + 1));
     });
-    assert.equal(value("total_em"), "15,5 / 20");
+    assert.equal(value("total_em"), "15,5");
 
     const expectedOralGrades = ["5,5", "3", "6", "1,5"];
     const expectedOralObservations = [
@@ -116,8 +116,8 @@ test("génère réellement la grille BM4 et vérifie les champs, notes et observ
         assert.equal(value("note_oral_" + (index + 1)), grade, "note orale " + (index + 1));
         assert.equal(value("obs_oral_" + (index + 1)), expectedOralObservations[index], "observation orale " + (index + 1));
     });
-    assert.equal(value("total_oral"), "16 / 20");
-    assert.equal(value("moyenne_globale"), "15,65 / 20 (70 % écrit / 30 % oral)");
+    assert.equal(value("total_oral"), "16");
+    assert.equal(value("moyenne_globale"), "15,65");
     // Les champs du débriefing sont des cases de notes, distinctes des commentaires.
     assert.equal(value("bilan_em"), "15,5");
     assert.equal(value("bilan_oral"), "16");
