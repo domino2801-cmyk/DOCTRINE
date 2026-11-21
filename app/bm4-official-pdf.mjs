@@ -95,9 +95,15 @@ function safeText(form, name, value, measureFont) {
 
         // pdf-lib expose setFontSize(), mais pas getFontSize() sur PDFTextField.
         // On récupère donc la taille initiale dans l'entrée PDF /DA (Default Appearance).
-        const defaultAppearance = typeof field.acroField.getDefaultAppearance === 'function'
-            ? field.acroField.getDefaultAppearance()
-            : '';
+        let defaultAppearance = '';
+        try {
+            if (typeof field.acroField.getDefaultAppearance === 'function') {
+                defaultAppearance = field.acroField.getDefaultAppearance();
+            }
+        } catch {
+            // Certains champs du formulaire officiel n'ont pas de /DA exploitable.
+            // La hauteur du widget sert alors à estimer une taille de police adaptée.
+        }
         const appearanceMatch = String(defaultAppearance || '').match(/(?:^|\\s)([0-9]+(?:\\.[0-9]+)?)\\s+Tf\\b/);
         const originalSize = appearanceMatch ? Number(appearanceMatch[1]) : NaN;
         const widgets = field.acroField.getWidgets();
