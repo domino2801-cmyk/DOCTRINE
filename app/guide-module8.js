@@ -68,6 +68,21 @@
             { key: 'o_anti_copy', label: 'Le contrôle de cohérence avec la fiche écrite a été effectué lorsqu’une référence est disponible.' }
         ]
     };
+    const JURY_CHECKLIST_SCORE_MAP = {
+        proposition: {
+            form: ['p_form_pages', 'p_form_header', 'p_form_references', 'p_form_style'],
+            introduction: ['p_intro_context', 'p_intro_solution', 'p_intro_plan'],
+            problematique_donnees: ['p_problem_facts', 'p_problem_level', 'p_problem_criteria'],
+            solutions: ['p_solutions_three', 'p_solutions_details', 'p_solutions_risks'],
+            avis_conclusion: ['p_opinion', 'p_risk_mitigation', 'p_conclusion']
+        },
+        support_oral: {
+            operatoire_forme: ['o_operatoire', 'o_five_cases', 'o_readability'],
+            introduction: ['o_intro_five_points', 'o_intro_clarity'],
+            argumentaire: ['o_id123', 'o_demonstration', 'o_proofs', 'o_fact_analysis'],
+            conclusion: ['o_conclusion_clarity', 'o_decision']
+        }
+    };
     const auth = window.DoctrineAuth;
     const nav = document.getElementById('guideModule8Nav');
     const app = document.getElementById('guideModule8App');
@@ -743,6 +758,36 @@
         }
     }
 
+    function automaticJuryChecklist(submission, rubricScores) {
+        const type = submission?.submission_type || 'proposition';
+        const checklist = JURY_CHECKLISTS[type] || JURY_CHECKLISTS.proposition;
+        const scoreMap = JURY_CHECKLIST_SCORE_MAP[type] || {};
+        const rubric = REVIEW_RUBRICS[type] || REVIEW_RUBRICS.proposition;
+        const result = {};
+        checklist.forEach(function (item) { result[item.key] = false; });
+        rubric.criteria.forEach(function (criterion) {
+            const rawScore = rubricScores?.[criterion.key];
+            if (rawScore === undefined || rawScore === null || rawScore === '') return;
+            const score = Number(rawScore);
+            if (!Number.isFinite(score) || score < 0 || score > criterion.max) return;
+            if (score >= criterion.max * 0.75) {
+                (scoreMap[criterion.key] || []).forEach(function (key) {
+                    result[key] = true;
+                });
+            }
+        });
+        return result;
+    }
+
+    function syncAutomaticJuryChecklist() {
+        if (!activeReviewSubmission) return;
+        const totals = collectReviewScores();
+        const suggested = automaticJuryChecklist(activeReviewSubmission, totals.rubricScores);
+        document.querySelectorAll('[data-jury-checklist]').forEach(function (input) {
+            input.checked = suggested[input.dataset.juryChecklist] === true;
+        });
+    }
+
     function renderJuryChecklist(submission, review) {
         const container = document.getElementById('guideJuryChecklistItems');
         if (!container) return;
@@ -750,13 +795,17 @@
         const saved = review?.jury_checklist && typeof review.jury_checklist === 'object'
             ? review.jury_checklist
             : {};
+        const hasSavedChecklist = Object.keys(saved).length > 0;
+        const initial = hasSavedChecklist
+            ? saved
+            : automaticJuryChecklist(submission, review?.rubric_scores || {});
         container.replaceChildren();
         checklist.forEach(function (item) {
             const label = element('label', 'guide-jury-check-item');
             const input = document.createElement('input');
             input.type = 'checkbox';
             input.dataset.juryChecklist = item.key;
-            input.checked = saved[item.key] === true;
+            input.checked = initial[item.key] === true;
             input.setAttribute('aria-label', item.label);
             label.append(input, element('span', '', item.label));
             container.appendChild(label);
@@ -819,6 +868,9 @@
         document.getElementById('guideReviewSubmissionId').value = submission.id;
         renderReviewCriteria(submission, review);
         renderJuryChecklist(submission, review);
+        document.querySelectorAll('[data-rubric-score]').forEach(function (input) {
+            input.addEventListener('input', syncAutomaticJuryChecklist);
+        });
         if (aiResult) {
             aiResult.replaceChildren();
             aiResult.hidden = true;
