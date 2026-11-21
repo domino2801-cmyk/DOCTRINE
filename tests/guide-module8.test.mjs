@@ -497,7 +497,7 @@ test("les cases du jury sont précochées selon les notes et restent modifiables
     assert.match(script, /introduction: \['p_intro_context', 'p_intro_solution', 'p_intro_plan'\]/);
     assert.match(script, /operatoire_forme: \['o_operatoire', 'o_five_cases', 'o_readability'\]/);
     assert.match(script, /argumentaire: \['o_id123', 'o_demonstration', 'o_proofs', 'o_fact_analysis'\]/);
-    assert.match(script, /hasSavedChecklist \? saved : automaticJuryChecklist/);
+    assert.match(script, /const initial = hasSavedChecklist\s*\?\s*saved\s*:\s*automaticJuryChecklist/);
     assert.match(script, /if \(input\.dataset\.juryManual === 'true'\) return/);
     assert.match(script, /input\.addEventListener\('change', function \(\)/);
     assert.match(script, /jury_checklist: juryChecklist/);
