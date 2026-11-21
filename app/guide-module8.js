@@ -1019,7 +1019,19 @@
         const weightedGrade = proposition && oral
             ? Math.round((proposition.grade * 0.7 + oral.grade * 0.3) * 100) / 100
             : null;
-        const combinedComments = evaluations.map(function (item) { return item.comment; }).filter(Boolean).join('\n');
+        // Les points forts restent rattachés à leur fiche d'origine :
+        // fiche de proposition (fiche DR) et fichette orale sont présentées séparément.
+        const propositionStrengths = proposition
+            ? extractFeedbackSection(proposition.comment, 'Points forts', ['Axes de progrès', 'Axes d’amélioration'])
+            : '';
+        const oralStrengths = oral
+            ? extractFeedbackSection(oral.comment, 'Points forts', ['Axes de progrès', 'Axes d’amélioration'])
+            : '';
+        const strengths = [
+            propositionStrengths ? 'FICHE DR — FICHE DE PROPOSITION\\n' + propositionStrengths : '',
+            oralStrengths ? 'FICHETTE ORALE\\n' + oralStrengths : ''
+        ].filter(Boolean).join('\\n\\n');
+        const combinedComments = evaluations.map(function (item) { return item.comment; }).filter(Boolean).join('\\n');
         return {
             candidateName: candidateName(candidate.candidate),
             specialty: candidate.candidate.specialty || candidate.candidate.specialty_label || '',
@@ -1028,7 +1040,7 @@
             guideName: guideBadge ? guideBadge.textContent.replace(/^Guide\s*:\s*/i, '').trim() : 'Non renseigné',
             evaluations: evaluations,
             weightedGrade: weightedGrade,
-            strengths: extractFeedbackSection(combinedComments, 'Points forts', ['Axes de progrès', 'Axes d’amélioration']),
+            strengths: strengths,
             improvements: extractFeedbackSection(combinedComments, 'Axes de progrès', ['Points forts']),
             exportedAt: formatDate(new Date().toISOString())
         };
