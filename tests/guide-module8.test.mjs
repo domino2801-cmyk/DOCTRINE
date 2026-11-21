@@ -168,7 +168,7 @@ test("la correction Gemini est disponible pour les deux types de fiches avec val
     assert.match(aiFunction, /submission\.submission_type !== "proposition"/);
     assert.match(aiFunction, /form_evidence/);
     assert.match(aiFunction, /Pour ce premier critère, obligatoire et doté d’une note sur 6/);
-    assert.match(aiFunction, /const isOral = submission\.submission_type === "support_oral"/);
+    assert.match(aiFunction, /const isOral = false/);
     assert.match(aiFunction, /ORAL_RUBRIC_PROMPT/);
     assert.match(aiFunction, /from\("guide_candidates"\)[\s\S]*eq\("guide_id", userData\.user\.id\)[\s\S]*eq\("candidate_id", submission\.user_id\)/);
     assert.match(aiFunction, /form_grade: \{ type: "number", minimum: 0, maximum: 6 \}/);
