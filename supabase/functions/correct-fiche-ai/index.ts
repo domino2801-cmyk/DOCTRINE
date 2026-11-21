@@ -339,7 +339,9 @@ Deno.serve(async (request) => {
         }
         if (!submission) return jsonResponse({ error: "Fiche introuvable." }, 404);
         if (submission.submission_type !== "proposition" && submission.submission_type !== "support_oral") {
-            return jsonResponse({ error: "Type de fiche non pris en charge pour la correction IA." }, 400);
+            return jsonResponse({
+                error: "La correction IA est autorisée uniquement pour les fiches de proposition et les fichette(s) orales."
+            }, 400);
         }
         const isOral = submission.submission_type === "support_oral";
         if (!submission.storage_path) return jsonResponse({ error: "Cette fiche n’a pas de PDF archivé." }, 409);
