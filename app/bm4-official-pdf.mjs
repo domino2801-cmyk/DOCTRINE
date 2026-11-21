@@ -179,6 +179,93 @@ function evaluationByType(report, type) {
     return (report.evaluations || []).find((evaluation) => evaluation.type === type) || null;
 }
 
+function appendJuryChecklistPages(pdfDoc, report, PDFLib) {
+    const evaluations = (report.evaluations || []).filter((evaluation) =>
+        Array.isArray(evaluation.juryChecklist) && evaluation.juryChecklist.length
+    );
+    if (!evaluations.length) return;
+
+    const regular = pdfDoc.embedStandardFont
+        ? null
+        : null;
+    const fontPromise = pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+    const boldPromise = pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+
+    return Promise.all([fontPromise, boldPromise]).then(([font, bold]) => {
+        const pageWidth = 595.28;
+        const pageHeight = 841.89;
+        const margin = 42;
+        evaluations.forEach((evaluation) => {
+            const page = pdfDoc.addPage([pageWidth, pageHeight]);
+            const title = evaluation.type === 'proposition'
+                ? 'POINTS CLÉS DU JURY — FICHE DE PROPOSITION'
+                : 'POINTS CLÉS DU JURY — FICHETTE ORALE';
+            let y = pageHeight - 52;
+            page.drawText('ÉVALUATION BM4 — DOSSIER ' + String(report.dossier || ''), {
+                x: margin, y, size: 9, font, color: PDFLib.rgb(0.35, 0.35, 0.35)
+            });
+            y -= 28;
+            page.drawText(title, {
+                x: margin, y, size: 13, font: bold, color: PDFLib.rgb(0.08, 0.16, 0.24)
+            });
+            y -= 22;
+            page.drawText(String(report.candidateName || 'Candidat'), {
+                x: margin, y, size: 10, font: bold, color: PDFLib.rgb(0.15, 0.15, 0.15)
+            });
+            y -= 28;
+
+            evaluation.juryChecklist.forEach((item) => {
+                const text = String(item.label || '');
+                const maxWidth = pageWidth - margin * 2 - 34;
+                const words = text.split(/\\s+/);
+                const lines = [];
+                let line = '';
+                words.forEach((word) => {
+                    const candidate = line ? line + ' ' + word : word;
+                    if (font.widthOfTextAtSize(candidate, 9) <= maxWidth) {
+                        line = candidate;
+                    } else {
+                        if (line) lines.push(line);
+                        line = word;
+                    }
+                });
+                if (line) lines.push(line);
+                const rowHeight = Math.max(22, lines.length * 12 + 8);
+                if (y - rowHeight < 48) {
+                    // Les listes actuelles tiennent sur une page ; garde-fou pour un ajout futur.
+                    y = pageHeight - 52;
+                }
+                page.drawRectangle({
+                    x: margin, y: y - 1, width: 12, height: 12,
+                    borderColor: PDFLib.rgb(0.18, 0.24, 0.29), borderWidth: 1
+                });
+                if (item.checked) {
+                    page.drawLine({
+                        start: { x: margin + 2, y: y + 4 },
+                        end: { x: margin + 5, y: y + 1 },
+                        thickness: 1.6, color: PDFLib.rgb(0.05, 0.35, 0.22)
+                    });
+                    page.drawLine({
+                        start: { x: margin + 5, y: y + 1 },
+                        end: { x: margin + 11, y: y + 10 },
+                        thickness: 1.6, color: PDFLib.rgb(0.05, 0.35, 0.22)
+                    });
+                }
+                lines.forEach((entry, index) => {
+                    page.drawText(entry, {
+                        x: margin + 22, y: y - index * 12,
+                        size: 9, font, color: PDFLib.rgb(0.12, 0.12, 0.12)
+                    });
+                });
+                y -= rowHeight;
+            });
+            page.drawText('Cases cochées : acquises / validées par l’Officier Guide.', {
+                x: margin, y: 28, size: 8, font, color: PDFLib.rgb(0.4, 0.4, 0.4)
+            });
+        });
+    });
+}
+
 export async function createOfficialBm4Pdf(report, options = {}) {
     const PDFLib = options.PDFLib || globalThis.PDFLib;
     if (!PDFLib?.PDFDocument) {
@@ -243,6 +330,8 @@ export async function createOfficialBm4Pdf(report, options = {}) {
         : formatGrade(report.weightedGrade));
     setFieldText('points_forts', formatDebriefSection(report.strengths) || 'Non renseignés dans les observations validées.');
     setFieldText('axes_amelioration', formatDebriefSection(report.improvements) || 'Non renseignés dans les observations validées.');
+
+    await appendJuryChecklistPages(pdfDoc, report, PDFLib);
 
     form.updateFieldAppearances(measureFont);
     if (options.flatten !== false) form.flatten();
