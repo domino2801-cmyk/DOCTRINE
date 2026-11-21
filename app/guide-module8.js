@@ -36,51 +36,56 @@
     };
     const JURY_CHECKLISTS = {
         proposition: [
-            { key: 'p_form_pages', label: 'La fiche respecte le calibrage de 4 pages maximum.' },
-            { key: 'p_form_header', label: 'L’en-tête comporte le timbre/bureau, le lieu et la date, le destinataire et un objet percutant.' },
-            { key: 'p_form_references', label: 'Les références, annexes et pièces jointes sont clairement distinguées.' },
-            { key: 'p_form_style', label: 'Le style est militaire, direct, concis, impersonnel et correctement rédigé.' },
-            { key: 'p_intro_context', label: 'Le préambule présente le contexte, les échéances et les limites du dossier.' },
-            { key: 'p_intro_solution', label: 'L’idée maîtresse expose la solution retenue et un ou deux arguments.' },
-            { key: 'p_intro_plan', label: 'L’annonce de plan est présente et cohérente.' },
-            { key: 'p_problem_facts', label: 'La situation et les données sont factuelles, chiffrées et vérifiées.' },
-            { key: 'p_problem_level', label: 'La problématique est posée au bon niveau hiérarchique.' },
-            { key: 'p_problem_criteria', label: 'Les critères de choix (coûts, délais, légalité, patrimoine, résilience) sont pris en compte.' },
-            { key: 'p_solutions_three', label: 'Trois solutions distinctes, réalistes et classées sont proposées.' },
-            { key: 'p_solutions_details', label: 'Les moyens, coûts et délais de chaque solution sont précisés.' },
-            { key: 'p_solutions_risks', label: 'Les avantages, inconvénients et risques sont distingués.' },
-            { key: 'p_opinion', label: 'L’avis est affirmé, cohérent et démontre la supériorité de la solution retenue.' },
-            { key: 'p_risk_mitigation', label: 'Les inconvénients sont maîtrisés et les risques font l’objet de mesures d’atténuation.' },
-            { key: 'p_conclusion', label: 'La conclusion reformule la solution et précise les suites concrètes dans le périmètre du destinataire.' }
+            { key: 'p_form_header', label: 'Gabarit EM : timbre, destinataire réel (décideur), objet précis, références et pièces jointes.' },
+            { key: 'p_form_readability', label: 'Lisibilité : copie propre et aérée, titres soulignés et sauts de ligne.' },
+            { key: 'p_form_impersonal', label: 'Style impersonnel : aucun « je / nous / on » (expression au nom du bureau).' },
+            { key: 'p_form_language', label: 'Langue et plagiat : phrases courtes (sujet-verbe-complément), orthographe soignée et aucune recopie mot pour mot du dossier.' },
+            { key: 'p_intro_context', label: 'Préambule : fait générateur posé clairement, sans banalités.' },
+            { key: 'p_intro_solution', label: 'Idée maîtresse : réponse engagée et justifiée (car / parce que), distincte de la simple description technique.' },
+            { key: 'p_intro_plan', label: 'Annonce du plan : personnalisée et adaptée au sujet (pas de formule bateau).' },
+            { key: 'p_problem_facts', label: 'Situation actuelle : synthèse factuelle, chiffrée et réglementaire (issue uniquement du dossier).' },
+            { key: 'p_problem_level', label: 'Problématique : question centrale posée explicitement au bon niveau de commandement.' },
+            { key: 'p_problem_criteria', label: 'Critères de choix : impératifs identifiés (délais, coût, légalité, efficacité, etc.).' },
+            { key: 'p_solutions_three', label: 'Pertinence : trois solutions réalisables (ou deux solides), réalistes, légales et bien différenciées.' },
+            { key: 'p_solutions_details', label: 'Caractérisation : chaque solution explique concrètement les moyens, coûts et délais.' },
+            { key: 'p_solutions_risks', label: 'Triptyque rédigé : avantages, inconvénients et risques rédigés en phrases complètes.' },
+            { key: 'p_opinion', label: 'Démonstration : choix justifié en croisant les solutions avec les critères de la partie 1, sans nouvel argument.' },
+            { key: 'p_risk_mitigation', label: 'Maîtrise des risques : inconvénients relativisés et mesures concrètes pour limiter les risques.' },
+            { key: 'p_conclusion', label: 'Conclusion et suites : idée maîtresse reformulée et actions immédiates pour initier la décision.' }
         ],
         support_oral: [
-            { key: 'o_operatoire', label: 'Le support est immédiatement exploitable à l’oral.' },
-            { key: 'o_five_cases', label: 'Le gabarit des cinq cases est respecté.' },
-            { key: 'o_readability', label: 'Le support est synthétique, lisible et les informations sont hiérarchisées.' },
-            { key: 'o_intro_five_points', label: 'L’introduction est structurée selon les cinq points attendus.' },
-            { key: 'o_intro_clarity', label: 'L’introduction est claire, concise et adaptée au sujet.' },
-            { key: 'o_id123', label: 'Les ID1, ID2 et ID3 sont explicitement articulées.' },
-            { key: 'o_demonstration', label: 'L’argumentaire développe une démonstration cohérente.' },
-            { key: 'o_proofs', label: 'Les affirmations sont appuyées par des preuves chiffrées vérifiables.' },
-            { key: 'o_fact_analysis', label: 'Les faits, l’analyse et les propositions sont clairement distingués.' },
-            { key: 'o_conclusion_clarity', label: 'La conclusion est claire et cohérente avec l’argumentaire.' },
-            { key: 'o_decision', label: 'La conclusion est orientée vers la décision ou les suites à donner.' },
-            { key: 'o_anti_copy', label: 'Le contrôle de cohérence avec la fiche écrite a été effectué lorsqu’une référence est disponible.' }
+            { key: 'o_anti_copy', label: 'Non-recopie : le support n’est pas un copier-coller miniature de la fiche état-major.' },
+            { key: 'o_five_cases', label: 'Gabarit e-Form : tableau structuré en cinq cases, sans en-tête administratif.' },
+            { key: 'o_operatoire', label: 'Exploitabilité orale : mots-clés, listes aérées et chiffres saillants permettant de parler sans lire sa feuille.' },
+            { key: 'o_language', label: 'Langue : orthographe soignée et acronymes explicités.' },
+            { key: 'o_hook', label: 'Accroche : fait marquant, chiffre choc ou opposition illustrant l’enjeu.' },
+            { key: 'o_problem', label: 'Problématique : question centrale claire.' },
+            { key: 'o_limits', label: 'Limites : contraintes et impératifs du dossier.' },
+            { key: 'o_main_idea', label: 'Idée maîtresse : solution préconisée affirmée avec son argument maître.' },
+            { key: 'o_plan', label: 'Annonce du plan : présente et claire.' },
+            { key: 'o_advocacy', label: 'Logique de plaidoyer : défense de la solution choisie, sans redévelopper les solutions écartées.' },
+            { key: 'o_id1', label: 'ID 1 : exposé bref de la situation et de la solution préconisée.' },
+            { key: 'o_id2', label: 'ID 2 : arguments de pertinence (respect des critères).' },
+            { key: 'o_id3', label: 'ID 3 : argument majeur de supériorité et minoration des risques.' },
+            { key: 'o_proofs', label: 'Preuves : exemples concrets, références et données chiffrées.' },
+            { key: 'o_synthesis', label: 'Synthèse : rappel des idées directrices principales.' },
+            { key: 'o_reaffirmation', label: 'Réaffirmation : rappel percutant de l’idée maîtresse.' },
+            { key: 'o_execution', label: 'Suites et ouverture : mesures d’exécution et ouverture pertinente.' }
         ]
     };
     const JURY_CHECKLIST_SCORE_MAP = {
         proposition: {
-            form: ['p_form_pages', 'p_form_header', 'p_form_references', 'p_form_style'],
+            form: ['p_form_header', 'p_form_readability', 'p_form_impersonal', 'p_form_language'],
             introduction: ['p_intro_context', 'p_intro_solution', 'p_intro_plan'],
             problematique_donnees: ['p_problem_facts', 'p_problem_level', 'p_problem_criteria'],
             solutions: ['p_solutions_three', 'p_solutions_details', 'p_solutions_risks'],
             avis_conclusion: ['p_opinion', 'p_risk_mitigation', 'p_conclusion']
         },
         support_oral: {
-            operatoire_forme: ['o_operatoire', 'o_five_cases', 'o_readability'],
-            introduction: ['o_intro_five_points', 'o_intro_clarity'],
-            argumentaire: ['o_id123', 'o_demonstration', 'o_proofs', 'o_fact_analysis'],
-            conclusion: ['o_conclusion_clarity', 'o_decision']
+            operatoire_forme: ['o_anti_copy', 'o_five_cases', 'o_operatoire', 'o_language'],
+            introduction: ['o_hook', 'o_problem', 'o_limits', 'o_main_idea', 'o_plan'],
+            argumentaire: ['o_advocacy', 'o_id1', 'o_id2', 'o_id3', 'o_proofs'],
+            conclusion: ['o_synthesis', 'o_reaffirmation', 'o_execution']
         }
     };
     const auth = window.DoctrineAuth;
