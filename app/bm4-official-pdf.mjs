@@ -165,13 +165,13 @@ function observationFor(comment, label) {
 
 function formatDebriefSection(value) {
     return String(value ?? '')
-        // Certains commentaires ont enregistré les retours à la ligne sous forme de texte « \\n ».
-        .replace(/\\\\r\\\\n|\\\\n|\\\\r/g, '\\n')
-        // Le PDF possède déjà son propre intitulé : on retire seulement le préfixe redondant.
-        .split('\\n')
-        .map((line) => line.replace(/^\\s*FICHE DR\\s*—\\s*/i, '').trimEnd())
-        .join('\\n')
-        .replace(/\\n{3,}/g, '\\n\\n')
+        // Convertit les séquences de caractères « \n » en vrais retours à la ligne.
+        .replace(/\\r\\n|\\n|\\r/g, '\n')
+        // Le PDF possède déjà son propre intitulé : on retire le préfixe redondant.
+        .split('\n')
+        .map((line) => line.replace(/^\s*FICHE DR\s*—\s*/i, '').trimEnd())
+        .join('\n')
+        .replace(/\n{3,}/g, '\n\n')
         .trim();
 }
 
