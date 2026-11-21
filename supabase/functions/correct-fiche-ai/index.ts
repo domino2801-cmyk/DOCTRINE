@@ -309,8 +309,25 @@ function encodeBase64(bytes: Uint8Array) {
 }
 
 
-const DRIVE_DOSSIER_ROOT_ID = Deno.env.get("DRIVE_DOSSIER_ROOT_ID") ||
-    "14lzOgouHdFP0mSdRo8__PotZ2v0R50QR";
+// Identifiants des 16 dossiers Google Drive de référence, un par sujet.
+const SUBJECT_DRIVE_FOLDER_IDS: Record<number, string> = {
+    1: "1l6qZIdK6QVPHfVoGuCrkoJV5QGkVGcI_",
+    2: "1N2a49fE6JNu-59Hxa15Be99vr5BavI8E",
+    3: "11dhk9Y611V1i3ChYOWRvx09-9SLilVnJ",
+    4: "1qGUmuf4JsK-9TNmD7tAXyO2QEKDiE2ZW",
+    5: "12IBiJtiry-On0pON_0iuoJ59Pt_6AYS1",
+    6: "1tBRI8hjbNM-eVAgjVb9LjNK3hSuyQyAA",
+    7: "1_w3RI1xmAN0FCZeCEeVRXcRqvFi7ek_6",
+    8: "1vGE8GLEFHoX3_DjozDBR3x8ujArRV2a5",
+    9: "1drUZgFsAX7tRadB-FaxuDJ1EKXC9AonL",
+    10: "1Fn6pmTs981S3VrTwLtNCAj2j5_d7pDtH",
+    11: "1-m1qvnV4JvY6gm-dIPYno5xA-Qfc04IG",
+    12: "1cSmdKJJnmXXekUfSfeZZQ_OqZ-L5stbB",
+    13: "1iNMbYPCNSgiVVr2kS1y6tufkgogeucIw",
+    14: "1l0UcOA2jECtTlVzTKjsolP_CFRw_dkSA",
+    15: "1GVRpJ3TnpXSxBD9PLoUtaZ1A5BRsN-d_",
+    16: "13VVCZiKzxgW8Rldm1i2addC868scJELl"
+};
 const MAX_REFERENCE_FILES = 20;
 const MAX_REFERENCE_TOTAL_BYTES = 15 * 1024 * 1024;
 let cachedDriveToken: { value: string; expires: number } | null = null;
@@ -437,16 +454,10 @@ async function downloadDriveReference(file: Record<string, unknown>, token: stri
 
 async function getSubjectReferenceDocuments(dossier: number): Promise<DriveReference[]> {
     const token = await getDriveAccessToken();
-    const root = await listDriveChildren(DRIVE_DOSSIER_ROOT_ID, token);
     const number = String(Number(dossier)).padStart(2, "0");
-    const folderPattern = new RegExp("^(?:dossier\\\\s*)?" + number + "(?:\\\\s|[-_.:]|$)", "i");
-    const folders = root.filter((item) =>
-        item.mimeType === "application/vnd.google-apps.folder" &&
-        folderPattern.test(String(item.name || "").trim())
-    );
-    if (folders.length !== 1) {
-        throw new Error(folders.length ? "Plusieurs dossiers Drive correspondent au sujet." :
-            "Aucun sous-dossier Drive ne correspond au sujet " + number + ".");
+    const subjectFolderId = SUBJECT_DRIVE_FOLDER_IDS[Number(dossier)];
+    if (!subjectFolderId) {
+        throw new Error("Aucun dossier Google Drive n'est configuré pour le sujet " + number + ".");
     }
 
     const collected: DriveReference[] = [];
@@ -476,7 +487,7 @@ async function getSubjectReferenceDocuments(dossier: number): Promise<DriveRefer
             collected.push(reference);
         }
     }
-    await walk(String(folders[0].id), 0);
+    await walk(subjectFolderId, 0);
     if (!collected.length) {
         throw new Error("Le dossier du sujet " + number + " ne contient aucune pièce PDF, Google Docs ou image exploitable.");
     }
