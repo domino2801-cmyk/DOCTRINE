@@ -145,6 +145,7 @@ create table if not exists public.fiche_reviews (
     content_grade numeric(4, 2) check (content_grade is null or content_grade between 0 and 14),
     grade numeric(4, 2) check (grade is null or grade between 0 and 20),
     rubric_scores jsonb not null default '{}'::jsonb,
+    jury_checklist jsonb not null default '{}'::jsonb,
     status text not null default 'en_attente'
         check (status in ('en_attente', 'a_reprendre', 'valide')),
     comment text not null default '',
@@ -154,6 +155,8 @@ create table if not exists public.fiche_reviews (
 
 alter table public.fiche_reviews
     add column if not exists rubric_scores jsonb not null default '{}'::jsonb;
+alter table public.fiche_reviews
+    add column if not exists jury_checklist jsonb not null default '{}'::jsonb;
 
 create index if not exists fiche_reviews_guide_reviewed_idx
     on public.fiche_reviews (guide_id, reviewed_at desc);
@@ -169,6 +172,7 @@ as $$
 declare
     submission_type text;
     required_keys text[];
+    allowed_checklist_keys text[];
 begin
     if auth.uid() is not null then
         new.guide_id := auth.uid();
@@ -184,6 +188,46 @@ begin
     end if;
     if jsonb_typeof(new.rubric_scores) is distinct from 'object' then
         raise exception 'Le détail des critères doit être un objet JSON.'
+            using errcode = '22023';
+    end if;
+
+    if jsonb_typeof(new.jury_checklist) is distinct from 'object' then
+        raise exception 'La liste des points clés du jury doit être un objet JSON.'
+            using errcode = '22023';
+    end if;
+    if exists (
+        select 1
+        from jsonb_each(new.jury_checklist) item
+        where jsonb_typeof(item.value) is distinct from 'boolean'
+    ) then
+        raise exception 'Chaque point clé du jury doit être coché ou décoché.'
+            using errcode = '22023';
+    end if;
+    if submission_type = 'proposition' then
+        allowed_checklist_keys := array[
+            'p_form_pages', 'p_form_header', 'p_form_references', 'p_form_style',
+            'p_intro_context', 'p_intro_solution', 'p_intro_plan',
+            'p_problem_facts', 'p_problem_level', 'p_problem_criteria',
+            'p_solutions_three', 'p_solutions_details', 'p_solutions_risks',
+            'p_opinion', 'p_risk_mitigation', 'p_conclusion'
+        ];
+    elsif submission_type = 'support_oral' then
+        allowed_checklist_keys := array[
+            'o_operatoire', 'o_five_cases', 'o_readability',
+            'o_intro_five_points', 'o_intro_clarity',
+            'o_id123', 'o_demonstration', 'o_proofs', 'o_fact_analysis',
+            'o_conclusion_clarity', 'o_decision', 'o_anti_copy'
+        ];
+    else
+        raise exception 'Type de fiche non évaluable.'
+            using errcode = '22023';
+    end if;
+    if exists (
+        select 1
+        from jsonb_each(new.jury_checklist) item
+        where not (item.key = any(allowed_checklist_keys))
+    ) then
+        raise exception 'La liste des points clés ne correspond pas au type de fiche.'
             using errcode = '22023';
     end if;
 
@@ -926,6 +970,7 @@ begin
                                     'form_grade', review.form_grade,
                                     'content_grade', review.content_grade,
                                     'rubric_scores', review.rubric_scores,
+                                    'jury_checklist', review.jury_checklist,
                                     'status', review.status,
                                     'comment', review.comment,
                                     'reviewed_at', review.reviewed_at
