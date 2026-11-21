@@ -799,7 +799,6 @@
     function formatAiFeedback(suggestion) {
         const isOral = suggestion.submission_type === 'support_oral';
         const lines = [
-            'Proposition Gemini — à vérifier',
             ...(isOral ? [] : [
                 '1. Forme, Présentation & Langue : ' + suggestion.form_grade + ' / 6 — ' + suggestion.form_observations +
                     ' — Indice : ' + (suggestion.form_evidence || 'non repéré')
