@@ -469,17 +469,16 @@
             reviewButton.disabled = !submission.storage_path;
             reviewButton.addEventListener('click', function () { openReview(candidate, submission); });
             actions.appendChild(reviewButton);
-            const aiButton = element('button', 'guide-button',
-                isOralSupport ? 'Correction IA — Fichette orale' : 'Correction IA — Proposition');
-            aiButton.type = 'button';
-            aiButton.disabled = !submission.storage_path;
-            aiButton.title = isOralSupport
-                ? 'Évaluer la fichette selon la grille orale et la comparer à la fiche écrite archivée, si disponible.'
-                : 'Transmettre la fiche de proposition à Google Gemini pour obtenir une proposition à vérifier.';
-            aiButton.addEventListener('click', function () {
-                runAiCorrection(candidate, submission, aiButton);
-            });
-            actions.appendChild(aiButton);
+            if (!isOralSupport) {
+                const aiButton = element('button', 'guide-button', 'Correction IA — Proposition');
+                aiButton.type = 'button';
+                aiButton.disabled = !submission.storage_path;
+                aiButton.title = 'Transmettre exclusivement la fiche de proposition à Google Gemini pour obtenir une proposition à vérifier.';
+                aiButton.addEventListener('click', function () {
+                    runAiCorrection(candidate, submission, aiButton);
+                });
+                actions.appendChild(aiButton);
+            }
             card.appendChild(actions);
             container.appendChild(card);
         });
@@ -883,9 +882,14 @@
             panel.replaceChildren(element('p', '', 'Analyse du PDF par Google Gemini…'));
             panel.hidden = false;
         }
-        setStatus(status, submission.submission_type === 'support_oral'
-            ? 'La fichette est transmise à Google Gemini. La fiche écrite du même dossier sera recherchée pour comparaison si elle est archivée.'
-            : 'La fiche de proposition est transmise à Google Gemini pour préparer une proposition de correction.');
+        if (submission.submission_type !== 'proposition') {
+            if (panel) panel.hidden = true;
+            if (button) button.disabled = false;
+            if (saveButton) saveButton.disabled = false;
+            setStatus(status, 'La correction IA est réservée aux fiches de proposition. La fichette orale reste évaluée manuellement par l’Officier Guide.', 'error');
+            return;
+        }
+        setStatus(status, 'La fiche de proposition est transmise à Google Gemini pour préparer une proposition de correction.');
         try {
             const suggestion = await api('/functions/v1/correct-fiche-ai', {
                 method: 'POST',
