@@ -846,12 +846,14 @@
 
         const criteria = element('ul', 'guide-ai-criteria');
         aiCriteriaForDisplay(suggestion).forEach(function (criterion) {
-            const item = element('li');
-            item.appendChild(element('strong', '', criterion.label + ' — ' +
+            const item = element('li', 'guide-ai-criterion-card');
+            item.appendChild(element('strong', 'guide-ai-criterion-title', criterion.label + ' — ' +
                 criterion.grade + ' / ' + criterion.max_grade));
-            item.appendChild(element('p', '', criterion.observation || 'Observation non renseignée.'));
+            item.appendChild(element('p', 'guide-ai-criterion-observation',
+                criterion.observation || 'Observation non renseignée.'));
             if (criterion.evidence) {
-                item.appendChild(element('p', '', 'Indice à vérifier : ' + criterion.evidence));
+                item.appendChild(element('p', 'guide-ai-criterion-evidence',
+                    'Indice à vérifier : ' + criterion.evidence));
             }
             criteria.appendChild(item);
         });
