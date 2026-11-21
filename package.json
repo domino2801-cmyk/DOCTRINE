@@ -1,0 +1,11 @@
+{
+  "name": "doctrine-bm4-pdf-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:bm4-pdf": "node --test tests/bm4-official-pdf.test.mjs"
+  },
+  "devDependencies": {
+    "pdf-lib": "1.17.1"
+  }
+}
