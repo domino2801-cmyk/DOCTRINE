@@ -1031,7 +1031,19 @@
             propositionStrengths ? 'FICHE DR — FICHE DE PROPOSITION\\n' + propositionStrengths : '',
             oralStrengths ? 'FICHETTE ORALE\\n' + oralStrengths : ''
         ].filter(Boolean).join('\\n\\n');
-        const combinedComments = evaluations.map(function (item) { return item.comment; }).filter(Boolean).join('\\n');
+        // Les axes prioritaires restent eux aussi rattachés à leur fiche d'origine.
+        const propositionImprovements = proposition
+            ? extractFeedbackSection(proposition.comment, 'Axes de progrès', ['Points forts'])
+                || extractFeedbackSection(proposition.comment, 'Axes d’amélioration', ['Points forts'])
+            : '';
+        const oralImprovements = oral
+            ? extractFeedbackSection(oral.comment, 'Axes de progrès', ['Points forts'])
+                || extractFeedbackSection(oral.comment, 'Axes d’amélioration', ['Points forts'])
+            : '';
+        const improvements = [
+            propositionImprovements ? 'FICHE DR — FICHE DE PROPOSITION\\n' + propositionImprovements : '',
+            oralImprovements ? 'FICHETTE ORALE\\n' + oralImprovements : ''
+        ].filter(Boolean).join('\\n\\n');
         return {
             candidateName: candidateName(candidate.candidate),
             specialty: candidate.candidate.specialty || candidate.candidate.specialty_label || '',
@@ -1041,7 +1053,7 @@
             evaluations: evaluations,
             weightedGrade: weightedGrade,
             strengths: strengths,
-            improvements: extractFeedbackSection(combinedComments, 'Axes de progrès', ['Points forts']),
+            improvements: improvements,
             exportedAt: formatDate(new Date().toISOString())
         };
     }
