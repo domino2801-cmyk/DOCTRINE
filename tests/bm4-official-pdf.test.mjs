@@ -140,7 +140,7 @@ test("génère réellement la grille BM4 et vérifie les champs, notes et observ
     assert.match(value("points_forts"), /FICHETTE ORALE/);
     assert.ok(value("points_forts").indexOf("FICHE DE PROPOSITION") < value("points_forts").indexOf("FICHETTE ORALE"));
     assert.equal(value("axes_amelioration"), report.improvements);
-    assert.equal(reopened.getPageCount(), 3, "le PDF doit ajouter une page de points clés pour chaque type de fiche évalué");
+    assert.equal(reopened.getPageCount(), (await PDFDocument.load(templateBytes)).getPageCount() + 2, "le PDF doit ajouter une page de points clés pour chaque type de fiche évalué");
 
     // Contrôle aussi le mode réellement utilisé en production : PDF aplati,
     // lisible sans formulaire interactif et sans champs AcroForm résiduels.
