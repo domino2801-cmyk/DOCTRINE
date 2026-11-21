@@ -15,7 +15,7 @@ const report = {
     subject: "Organisation du soutien en opération",
     guideName: "Commandant Léa Bernard",
     weightedGrade: 15.65,
-    strengths: "Analyse structurée et propositions réalistes.",
+    strengths: "FICHE DR — FICHE DE PROPOSITION\\nAnalyse structurée et propositions réalistes.\\n\\nFICHETTE ORALE\\nPrésentation orale claire et convaincante.",
     improvements: "Préciser le calendrier de mise en œuvre.",
     evaluations: [
         {
@@ -122,6 +122,9 @@ test("génère réellement la grille BM4 et vérifie les champs, notes et observ
     assert.equal(value("bilan_em"), "15,5");
     assert.equal(value("bilan_oral"), "16");
     assert.equal(value("points_forts"), report.strengths);
+    assert.match(value("points_forts"), /FICHE DR — FICHE DE PROPOSITION/);
+    assert.match(value("points_forts"), /FICHETTE ORALE/);
+    assert.ok(value("points_forts").indexOf("FICHE DR") < value("points_forts").indexOf("FICHETTE ORALE"));
     assert.equal(value("axes_amelioration"), report.improvements);
 
     // Contrôle aussi le mode réellement utilisé en production : PDF aplati,
