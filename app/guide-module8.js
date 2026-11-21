@@ -36,10 +36,10 @@
     };
     const JURY_CHECKLISTS = {
         proposition: [
-            { key: 'p_form_header', label: 'Gabarit EM : timbre, destinataire réel (décideur), objet précis, références et pièces jointes.' },
-            { key: 'p_form_readability', label: 'Lisibilité : copie propre et aérée, titres soulignés et sauts de ligne.' },
-            { key: 'p_form_impersonal', label: 'Style impersonnel : aucun « je / nous / on » (expression au nom du bureau).' },
-            { key: 'p_form_language', label: 'Langue et plagiat : phrases courtes (sujet-verbe-complément), orthographe soignée et aucune recopie mot pour mot du dossier.' },
+            { key: 'p_form_pages', label: 'Gabarit EM : timbre, destinataire réel (décideur), objet précis, références et pièces jointes.' },
+            { key: 'p_form_header', label: 'Lisibilité : copie propre et aérée, titres soulignés et sauts de ligne.' },
+            { key: 'p_form_references', label: 'Style impersonnel : aucun « je / nous / on » (expression au nom du bureau).' },
+            { key: 'p_form_style', label: 'Langue et plagiat : phrases courtes (sujet-verbe-complément), orthographe soignée et aucune recopie mot pour mot du dossier.' },
             { key: 'p_intro_context', label: 'Préambule : fait générateur posé clairement, sans banalités.' },
             { key: 'p_intro_solution', label: 'Idée maîtresse : réponse engagée et justifiée (car / parce que), distincte de la simple description technique.' },
             { key: 'p_intro_plan', label: 'Annonce du plan : personnalisée et adaptée au sujet (pas de formule bateau).' },
@@ -63,19 +63,19 @@
             { key: 'o_limits', label: 'Limites : contraintes et impératifs du dossier.' },
             { key: 'o_main_idea', label: 'Idée maîtresse : solution préconisée affirmée avec son argument maître.' },
             { key: 'o_plan', label: 'Annonce du plan : présente et claire.' },
-            { key: 'o_advocacy', label: 'Logique de plaidoyer : défense de la solution choisie, sans redévelopper les solutions écartées.' },
-            { key: 'o_id1', label: 'ID 1 : exposé bref de la situation et de la solution préconisée.' },
-            { key: 'o_id2', label: 'ID 2 : arguments de pertinence (respect des critères).' },
-            { key: 'o_id3', label: 'ID 3 : argument majeur de supériorité et minoration des risques.' },
+            { key: 'o_demonstration', label: 'Logique de plaidoyer : défense de la solution choisie, sans redévelopper les solutions écartées.' },
+            { key: 'o_id123', label: 'ID 1, ID 2 et ID 3 : exposé de la situation, arguments de pertinence et argument majeur de supériorité.' },
             { key: 'o_proofs', label: 'Preuves : exemples concrets, références et données chiffrées.' },
-            { key: 'o_synthesis', label: 'Synthèse : rappel des idées directrices principales.' },
-            { key: 'o_reaffirmation', label: 'Réaffirmation : rappel percutant de l’idée maîtresse.' },
-            { key: 'o_execution', label: 'Suites et ouverture : mesures d’exécution et ouverture pertinente.' }
+            { key: 'o_fact_analysis', label: 'Analyse : les faits, l’analyse et les propositions sont clairement articulés.' },
+            { key: 'o_conclusion_clarity', label: 'Synthèse : rappel des idées directrices principales.' },
+            { key: 'o_decision', label: 'Réaffirmation : rappel percutant de l’idée maîtresse.' },
+            { key: 'o_execution', label: 'Suites et ouverture : mesures d’exécution et ouverture pertinente.' },
+            { key: 'o_readability', label: 'Lisibilité générale : support synthétique et informations hiérarchisées.' }
         ]
     };
     const JURY_CHECKLIST_SCORE_MAP = {
         proposition: {
-            form: ['p_form_header', 'p_form_readability', 'p_form_impersonal', 'p_form_language'],
+            form: ['p_form_pages', 'p_form_header', 'p_form_references', 'p_form_style'],
             introduction: ['p_intro_context', 'p_intro_solution', 'p_intro_plan'],
             problematique_donnees: ['p_problem_facts', 'p_problem_level', 'p_problem_criteria'],
             solutions: ['p_solutions_three', 'p_solutions_details', 'p_solutions_risks'],
@@ -84,8 +84,8 @@
         support_oral: {
             operatoire_forme: ['o_anti_copy', 'o_five_cases', 'o_operatoire', 'o_language'],
             introduction: ['o_hook', 'o_problem', 'o_limits', 'o_main_idea', 'o_plan'],
-            argumentaire: ['o_advocacy', 'o_id1', 'o_id2', 'o_id3', 'o_proofs'],
-            conclusion: ['o_synthesis', 'o_reaffirmation', 'o_execution']
+            argumentaire: ['o_demonstration', 'o_id123', 'o_proofs', 'o_fact_analysis'],
+            conclusion: ['o_conclusion_clarity', 'o_decision', 'o_execution']
         }
     };
     const auth = window.DoctrineAuth;
