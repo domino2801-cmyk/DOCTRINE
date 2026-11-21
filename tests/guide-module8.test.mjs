@@ -132,7 +132,8 @@ test("le compte rendu d’évaluation génère un PDF rempli avec des pages inde
     assert.match(page, /id="guideDownloadReview"/);
     assert.match(page, /id="guideDownloadReview"[^>]*>Télécharger la grille BM4 officielle/);
     assert.match(page, /id="guideDownloadReview"[^>]*hidden/);
-    assert.match(script, /document\.getElementById\('guideDownloadReview'\)\.hidden =/);
+    assert.match(script, /const downloadButton = document\.getElementById\('guideDownloadReview'\)/);
+    assert.match(script, /downloadButton\.hidden = !savedReviewReport \|\| !savedReviewReport\.evaluations\.length/);
     assert.match(script, /function markReviewDirty\(\)[\s\S]*savedReviewReport = null/);
     const multiPageBlob = createEvaluationPdf({
         candidateName: "Caporal Élodie Martin",
