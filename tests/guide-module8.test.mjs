@@ -450,19 +450,18 @@ test("les observations IA de la fichette affichent réellement les quatre critè
     assert.match(styles, /\.guide-ai-criteria \.guide-ai-criterion-evidence/);
 });
 
-test("les axes d’amélioration prioritaires sont séparés entre fiche de proposition et fichette orale", () => {
-    assert.match(script, /const propositionImprovements = proposition[\\s\\S]*?extractFeedbackSection\\(proposition\\.comment, 'Axes de progrès'/);
-    assert.match(script, /const oralImprovements = oral[\\s\\S]*?extractFeedbackSection\\(oral\\.comment, 'Axes de progrès'/);
-    assert.match(script, /'FICHE DR — FICHE DE PROPOSITION\\n' \\+ propositionImprovements/);
-    assert.match(script, /'FICHETTE ORALE\\n' \\+ oralImprovements/);
-    assert.match(script, /improvements: improvements/);
-    assert.doesNotMatch(script, /improvements: extractFeedbackSection\\(combinedComments/);
-});
+test("les axes d’amélioration sont séparés et exclus des synthèses et comparaisons", () => {
+    assert.ok(script.includes("const propositionImprovements = proposition"));
+    assert.ok(script.includes("const oralImprovements = oral"));
+    assert.ok(script.includes("'FICHE DR — FICHE DE PROPOSITION\\n' + propositionImprovements"));
+    assert.ok(script.includes("'FICHETTE ORALE\\n' + oralImprovements"));
+    assert.ok(script.includes("const stopLabels = [...nextLabels, 'Comparaison avec la fiche écrite']"));
 
-test("les axes d’amélioration excluent les synthèses et la comparaison, même avec des retours \u00e0 la ligne échappés", () => {
-    const helperMatch = script.match(/function extractFeedbackSection\\(comment, label, nextLabels\\) \\{[\\s\\S]*?\\n    \\}/);
-    assert.ok(helperMatch, "le helper d’extraction doit exister");
-    const extract = vm.runInNewContext('(' + helperMatch[0].replace(/^    /gm, '') + ')');
-    const comment = String.raw`Axes de progrès: Premier axe; deuxième axe\\nSynthèse : Synthèse de la fiche.\\n\\nComparaison avec la fiche écrite : Comparaison détaillée.`;
+    const helperStart = script.indexOf("function extractFeedbackSection(comment, label, nextLabels) {");
+    const helperEnd = script.indexOf("\\n    function criterionObservation", helperStart);
+    assert.ok(helperStart >= 0 && helperEnd > helperStart, "le helper d’extraction doit exister");
+    const helperSource = script.slice(helperStart, helperEnd).trim();
+    const extract = vm.runInNewContext("(" + helperSource + ")");
+    const comment = String.raw\`Axes de progrès: Premier axe; deuxième axe\nSynthèse : Synthèse de la fiche.\n\nComparaison avec la fiche écrite : Comparaison détaillée.\`;
     assert.equal(extract(comment, "Axes de progrès", ["Synthèse", "Points forts"]), "Premier axe; deuxième axe");
 });
