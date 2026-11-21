@@ -1121,10 +1121,14 @@
                 savedReviewReport = finalReview.status === 'valide'
                     ? createReviewReport(activeReviewCandidate, activeReviewSubmission, finalReview, finalReview.reviewed_at)
                     : null;
-                document.getElementById('guideDownloadReview').hidden =
-                    !savedReviewReport || !savedReviewReport.evaluations.length;
-                document.getElementById('guideExportFinalCandidate').hidden =
-                    !savedReviewReport || savedReviewReport.weightedGrade === null;
+                const downloadButton = document.getElementById('guideDownloadReview');
+                if (downloadButton) {
+                    downloadButton.hidden = !savedReviewReport || !savedReviewReport.evaluations.length;
+                }
+                const finalExportButton = document.getElementById('guideExportFinalCandidate');
+                if (finalExportButton) {
+                    finalExportButton.hidden = !savedReviewReport || savedReviewReport.weightedGrade === null;
+                }
                 setStatus(status, finalReview.status === 'valide'
                     ? 'Évaluation validée et enregistrée.'
                     : 'Évaluation enregistrée comme « à reprendre ». Aucun PDF officiel ne peut être édité avant validation.', 'success');
