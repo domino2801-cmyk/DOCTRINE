@@ -129,9 +129,9 @@ test("génère réellement la grille BM4 et vérifie les champs, notes et observ
         "Présentation orale claire et convaincante."
     ].join("\n"));
     assert.doesNotMatch(value("points_forts"), /FICHE DR/);
-    assert.match(value("points_forts"), /FICHE DR — FICHE DE PROPOSITION/);
+    assert.match(value("points_forts"), /FICHE DE PROPOSITION/);
     assert.match(value("points_forts"), /FICHETTE ORALE/);
-    assert.ok(value("points_forts").indexOf("FICHE DR") < value("points_forts").indexOf("FICHETTE ORALE"));
+    assert.ok(value("points_forts").indexOf("FICHE DE PROPOSITION") < value("points_forts").indexOf("FICHETTE ORALE"));
     assert.equal(value("axes_amelioration"), report.improvements);
 
     // Contrôle aussi le mode réellement utilisé en production : PDF aplati,
