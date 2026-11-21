@@ -222,9 +222,11 @@ export async function createOfficialBm4Pdf(report, options = {}) {
         setFieldText('bilan_oral', 'Fichette orale non encore validée.');
     }
 
+    // Le modèle PDF porte déjà les libellés, les pondérations 70/30 et le suffixe /20.
+    // Le champ ne reçoit que la valeur numérique pour éviter les doublons visuels.
     setFieldText('moyenne_globale', report.weightedGrade === null
         ? 'En attente de la validation des deux fiches'
-        : formatGrade(report.weightedGrade) + ' / 20 (70 % écrit / 30 % oral)');
+        : formatGrade(report.weightedGrade));
     setFieldText('points_forts', report.strengths || 'Non renseignés dans les observations validées.');
     setFieldText('axes_amelioration', report.improvements || 'Non renseignés dans les observations validées.');
 
