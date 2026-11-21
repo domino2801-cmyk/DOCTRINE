@@ -176,24 +176,18 @@ test("la correction Gemini est disponible pour les deux types de fiches avec val
     assert.match(aiFunction, /SUBJECT_DRIVE_FOLDER_IDS/);
     assert.match(aiFunction, /getSubjectReferenceDocuments\(dossier: number\)/);
     assert.match(aiFunction, /const subjectFolderId = SUBJECT_DRIVE_FOLDER_IDS\[Number\(dossier\)\]/);
-    for (const folderId of [
-        "1l6qZIdK6QVPHfVoGuCrkoJV5QGkVGcI_",
-        "1N2a49fE6JNu-59Hxa15Be99vr5BavI8E",
-        "11dhk9Y611V1i3ChYOWRvx09-9SLilVnJ",
-        "1qGUmuf4JsK-9TNmD7tAXyO2QEKDiE2ZW",
-        "12IBiJtiry-On0pON_0iuoJ59Pt_6AYS1",
-        "1tBRI8hjbNM-eVAgjVb9LjNK3hSuyQyAA",
-        "1_w3RI1xmAN0FCZeCEeVRXcRqvFi7ek_6",
-        "1vGE8GLEFHoX3_DjozDBR3x8ujArRV2a5",
-        "1drUZgFsAX7tRadB-FaxuDJ1EKXC9AonL",
-        "1Fn6pmTs981S3VrTwLtNCAj2j5_d7pDtH",
-        "1-m1qvnV4JvY6gm-dIPYno5xA-Qfc04IG",
-        "1cSmdKJJnmXXekUfSfeZZQ_OqZ-L5stbB",
-        "1iNMbYPCNSgiVVr2kS1y6tufkgogeucIw",
-        "1l0UcOA2jECtTlVzTKjsolP_CFRw_dkSA",
-        "1GVRpJ3TnpXSxBD9PLoUtaZ1A5BRsN-d_",
-        "13VVCZiKzxgW8Rldm1i2addC868scJELl"
-    ]) assert.ok(aiFunction.includes(folderId), `dossier Drive manquant : ${folderId}`);
+    // Comparer la fonction Edge aux numéros et liens Drive réellement affichés dans l’application.
+    const mappingBlock = aiFunction.match(/const SUBJECT_DRIVE_FOLDER_IDS: Record<number, string> = \{([\s\S]*?)\n\};/);
+    assert.ok(mappingBlock, "table des dossiers Drive déclarée explicitement");
+    const functionMappings = Object.fromEntries([...mappingBlock[1].matchAll(/^\s*(\d+):\s*"([^"]+)",?$/gm)].map(match => [match[1], match[2]]));
+    const applicationMappings = Object.fromEntries([...index.matchAll(/<input type="checkbox" data-dossier="(\d+)"[^>]*>\s*<span>Dossier \d+\s*:\s*([^<]+)<\/span>[\s\S]*?href="https:\/\/drive\.google\.com\/drive\/folders\/([^?"]+)/g)].map(match => [match[1], match[3]]));
+    assert.equal(Object.keys(applicationMappings).length, 16, "l’application doit exposer les 16 dossiers");
+    assert.deepEqual(Object.keys(functionMappings).sort((a, b) => Number(a) - Number(b)), Array.from({ length: 16 }, (_, index) => String(index + 1)), "la fonction doit associer exactement les dossiers 1 à 16");
+    assert.deepEqual(functionMappings, applicationMappings, "les numéros et identifiants Drive de correct-fiche-ai doivent correspondre exactement à ceux de l’application");
+    assert.equal(functionMappings["7"], "1vGE8GLEFHoX3_DjozDBR3x8ujArRV2a5", "dossier 7 = Toulaud Air Sport");
+    assert.equal(functionMappings["8"], "1drUZgFsAX7tRadB-FaxuDJ1EKXC9AonL", "dossier 8 = Opération Sentinelle");
+    assert.equal(functionMappings["9"], "1Fn6pmTs981S3VrTwLtNCAj2j5_d7pDtH", "dossier 9 = ARMADA");
+    assert.equal(functionMappings["10"], "1_w3RI1xmAN0FCZeCEeVRXcRqvFi7ek_6", "dossier 10 = Infrastructures");
     assert.match(aiFunction, /GOOGLE_SERVICE_ACCOUNT_JSON/);
     assert.match(aiFunction, /getSubjectReferenceDocuments\(Number\(submission\.dossier\)\)/);
     assert.match(aiFunction, /listDriveChildren\(folderId, token\)/);
