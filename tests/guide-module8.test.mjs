@@ -1,3 +1,4 @@
+import { extractOutputText, extractGenerateContentText } from "../supabase/functions/correct-fiche-ai/gemini-response.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -131,7 +132,8 @@ test("le compte rendu d’évaluation génère un PDF rempli avec des pages inde
     assert.match(page, /id="guideDownloadReview"/);
     assert.match(page, /id="guideDownloadReview"[^>]*>Télécharger la grille BM4 officielle/);
     assert.match(page, /id="guideDownloadReview"[^>]*hidden/);
-    assert.match(script, /document\.getElementById\('guideDownloadReview'\)\.hidden =/);
+    assert.match(script, /const downloadButton = document\.getElementById\('guideDownloadReview'\)/);
+    assert.match(script, /downloadButton\.hidden = !savedReviewReport \|\| !savedReviewReport\.evaluations\.length/);
     assert.match(script, /function markReviewDirty\(\)[\s\S]*savedReviewReport = null/);
     const multiPageBlob = createEvaluationPdf({
         candidateName: "Caporal Élodie Martin",
@@ -149,7 +151,33 @@ test("le compte rendu d’évaluation génère un PDF rempli avec des pages inde
     assert.match(multiPagePdf, /\/Count 2/);
 });
 
+
+test("l’extracteur Gemini lit les réponses Interactions actuelles et les anciens formats", () => {
+    const json = '{"readable":true}';
+    assert.equal(extractOutputText({
+        status: "completed",
+        steps: [
+            { type: "thought", content: [{ type: "text", text: "ne pas inclure" }] },
+            { type: "model_output", content: [{ type: "text", text: json }] }
+        ]
+    }), json);
+    assert.equal(extractOutputText({ output_text: "  " + json + "  " }), json);
+    assert.equal(extractOutputText({
+        outputs: [{ type: "text", text: json }]
+    }), json);
+    assert.equal(extractOutputText({
+        output: [{ type: "model_output", content: [{ type: "text", text: json }] }]
+    }), json);
+    assert.equal(extractGenerateContentText({
+        candidates: [{ content: { parts: [{ text: json }] } }]
+    }), json);
+    assert.throws(() => extractOutputText({ steps: [{ type: "thought", content: [] }] }),
+        /Texte de correction absent/);
+});
+
+
 test("la correction Gemini est disponible pour les deux types de fiches avec validation guide et PDF", async () => {
+
     const [aiFunction, supabaseConfig] = await Promise.all([
         read("supabase/functions/correct-fiche-ai/index.ts"),
         read("supabase/config.toml")
@@ -171,7 +199,7 @@ test("la correction Gemini est disponible pour les deux types de fiches avec val
     assert.match(aiFunction, /const isOral = submission\.submission_type === "support_oral"/);
     assert.match(aiFunction, /ORAL_RUBRIC_PROMPT/);
     assert.match(aiFunction, /from\("guide_candidates"\)[\s\S]*eq\("guide_id", userData\.user\.id\)[\s\S]*eq\("candidate_id", submission\.user_id\)/);
-    assert.match(aiFunction, /form_grade: \{ type: "number", minimum: 0, maximum: 6 \}/);
+    assert.match(aiFunction, /form_grade:\s*\{\s*type:\s*"number",\s*minimum:\s*0,\s*maximum:\s*6\s*\}/);
     assert.match(aiFunction, /"Introduction", 3[\s\S]*"Problématique et données", 3[\s\S]*"Solutions réalisables", 4[\s\S]*"Avis et conclusion", 4/);
     assert.match(aiFunction, /store: false/);
     assert.match(aiFunction, /Deno\.env\.get\("GEMINI_MODEL"\)\s*\|\|\s*DEFAULT_MODEL/);

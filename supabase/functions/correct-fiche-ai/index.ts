@@ -1,3 +1,4 @@
+import { extractOutputText, extractGenerateContentText } from "./gemini-response.mjs";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
 const BUCKET = "candidate-fiches";
@@ -268,36 +269,6 @@ function parseOralCorrection(value: unknown, referenceWrittenFound: boolean) {
         overall_comment: boundedText(value.overall_comment, "synthèse", 800),
         confidence
     };
-}
-
-function extractOutputText(value: unknown) {
-    if (!isRecord(value)) throw new Error("Réponse Gemini absente.");
-    if (typeof value.output_text === "string") return value.output_text;
-    if (!Array.isArray(value.output)) throw new Error("Texte de correction absent de la réponse Gemini.");
-
-    const text = value.output.flatMap((step) => {
-        if (!isRecord(step) || step.type !== "model_output" || !Array.isArray(step.content)) return [];
-        return step.content.flatMap((part) =>
-            isRecord(part) && part.type === "text" && typeof part.text === "string" ? [part.text] : []
-        );
-    }).join("\n");
-    if (!text) throw new Error("Texte de correction absent de la réponse Gemini.");
-    return text;
-}
-
-function extractGenerateContentText(value: unknown) {
-    if (!isRecord(value) || !Array.isArray(value.candidates)) {
-        throw new Error("Réponse Gemini absente.");
-    }
-    const candidate = value.candidates.find((item) => isRecord(item));
-    if (!candidate || !isRecord(candidate.content) || !Array.isArray(candidate.content.parts)) {
-        throw new Error("Texte de correction absent de la réponse Gemini.");
-    }
-    const text = candidate.content.parts.flatMap((part) =>
-        isRecord(part) && typeof part.text === "string" ? [part.text] : []
-    ).join("\n");
-    if (!text) throw new Error("Texte de correction absent de la réponse Gemini.");
-    return text;
 }
 
 function encodeBase64(bytes: Uint8Array) {
