@@ -326,3 +326,15 @@ test("la grille AcroForm officielle remplace le compte rendu et exige une valida
     assert.match(helper, /form\.flatten\(\)/);
     assert.match(serviceWorker, /app\/bm4-official-pdf\.mjs/);
 });
+
+
+test("l’export final candidat est distinct et conditionné à la validation des deux fiches", () => {
+    assert.match(page, /id="guideExportFinalCandidate"[^>]*hidden>Exporter l’évaluation finale pour le candidat/);
+    assert.match(script, /async function exportFinalCandidateEvaluation\(\)/);
+    assert.match(script, /savedReviewReport\.weightedGrade === null/);
+    assert.match(script, /type === 'proposition'/);
+    assert.match(script, /type === 'support_oral'/);
+    assert.match(script, /Evaluation_finale_BM4_/);
+    assert.match(script, /Évaluation finale BM4 exportée/);
+    assert.match(script, /guideExportFinalCandidate'\)\?\.addEventListener\('click', exportFinalCandidateEvaluation\)/);
+});
