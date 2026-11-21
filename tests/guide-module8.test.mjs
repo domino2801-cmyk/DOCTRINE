@@ -195,7 +195,7 @@ test("la correction Gemini est disponible pour les deux types de fiches avec val
     assert.match(aiFunction, /const isOral = submission\.submission_type === "support_oral"/);
     assert.match(aiFunction, /ORAL_RUBRIC_PROMPT/);
     assert.match(aiFunction, /from\("guide_candidates"\)[\s\S]*eq\("guide_id", userData\.user\.id\)[\s\S]*eq\("candidate_id", submission\.user_id\)/);
-    assert.match(aiFunction, /form_grade: \{ type: "number", minimum: 0, maximum: 6 \}/);
+    assert.match(aiFunction, /form_grade:\s*\{\s*type:\s*"number",\s*minimum:\s*0,\s*maximum:\s*6\s*\}/);
     assert.match(aiFunction, /"Introduction", 3[\s\S]*"Problématique et données", 3[\s\S]*"Solutions réalisables", 4[\s\S]*"Avis et conclusion", 4/);
     assert.match(aiFunction, /store: false/);
     assert.match(aiFunction, /Deno\.env\.get\("GEMINI_MODEL"\)\s*\|\|\s*DEFAULT_MODEL/);
