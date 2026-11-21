@@ -767,6 +767,8 @@
             : null;
         const downloadButton = document.getElementById('guideDownloadReview');
         if (downloadButton) downloadButton.hidden = !savedReviewReport || !savedReviewReport.evaluations.length;
+        const finalExportButton = document.getElementById('guideExportFinalCandidate');
+        if (finalExportButton) finalExportButton.hidden = !savedReviewReport || savedReviewReport.weightedGrade === null;
         const saveButton = document.querySelector('#guideReviewForm button[type="submit"]');
         if (saveButton) saveButton.disabled = false;
         updateFinalGrade();
@@ -799,6 +801,8 @@
         savedReviewReport = null;
         const downloadButton = document.getElementById('guideDownloadReview');
         if (downloadButton) downloadButton.hidden = true;
+        const finalExportButton = document.getElementById('guideExportFinalCandidate');
+        if (finalExportButton) finalExportButton.hidden = true;
     }
 
     function renderAiCorrection(suggestion) {
@@ -1036,6 +1040,40 @@
         }
     }
 
+    async function exportFinalCandidateEvaluation() {
+        const button = document.getElementById('guideExportFinalCandidate');
+        const status = document.getElementById('guideReviewStatus');
+        if (!savedReviewReport || !button) return;
+        if (savedReviewReport.weightedGrade === null ||
+            !savedReviewReport.evaluations.some(function (item) { return item.type === 'proposition'; }) ||
+            !savedReviewReport.evaluations.some(function (item) { return item.type === 'support_oral'; })) {
+            setStatus(status, 'L’évaluation finale nécessite la validation de la fiche de proposition et de la fichette orale.', 'error');
+            return;
+        }
+        button.disabled = true;
+        try {
+            const { createOfficialBm4Pdf } = await import('./bm4-official-pdf.mjs');
+            const pdf = await createOfficialBm4Pdf(savedReviewReport);
+            const url = URL.createObjectURL(pdf);
+            const link = element('a');
+            const filename = savedReviewReport.candidateName
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '') || 'candidat';
+            link.href = url;
+            link.download = 'Evaluation_finale_BM4_' + filename + '_Dossier_' + savedReviewReport.dossier + '.pdf';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+            setStatus(status, 'Évaluation finale BM4 exportée. Le PDF peut être transmis au candidat.', 'success');
+        } catch (error) {
+            console.error('Export de l’évaluation finale impossible.', error);
+            setStatus(status, error.message || 'Export de l’évaluation finale impossible.', 'error');
+        } finally {
+            button.disabled = false;
+        }
+    }
+
     async function saveReview(event) {
         event.preventDefault();
         const form = event.currentTarget;
@@ -1085,6 +1123,8 @@
                     : null;
                 document.getElementById('guideDownloadReview').hidden =
                     !savedReviewReport || !savedReviewReport.evaluations.length;
+                document.getElementById('guideExportFinalCandidate').hidden =
+                    !savedReviewReport || savedReviewReport.weightedGrade === null;
                 setStatus(status, finalReview.status === 'valide'
                     ? 'Évaluation validée et enregistrée.'
                     : 'Évaluation enregistrée comme « à reprendre ». Aucun PDF officiel ne peut être édité avant validation.', 'success');
@@ -1198,6 +1238,7 @@
         document.getElementById('guideAdmissionForm')?.addEventListener('submit', saveAdmission);
         document.getElementById('guideReviewForm')?.addEventListener('submit', saveReview);
         document.getElementById('guideDownloadReview')?.addEventListener('click', downloadReviewReport);
+        document.getElementById('guideExportFinalCandidate')?.addEventListener('click', exportFinalCandidateEvaluation);
         document.getElementById('guideReviewForm')?.addEventListener('input', function (event) {
             if (event.target.id === 'guideReviewSubmissionId') return;
             markReviewDirty();
