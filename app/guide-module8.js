@@ -1132,6 +1132,13 @@
                 grade: reviewGrade(saved),
                 rubricScores: saved.rubric_scores || {},
                 criteria: rubric.criteria,
+                juryChecklist: (JURY_CHECKLISTS[item.submission_type] || []).map(function (checklistItem) {
+                    return {
+                        key: checklistItem.key,
+                        label: checklistItem.label,
+                        checked: Boolean(saved.jury_checklist && saved.jury_checklist[checklistItem.key])
+                    };
+                }),
                 comment: saved.comment || '',
                 reviewedAt: saved.reviewed_at || reviewedAt || new Date().toISOString()
             };
