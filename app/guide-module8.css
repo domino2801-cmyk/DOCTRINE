@@ -574,17 +574,32 @@
     list-style: none;
 }
 
-.guide-ai-criteria li {
+.guide-ai-criteria li.guide-ai-criterion-card {
     display: grid;
-    gap: 4px;
-    padding: 9px;
-    background: rgba(12, 20, 17, .42);
-    border-radius: 5px;
+    gap: 6px;
+    min-width: 0;
+    padding: 12px;
+    background: linear-gradient(145deg, rgba(45, 59, 49, .72), rgba(24, 35, 32, .84));
+    border: 1px solid rgba(165, 190, 170, .2);
+    border-left: 3px solid #d9a95f;
+    border-radius: 8px;
 }
 
-.guide-ai-criteria strong {
+.guide-ai-criteria .guide-ai-criterion-title {
+    color: var(--guide-olive);
+    font-size: .9rem;
+    line-height: 1.4;
+}
+
+.guide-ai-criteria .guide-ai-criterion-observation {
     color: var(--guide-ink);
-    font-size: .84rem;
+}
+
+.guide-ai-criteria .guide-ai-criterion-evidence {
+    padding-top: 5px;
+    color: var(--guide-muted);
+    border-top: 1px solid rgba(165, 190, 170, .14);
+    font-size: .8rem;
 }
 
 .guide-ai-disclaimer {
