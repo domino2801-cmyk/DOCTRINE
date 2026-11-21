@@ -22,8 +22,8 @@ const report = {
             type: "proposition",
             grade: 15.5,
             juryChecklist: [
-                { key: "p_form_header", label: "Gabarit EM : timbre, destinataire réel, objet précis, références et pièces jointes.", checked: true },
-                { key: "p_form_readability", label: "Lisibilité : copie propre et aérée.", checked: false }
+                { key: "p_form_pages", label: "Gabarit EM : timbre, destinataire réel, objet précis, références et pièces jointes.", checked: true },
+                { key: "p_form_header", label: "Lisibilité : copie propre et aérée.", checked: false }
             ],
             rubricScores: {
                 form: 5.5,
