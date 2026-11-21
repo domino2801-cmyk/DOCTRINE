@@ -204,7 +204,7 @@ export async function createOfficialBm4Pdf(report, options = {}) {
             setFieldText('note_em_' + number, formatGrade(proposition.rubricScores?.[criterion.key]));
             setFieldText('obs_em_' + number, observationFor(proposition.comment, criterion.label));
         });
-        setFieldText('total_em', formatGrade(proposition.grade) + ' / 20');
+        setFieldText('total_em', formatGrade(proposition.grade));
         setFieldText('bilan_em', proposition.comment);
     } else {
         setFieldText('bilan_em', 'Fiche de proposition non encore validée.');
@@ -216,7 +216,7 @@ export async function createOfficialBm4Pdf(report, options = {}) {
             setFieldText('note_oral_' + number, formatGrade(oral.rubricScores?.[criterion.key]));
             setFieldText('obs_oral_' + number, observationFor(oral.comment, criterion.label));
         });
-        setFieldText('total_oral', formatGrade(oral.grade) + ' / 20');
+        setFieldText('total_oral', formatGrade(oral.grade));
         setFieldText('bilan_oral', oral.comment);
     } else {
         setFieldText('bilan_oral', 'Fichette orale non encore validée.');
