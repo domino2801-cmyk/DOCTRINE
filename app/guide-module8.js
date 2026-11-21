@@ -1028,9 +1028,9 @@
             ? extractFeedbackSection(oral.comment, 'Points forts', ['Axes de progrès', 'Axes d’amélioration'])
             : '';
         const strengths = [
-            propositionStrengths ? 'FICHE DR — FICHE DE PROPOSITION\\n' + propositionStrengths : '',
-            oralStrengths ? 'FICHETTE ORALE\\n' + oralStrengths : ''
-        ].filter(Boolean).join('\\n\\n');
+            propositionStrengths ? 'FICHE DR — FICHE DE PROPOSITION\n' + propositionStrengths : '',
+            oralStrengths ? 'FICHETTE ORALE\n' + oralStrengths : ''
+        ].filter(Boolean).join('\n\n');
         // Les axes prioritaires restent eux aussi rattachés à leur fiche d'origine.
         const propositionImprovements = proposition
             ? extractFeedbackSection(proposition.comment, 'Axes de progrès', ['Points forts'])
@@ -1041,9 +1041,9 @@
                 || extractFeedbackSection(oral.comment, 'Axes d’amélioration', ['Points forts'])
             : '';
         const improvements = [
-            propositionImprovements ? 'FICHE DR — FICHE DE PROPOSITION\\n' + propositionImprovements : '',
-            oralImprovements ? 'FICHETTE ORALE\\n' + oralImprovements : ''
-        ].filter(Boolean).join('\\n\\n');
+            propositionImprovements ? 'FICHE DR — FICHE DE PROPOSITION\n' + propositionImprovements : '',
+            oralImprovements ? 'FICHETTE ORALE\n' + oralImprovements : ''
+        ].filter(Boolean).join('\n\n');
         return {
             candidateName: candidateName(candidate.candidate),
             specialty: candidate.candidate.specialty || candidate.candidate.specialty_label || '',
