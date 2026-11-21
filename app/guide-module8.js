@@ -469,15 +469,16 @@
             reviewButton.disabled = !submission.storage_path;
             reviewButton.addEventListener('click', function () { openReview(candidate, submission); });
             actions.appendChild(reviewButton);
-            const aiButton = element('button', 'guide-button',
-                isOralSupport ? 'Correction IA — Fichette orale' : 'Correction IA — Proposition');
-            aiButton.type = 'button';
-            aiButton.disabled = !submission.storage_path;
-            aiButton.title = 'Analyser le PDF avec Google Gemini, puis faire vérifier et valider la correction par l’Officier Guide.';
-            aiButton.addEventListener('click', function () {
-                runAiCorrection(candidate, submission, aiButton);
-            });
-            actions.appendChild(aiButton);
+            if (!isOralSupport) {
+                const aiButton = element('button', 'guide-button', 'Correction IA — Proposition');
+                aiButton.type = 'button';
+                aiButton.disabled = !submission.storage_path;
+                aiButton.title = 'Analyser la fiche de proposition avec Google Gemini, puis faire vérifier et valider la correction par l’Officier Guide.';
+                aiButton.addEventListener('click', function () {
+                    runAiCorrection(candidate, submission, aiButton);
+                });
+                actions.appendChild(aiButton);
+            }
             card.appendChild(actions);
             container.appendChild(card);
         });
@@ -780,8 +781,8 @@
     function formatAiFeedback(suggestion) {
         const lines = [
             'Proposition Gemini — à vérifier',
-            (suggestion.form_label || 'Forme') + ' : ' + suggestion.form_grade + ' / ' +
-                (suggestion.form_max_grade || 6) + ' — ' + suggestion.form_observations,
+            '1. Forme, Présentation & Langue : ' + suggestion.form_grade + ' / 6 — ' + suggestion.form_observations +
+                ' — Indice : ' + (suggestion.form_evidence || 'non repéré'),
             ...suggestion.criteria.map(function (criterion) {
                 return criterion.label + ' : ' + criterion.grade + ' / ' + criterion.max_grade +
                     ' — ' + criterion.observation;
@@ -811,9 +812,7 @@
         if (!panel) return;
         panel.replaceChildren();
         panel.hidden = false;
-        panel.appendChild(element('h3', '', suggestion.submission_type === 'support_oral'
-            ? 'Proposition de correction IA — Fichette orale'
-            : 'Proposition de correction IA — Fiche de proposition'));
+        panel.appendChild(element('h3', '', 'Proposition de correction IA — Fiche de proposition'));
 
         if (!suggestion.readable) {
             panel.appendChild(element('p', 'guide-ai-disclaimer',
@@ -836,11 +835,11 @@
         panel.append(
             element('p', 'guide-ai-disclaimer',
                 'Suggestion non enregistrée. Vérifiez la fiche et les notes avant de valider.'),
-            element('p', '', (suggestion.form_label || 'Forme') + ' : ' + suggestion.form_grade +
-                ' / ' + (suggestion.form_max_grade || 6) + ' · Fond : ' +
-                suggestion.content_grade + ' / ' + (suggestion.content_max_grade || 14) +
-                ' · Fiabilité estimée : ' + suggestion.confidence),
+            element('p', '', 'Note de forme : ' + suggestion.form_grade + ' / 6 · Fond : ' +
+                suggestion.content_grade + ' / 14 · Fiabilité estimée : ' + suggestion.confidence),
+            element('h4', '', '1. Forme, Présentation & Langue — ' + suggestion.form_grade + ' / 6'),
             element('p', '', suggestion.form_observations),
+            element('p', 'guide-ai-evidence', 'Indice à vérifier : ' + (suggestion.form_evidence || 'non repéré')),
             criteria,
             ...(suggestion.submission_type === 'support_oral' ? [
                 element('h4', '', 'Comparaison avec la fiche écrite'),
@@ -885,16 +884,14 @@
             panel.replaceChildren(element('p', '', 'Analyse du PDF par Google Gemini…'));
             panel.hidden = false;
         }
-        if (submission.submission_type !== 'proposition' && submission.submission_type !== 'support_oral') {
+        if (submission.submission_type !== 'proposition') {
             if (panel) panel.hidden = true;
             if (button) button.disabled = false;
             if (saveButton) saveButton.disabled = false;
-            setStatus(status, 'La correction IA est autorisée uniquement pour les fiches de proposition et les fichette(s) orales.', 'error');
+            setStatus(status, 'La correction IA est réservée exclusivement aux fiches de proposition.', 'error');
             return;
         }
-        setStatus(status, submission.submission_type === 'support_oral'
-            ? 'La fichette orale est transmise à Google Gemini pour préparer une proposition de correction.'
-            : 'La fiche de proposition est transmise à Google Gemini pour préparer une proposition de correction.');
+        setStatus(status, 'La fiche de proposition est transmise à Google Gemini pour préparer une proposition de correction.');
         try {
             const suggestion = await api('/functions/v1/correct-fiche-ai', {
                 method: 'POST',
