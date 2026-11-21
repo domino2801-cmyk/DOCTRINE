@@ -24,12 +24,12 @@
         support_oral: {
             label: 'Fiche support oral',
             weight: 30,
-            formLabel: 'Caractère opératoire et forme',
-            contentLabel: 'Introduction, argumentaire et conclusion',
+            formLabel: 'Caractère opératoire et gabarit 5 cases',
+            contentLabel: 'Introduction, argumentaire ID1/ID2/ID3 et conclusion',
             criteria: [
-                { key: 'operatoire_forme', label: 'Caractère opératoire et forme', max: 6, group: 'form' },
-                { key: 'introduction', label: 'Introduction structurée', max: 4, group: 'content' },
-                { key: 'argumentaire', label: 'Argumentaire de conviction', max: 7, group: 'content' },
+                { key: 'operatoire_forme', label: 'Caractère opératoire et gabarit 5 cases', max: 6, group: 'form' },
+                { key: 'introduction', label: 'Introduction structurée en cinq points', max: 4, group: 'content' },
+                { key: 'argumentaire', label: 'Argumentaire ID1 / ID2 / ID3 et preuves', max: 7, group: 'content' },
                 { key: 'conclusion', label: 'Conclusion', max: 3, group: 'content' }
             ]
         }
@@ -469,16 +469,17 @@
             reviewButton.disabled = !submission.storage_path;
             reviewButton.addEventListener('click', function () { openReview(candidate, submission); });
             actions.appendChild(reviewButton);
-            if (!isOralSupport) {
-                const aiButton = element('button', 'guide-button', 'Correction IA');
-                aiButton.type = 'button';
-                aiButton.disabled = !submission.storage_path;
-                aiButton.title = 'Transmettre le PDF à Google Gemini pour obtenir une proposition à vérifier.';
-                aiButton.addEventListener('click', function () {
-                    runAiCorrection(candidate, submission, aiButton);
-                });
-                actions.appendChild(aiButton);
-            }
+            const aiButton = element('button', 'guide-button',
+                isOralSupport ? 'Correction IA — Fichette orale' : 'Correction IA — Proposition');
+            aiButton.type = 'button';
+            aiButton.disabled = !submission.storage_path;
+            aiButton.title = isOralSupport
+                ? 'Évaluer la fichette selon la grille orale et la comparer à la fiche écrite archivée, si disponible.'
+                : 'Transmettre la fiche de proposition à Google Gemini pour obtenir une proposition à vérifier.';
+            aiButton.addEventListener('click', function () {
+                runAiCorrection(candidate, submission, aiButton);
+            });
+            actions.appendChild(aiButton);
             card.appendChild(actions);
             container.appendChild(card);
         });
@@ -779,14 +780,18 @@
     function formatAiFeedback(suggestion) {
         const lines = [
             'Proposition Gemini — à vérifier',
-            'Forme : ' + suggestion.form_grade + ' / 6 — ' + suggestion.form_observations,
+            (suggestion.form_label || 'Forme') + ' : ' + suggestion.form_grade + ' / ' +
+                (suggestion.form_max_grade || 6) + ' — ' + suggestion.form_observations,
             ...suggestion.criteria.map(function (criterion) {
                 return criterion.label + ' : ' + criterion.grade + ' / ' + criterion.max_grade +
                     ' — ' + criterion.observation;
             }),
             'Points forts : ' + (suggestion.strengths.length ? suggestion.strengths.join('; ') : 'non précisés'),
             'Axes de progrès : ' + (suggestion.improvements.length ? suggestion.improvements.join('; ') : 'non précisés'),
-            'Synthèse : ' + suggestion.overall_comment
+            'Synthèse : ' + suggestion.overall_comment,
+            ...(suggestion.submission_type === 'support_oral'
+                ? ['Comparaison avec la fiche écrite : ' + (suggestion.anti_copy_analysis || 'Non renseignée')]
+                : [])
         ];
         return lines.join('\n');
     }
@@ -804,7 +809,9 @@
         if (!panel) return;
         panel.replaceChildren();
         panel.hidden = false;
-        panel.appendChild(element('h3', '', 'Proposition de correction IA'));
+        panel.appendChild(element('h3', '', suggestion.submission_type === 'support_oral'
+            ? 'Proposition de correction IA — Fichette orale'
+            : 'Proposition de correction IA — Fiche de proposition'));
 
         if (!suggestion.readable) {
             panel.appendChild(element('p', 'guide-ai-disclaimer',
@@ -827,10 +834,18 @@
         panel.append(
             element('p', 'guide-ai-disclaimer',
                 'Suggestion non enregistrée. Vérifiez la fiche et les notes avant de valider.'),
-            element('p', '', 'Forme : ' + suggestion.form_grade + ' / 6 · Fond : ' +
-                suggestion.content_grade + ' / 14 · Fiabilité estimée : ' + suggestion.confidence),
+            element('p', '', (suggestion.form_label || 'Forme') + ' : ' + suggestion.form_grade +
+                ' / ' + (suggestion.form_max_grade || 6) + ' · Fond : ' +
+                suggestion.content_grade + ' / ' + (suggestion.content_max_grade || 14) +
+                ' · Fiabilité estimée : ' + suggestion.confidence),
             element('p', '', suggestion.form_observations),
             criteria,
+            ...(suggestion.submission_type === 'support_oral' ? [
+                element('h4', '', 'Comparaison avec la fiche écrite'),
+                element('p', 'guide-ai-disclaimer', suggestion.reference_written_found
+                    ? (suggestion.anti_copy_analysis || 'Comparaison réalisée ; aucun détail fourni.')
+                    : 'Aucune fiche écrite archivée exploitable : la comparaison anti-copier-coller n’a pas pu être réalisée.')
+            ] : []),
             element('h4', '', 'Points forts'),
             element('p', '', suggestion.strengths.length ? suggestion.strengths.join(' · ') : 'Non précisés'),
             element('h4', '', 'Axes de progrès'),
@@ -868,7 +883,9 @@
             panel.replaceChildren(element('p', '', 'Analyse du PDF par Google Gemini…'));
             panel.hidden = false;
         }
-        setStatus(status, 'La fiche est transmise à Google Gemini pour préparer une proposition de correction.');
+        setStatus(status, submission.submission_type === 'support_oral'
+            ? 'La fichette est transmise à Google Gemini. La fiche écrite du même dossier sera recherchée pour comparaison si elle est archivée.'
+            : 'La fiche de proposition est transmise à Google Gemini pour préparer une proposition de correction.');
         try {
             const suggestion = await api('/functions/v1/correct-fiche-ai', {
                 method: 'POST',
@@ -877,7 +894,12 @@
             if (generation !== aiCorrectionGeneration || !dialog.open ||
                 document.getElementById('guideReviewSubmissionId').value !== submission.id) return;
             if (suggestion.readable) {
-                const formInput = document.querySelector('[data-rubric-score="form"]');
+                const formCriterion = rubricFor(submission).criteria.find(function (criterion) {
+                    return criterion.group === 'form';
+                });
+                const formInput = formCriterion
+                    ? document.querySelector('[data-rubric-score="' + formCriterion.key + '"]')
+                    : null;
                 if (formInput) formInput.value = String(suggestion.form_grade);
                 rubricFor(submission).criteria.filter(function (criterion) {
                     return criterion.group === 'content';
@@ -891,7 +913,7 @@
             }
             renderAiCorrection(suggestion);
             setStatus(status, suggestion.readable
-                ? 'Proposition générée. Vérifiez les critères et confirmez ou modifiez les notes.'
+                ? 'Proposition générée. Vérifiez les critères, la comparaison éventuelle et confirmez ou modifiez les notes.'
                 : 'Le PDF ne peut pas être évalué automatiquement. Vérifiez-le manuellement.',
             suggestion.readable ? 'success' : 'error');
         } catch (error) {
