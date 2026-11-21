@@ -272,7 +272,9 @@ export async function createOfficialBm4Pdf(report, options = {}) {
     setFieldText('points_forts', formatDebriefSection(report.strengths) || 'Non renseignés dans les observations validées.');
     setFieldText('axes_amelioration', formatDebriefSection(report.improvements) || 'Non renseignés dans les observations validées.');
 
-    // Coche les cases AcroForm déjà présentes dans la grille, sans ajouter de page.\n    applyJuryChecklist(form, proposition, 'proposition');\n    applyJuryChecklist(form, oral, 'support_oral');
+    // Coche les cases AcroForm déjà présentes dans la grille, sans ajouter de page.
+    applyJuryChecklist(form, proposition, 'proposition');
+    applyJuryChecklist(form, oral, 'support_oral');
 
     form.updateFieldAppearances(measureFont);
     if (options.flatten !== false) form.flatten();
