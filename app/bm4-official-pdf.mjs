@@ -129,6 +129,16 @@ function safeText(form, name, value, measureFont) {
                 minSize: Math.min(5, baseSize)
             });
 
+            // Le formulaire officiel contient des champs dont /DA existe
+            // mais ne comporte aucun opérateur Tf. pdf-lib ne peut pas
+            // appliquer setFontSize() dans ce cas : on initialise explicitement
+            // l'apparence avec la police intégrée avant de fixer la taille.
+            if (!appearanceMatch) {
+                if (typeof field.acroField.setDefaultAppearance !== 'function') {
+                    throw new Error('Impossible d’initialiser l’apparence typographique du champ (méthode setDefaultAppearance indisponible).');
+                }
+                field.acroField.setDefaultAppearance(`/${measureFont.name} ${baseSize} Tf 0 g`);
+            }
             field.setFontSize(fontSize);
         } else if (Number.isFinite(originalSize) && originalSize > 0) {
             field.setFontSize(originalSize);
