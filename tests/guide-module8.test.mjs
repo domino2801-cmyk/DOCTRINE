@@ -398,3 +398,42 @@ test("l’export final candidat est distinct et conditionné à la validation de
     assert.match(script, /Évaluation finale BM4 exportée/);
     assert.match(script, /guideExportFinalCandidate'\)\?\.addEventListener\('click', exportFinalCandidateEvaluation\)/);
 });
+
+test("les observations IA de la fichette affichent réellement les quatre critères, dont opératoire /6", () => {
+    const helperMatch = script.match(/function aiCriteriaForDisplay\\(suggestion\\) \\{[\\s\\S]*?\\n    \\}/);
+    assert.ok(helperMatch, "le helper utilisé par le rendu des observations IA doit exister");
+    const buildCriteria = vm.runInNewContext('(' + helperMatch[0].replace(/^function aiCriteriaForDisplay\\(suggestion\\) /, 'function ') + ')');
+    const suggestion = {
+        submission_type: "support_oral",
+        form_grade: 5,
+        form_observations: "Les cinq cases sont présentes, mais deux actions manquent de responsables.",
+        form_evidence: "Case 3 : absence de responsable désigné.",
+        oral_operatoire: {
+            label: "Caractère opératoire et gabarit 5 cases",
+            grade: 5,
+            max_grade: 6,
+            observation: "Les cinq cases sont présentes, mais deux actions manquent de responsables.",
+            evidence: "Case 3 : absence de responsable désigné."
+        },
+        criteria: [
+            { label: "Introduction structurée en cinq points", grade: 3, max_grade: 4, observation: "Introduction incomplète.", evidence: "Page 1." },
+            { label: "Argumentaire ID1 / ID2 / ID3 et preuves", grade: 5, max_grade: 7, observation: "ID2 manque de preuve.", evidence: "Case 4." },
+            { label: "Conclusion", grade: 2, max_grade: 3, observation: "Conclusion présente.", evidence: "Case 5." }
+        ]
+    };
+    const displayed = buildCriteria(suggestion);
+    assert.equal(displayed.length, 4);
+    assert.match(displayed[0].label, /Caractère opératoire/);
+    assert.equal(displayed[0].grade, 5);
+    assert.equal(displayed[0].max_grade, 6);
+    assert.match(displayed[0].observation, /responsables/);
+    assert.match(displayed[0].evidence, /Case 3/);
+    assert.deepEqual(Array.from(displayed, item => item.label), [
+        "Caractère opératoire et gabarit 5 cases",
+        "Introduction structurée en cinq points",
+        "Argumentaire ID1 / ID2 / ID3 et preuves",
+        "Conclusion"
+    ]);
+    assert.match(script, /aiCriteriaForDisplay\\(suggestion\\)\\.forEach/);
+    assert.match(script, /criterion\\.observation \\|\\| 'Observation non renseignée\\.'/);
+});
