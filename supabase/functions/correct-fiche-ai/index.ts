@@ -453,10 +453,9 @@ async function getSubjectReferenceDocuments(dossier: number): Promise<DriveRefer
     const visited = new Set<string>();
     let totalBytes = 0;
     async function walk(folderId: string, depth: number): Promise<void> {
-        if (depth > 5 || collected.length >= MAX_REFERENCE_FILES) return;
+        if (depth > 5) throw new Error("Le dossier documentaire comporte une arborescence trop profonde pour garantir un contrôle complet.");
         const children = await listDriveChildren(folderId, token);
         for (const child of children) {
-            if (collected.length >= MAX_REFERENCE_FILES || totalBytes >= MAX_REFERENCE_TOTAL_BYTES) break;
             const childId = String(child.id || "");
             if (!childId || visited.has(childId)) continue;
             visited.add(childId);
@@ -466,7 +465,13 @@ async function getSubjectReferenceDocuments(dossier: number): Promise<DriveRefer
             }
             const reference = await downloadDriveReference(child, token);
             if (!reference) continue;
-            if (totalBytes + reference.bytes.length > MAX_REFERENCE_TOTAL_BYTES) continue;
+            if (collected.length >= MAX_REFERENCE_FILES) {
+                throw new Error("Le dossier contient plus de " + MAX_REFERENCE_FILES +
+                    " pièces exploitables. Réduisez ou répartissez les documents pour éviter une analyse incomplète.");
+            }
+            if (totalBytes + reference.bytes.length > MAX_REFERENCE_TOTAL_BYTES) {
+                throw new Error("Les pièces de référence dépassent la limite technique de 15 Mo. Le contrôle est interrompu pour ne pas analyser un dossier incomplet.");
+            }
             totalBytes += reference.bytes.length;
             collected.push(reference);
         }
