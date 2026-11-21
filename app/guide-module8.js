@@ -777,19 +777,41 @@
         return generation;
     }
 
+    function aiCriteriaForDisplay(suggestion) {
+        const criteria = Array.isArray(suggestion.criteria) ? suggestion.criteria.slice() : [];
+        if (suggestion.submission_type !== 'support_oral') return criteria;
+
+        const operatoire = suggestion.oral_operatoire || {
+            label: 'Caractère opératoire et respect du gabarit en 5 cases',
+            grade: suggestion.form_grade,
+            max_grade: 6,
+            observation: suggestion.form_observations,
+            evidence: suggestion.form_evidence
+        };
+        const alreadyIncluded = criteria.some(function (criterion) {
+            return criterion.label === operatoire.label ||
+                criterion.label === 'Caractère opératoire et gabarit 5 cases' ||
+                criterion.label === 'Caractère opératoire et respect du gabarit en 5 cases';
+        });
+        return alreadyIncluded ? criteria : [operatoire].concat(criteria);
+    }
+
     function formatAiFeedback(suggestion) {
+        const isOral = suggestion.submission_type === 'support_oral';
         const lines = [
             'Proposition Gemini — à vérifier',
-            '1. Forme, Présentation & Langue : ' + suggestion.form_grade + ' / 6 — ' + suggestion.form_observations +
-                ' — Indice : ' + (suggestion.form_evidence || 'non repéré'),
-            ...suggestion.criteria.map(function (criterion) {
+            ...(isOral ? [] : [
+                '1. Forme, Présentation & Langue : ' + suggestion.form_grade + ' / 6 — ' + suggestion.form_observations +
+                    ' — Indice : ' + (suggestion.form_evidence || 'non repéré')
+            ]),
+            ...aiCriteriaForDisplay(suggestion).map(function (criterion) {
                 return criterion.label + ' : ' + criterion.grade + ' / ' + criterion.max_grade +
-                    ' — ' + criterion.observation;
+                    ' — ' + criterion.observation + ' — Indice : ' + (criterion.evidence || 'non repéré');
             }),
             'Points forts : ' + (suggestion.strengths.length ? suggestion.strengths.join('; ') : 'non précisés'),
             'Axes de progrès : ' + (suggestion.improvements.length ? suggestion.improvements.join('; ') : 'non précisés'),
             'Synthèse : ' + suggestion.overall_comment,
-            ...(suggestion.submission_type === 'support_oral'
+            ...(isOral
                 ? ['Comparaison avec la fiche écrite : ' + (suggestion.anti_copy_analysis || 'Non renseignée')]
                 : [])
         ];
@@ -823,11 +845,11 @@
         }
 
         const criteria = element('ul', 'guide-ai-criteria');
-        suggestion.criteria.forEach(function (criterion) {
+        aiCriteriaForDisplay(suggestion).forEach(function (criterion) {
             const item = element('li');
             item.appendChild(element('strong', '', criterion.label + ' — ' +
                 criterion.grade + ' / ' + criterion.max_grade));
-            item.appendChild(element('p', '', criterion.observation));
+            item.appendChild(element('p', '', criterion.observation || 'Observation non renseignée.'));
             if (criterion.evidence) {
                 item.appendChild(element('p', '', 'Indice à vérifier : ' + criterion.evidence));
             }
@@ -840,11 +862,11 @@
                 suggestion.form_grade + ' / 6 · Autres critères : ' +
                 suggestion.content_grade + ' / ' + (suggestion.content_max_grade || 14) +
                 ' · Fiabilité estimée : ' + suggestion.confidence),
-            element('h4', '', (suggestion.submission_type === 'support_oral'
-                ? '1. Caractère opératoire et respect du gabarit en 5 cases'
-                : '1. Forme, Présentation & Langue') + ' — ' + suggestion.form_grade + ' / 6'),
-            element('p', '', suggestion.form_observations),
-            element('p', 'guide-ai-evidence', 'Indice à vérifier : ' + (suggestion.form_evidence || 'non repéré')),
+            ...(suggestion.submission_type === 'support_oral' ? [] : [
+                element('h4', '', '1. Forme, Présentation & Langue — ' + suggestion.form_grade + ' / 6'),
+                element('p', '', suggestion.form_observations),
+                element('p', 'guide-ai-evidence', 'Indice à vérifier : ' + (suggestion.form_evidence || 'non repéré'))
+            ]),
             criteria,
             ...(suggestion.submission_type === 'support_oral' ? [
                 element('h4', '', 'Comparaison avec la fiche écrite'),
