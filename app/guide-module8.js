@@ -11,10 +11,10 @@
         proposition: {
             label: 'Fiche de proposition',
             weight: 70,
-            formLabel: 'Forme, présentation et langue',
+            formLabel: '1. Forme, Présentation & Langue',
             contentLabel: 'Introduction, problématique, solutions et avis',
             criteria: [
-                { key: 'form', label: 'Forme, présentation et langue', max: 6, group: 'form' },
+                { key: 'form', label: '1. Forme, Présentation & Langue', max: 6, group: 'form' },
                 { key: 'introduction', label: 'Introduction', max: 3, group: 'content' },
                 { key: 'problematique_donnees', label: 'Problématique et données', max: 3, group: 'content' },
                 { key: 'solutions', label: 'Solutions réalisables', max: 4, group: 'content' },
