@@ -475,7 +475,13 @@ test("les points clés du jury sont cochables manuellement et conservés pour le
     assert.match(script, /o_five_cases/);
     assert.match(script, /o_id123/);
     assert.match(script, /function renderJuryChecklist\(submission, review\)/);
-    assert.match(script, /input\.checked = saved\[item\.key\] === true/);
+    assert.match(script, /const JURY_CHECKLIST_SCORE_MAP = \{/);
+    assert.match(script, /function automaticJuryChecklist\(submission, rubricScores\)/);
+    assert.match(script, /score >= criterion\.max \* 0\.75/);
+    assert.match(script, /function syncAutomaticJuryChecklist\(\)/);
+    assert.match(script, /input\.dataset\.juryManual === 'true'/);
+    assert.match(script, /input\.dataset\.juryManual = 'true'/);
+    assert.match(script, /input\.addEventListener\('input', syncAutomaticJuryChecklist\)/);
     assert.match(script, /function collectJuryChecklist\(\)/);
     assert.match(script, /jury_checklist: juryChecklist/);
     assert.match(script, /jury_checklist: savedRow\?\.jury_checklist \?\? juryChecklist/);
@@ -485,3 +491,14 @@ test("les points clés du jury sont cochables manuellement et conservés pour le
     assert.match(styles, /\.guide-jury-check-item input\[type="checkbox"\]/);
 });
 
+
+test("les cases du jury sont précochées selon les notes et restent modifiables par le guide", () => {
+    assert.match(script, /form: \['p_form_pages', 'p_form_header', 'p_form_references', 'p_form_style'\]/);
+    assert.match(script, /introduction: \['p_intro_context', 'p_intro_solution', 'p_intro_plan'\]/);
+    assert.match(script, /operatoire_forme: \['o_operatoire', 'o_five_cases', 'o_readability'\]/);
+    assert.match(script, /argumentaire: \['o_id123', 'o_demonstration', 'o_proofs', 'o_fact_analysis'\]/);
+    assert.match(script, /hasSavedChecklist \? saved : automaticJuryChecklist/);
+    assert.match(script, /if \(input\.dataset\.juryManual === 'true'\) return/);
+    assert.match(script, /input\.addEventListener\('change', function \(\)/);
+    assert.match(script, /jury_checklist: juryChecklist/);
+});
