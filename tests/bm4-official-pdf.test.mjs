@@ -2,11 +2,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
-import { PDFDocument, StandardFonts } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { createOfficialBm4Pdf } from "../app/bm4-official-pdf.mjs";
 
 const templateBytes = await readFile(new URL("../app/grille-evaluation-synthese-bm4-interactive.pdf", import.meta.url));
-const PDFLib = { PDFDocument, StandardFonts };
+const PDFLib = { PDFDocument, StandardFonts, rgb };
 
 const report = {
     candidateName: "Caporal Élodie Martin",
@@ -21,6 +21,10 @@ const report = {
         {
             type: "proposition",
             grade: 15.5,
+            juryChecklist: [
+                { key: "p_form_pages", label: "La fiche respecte le calibrage de 4 pages maximum.", checked: true },
+                { key: "p_form_header", label: "L’en-tête comporte le timbre, le lieu et la date.", checked: false }
+            ],
             rubricScores: {
                 form: 5.5,
                 introduction: 2.5,
@@ -46,6 +50,9 @@ const report = {
         {
             type: "support_oral",
             grade: 16,
+            juryChecklist: [
+                { key: "o_operatoire", label: "Le support est immédiatement exploitable à l’oral.", checked: true }
+            ],
             rubricScores: {
                 operatoire_forme: 5.5,
                 introduction: 3,
@@ -133,6 +140,7 @@ test("génère réellement la grille BM4 et vérifie les champs, notes et observ
     assert.match(value("points_forts"), /FICHETTE ORALE/);
     assert.ok(value("points_forts").indexOf("FICHE DE PROPOSITION") < value("points_forts").indexOf("FICHETTE ORALE"));
     assert.equal(value("axes_amelioration"), report.improvements);
+    assert.equal(reopened.getPageCount(), 3, "le PDF doit ajouter une page de points clés pour chaque type de fiche évalué");
 
     // Contrôle aussi le mode réellement utilisé en production : PDF aplati,
     // lisible sans formulaire interactif et sans champs AcroForm résiduels.
