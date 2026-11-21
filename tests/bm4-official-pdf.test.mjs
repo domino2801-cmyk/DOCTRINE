@@ -141,7 +141,7 @@ test("signale explicitement une bibliothèque PDF absente", async () => {
 test("signale un champ absent au lieu de poursuivre avec un PDF incomplet", async () => {
     const brokenTemplate = await PDFDocument.create();
     const form = brokenTemplate.getForm();
-    form.addTextField("candidat_nom");
+    form.createTextField("candidat_nom");
     const brokenBytes = await brokenTemplate.save();
 
     await assert.rejects(
