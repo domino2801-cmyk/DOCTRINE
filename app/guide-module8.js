@@ -473,9 +473,7 @@
                 isOralSupport ? 'Correction IA — Fichette orale' : 'Correction IA — Proposition');
             aiButton.type = 'button';
             aiButton.disabled = !submission.storage_path;
-            aiButton.title = isOralSupport
-                ? 'Évaluer la fichette selon la grille orale et la comparer à la fiche écrite archivée, si disponible.'
-                : 'Transmettre la fiche de proposition à Google Gemini pour obtenir une proposition à vérifier.';
+            aiButton.title = 'Analyser le PDF avec Google Gemini, puis faire vérifier et valider la correction par l’Officier Guide.';
             aiButton.addEventListener('click', function () {
                 runAiCorrection(candidate, submission, aiButton);
             });
@@ -764,11 +762,13 @@
         }
         document.getElementById('guideReviewDecision').value = review.status === 'a_reprendre' ? 'a_reprendre' : 'valide';
         document.getElementById('guideReviewComment').value = review.comment || '';
-        savedReviewReport = review.reviewed_at
+        savedReviewReport = review.status === 'valide' && review.reviewed_at
             ? createReviewReport(candidate, submission, review, review.reviewed_at)
             : null;
         const downloadButton = document.getElementById('guideDownloadReview');
-        if (downloadButton) downloadButton.hidden = !savedReviewReport;
+        if (downloadButton) downloadButton.hidden = !savedReviewReport || !savedReviewReport.evaluations.length;
+        const finalExportButton = document.getElementById('guideExportFinalCandidate');
+        if (finalExportButton) finalExportButton.hidden = !savedReviewReport || savedReviewReport.weightedGrade === null;
         const saveButton = document.querySelector('#guideReviewForm button[type="submit"]');
         if (saveButton) saveButton.disabled = false;
         updateFinalGrade();
@@ -801,6 +801,8 @@
         savedReviewReport = null;
         const downloadButton = document.getElementById('guideDownloadReview');
         if (downloadButton) downloadButton.hidden = true;
+        const finalExportButton = document.getElementById('guideExportFinalCandidate');
+        if (finalExportButton) finalExportButton.hidden = true;
     }
 
     function renderAiCorrection(suggestion) {
@@ -883,8 +885,15 @@
             panel.replaceChildren(element('p', '', 'Analyse du PDF par Google Gemini…'));
             panel.hidden = false;
         }
+        if (submission.submission_type !== 'proposition' && submission.submission_type !== 'support_oral') {
+            if (panel) panel.hidden = true;
+            if (button) button.disabled = false;
+            if (saveButton) saveButton.disabled = false;
+            setStatus(status, 'La correction IA est autorisée uniquement pour les fiches de proposition et les fichette(s) orales.', 'error');
+            return;
+        }
         setStatus(status, submission.submission_type === 'support_oral'
-            ? 'La fichette est transmise à Google Gemini. La fiche écrite du même dossier sera recherchée pour comparaison si elle est archivée.'
+            ? 'La fichette orale est transmise à Google Gemini pour préparer une proposition de correction.'
             : 'La fiche de proposition est transmise à Google Gemini pour préparer une proposition de correction.');
         try {
             const suggestion = await api('/functions/v1/correct-fiche-ai', {
@@ -938,38 +947,61 @@
             : 'À compléter / 20';
     }
 
+    function extractFeedbackSection(comment, label, nextLabels) {
+        const source = String(comment || '');
+        const startPattern = new RegExp('(?:^|\n)' + label + '\\s*:\\s*', 'i');
+        const match = startPattern.exec(source);
+        if (!match) return '';
+        const tail = source.slice(match.index + match[0].length);
+        const stop = new RegExp('\n(?:' + nextLabels.join('|') + ')\\s*:', 'i').exec(tail);
+        return (stop ? tail.slice(0, stop.index) : tail).trim();
+    }
+
+    function criterionObservation(comment, label) {
+        const line = String(comment || '').split(/\r?\n/).find(function (item) {
+            return item.trim().toLowerCase().startsWith(String(label || '').trim().toLowerCase() + ' :');
+        });
+        if (!line) return '';
+        const separator = line.indexOf(' — ');
+        return separator >= 0 ? line.slice(separator + 3).trim() : '';
+    }
+
     function createReviewReport(candidate, submission, review, reviewedAt) {
         const guideBadge = document.getElementById('guideIdentityBadge');
-        const rubric = rubricFor(submission);
-        const submissions = candidate.doctrine?.submissions || [];
-        const weightedGrade = weightedSynthesisGrade(submissions, submission.dossier, submission, review);
+        const submissions = (candidate.doctrine?.submissions || []).filter(function (item) {
+            return String(item.dossier) === String(submission.dossier) &&
+                (item.submission_type === 'proposition' || item.submission_type === 'support_oral');
+        });
+        const evaluations = submissions.map(function (item) {
+            const saved = item.id === submission.id ? review : (item.reviews || [])[0];
+            if (!saved || saved.status !== 'valide' || reviewGrade(saved) === null) return null;
+            const rubric = rubricFor(item);
+            return {
+                type: item.submission_type,
+                label: rubric.label,
+                grade: reviewGrade(saved),
+                rubricScores: saved.rubric_scores || {},
+                criteria: rubric.criteria,
+                comment: saved.comment || '',
+                reviewedAt: saved.reviewed_at || reviewedAt || new Date().toISOString()
+            };
+        }).filter(Boolean);
+        const proposition = evaluations.find(function (item) { return item.type === 'proposition'; });
+        const oral = evaluations.find(function (item) { return item.type === 'support_oral'; });
+        const weightedGrade = proposition && oral
+            ? Math.round((proposition.grade * 0.7 + oral.grade * 0.3) * 100) / 100
+            : null;
+        const combinedComments = evaluations.map(function (item) { return item.comment; }).filter(Boolean).join('\n');
         return {
             candidateName: candidateName(candidate.candidate),
+            specialty: candidate.candidate.specialty || candidate.candidate.specialty_label || '',
             dossier: String(submission.dossier),
-            submissionLabel: rubric.label,
-            weightPercent: rubric.weight,
-            formLabel: rubric.formLabel,
-            contentLabel: rubric.contentLabel,
+            subject: submission.subject || submission.title || 'Évaluation BM4',
             guideName: guideBadge ? guideBadge.textContent.replace(/^Guide\s*:\s*/i, '').trim() : 'Non renseigné',
-            formGrade: Number(review.form_grade).toLocaleString('fr-FR', { maximumFractionDigits: 2 }),
-            contentGrade: Number(review.content_grade).toLocaleString('fr-FR', { maximumFractionDigits: 2 }),
-            finalGrade: Number(review.grade ?? (Number(review.form_grade) + Number(review.content_grade)))
-                .toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-            weightedGrade: weightedGrade === null
-                ? ''
-                : weightedGrade.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-            criteria: rubric.criteria.filter(function (criterion) {
-                return Number.isFinite(Number(review.rubric_scores?.[criterion.key]));
-            }).map(function (criterion) {
-                return {
-                    label: criterion.label,
-                    grade: Number(review.rubric_scores[criterion.key]).toLocaleString('fr-FR', { maximumFractionDigits: 2 }),
-                    maxGrade: criterion.max
-                };
-            }),
-            decision: review.status === 'a_reprendre' ? 'À reprendre' : 'Validé',
-            comment: review.comment || '',
-            reviewedAt: formatDate(reviewedAt),
+            evaluations: evaluations,
+            weightedGrade: weightedGrade,
+            strengths: extractFeedbackSection(combinedComments, 'Points forts', ['Axes de progrès', 'Axes d’amélioration']),
+            improvements: extractFeedbackSection(combinedComments, 'Axes de progrès', ['Points forts']),
             exportedAt: formatDate(new Date().toISOString())
         };
     }
@@ -980,23 +1012,63 @@
         if (!savedReviewReport || !button) return;
         button.disabled = true;
         try {
-            const { createEvaluationPdf } = await import('./evaluation-report.mjs');
-            const pdf = createEvaluationPdf(savedReviewReport);
+            if (!savedReviewReport.evaluations.length) {
+                throw new Error('Aucune évaluation validée par l’Officier Guide à exporter.');
+            }
+            const { createOfficialBm4Pdf } = await import('./bm4-official-pdf.mjs');
+            const pdf = await createOfficialBm4Pdf(savedReviewReport);
+            const url = URL.createObjectURL(pdf);
+            const link = element('a');
+            const filename = savedReviewReport.candidateName
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '') || 'candidat';
+            const suffix = savedReviewReport.weightedGrade === null
+                ? (savedReviewReport.evaluations[0].type === 'proposition' ? 'Ecrit_70' : 'Oral_30')
+                : 'Complet_70_30';
+            link.href = url;
+            link.download = 'Grille_BM4_Dossier_' + filename + '_' + savedReviewReport.dossier + '_' + suffix + '.pdf';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+            setStatus(status, 'Grille BM4 officielle téléchargée.', 'success');
+        } catch (error) {
+            console.error('Génération de la grille BM4 officielle impossible.', error);
+            setStatus(status, error.message || 'Génération de la grille BM4 impossible.', 'error');
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    async function exportFinalCandidateEvaluation() {
+        const button = document.getElementById('guideExportFinalCandidate');
+        const status = document.getElementById('guideReviewStatus');
+        if (!savedReviewReport || !button) return;
+        if (savedReviewReport.weightedGrade === null ||
+            !savedReviewReport.evaluations.some(function (item) { return item.type === 'proposition'; }) ||
+            !savedReviewReport.evaluations.some(function (item) { return item.type === 'support_oral'; })) {
+            setStatus(status, 'L’évaluation finale nécessite la validation de la fiche de proposition et de la fichette orale.', 'error');
+            return;
+        }
+        button.disabled = true;
+        try {
+            const { createOfficialBm4Pdf } = await import('./bm4-official-pdf.mjs');
+            const pdf = await createOfficialBm4Pdf(savedReviewReport);
             const url = URL.createObjectURL(pdf);
             const link = element('a');
             const filename = savedReviewReport.candidateName
                 .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
                 .replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '') || 'candidat';
             link.href = url;
-            link.download = `evaluation-${filename}-dossier-${savedReviewReport.dossier}.pdf`;
+            link.download = 'Evaluation_finale_BM4_' + filename + '_Dossier_' + savedReviewReport.dossier + '.pdf';
             document.body.appendChild(link);
             link.click();
             link.remove();
             setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
-            setStatus(status, 'Compte rendu téléchargé.', 'success');
+            setStatus(status, 'Évaluation finale BM4 exportée. Le PDF peut être transmis au candidat.', 'success');
         } catch (error) {
-            console.error('Génération du compte rendu PDF impossible.', error);
-            setStatus(status, 'Génération du compte rendu PDF impossible.', 'error');
+            console.error('Export de l’évaluation finale impossible.', error);
+            setStatus(status, error.message || 'Export de l’évaluation finale impossible.', 'error');
         } finally {
             button.disabled = false;
         }
@@ -1037,16 +1109,30 @@
             const savedRow = Array.isArray(savedReview) ? savedReview[0] : null;
             if (contextGeneration === reviewContextGeneration && editGeneration === reviewEditGeneration &&
                 activeReviewCandidate && activeReviewSubmission) {
-                savedReviewReport = createReviewReport(activeReviewCandidate, activeReviewSubmission, {
+                const finalReview = {
                     form_grade: savedRow?.form_grade ?? totals.formGrade,
                     content_grade: savedRow?.content_grade ?? totals.contentGrade,
                     grade: savedRow?.grade ?? totals.grade,
                     rubric_scores: savedRow?.rubric_scores ?? totals.rubricScores,
                     status: savedRow?.status ?? decision,
-                    comment: savedRow?.comment ?? comment
-                }, savedRow?.reviewed_at || new Date().toISOString());
-                document.getElementById('guideDownloadReview').hidden = false;
-                setStatus(status, 'Évaluation enregistrée.', 'success');
+                    comment: savedRow?.comment ?? comment,
+                    reviewed_at: savedRow?.reviewed_at || new Date().toISOString()
+                };
+                savedReviewReport = finalReview.status === 'valide'
+                    ? createReviewReport(activeReviewCandidate, activeReviewSubmission, finalReview, finalReview.reviewed_at)
+                    : null;
+                const downloadButton = document.getElementById('guideDownloadReview');
+                if (downloadButton) {
+                    downloadButton.hidden = !savedReviewReport || !savedReviewReport.evaluations.length;
+                }
+                const finalExportButton = document.getElementById('guideExportFinalCandidate');
+                if (finalExportButton) {
+                    finalExportButton.hidden = !savedReviewReport || savedReviewReport.weightedGrade === null;
+                }
+                setStatus(status, finalReview.status === 'valide'
+                    ? 'Évaluation validée et enregistrée.'
+                    : 'Évaluation enregistrée comme « à reprendre ». Aucun PDF officiel ne peut être édité avant validation.', 'success');
+
             } else if (contextGeneration === reviewContextGeneration) {
                 setStatus(status, 'Évaluation enregistrée. Enregistrez les modifications en cours pour télécharger le compte rendu.', 'success');
             }
@@ -1156,6 +1242,7 @@
         document.getElementById('guideAdmissionForm')?.addEventListener('submit', saveAdmission);
         document.getElementById('guideReviewForm')?.addEventListener('submit', saveReview);
         document.getElementById('guideDownloadReview')?.addEventListener('click', downloadReviewReport);
+        document.getElementById('guideExportFinalCandidate')?.addEventListener('click', exportFinalCandidateEvaluation);
         document.getElementById('guideReviewForm')?.addEventListener('input', function (event) {
             if (event.target.id === 'guideReviewSubmissionId') return;
             markReviewDirty();

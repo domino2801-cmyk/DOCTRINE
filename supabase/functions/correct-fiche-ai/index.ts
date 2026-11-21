@@ -310,7 +310,9 @@ Deno.serve(async (request) => {
         }
         if (!submission) return jsonResponse({ error: "Fiche introuvable." }, 404);
         if (submission.submission_type !== "proposition" && submission.submission_type !== "support_oral") {
-            return jsonResponse({ error: "Type de fiche non pris en charge pour la correction IA." }, 400);
+            return jsonResponse({
+                error: "La correction IA est autorisée uniquement pour les fiches de proposition et les fichette(s) orales."
+            }, 400);
         }
         const isOral = submission.submission_type === "support_oral";
         if (!submission.storage_path) return jsonResponse({ error: "Cette fiche n’a pas de PDF archivé." }, 409);
@@ -488,10 +490,21 @@ Deno.serve(async (request) => {
             const responseDetail = await geminiResponse.text().catch(() => "");
             console.error("Gemini correction fallback returned HTTP", geminiResponse.status,
                 "api:", geminiApi, "model:", model, "detail:", responseDetail.slice(0, 2000));
+            let providerMessage = "";
+            try {
+                const providerError = JSON.parse(responseDetail);
+                providerMessage = typeof providerError?.error?.message === "string"
+                    ? providerError.error.message.slice(0, 500)
+                    : "";
+            } catch {
+                providerMessage = responseDetail.replace(/\s+/g, " ").slice(0, 500);
+            }
             return jsonResponse({
                 error: geminiResponse.status === 429
                     ? "Quota Gemini atteint. Réessayez plus tard."
-                    : "Gemini a refusé l’analyse. Vérifiez la configuration du modèle."
+                    : "Gemini a refusé l’analyse (HTTP " + geminiResponse.status +
+                        ", modèle " + model + "). " +
+                        (providerMessage || "Vérifiez la clé API, les autorisations et le modèle configuré.")
             }, geminiResponse.status === 429 ? 429 : 502);
         }
 

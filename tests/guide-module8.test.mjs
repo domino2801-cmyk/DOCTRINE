@@ -130,9 +130,9 @@ test("le compte rendu d’évaluation génère un PDF rempli avec des pages inde
         assert.ok(pdf.startsWith(`${index} 0 obj\n`, offset), `object ${index} has a valid cross-reference offset`);
     }
     assert.match(page, /id="guideDownloadReview"/);
-    assert.match(page, /id="guideDownloadReview"[^>]*>Télécharger le compte rendu PDF/);
+    assert.match(page, /id="guideDownloadReview"[^>]*>Télécharger la grille BM4 officielle/);
     assert.match(page, /id="guideDownloadReview"[^>]*hidden/);
-    assert.match(script, /document\.getElementById\('guideDownloadReview'\)\.hidden = false/);
+    assert.match(script, /document\.getElementById\('guideDownloadReview'\)\.hidden =/);
     assert.match(script, /function markReviewDirty\(\)[\s\S]*savedReviewReport = null/);
     const multiPageBlob = createEvaluationPdf({
         candidateName: "Caporal Élodie Martin",
@@ -149,6 +149,7 @@ test("le compte rendu d’évaluation génère un PDF rempli avec des pages inde
     const multiPagePdf = Buffer.from(await multiPageBlob.arrayBuffer()).toString("latin1");
     assert.match(multiPagePdf, /\/Count 2/);
 });
+
 
 test("l’extracteur Gemini lit les réponses Interactions actuelles et les anciens formats", () => {
     const json = '{"readable":true}';
@@ -174,12 +175,16 @@ test("l’extracteur Gemini lit les réponses Interactions actuelles et les anci
 });
 
 test("la correction Gemini couvre les fiches de proposition et les supports oraux", async () => {
+
+test("la correction Gemini est disponible pour les deux types de fiches avec validation guide et PDF", async () => {
+
     const [aiFunction, supabaseConfig] = await Promise.all([
         read("supabase/functions/correct-fiche-ai/index.ts"),
         read("supabase/config.toml")
     ]);
 
-    assert.match(page, /corrections IA des fiches de proposition et des supports oraux transmettent les PDF à Google Gemini/);
+    assert.match(page, /correction assistée par IA est disponible uniquement pour les fiches de proposition et les fichette/);
+    assert.match(page, /compte rendu PDF officiel est généré après son enregistrement/);
     assert.match(page, /id="guideAiCorrectionResult"[^>]*hidden/);
     assert.match(script, /isOralSupport \? 'Correction IA — Fichette orale' : 'Correction IA — Proposition'/);
     assert.match(script, /\/functions\/v1\/correct-fiche-ai/);
@@ -187,6 +192,8 @@ test("la correction Gemini couvre les fiches de proposition et les supports orau
     assert.doesNotMatch(script, /GEMINI_API_KEY/);
     assert.match(aiFunction, /Deno\.env\.get\("GOOGLE_API_KEY"\)\s*\|\|\s*Deno\.env\.get\("GEMINI_API_KEY"\)/);
     assert.match(aiFunction, /submission\.submission_type !== "proposition" && submission\.submission_type !== "support_oral"/);
+    assert.match(aiFunction, /const isOral = submission\.submission_type === "support_oral"/);
+    assert.match(aiFunction, /ORAL_RUBRIC_PROMPT/);
     assert.match(aiFunction, /from\("guide_candidates"\)[\s\S]*eq\("guide_id", userData\.user\.id\)[\s\S]*eq\("candidate_id", submission\.user_id\)/);
     assert.match(aiFunction, /form_grade: \{ type: "number", minimum: 0, maximum: 6 \}/);
     assert.match(aiFunction, /"Introduction", 3[\s\S]*"Problématique et données", 3[\s\S]*"Solutions réalisables", 4[\s\S]*"Avis et conclusion", 4/);
@@ -327,4 +334,35 @@ test("les seuils QCM et l’inactivité produisent les badges attendus", () => {
     assert.equal(calculateStatus({ mean: 10, doctrine: { last_activity: active } }).label, "À SURVEILLER");
     assert.equal(calculateStatus({ mean: 9.99, doctrine: { last_activity: active } }).label, "EN DIFFICULTÉ");
     assert.equal(calculateStatus({ mean: 18, doctrine: { last_activity: inactive } }).label, "EN DIFFICULTÉ");
+});
+
+test("la grille AcroForm officielle remplace le compte rendu et exige une validation de l’Officier Guide", async () => {
+    const helper = await read("app/bm4-official-pdf.mjs");
+    const serviceWorker = await read("sw.js");
+    assert.match(page, /pdf-lib@1\.17\.1/);
+    assert.match(page, /Télécharger la grille BM4 officielle/);
+    assert.match(script, /createOfficialBm4Pdf/);
+    assert.match(script, /savedReviewReport = finalReview\.status === 'valide'/);
+    assert.match(script, /Grille_BM4_Dossier_/);
+    assert.match(helper, /grille-evaluation-synthese-bm4-interactive\.pdf/);
+    assert.match(helper, /candidat_nom/);
+    assert.match(helper, /note_em_/);
+    assert.match(helper, /note_oral_/);
+    assert.match(helper, /moyenne_globale/);
+    assert.match(helper, /points_forts/);
+    assert.match(helper, /axes_amelioration/);
+    assert.match(helper, /form\.flatten\(\)/);
+    assert.match(serviceWorker, /app\/bm4-official-pdf\.mjs/);
+});
+
+
+test("l’export final candidat est distinct et conditionné à la validation des deux fiches", () => {
+    assert.match(page, /id="guideExportFinalCandidate"[^>]*hidden>Exporter l’évaluation finale pour le candidat/);
+    assert.match(script, /async function exportFinalCandidateEvaluation\(\)/);
+    assert.match(script, /savedReviewReport\.weightedGrade === null/);
+    assert.match(script, /type === 'proposition'/);
+    assert.match(script, /type === 'support_oral'/);
+    assert.match(script, /Evaluation_finale_BM4_/);
+    assert.match(script, /Évaluation finale BM4 exportée/);
+    assert.match(script, /guideExportFinalCandidate'\)\?\.addEventListener\('click', exportFinalCandidateEvaluation\)/);
 });
