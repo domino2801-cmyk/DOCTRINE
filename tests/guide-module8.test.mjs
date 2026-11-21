@@ -174,7 +174,6 @@ test("l’extracteur Gemini lit les réponses Interactions actuelles et les anci
         /Texte de correction absent/);
 });
 
-test("la correction Gemini couvre les fiches de proposition et les supports oraux", async () => {
 
 test("la correction Gemini est disponible pour les deux types de fiches avec validation guide et PDF", async () => {
 
