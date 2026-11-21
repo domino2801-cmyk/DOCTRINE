@@ -205,7 +205,8 @@ export async function createOfficialBm4Pdf(report, options = {}) {
             setFieldText('obs_em_' + number, observationFor(proposition.comment, criterion.label));
         });
         setFieldText('total_em', formatGrade(proposition.grade));
-        setFieldText('bilan_em', proposition.comment);
+        // Dans le débriefing, bilan_em est la case de note (70 %), pas le commentaire.
+        setFieldText('bilan_em', formatGrade(proposition.grade));
     } else {
         setFieldText('bilan_em', 'Fiche de proposition non encore validée.');
     }
@@ -217,7 +218,8 @@ export async function createOfficialBm4Pdf(report, options = {}) {
             setFieldText('obs_oral_' + number, observationFor(oral.comment, criterion.label));
         });
         setFieldText('total_oral', formatGrade(oral.grade));
-        setFieldText('bilan_oral', oral.comment);
+        // Dans le débriefing, bilan_oral est la case de note (30 %), pas le commentaire.
+        setFieldText('bilan_oral', formatGrade(oral.grade));
     } else {
         setFieldText('bilan_oral', 'Fichette orale non encore validée.');
     }
