@@ -26,6 +26,7 @@ const RESPONSE_SCHEMA = {
         limitations: { type: "string" },
         form_grade: { type: "number", minimum: 0, maximum: 6 },
         form_observations: { type: "string" },
+        form_evidence: { type: "string" },
         introduction: {
             type: "object",
             properties: {
@@ -72,6 +73,7 @@ const RESPONSE_SCHEMA = {
         "limitations",
         "form_grade",
         "form_observations",
+        "form_evidence",
         "introduction",
         "problematique_donnees",
         "solutions",
@@ -131,12 +133,13 @@ const ORAL_RUBRIC_PROMPT = [
 const RUBRIC_PROMPT = [
     "Analyse le PDF fourni et propose une évaluation argumentée selon cette grille :",
     "- Forme, présentation et langue : /6.",
+    "Pour ce premier critère, obligatoire et doté d’une note sur 6, fournis impérativement une annotation précise et un indice vérifiable (page ou courte citation). Analyse la structure, la lisibilité, la mise en page, l’orthographe, la grammaire, la syntaxe et le registre professionnel. N’omets jamais ce critère ; si un élément ne peut pas être vérifié, indique-le explicitement.",
     "- Introduction : /3.",
     "- Problématique et données : /3.",
     "- Solutions réalisables : /4.",
     "- Avis et conclusion : /4.",
     "Le fond vaut la somme des quatre derniers critères (/14) et la note de la fiche est forme + fond (/20), sans appliquer le coefficient de 70 %.",
-    "Évalue la pertinence, la cohérence, la précision et la faisabilité à partir du seul contenu lisible. Pour chaque critère, donne une observation concise et un indice vérifiable (page ou courte citation) ; écris « non repéré » si aucun indice fiable n’existe.",
+    "Évalue la pertinence, la cohérence, la précision et la faisabilité à partir du seul contenu lisible. Pour chacun des cinq critères, y compris Forme, Présentation & Langue, donne une note, une annotation concise et un indice vérifiable ; écris « non repéré » si aucun indice fiable n’existe.",
     "Si la fiche est absente, incomplète ou illisible au point de ne pas pouvoir être évaluée, mets readable à false et explique la limite. Dans ce cas, les notes numériques ne seront pas reprises dans le formulaire.",
     "Reste factuel, bienveillant et exigeant. Ne décide jamais si la fiche est validée."
 ].join("\n");
@@ -208,6 +211,7 @@ function parseCorrection(value: unknown) {
         limitations: boundedText(value.limitations, "limitations", 500),
         form_grade: boundedGrade(value.form_grade, "forme", 6),
         form_observations: boundedText(value.form_observations, "forme", 500),
+        form_evidence: boundedText(value.form_evidence, "justification de la forme", 300),
         content_grade: Math.round(criteria.reduce((sum, item) => sum + item.grade, 0) * 100) / 100,
         criteria,
         strengths: strings(value.strengths, "points forts"),
@@ -338,12 +342,10 @@ Deno.serve(async (request) => {
             return jsonResponse({ error: "Lecture de la fiche impossible." }, 500);
         }
         if (!submission) return jsonResponse({ error: "Fiche introuvable." }, 404);
-        if (submission.submission_type !== "proposition" && submission.submission_type !== "support_oral") {
-            return jsonResponse({
-                error: "La correction IA est autorisée uniquement pour les fiches de proposition et les fichette(s) orales."
-            }, 400);
+        if (submission.submission_type !== "proposition") {
+            return jsonResponse({ error: "La correction IA est réservée exclusivement aux fiches de proposition." }, 400);
         }
-        const isOral = submission.submission_type === "support_oral";
+        const isOral = false;
         if (!submission.storage_path) return jsonResponse({ error: "Cette fiche n’a pas de PDF archivé." }, 409);
 
         if (!isAdmin) {
