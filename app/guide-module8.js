@@ -1033,12 +1033,12 @@
         ].filter(Boolean).join('\n\n');
         // Les axes prioritaires restent eux aussi rattachés à leur fiche d'origine.
         const propositionImprovements = proposition
-            ? extractFeedbackSection(proposition.comment, 'Axes de progrès', ['Points forts'])
-                || extractFeedbackSection(proposition.comment, 'Axes d’amélioration', ['Points forts'])
+            ? extractFeedbackSection(proposition.comment, 'Axes de progrès', ['Synthèse', 'Points forts'])
+                || extractFeedbackSection(proposition.comment, 'Axes d’amélioration', ['Synthèse', 'Points forts'])
             : '';
         const oralImprovements = oral
-            ? extractFeedbackSection(oral.comment, 'Axes de progrès', ['Points forts'])
-                || extractFeedbackSection(oral.comment, 'Axes d’amélioration', ['Points forts'])
+            ? extractFeedbackSection(oral.comment, 'Axes de progrès', ['Synthèse', 'Points forts'])
+                || extractFeedbackSection(oral.comment, 'Axes d’amélioration', ['Synthèse', 'Points forts'])
             : '';
         const improvements = [
             propositionImprovements ? 'FICHE DR — FICHE DE PROPOSITION\n' + propositionImprovements : '',
