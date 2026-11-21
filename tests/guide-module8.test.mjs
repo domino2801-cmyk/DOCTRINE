@@ -400,9 +400,9 @@ test("l’export final candidat est distinct et conditionné à la validation de
 });
 
 test("les observations IA de la fichette affichent réellement les quatre critères, dont opératoire /6", () => {
-    const helperMatch = script.match(/function aiCriteriaForDisplay\\(suggestion\\) \\{[\\s\\S]*?\\n    \\}/);
+    const helperMatch = script.match(/function aiCriteriaForDisplay\(suggestion\) \{[criterion\.observation \|\| 'Observation non renseignée\.'s\\S]*?\\n    \\}/);
     assert.ok(helperMatch, "le helper utilisé par le rendu des observations IA doit exister");
-    const buildCriteria = vm.runInNewContext('(' + helperMatch[0].replace(/^function aiCriteriaForDisplay\\(suggestion\\) /, 'function ') + ')');
+    const buildCriteria = vm.runInNewContext('(' + helperMatch[0] + ')');
     const suggestion = {
         submission_type: "support_oral",
         form_grade: 5,
@@ -434,6 +434,6 @@ test("les observations IA de la fichette affichent réellement les quatre critè
         "Argumentaire ID1 / ID2 / ID3 et preuves",
         "Conclusion"
     ]);
-    assert.match(script, /aiCriteriaForDisplay\\(suggestion\\)\\.forEach/);
+    assert.match(script, /aiCriteriaForDisplay\(suggestion\)\.forEach/);
     assert.match(script, /criterion\\.observation \\|\\| 'Observation non renseignée\\.'/);
 });
