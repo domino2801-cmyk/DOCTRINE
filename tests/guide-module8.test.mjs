@@ -155,20 +155,20 @@ test("la correction Gemini est disponible pour les deux types de fiches avec val
         read("supabase/config.toml")
     ]);
 
-    assert.match(page, /correction assistée par IA est réservée exclusivement aux fiches de proposition/);
+    assert.match(page, /correction assistée par IA est disponible pour les fiches de proposition et les fichette/);
     assert.match(page, /compte rendu PDF officiel est généré après son enregistrement/);
     assert.match(page, /id="guideAiCorrectionResult"[^>]*hidden/);
-    assert.match(script, /if \(!isOralSupport\)[\s\S]*Correction IA — Proposition/);
+    assert.match(script, /isOralSupport \? 'Correction IA — Fichette orale' : 'Correction IA — Proposition'/);
     assert.match(script, /1\. Forme, Présentation & Langue/);
     assert.match(script, /suggestion\.form_evidence/);
     assert.match(script, /\/functions\/v1\/correct-fiche-ai/);
     assert.match(script, /await api\('\/rest\/v1\/fiche_reviews\?on_conflict=/);
     assert.doesNotMatch(script, /GEMINI_API_KEY/);
     assert.match(aiFunction, /Deno\.env\.get\("GOOGLE_API_KEY"\)\s*\|\|\s*Deno\.env\.get\("GEMINI_API_KEY"\)/);
-    assert.match(aiFunction, /submission\.submission_type !== "proposition"/);
+    assert.match(aiFunction, /submission\.submission_type !== "proposition" && submission\.submission_type !== "support_oral"/);
     assert.match(aiFunction, /form_evidence/);
-    assert.match(aiFunction, /Pour ce premier critère, obligatoire et doté d’une note sur 6/);
-    assert.match(aiFunction, /const isOral = false/);
+    assert.match(aiFunction, /Pour ce premier critère, obligatoire et doté d’une note sur 6/);\n    assert.match(aiFunction, /Annotation ou justification du critère Forme absente/);\n    assert.match(aiFunction, /Annotation ou justification du premier critère oral absente/);
+    assert.match(aiFunction, /const isOral = submission\.submission_type === "support_oral"/);
     assert.match(aiFunction, /ORAL_RUBRIC_PROMPT/);
     assert.match(aiFunction, /from\("guide_candidates"\)[\s\S]*eq\("guide_id", userData\.user\.id\)[\s\S]*eq\("candidate_id", submission\.user_id\)/);
     assert.match(aiFunction, /form_grade: \{ type: "number", minimum: 0, maximum: 6 \}/);
