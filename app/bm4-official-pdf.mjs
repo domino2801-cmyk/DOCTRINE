@@ -163,6 +163,18 @@ function observationFor(comment, label) {
     return separator >= 0 ? line.slice(separator + 3).trim() : '';
 }
 
+function formatDebriefSection(value) {
+    return String(value ?? '')
+        // Certains commentaires ont enregistré les retours à la ligne sous forme de texte « \\n ».
+        .replace(/\\\\r\\\\n|\\\\n|\\\\r/g, '\\n')
+        // Le PDF possède déjà son propre intitulé : on retire seulement le préfixe redondant.
+        .split('\\n')
+        .map((line) => line.replace(/^\\s*FICHE DR\\s*—\\s*/i, '').trimEnd())
+        .join('\\n')
+        .replace(/\\n{3,}/g, '\\n\\n')
+        .trim();
+}
+
 function evaluationByType(report, type) {
     return (report.evaluations || []).find((evaluation) => evaluation.type === type) || null;
 }
@@ -229,8 +241,8 @@ export async function createOfficialBm4Pdf(report, options = {}) {
     setFieldText('moyenne_globale', report.weightedGrade === null
         ? 'En attente de la validation des deux fiches'
         : formatGrade(report.weightedGrade));
-    setFieldText('points_forts', report.strengths || 'Non renseignés dans les observations validées.');
-    setFieldText('axes_amelioration', report.improvements || 'Non renseignés dans les observations validées.');
+    setFieldText('points_forts', formatDebriefSection(report.strengths) || 'Non renseignés dans les observations validées.');
+    setFieldText('axes_amelioration', formatDebriefSection(report.improvements) || 'Non renseignés dans les observations validées.');
 
     form.updateFieldAppearances(measureFont);
     if (options.flatten !== false) form.flatten();
