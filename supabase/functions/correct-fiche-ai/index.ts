@@ -259,7 +259,7 @@ function parseOralCorrection(value: unknown, referenceWrittenFound: boolean) {
         form_observations: formObservations,
         form_evidence: formEvidence,
         content_grade: Math.round((introduction.grade + argumentaire.grade + conclusion.grade) * 100) / 100,
-        criteria: [operatoire, introduction, argumentaire, conclusion],
+        criteria: [introduction, argumentaire, conclusion],
         oral_operatoire: operatoire,
         oral_introduction: introduction,
         oral_argumentaire: argumentaire,
