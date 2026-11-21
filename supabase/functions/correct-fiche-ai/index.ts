@@ -338,12 +338,12 @@ Deno.serve(async (request) => {
             return jsonResponse({ error: "Lecture de la fiche impossible." }, 500);
         }
         if (!submission) return jsonResponse({ error: "Fiche introuvable." }, 404);
-        if (submission.submission_type !== "proposition") {
+        if (submission.submission_type !== "proposition" && submission.submission_type !== "support_oral") {
             return jsonResponse({
-                error: "La correction IA est réservée exclusivement aux fiches de proposition. Les supports oraux sont évalués manuellement."
+                error: "La correction IA est autorisée uniquement pour les fiches de proposition et les fichette(s) orales."
             }, 400);
         }
-        const isOral = false;
+        const isOral = submission.submission_type === "support_oral";
         if (!submission.storage_path) return jsonResponse({ error: "Cette fiche n’a pas de PDF archivé." }, 409);
 
         if (!isAdmin) {
