@@ -118,8 +118,9 @@ test("génère réellement la grille BM4 et vérifie les champs, notes et observ
     });
     assert.equal(value("total_oral"), "16 / 20");
     assert.equal(value("moyenne_globale"), "15,65 / 20 (70 % écrit / 30 % oral)");
-    assert.equal(value("bilan_em"), report.evaluations[0].comment);
-    assert.equal(value("bilan_oral"), report.evaluations[1].comment);
+    // Les champs du débriefing sont des cases de notes, distinctes des commentaires.
+    assert.equal(value("bilan_em"), "15,5");
+    assert.equal(value("bilan_oral"), "16");
     assert.equal(value("points_forts"), report.strengths);
     assert.equal(value("axes_amelioration"), report.improvements);
 
