@@ -150,7 +150,7 @@ export async function createOfficialBm4Pdf(report) {
     // Helvetica est également utilisée pour dessiner les apparences AcroForm :
     // les mesures et le rendu utilisent donc exactement les mêmes métriques.
     const measureFont = await pdfDoc.embedFont(globalThis.PDFLib.StandardFonts.Helvetica);
-    const setFieldText = (name, value) => setFieldText(name, value, measureFont);
+    const setFieldText = (name, value) => safeText(form, name, value, measureFont);
     const proposition = evaluationByType(report, 'proposition');
     const oral = evaluationByType(report, 'support_oral');
 
