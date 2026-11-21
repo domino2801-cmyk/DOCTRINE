@@ -466,3 +466,22 @@ test("les axes d’amélioration sont séparés et exclus des synthèses et comp
     assert.equal(extract(comment, "Axes de progrès", ["Synthèse", "Points forts"]), "Premier axe; deuxième axe");
 });
 
+test("les points clés du jury sont cochables manuellement et conservés pour les deux fiches", () => {
+    assert.match(page, /id="guideJuryChecklistItems"/);
+    assert.match(page, /Points clés attendus par le jury/);
+    assert.match(script, /const JURY_CHECKLISTS = \{/);
+    assert.match(script, /p_form_pages/);
+    assert.match(script, /p_solutions_three/);
+    assert.match(script, /o_five_cases/);
+    assert.match(script, /o_id123/);
+    assert.match(script, /function renderJuryChecklist\(submission, review\)/);
+    assert.match(script, /input\.checked = saved\[item\.key\] === true/);
+    assert.match(script, /function collectJuryChecklist\(\)/);
+    assert.match(script, /jury_checklist: juryChecklist/);
+    assert.match(script, /jury_checklist: savedRow\?\.jury_checklist \?\? juryChecklist/);
+    assert.match(sql, /add column if not exists jury_checklist jsonb not null default '\{\}'::jsonb/);
+    assert.match(sql, /jsonb_each\(new\.jury_checklist\)/);
+    assert.match(sql, /'jury_checklist', review\.jury_checklist/);
+    assert.match(styles, /\.guide-jury-check-item input\[type="checkbox"\]/);
+});
+
