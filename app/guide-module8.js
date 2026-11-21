@@ -784,6 +784,7 @@
         const totals = collectReviewScores();
         const suggested = automaticJuryChecklist(activeReviewSubmission, totals.rubricScores);
         document.querySelectorAll('[data-jury-checklist]').forEach(function (input) {
+            if (input.dataset.juryManual === 'true') return;
             input.checked = suggested[input.dataset.juryChecklist] === true;
         });
     }
@@ -806,6 +807,10 @@
             input.type = 'checkbox';
             input.dataset.juryChecklist = item.key;
             input.checked = initial[item.key] === true;
+            if (hasSavedChecklist) input.dataset.juryManual = 'true';
+            input.addEventListener('change', function () {
+                input.dataset.juryManual = 'true';
+            });
             input.setAttribute('aria-label', item.label);
             label.append(input, element('span', '', item.label));
             container.appendChild(label);
