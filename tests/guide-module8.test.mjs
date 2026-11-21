@@ -341,6 +341,33 @@ test("les seuils QCM et l’inactivité produisent les badges attendus", () => {
     assert.equal(calculateStatus({ mean: 18, doctrine: { last_activity: inactive } }).label, "EN DIFFICULTÉ");
 });
 
+test("la taille du texte BM4 s’adapte aux dimensions des champs PDF", async () => {
+    const { calculateBm4FontSize } = await import("../app/bm4-official-pdf.mjs");
+    const font = {
+        widthOfTextAtSize: (text, size) => [...text].length * size * 0.5
+    };
+
+    assert.equal(calculateBm4FontSize("NOTE", {
+        font, width: 100, height: 20, baseSize: 10
+    }), 10, "un texte court conserve la taille du modèle");
+
+    const reducedWidth = calculateBm4FontSize("UNE OBSERVATION BEAUCOUP TROP LONGUE", {
+        font, width: 70, height: 20, baseSize: 10, minSize: 5
+    });
+    assert.ok(reducedWidth < 10 && reducedWidth >= 5,
+        "un texte trop large réduit progressivement la police");
+
+    const reducedHeight = calculateBm4FontSize("première ligne\\ndeuxième ligne\\ntroisième ligne", {
+        font, width: 200, height: 20, baseSize: 10, multiline: true, minSize: 5
+    });
+    assert.ok(reducedHeight < 10 && reducedHeight >= 5,
+        "un texte multiligne tient compte de la hauteur disponible");
+
+    assert.equal(calculateBm4FontSize("texte", {
+        font, width: 100, height: 20, baseSize: 10
+    }), 10, "les champs qui disposent de suffisamment de place gardent leur police");
+});
+
 test("la grille AcroForm officielle remplace le compte rendu et exige une validation de l’Officier Guide", async () => {
     const helper = await read("app/bm4-official-pdf.mjs");
     const serviceWorker = await read("sw.js");
