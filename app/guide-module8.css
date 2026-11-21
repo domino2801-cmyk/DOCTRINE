@@ -1011,3 +1011,44 @@
         flex-direction: column;
     }
 }
+
+.guide-jury-checklist {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    background: rgba(35, 55, 43, .38);
+    border: 1px solid rgba(176, 202, 183, .24);
+    border-radius: 8px;
+}
+.guide-jury-checklist h3 {
+    margin: 0 0 5px;
+    color: #edf2e8;
+    font-size: 1rem;
+}
+.guide-jury-checklist .guide-muted {
+    margin: 0;
+}
+.guide-jury-checklist-items {
+    display: grid;
+    gap: 7px;
+}
+.guide-jury-check-item {
+    display: grid !important;
+    grid-template-columns: 20px minmax(0, 1fr);
+    align-items: start;
+    gap: 9px !important;
+    margin: 0;
+    padding: 8px 10px;
+    color: #e0e9e1;
+    background: rgba(12, 20, 17, .38);
+    border: 1px solid rgba(176, 202, 183, .14);
+    border-radius: 6px;
+    line-height: 1.4;
+    cursor: pointer;
+}
+.guide-jury-check-item input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    margin: 1px 0 0;
+    accent-color: #8fbd91;
+}
