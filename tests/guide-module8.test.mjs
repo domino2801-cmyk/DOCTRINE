@@ -357,7 +357,7 @@ test("la taille du texte BM4 s’adapte aux dimensions des champs PDF", async ()
     assert.ok(reducedWidth < 10 && reducedWidth >= 5,
         "un texte trop large réduit progressivement la police");
 
-    const reducedHeight = calculateBm4FontSize("première ligne\\ndeuxième ligne\\ntroisième ligne", {
+    const reducedHeight = calculateBm4FontSize("première ligne\ndeuxième ligne\ntroisième ligne", {
         font, width: 200, height: 20, baseSize: 10, multiline: true, minSize: 5
     });
     assert.ok(reducedHeight < 10 && reducedHeight >= 5,
