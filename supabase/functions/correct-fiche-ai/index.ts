@@ -200,6 +200,11 @@ function parseCorrection(value: unknown) {
         parseCriterion(value.solutions, "Solutions réalisables", 4),
         parseCriterion(value.avis_conclusion, "Avis et conclusion", 4)
     ];
+    const formObservations = boundedText(value.form_observations, "forme", 500);
+    const formEvidence = boundedText(value.form_evidence, "justification de la forme", 300);
+    if (value.readable && (!formObservations.trim() || !formEvidence.trim())) {
+        throw new Error("Annotation ou justification du critère Forme absente.");
+    }
     const strings = (items: unknown[], field: string) => items.map((item) => boundedText(item, field, 300));
     const confidence = value.confidence;
     if (confidence !== "faible" && confidence !== "moyenne" && confidence !== "élevée") {
@@ -210,8 +215,8 @@ function parseCorrection(value: unknown) {
         readable: value.readable,
         limitations: boundedText(value.limitations, "limitations", 500),
         form_grade: boundedGrade(value.form_grade, "forme", 6),
-        form_observations: boundedText(value.form_observations, "forme", 500),
-        form_evidence: boundedText(value.form_evidence, "justification de la forme", 300),
+        form_observations: formObservations,
+        form_evidence: formEvidence,
         content_grade: Math.round(criteria.reduce((sum, item) => sum + item.grade, 0) * 100) / 100,
         criteria,
         strengths: strings(value.strengths, "points forts"),
@@ -231,6 +236,11 @@ function parseOralCorrection(value: unknown, referenceWrittenFound: boolean) {
     const introduction = parseCriterion(value.oral_introduction, "Introduction structurée en cinq points", 4);
     const argumentaire = parseCriterion(value.oral_argumentaire, "Argumentaire ID1 / ID2 / ID3 et preuves", 7);
     const conclusion = parseCriterion(value.oral_conclusion, "Conclusion", 3);
+    const formObservations = operatoire.observation;
+    const formEvidence = operatoire.evidence;
+    if (value.readable && (!formObservations.trim() || !formEvidence.trim())) {
+        throw new Error("Annotation ou justification du premier critère oral absente.");
+    }
     const confidence = value.confidence;
     if (confidence !== "faible" && confidence !== "moyenne" && confidence !== "élevée") {
         throw new Error("Réponse Gemini orale invalide : confiance.");
@@ -240,7 +250,8 @@ function parseOralCorrection(value: unknown, referenceWrittenFound: boolean) {
         readable: value.readable,
         limitations: boundedText(value.limitations, "limitations", 500),
         form_grade: operatoire.grade,
-        form_observations: operatoire.observation,
+        form_observations: formObservations,
+        form_evidence: formEvidence,
         content_grade: Math.round((introduction.grade + argumentaire.grade + conclusion.grade) * 100) / 100,
         criteria: [introduction, argumentaire, conclusion],
         oral_operatoire: operatoire,
@@ -342,10 +353,10 @@ Deno.serve(async (request) => {
             return jsonResponse({ error: "Lecture de la fiche impossible." }, 500);
         }
         if (!submission) return jsonResponse({ error: "Fiche introuvable." }, 404);
-        if (submission.submission_type !== "proposition") {
-            return jsonResponse({ error: "La correction IA est réservée exclusivement aux fiches de proposition." }, 400);
+        if (submission.submission_type !== "proposition" && submission.submission_type !== "support_oral") {
+            return jsonResponse({ error: "La correction IA est réservée aux fiches de proposition et aux fichette(s) orales." }, 400);
         }
-        const isOral = false;
+        const isOral = submission.submission_type === "support_oral";
         if (!submission.storage_path) return jsonResponse({ error: "Cette fiche n’a pas de PDF archivé." }, 409);
 
         if (!isAdmin) {
