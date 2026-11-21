@@ -458,10 +458,11 @@ test("les axes d’amélioration sont séparés et exclus des synthèses et comp
     assert.ok(script.includes("const stopLabels = [...nextLabels, 'Comparaison avec la fiche écrite']"));
 
     const helperStart = script.indexOf("function extractFeedbackSection(comment, label, nextLabels) {");
-    const helperEnd = script.indexOf("\\n    function criterionObservation", helperStart);
+    const helperEnd = script.indexOf("\n    function criterionObservation", helperStart);
     assert.ok(helperStart >= 0 && helperEnd > helperStart, "le helper d’extraction doit exister");
     const helperSource = script.slice(helperStart, helperEnd).trim();
     const extract = vm.runInNewContext("(" + helperSource + ")");
-    const comment = String.raw\`Axes de progrès: Premier axe; deuxième axe\nSynthèse : Synthèse de la fiche.\n\nComparaison avec la fiche écrite : Comparaison détaillée.\`;
+    const comment = ["Axes de progrès: Premier axe; deuxième axe", "Synthèse : Synthèse de la fiche.", "", "Comparaison avec la fiche écrite : Comparaison détaillée."].join("\n");
     assert.equal(extract(comment, "Axes de progrès", ["Synthèse", "Points forts"]), "Premier axe; deuxième axe");
 });
+
