@@ -453,8 +453,8 @@ test("les observations IA de la fichette affichent réellement les quatre critè
 test("les axes d’amélioration prioritaires sont séparés entre fiche de proposition et fichette orale", () => {
     assert.match(script, /const propositionImprovements = proposition[\\s\\S]*?extractFeedbackSection\\(proposition\\.comment, 'Axes de progrès'/);
     assert.match(script, /const oralImprovements = oral[\\s\\S]*?extractFeedbackSection\\(oral\\.comment, 'Axes de progrès'/);
-    assert.match(script, /'FICHE DR — FICHE DE PROPOSITION\\\\n' \\+ propositionImprovements/);
-    assert.match(script, /'FICHETTE ORALE\\\\n' \\+ oralImprovements/);
+    assert.match(script, /'FICHE DR — FICHE DE PROPOSITION\\n' \\+ propositionImprovements/);
+    assert.match(script, /'FICHETTE ORALE\\n' \\+ oralImprovements/);
     assert.match(script, /improvements: improvements/);
     assert.doesNotMatch(script, /improvements: extractFeedbackSection\\(combinedComments/);
 });
