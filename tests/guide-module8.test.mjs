@@ -167,7 +167,9 @@ test("la correction Gemini est disponible pour les deux types de fiches avec val
     assert.match(aiFunction, /Deno\.env\.get\("GOOGLE_API_KEY"\)\s*\|\|\s*Deno\.env\.get\("GEMINI_API_KEY"\)/);
     assert.match(aiFunction, /submission\.submission_type !== "proposition" && submission\.submission_type !== "support_oral"/);
     assert.match(aiFunction, /form_evidence/);
-    assert.match(aiFunction, /Pour ce premier critère, obligatoire et doté d’une note sur 6/);\n    assert.match(aiFunction, /Annotation ou justification du critère Forme absente/);\n    assert.match(aiFunction, /Annotation ou justification du premier critère oral absente/);
+    assert.match(aiFunction, /Pour ce premier critère, obligatoire et doté d’une note sur 6/);
+    assert.match(aiFunction, /Annotation ou justification du critère Forme absente/);
+    assert.match(aiFunction, /Annotation ou justification du premier critère oral absente/);
     assert.match(aiFunction, /const isOral = submission\.submission_type === "support_oral"/);
     assert.match(aiFunction, /ORAL_RUBRIC_PROMPT/);
     assert.match(aiFunction, /from\("guide_candidates"\)[\s\S]*eq\("guide_id", userData\.user\.id\)[\s\S]*eq\("candidate_id", submission\.user_id\)/);
