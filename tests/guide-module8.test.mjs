@@ -129,9 +129,9 @@ test("le compte rendu d’évaluation génère un PDF rempli avec des pages inde
         assert.ok(pdf.startsWith(`${index} 0 obj\n`, offset), `object ${index} has a valid cross-reference offset`);
     }
     assert.match(page, /id="guideDownloadReview"/);
-    assert.match(page, /id="guideDownloadReview"[^>]*>Télécharger le compte rendu PDF/);
+    assert.match(page, /id="guideDownloadReview"[^>]*>Télécharger la grille BM4 officielle/);
     assert.match(page, /id="guideDownloadReview"[^>]*hidden/);
-    assert.match(script, /document\.getElementById\('guideDownloadReview'\)\.hidden = false/);
+    assert.match(script, /document\.getElementById\('guideDownloadReview'\)\.hidden =/);
     assert.match(script, /function markReviewDirty\(\)[\s\S]*savedReviewReport = null/);
     const multiPageBlob = createEvaluationPdf({
         candidateName: "Caporal Élodie Martin",
@@ -306,4 +306,23 @@ test("les seuils QCM et l’inactivité produisent les badges attendus", () => {
     assert.equal(calculateStatus({ mean: 10, doctrine: { last_activity: active } }).label, "À SURVEILLER");
     assert.equal(calculateStatus({ mean: 9.99, doctrine: { last_activity: active } }).label, "EN DIFFICULTÉ");
     assert.equal(calculateStatus({ mean: 18, doctrine: { last_activity: inactive } }).label, "EN DIFFICULTÉ");
+});
+
+test("la grille AcroForm officielle remplace le compte rendu et exige une validation de l’Officier Guide", async () => {
+    const helper = await read("app/bm4-official-pdf.mjs");
+    const serviceWorker = await read("sw.js");
+    assert.match(page, /pdf-lib@1\.17\.1/);
+    assert.match(page, /Télécharger la grille BM4 officielle/);
+    assert.match(script, /createOfficialBm4Pdf/);
+    assert.match(script, /savedReviewReport = finalReview\.status === 'valide'/);
+    assert.match(script, /Grille_BM4_Dossier_/);
+    assert.match(helper, /grille-evaluation-synthese-bm4-interactive\.pdf/);
+    assert.match(helper, /candidat_nom/);
+    assert.match(helper, /note_em_/);
+    assert.match(helper, /note_oral_/);
+    assert.match(helper, /moyenne_globale/);
+    assert.match(helper, /points_forts/);
+    assert.match(helper, /axes_amelioration/);
+    assert.match(helper, /form\.flatten\(\)/);
+    assert.match(serviceWorker, /app\/bm4-official-pdf\.mjs/);
 });
