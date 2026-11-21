@@ -58,8 +58,8 @@
             { key: 'o_five_cases', label: 'Gabarit e-Form : tableau structuré en cinq cases, sans en-tête administratif.' },
             { key: 'o_operatoire', label: 'Exploitabilité orale : mots-clés, listes aérées et chiffres saillants permettant de parler sans lire sa feuille.' },
             { key: 'o_language', label: 'Langue : orthographe soignée et acronymes explicités.' },
-            { key: 'o_hook', label: 'Accroche : fait marquant, chiffre choc ou opposition illustrant l’enjeu.' },
-            { key: 'o_problem', label: 'Problématique : question centrale claire.' },
+            { key: 'o_intro_five_points', label: 'Accroche : fait marquant, chiffre choc ou opposition illustrant l’enjeu.' },
+            { key: 'o_intro_clarity', label: 'Problématique : question centrale claire.' },
             { key: 'o_limits', label: 'Limites : contraintes et impératifs du dossier.' },
             { key: 'o_main_idea', label: 'Idée maîtresse : solution préconisée affirmée avec son argument maître.' },
             { key: 'o_plan', label: 'Annonce du plan : présente et claire.' },
@@ -83,7 +83,7 @@
         },
         support_oral: {
             operatoire_forme: ['o_anti_copy', 'o_five_cases', 'o_operatoire', 'o_language'],
-            introduction: ['o_hook', 'o_problem', 'o_limits', 'o_main_idea', 'o_plan'],
+            introduction: ['o_intro_five_points', 'o_intro_clarity', 'o_limits', 'o_main_idea', 'o_plan'],
             argumentaire: ['o_demonstration', 'o_id123', 'o_proofs', 'o_fact_analysis'],
             conclusion: ['o_conclusion_clarity', 'o_decision', 'o_execution']
         }
