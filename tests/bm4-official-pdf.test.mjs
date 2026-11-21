@@ -122,6 +122,13 @@ test("génère réellement la grille BM4 et vérifie les champs, notes et observ
     assert.equal(value("bilan_oral"), report.evaluations[1].comment);
     assert.equal(value("points_forts"), report.strengths);
     assert.equal(value("axes_amelioration"), report.improvements);
+
+    // Contrôle aussi le mode réellement utilisé en production : PDF aplati,
+    // lisible sans formulaire interactif et sans champs AcroForm résiduels.
+    const productionBlob = await createOfficialBm4Pdf(report, { PDFLib, templateBytes });
+    const productionPdf = await PDFDocument.load(new Uint8Array(await productionBlob.arrayBuffer()));
+    assert.ok(productionPdf.getPageCount() >= 1, "le PDF final doit contenir au moins une page");
+    assert.equal(productionPdf.getForm().getFields().length, 0, "les champs doivent être aplatis dans le PDF final");
 });
 
 test("signale explicitement une bibliothèque PDF absente", async () => {
