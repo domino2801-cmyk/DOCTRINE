@@ -422,7 +422,7 @@ async function listDriveChildren(folderId: string, token: string) {
 }
 
 function isCorrectionFileName(name: string) {
-    return /corrig[eé]|correction\\s*type|réponses?\\s+attendues/i.test(name);
+    return /corrig[eé]|correction\s*type|réponses?\s+attendues/i.test(name);
 }
 
 async function downloadDriveReference(file: Record<string, unknown>, token: string): Promise<DriveReference | null> {
