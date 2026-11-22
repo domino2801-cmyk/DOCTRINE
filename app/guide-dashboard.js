@@ -167,6 +167,37 @@
         assignCard.append(node('small', '', 'Associer à ma cohorte'));
         assignCard.addEventListener('click', openAssignCandidateDialog);
         metricsNode.append(assignCard);
+
+        var retexCard = node('button', 'og-dashboard-metric og-dashboard-metric-action');
+        retexCard.type = 'button';
+        retexCard.append(node('span', 'og-dashboard-metric-label', 'FICHE RETEX DOCTRINE'));
+        retexCard.append(node('strong', 'og-dashboard-metric-value', '↗'));
+        retexCard.append(node('small', '', 'RETEX déjà envoyé · accéder au Module 7'));
+        retexCard.addEventListener('click', function () { openModule7Form('retexCard', 'retexForm'); });
+        metricsNode.append(retexCard);
+
+        var reportCard = node('button', 'og-dashboard-metric og-dashboard-metric-action');
+        reportCard.type = 'button';
+        reportCard.append(node('span', 'og-dashboard-metric-label', 'FICHE DE SIGNALEMENT'));
+        reportCard.append(node('strong', 'og-dashboard-metric-value', '+'));
+        reportCard.append(node('small', '', 'Rédiger et transmettre un signalement'));
+        reportCard.addEventListener('click', function () { openModule7Form('signalementCard', 'signalementForm'); });
+        metricsNode.append(reportCard);
+    }
+    function openModule7Form(cardId, formId) {
+        if (typeof window.openModal !== 'function') {
+            setStatus('Le Module 7 est momentanément indisponible.', true);
+            return;
+        }
+        window.openModal('module7');
+        var card = document.getElementById(cardId);
+        var form = document.getElementById(formId);
+        var heading = card && card.querySelector(':scope > p');
+        if (form && form.hidden && heading) heading.click();
+        if (form) {
+            var firstField = form.querySelector('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])');
+            if (firstField) firstField.focus({ preventScroll: true });
+        }
     }
     function openAssignCandidateDialog() {
         var dialog = node('dialog', 'og-dashboard-assign-dialog');
