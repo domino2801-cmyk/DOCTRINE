@@ -28,6 +28,12 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /Date du prochain oral/);
     assert.match(script, /Suivi du CCPM/);
     assert.match(script, /Suivi admissibilité/);
+    assert.match(script, /Correction assistée par IA/);
+    assert.match(script, /renderAiCorrection\(candidate\)/);
+    assert.match(script, /Lancer la correction IA et ouvrir la grille BM4/);
+    assert.match(script, /candidate_id: candidate\.candidate\.id/);
+    assert.match(script, /submission_id: submission\.id/);
+    assert.match(script, /og-dashboard-ai-frame/);
     assert.match(script, /eligibility\.append\(renderOralTracking\(candidate\)\)/);
     assert.match(script, /eligibility\.append\(renderCcpmTracking\(candidate\)\)/);
 
@@ -68,4 +74,5 @@ test('l’interface possède des cartes, accordéons et styles responsive isolé
     assert.match(css, /\.og-dashboard-overlay\[hidden\]/);
     assert.match(css, /\.og-dashboard-module-grid/);
     assert.match(css, /\.og-dashboard-oral-fields/);
+    assert.match(css, /\.og-dashboard-ai-frame/);
 });
