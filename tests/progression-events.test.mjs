@@ -11,6 +11,7 @@ const html = readFileSync(path.join(root, "index.html"), "utf8");
 const readme = readFileSync(path.join(root, "README.md"), "utf8");
 const migration = readFileSync(path.join(root, "supabase", "progression-events.sql"), "utf8");
 const module5Migration = readFileSync(path.join(root, "supabase", "module5-qcm-auto-validation.sql"), "utf8");
+const module4Migration = readFileSync(path.join(root, "supabase", "module4-two-dossiers-auto-validation.sql"), "utf8");
 const boundary = app.indexOf("    function updateCorrectionDossierOptions()");
 if (boundary < 0) throw new Error("Study progress functions not found");
 const progressContext = vm.createContext({ window: {} });
@@ -59,4 +60,17 @@ test("module 5 is completed automatically from the QCM-MAJOR ready threshold", (
     assert.match(module5Migration, /create or replace function public\.verify_qcm_module5_completion\(\)/i);
     assert.match(module5Migration, /average_score.*< 13/is);
     assert.match(module5Migration, /event_type = 'module_completed'/);
+});
+
+
+test("module 4 is completed automatically after submissions on two distinct dossiers", () => {
+    assert.match(app, /function verifierValidationAutomatiqueModule4\(\)/);
+    assert.match(app, /verify_doctrine_module4_completion/);
+    assert.match(app, /id === 'module4'\) verifierValidationAutomatiqueModule4\(\)/);
+    assert.doesNotMatch(app, /if \(!\['module2', 'module4', 'module6', 'module7'\]\.includes\(id\)\) return/);
+    assert.match(app, /verifierValidationAutomatiqueModule4\(\);/);
+    assert.match(module4Migration, /count\(distinct dossier\)/i);
+    assert.match(module4Migration, /coalesce\(submission_count,\s*0\)\s*>=\s*2/i);
+    assert.match(module4Migration, /event_type = 'module_completed'/);
+    assert.match(readme, /au moins deux dossiers distincts/);
 });
