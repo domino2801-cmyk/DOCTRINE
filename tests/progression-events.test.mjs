@@ -51,12 +51,12 @@ test("the exercise progress reaches 100 percent after half the dossiers while re
 
 
 test("module 5 is completed automatically from the QCM-MAJOR ready threshold", () => {
-    assert.match(app, /function verifierValidationAutomatiqueModule5\\(\\)/);
+    assert.match(app, /function verifierValidationAutomatiqueModule5\(\)/);
     assert.match(app, /verify_qcm_module5_completion/);
-    assert.match(app, /id === 'module5'\\) verifierValidationAutomatiqueModule5\\(\\)/);
-    assert.doesNotMatch(app, /if \\(!\\['module2', 'module4', 'module5', 'module6', 'module7'\\]\\.includes\\(id\\)\\) return/);
-    assert.match(readme, /moyenne des résultats QCM-MAJOR.*au moins 13\\/20/);
-    assert.match(module5Migration, /create or replace function public\\.verify_qcm_module5_completion\\(\\)/i);
+    assert.match(app, /id === 'module5'\) verifierValidationAutomatiqueModule5\(\)/);
+    assert.doesNotMatch(app, /if \(!\['module2', 'module4', 'module5', 'module6', 'module7'\]\.includes\(id\)\) return/);
+    assert.match(readme, /moyenne des résultats QCM-MAJOR.*au moins 13\/20/);
+    assert.match(module5Migration, /create or replace function public\.verify_qcm_module5_completion\(\)/i);
     assert.match(module5Migration, /average_score.*< 13/is);
     assert.match(module5Migration, /event_type = 'module_completed'/);
 });
