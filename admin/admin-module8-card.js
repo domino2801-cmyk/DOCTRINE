@@ -21,7 +21,9 @@
     function sync() {
         if (!hub) return;
         var allowed = isAdmin();
-        hub.hidden = !allowed;
+        // Ne réécrire hidden que si l'état change : l'observateur surveille
+        // précisément cet attribut et une réécriture identique peut le relancer en boucle.
+        if (hub.hidden !== !allowed) hub.hidden = !allowed;
         Object.keys(targets).forEach(function (key) {
             var shortcut = hub.querySelector('[data-admin-shortcut="' + key + '"]');
             var original = document.querySelector('#modal-module8 .module-nav-controls ' + targets[key]);
