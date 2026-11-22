@@ -17,6 +17,13 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(script, /guideDashboardNav/);
     assert.match(script, /RATTACHER UN CANDIDAT/);
     assert.match(script, /openAssignCandidateDialog/);
+    assert.match(script, /FICHE RETEX DOCTRINE/);
+    assert.match(script, /RETEX déjà envoyé/);
+    assert.match(script, /FICHE DE SIGNALEMENT/);
+    assert.match(script, /Rédiger et transmettre un signalement/);
+    assert.match(script, /openModule7Form\('retexCard', 'retexForm'\)/);
+    assert.match(script, /openModule7Form\('signalementCard', 'signalementForm'\)/);
+    assert.match(script, /window\.openModal\('module7'\)/);
     assert.match(script, /rpc\/assign_guide_candidate_by_code/);
     assert.match(script, /p_code: code/);
     assert.match(script, /Code candidat de 8 caractères/);
