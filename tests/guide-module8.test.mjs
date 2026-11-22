@@ -472,8 +472,10 @@ test("les points clés du jury sont cochables manuellement et conservés pour le
     assert.match(script, /const JURY_CHECKLISTS = \{/);
     assert.match(script, /p_form_pages/);
     assert.match(script, /p_solutions_three/);
-    assert.match(script, /o_five_cases/);
-    assert.match(script, /o_id123/);
+    assert.match(script, /oral_operatoire/);
+    assert.match(script, /oral_introduction/);
+    assert.match(script, /oral_argumentaire/);
+    assert.match(script, /oral_conclusion/);
     assert.match(script, /function renderJuryChecklist\(submission, review\)/);
     assert.match(script, /const JURY_CHECKLIST_SCORE_MAP = \{/);
     assert.match(script, /function automaticJuryChecklist\(submission, rubricScores\)/);
@@ -495,8 +497,19 @@ test("les points clés du jury sont cochables manuellement et conservés pour le
 test("les cases du jury sont précochées selon les notes et restent modifiables par le guide", () => {
     assert.match(script, /form: \['p_form_pages', 'p_form_header', 'p_form_references', 'p_form_style'\]/);
     assert.match(script, /introduction: \['p_intro_context', 'p_intro_solution', 'p_intro_plan'\]/);
-    assert.match(script, /operatoire_forme: \['o_anti_copy', 'o_five_cases', 'o_operatoire', 'o_language'\]/);
-    assert.match(script, /argumentaire: \['o_demonstration', 'o_id123', 'o_id2', 'o_fact_analysis', 'o_proofs'\]/);
+    assert.match(script, /operatoire_forme: \['oral_operatoire'\]/);
+    assert.match(script, /introduction: \['oral_introduction'\]/);
+    assert.match(script, /argumentaire: \['oral_argumentaire'\]/);
+    assert.match(script, /conclusion: \['oral_conclusion'\]/);
+    const oralChecklist = script.match(/support_oral: \[([\s\S]*?)\n        \]/);
+    assert.ok(oralChecklist, "la checklist orale doit être définie");
+    assert.equal([...oralChecklist[1].matchAll(/\{ key:/g)].length, 4,
+        "la fichette orale doit afficher exactement les quatre critères officiels");
+    assert.match(oralChecklist[1], /gabarit des cinq cases \(\/6\)/);
+    assert.match(oralChecklist[1], /cinq points attendus \(\/4\)/);
+    assert.match(oralChecklist[1], /ID1 \/ ID2 \/ ID3 et preuves vérifiables \(\/7\)/);
+    assert.match(oralChecklist[1], /orientée vers la décision ou les suites à donner \(\/3\)/);
+    assert.doesNotMatch(oralChecklist[1], /copier-coller|langue|chronométrage|paperboard|lecture/);
     assert.match(script, /const initial = hasSavedChecklist\s*\?\s*saved\s*:\s*automaticJuryChecklist/);
     assert.match(script, /if \(input\.dataset\.juryManual === 'true'\) return/);
     assert.match(script, /input\.addEventListener\('change', function \(\)/);
