@@ -647,11 +647,27 @@
                 encodeURIComponent(candidate.candidate.id) + '&limit=1');
             if (!rows.length) {
                 status.textContent = 'Aucun CV déposé pour ce candidat. Le module 6 reste en attente de son CV.';
+                const progressGrid = document.getElementById('guideProgressModules');
+                if (progressGrid) {
+                    progressGrid.querySelector('[data-module6-cv-progress]')?.remove();
+                    const progressCard = element('article', 'guide-progress-card');
+                    progressCard.dataset.module6CvProgress = 'true';
+                    progressCard.append(element('span', '', 'Module 6'), element('strong', '', 'CV en attente'));
+                    progressGrid.appendChild(progressCard);
+                }
                 return;
             }
             const cv = rows[0];
             status.textContent = 'CV reçu : ' + cv.original_filename + ' — déposé le ' +
                 formatDate(cv.uploaded_at) + ' — ' + Math.ceil(Number(cv.file_size || 0) / 1024) + ' Ko.';
+            const progressGrid = document.getElementById('guideProgressModules');
+            if (progressGrid) {
+                progressGrid.querySelector('[data-module6-cv-progress]')?.remove();
+                const progressCard = element('article', 'guide-progress-card');
+                progressCard.dataset.module6CvProgress = 'true';
+                progressCard.append(element('span', '', 'Module 6'), element('strong', '', 'CV transmis — validé'));
+                progressGrid.appendChild(progressCard);
+            }
             const button = element('button', 'guide-button guide-button-primary', 'Consulter le CV (PDF)');
             button.type = 'button';
             button.addEventListener('click', async function () {
