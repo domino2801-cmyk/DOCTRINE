@@ -349,8 +349,11 @@
             });
             body.append(facts);
             body.append(renderModuleProgress(candidate));
-            body.append(renderOralTracking(candidate));
-            body.append(renderCcpmTracking(candidate));
+            var eligibility = node('details', 'og-dashboard-subaccordion og-dashboard-eligibility');
+            eligibility.append(node('summary', '', 'Suivi admissibilité'));
+            eligibility.append(renderOralTracking(candidate));
+            eligibility.append(renderCcpmTracking(candidate));
+            body.append(eligibility);
             var admission = candidate.admission || {};
             var docs = node('details', 'og-dashboard-subaccordion');
             docs.append(node('summary', '', 'Dossier et documents demandés'));
