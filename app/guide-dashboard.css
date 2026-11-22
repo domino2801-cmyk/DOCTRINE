@@ -110,3 +110,9 @@
     .og-dashboard-ccpm-fields { grid-template-columns:1fr; }
     .og-dashboard-ccpm-notes-label { grid-column:auto; grid-row:auto; }
 }
+
+/* État et téléchargement sécurisé du CV dans le dossier candidat. */
+.og-dashboard-cv-value { display:flex; flex-wrap:wrap; align-items:center; gap:9px; }
+.og-dashboard-cv-filename { color:#e8efe8; overflow-wrap:anywhere; }
+.og-dashboard-cv-download { border:0; cursor:pointer; font:inherit; }
+.og-dashboard-cv-download:disabled { opacity:.6; cursor:wait; }
