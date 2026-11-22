@@ -29,17 +29,5 @@ create trigger doctrine_retex_complete_module7
     after insert on public.doctrine_retex
     for each row execute function public.doctrine_retex_complete_module7();
 
--- Rattrapage des candidats ayant transmis leur RETEX avant l'installation.
-insert into public.doctrine_progress_events (user_id, event_type, module_id)
-select r.user_id, 'module_completed', '7'
-  from public.doctrine_retex r
- where r.user_id is not null
-   and not exists (
-       select 1
-         from public.doctrine_progress_events e
-        where e.user_id = r.user_id
-          and e.event_type = 'module_completed'
-          and e.module_id = '7'
-   );
 
 notify pgrst, 'reload schema';
