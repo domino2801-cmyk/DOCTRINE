@@ -788,7 +788,11 @@
         const saved = review?.jury_checklist && typeof review.jury_checklist === 'object'
             ? review.jury_checklist
             : {};
-        const hasSavedChecklist = Object.keys(saved).length > 0;
+        // Ignore les anciennes clés de sous-points oraux : seules les clés
+        // du référentiel actuellement affiché peuvent restaurer un état manuel.
+        const hasSavedChecklist = checklist.some(function (item) {
+            return Object.prototype.hasOwnProperty.call(saved, item.key);
+        });
         const initial = hasSavedChecklist
             ? saved
             : automaticJuryChecklist(submission, review?.rubric_scores || {});
