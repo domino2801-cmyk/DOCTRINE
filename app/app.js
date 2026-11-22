@@ -869,6 +869,7 @@ const module1Key = 'module1_validated';
                 modal.querySelectorAll('.jury-accordeon').forEach(function(accordeon) {
                     accordeon.open = false;
                 });
+                if (getModule1State()) showModule1CompletionMessage();
             }
             modal.style.display = 'block';
             const position = moduleScrollPositions.get(modal.id);
