@@ -68,7 +68,7 @@
             if (!token) throw new Error('Session expirée. Reconnectez-vous.');
             var headers = { apikey: auth().key, Authorization: 'Bearer ' + token };
             if (options.body !== undefined) headers['Content-Type'] = 'application/json';
-            return fetch(auth().url.replace(/\\/$/, '') + path, {
+            return fetch((auth().url.endsWith('/') ? auth().url.slice(0, -1) : auth().url) + path, {
                 method: options.method || 'POST',
                 headers: headers,
                 body: options.body === undefined ? undefined : JSON.stringify(options.body)
