@@ -15,6 +15,13 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(html, /app\/guide-dashboard\.css/);
     assert.match(html, /app\/guide-dashboard\.js/);
     assert.match(script, /guideDashboardNav/);
+    assert.match(script, /RATTACHER UN CANDIDAT/);
+    assert.match(script, /openAssignCandidateDialog/);
+    assert.match(script, /rpc\/assign_guide_candidate_by_code/);
+    assert.match(script, /p_code: code/);
+    assert.match(script, /Code candidat de 8 caractères/);
+    assert.match(css, /\.og-dashboard-metric-action/);
+    assert.match(css, /\.og-dashboard-assign-dialog/);
     assert.match(script, /id = 'guideDashboard'/);
     assert.doesNotMatch(script, /btn-mod8|modal-module8/i);
     assert.doesNotMatch(script, /app\/guide-module8\.html|guide_action|og-dashboard-ai-frame/);
