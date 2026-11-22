@@ -128,7 +128,8 @@ test("module 6 is validated automatically after a private candidate CV PDF is up
     assert.match(cvSql, /event_type, module_id\)\s*values \(new\.candidate_id, 'module_completed', '6'\)/i);
     assert.match(guideHtml, /id="guideCandidateCvActions"/);
     assert.match(guideJs, /renderCandidateCv\(candidate\)/);
-    assert.match(guideJs, /doctrine_candidate_cvs\?select=storage_path,original_filename,file_size,uploaded_at/);
+    assert.match(guideJs, /doctrine_candidate_cvs\?select=uploaded_at,original_filename,file_size/);
+    assert.match(guideJs, /doctrine_candidate_cvs\?select=storage_path/);
     assert.match(guideJs, /object\/sign\/doctrine-candidate-cv/);
     assert.match(app, /if \(id !== 'module2'\) return/);
 });

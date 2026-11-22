@@ -416,32 +416,72 @@
         container.replaceChildren();
         const doctrine = candidate.doctrine || {};
         const events = doctrine.progress_events || [];
-        const moduleOneDone = events.some(function (event) {
-            return event.module_id === '1' && event.event_type === 'module_completed';
-        });
+        const submissions = doctrine.submissions || [];
         const documents = new Set((doctrine.documents || []).map(function (doc) {
             return doc.document_title;
         }).filter(Boolean)).size;
-        const submissions = doctrine.submissions || [];
-        const proposalCount = submissions.filter(function (submission) {
-            return submission.submission_type !== 'support_oral';
-        }).length;
-        const oralSupportCount = submissions.filter(function (submission) {
-            return submission.submission_type === 'support_oral';
-        }).length;
+        const proposalCount = submissions.filter(function (item) { return item.submission_type !== 'support_oral'; }).length;
+        const oralCount = submissions.filter(function (item) { return item.submission_type === 'support_oral'; }).length;
+        const dossierCount = new Set(submissions.map(function (item) { return String(item.dossier); })).size;
         const corrections = new Set(events.filter(function (event) {
             return event.module_id === '4' && event.event_type === 'correction_accessible';
         }).map(function (event) { return String(event.dossier); })).size;
+        const scores = (candidate.qcm?.results || []).map(function (result) {
+            return Number(result.score);
+        }).filter(Number.isFinite);
+        const average = scores.length ? scores.reduce(function (sum, score) { return sum + score; }, 0) / scores.length : null;
+
+        function eventFor(id) {
+            return events.find(function (event) {
+                return String(event.module_id) === String(id) && event.event_type === 'module_completed';
+            }) || null;
+        }
+        function card(name, done, started, detail, date) {
+            const item = element('article', 'guide-progress-card');
+            item.classList.toggle('is-complete', Boolean(done));
+            item.append(element('span', '', name));
+            item.append(element('strong', '', done
+                ? 'Validé' + (date ? ' · ' + formatDate(date) : '')
+                : (started ? 'En cours' : 'Non commencé')));
+            if (detail) item.append(element('small', 'guide-progress-detail', detail));
+            container.appendChild(item);
+        }
+
+        const module1 = eventFor(1);
+        const module2 = eventFor(2);
+        const module3 = eventFor(3);
+        const module4 = eventFor(4);
+        const module5 = eventFor(5);
+        const module6 = eventFor(6);
+        const module7 = eventFor(7);
+        const cv = doctrine.candidate_cv;
+        const retex = doctrine.retex;
+        function started(id) {
+            return events.some(function (event) {
+                return String(event.module_id) === String(id) && event.event_type === 'module_started';
+            });
+        }
+        card('Module 1', Boolean(module1), started(1), 'Présentation lue et validation enregistrée', module1?.created_at);
+        card('Module 2', Boolean(module2), started(2) || documents > 0, documents + ' document(s) consulté(s)', module2?.created_at);
+        card('Module 3', Boolean(module3), started(3), 'Validation à la première ouverture', module3?.created_at);
+        card('Module 4', Boolean(module4) || dossierCount >= 2, started(4) || dossierCount > 0,
+            dossierCount + ' dossier(s) avec fiche(s) transmise(s) · ' + corrections + ' corrigé(s) accessible(s)', module4?.created_at);
+        card('Module 5', Boolean(module5) || (average !== null && average >= 13), started(5) || scores.length > 0,
+            average === null ? 'Aucun résultat QCM enregistré' : 'Moyenne QCM-MAJOR : ' + average.toFixed(2) + ' / 20',
+            module5?.created_at);
+        card('Module 6', Boolean(cv) || Boolean(module6), Boolean(cv) || started(6),
+            cv ? 'CV transmis le ' + formatDate(cv.uploaded_at) : 'CV en attente',
+            module6?.created_at || cv?.uploaded_at);
+        card('Module 7', Boolean(retex) || Boolean(module7), Boolean(retex) || started(7),
+            retex ? 'RETEX transmis le ' + formatDate(retex.created_at) : 'RETEX en attente',
+            module7?.created_at || retex?.created_at);
         [
-            ['Module 1', moduleOneDone ? 'Validé' : 'Non validé'],
-            ['Module 2', documents + ' document(s) lu(s)'],
             ['Fiches de proposition', proposalCount + ' dépôt(s)'],
-            ['Supports oraux', oralSupportCount + ' dépôt(s)'],
-            ['Module 4', corrections + ' corrigé(s) débloqué(s)']
-        ].forEach(function (item) {
-            const card = element('article', 'guide-progress-card');
-            card.append(element('span', '', item[0]), element('strong', '', item[1]));
-            container.appendChild(card);
+            ['Supports oraux', oralCount + ' dépôt(s)']
+        ].forEach(function (entry) {
+            const item = element('article', 'guide-progress-card');
+            item.append(element('span', '', entry[0]), element('strong', '', entry[1]));
+            container.appendChild(item);
         });
     }
 
@@ -643,31 +683,17 @@
         actions.replaceChildren();
         status.textContent = 'Vérification du dépôt du CV…';
         try {
-            const rows = await api('/rest/v1/doctrine_candidate_cvs?select=storage_path,original_filename,file_size,uploaded_at&candidate_id=eq.' +
-                encodeURIComponent(candidate.candidate.id) + '&limit=1');
-            if (!rows.length) {
+            const cv = candidate.doctrine?.candidate_cv;
+            if (!cv) {
                 status.textContent = 'Aucun CV déposé pour ce candidat. Le module 6 reste en attente de son CV.';
-                const progressGrid = document.getElementById('guideProgressModules');
-                if (progressGrid) {
-                    progressGrid.querySelector('[data-module6-cv-progress]')?.remove();
-                    const progressCard = element('article', 'guide-progress-card');
-                    progressCard.dataset.module6CvProgress = 'true';
-                    progressCard.append(element('span', '', 'Module 6'), element('strong', '', 'CV en attente'));
-                    progressGrid.appendChild(progressCard);
-                }
                 return;
             }
-            const cv = rows[0];
             status.textContent = 'CV reçu : ' + cv.original_filename + ' — déposé le ' +
                 formatDate(cv.uploaded_at) + ' — ' + Math.ceil(Number(cv.file_size || 0) / 1024) + ' Ko.';
-            const progressGrid = document.getElementById('guideProgressModules');
-            if (progressGrid) {
-                progressGrid.querySelector('[data-module6-cv-progress]')?.remove();
-                const progressCard = element('article', 'guide-progress-card');
-                progressCard.dataset.module6CvProgress = 'true';
-                progressCard.append(element('span', '', 'Module 6'), element('strong', '', 'CV transmis — validé'));
-                progressGrid.appendChild(progressCard);
-            }
+            const metadataRows = await api('/rest/v1/doctrine_candidate_cvs?select=storage_path&candidate_id=eq.' +
+                encodeURIComponent(candidate.candidate.id) + '&limit=1');
+            if (!metadataRows.length) throw new Error('Métadonnées du CV indisponibles.');
+            cv.storage_path = metadataRows[0].storage_path;
             const button = element('button', 'guide-button guide-button-primary', 'Consulter le CV (PDF)');
             button.type = 'button';
             button.addEventListener('click', async function () {
@@ -696,6 +722,23 @@
         }
     }
 
+    async function enrichCandidateProgress(candidate) {
+        const candidateId = encodeURIComponent(candidate.candidate.id);
+        const doctrine = candidate.doctrine || (candidate.doctrine = {});
+        const requests = await Promise.allSettled([
+            api('/rest/v1/doctrine_progress_events?select=event_type,module_id,dossier,created_at&user_id=eq.' +
+                candidateId + '&order=created_at.desc'),
+            api('/rest/v1/doctrine_retex?select=created_at&user_id=eq.' + candidateId + '&limit=1'),
+            api('/rest/v1/doctrine_candidate_cvs?select=uploaded_at,original_filename,file_size&candidate_id=eq.' +
+                candidateId + '&limit=1')
+        ]);
+        if (requests[0].status === 'fulfilled') doctrine.progress_events = requests[0].value || [];
+        if (requests[1].status === 'fulfilled') doctrine.retex = requests[1].value?.[0] || null;
+        if (requests[2].status === 'fulfilled') doctrine.candidate_cv = requests[2].value?.[0] || null;
+        doctrine.progress_sync_error = requests.some(function (request) { return request.status === 'rejected'; });
+        return candidate;
+    }
+
     async function loadDashboard() {
         const status = document.getElementById('guideStatus');
         const generation = ++requestGeneration;
@@ -707,6 +750,8 @@
             });
             if (generation !== requestGeneration) return;
             candidates = Array.isArray(result.candidates) ? result.candidates : [];
+            await Promise.all(candidates.map(enrichCandidateProgress));
+            if (generation !== requestGeneration) return;
             if (!candidates.some(function (candidate) { return candidate.candidate.id === selectedCandidateId; })) {
                 selectedCandidateId = '';
             }

@@ -1075,3 +1075,11 @@
   .guide-course-actions { width: 100%; }
   .guide-course-actions > * { flex: 1 1 100%; }
 }
+
+.guide-progress-detail {
+    display: block;
+    margin-top: 5px;
+    color: var(--guide-muted, #64748b);
+    font-size: .82rem;
+    line-height: 1.4;
+}
