@@ -83,7 +83,7 @@
                 status.classList.add('is-error');
                 return;
             }
-            if (file.type !== 'application/pdf' || !/\\.pdf$/i.test(file.name)) {
+            if (!/\.pdf$/i.test(file.name) || (file.type && file.type !== 'application/pdf')) {
                 status.textContent = 'Format refusé : seul un fichier PDF est accepté.';
                 status.classList.add('is-error');
                 return;
