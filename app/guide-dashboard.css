@@ -116,3 +116,16 @@
 .og-dashboard-cv-filename { color:#e8efe8; overflow-wrap:anywhere; }
 .og-dashboard-cv-download { border:0; cursor:pointer; font:inherit; }
 .og-dashboard-cv-download:disabled { opacity:.6; cursor:wait; }
+
+/* Correction IA par dossier — réutilise la grille interactive du Module 8. */
+.og-dashboard-ai-dossier { margin-top:12px; padding:12px; border:1px solid rgba(183,207,185,.16); border-radius:8px; background:rgba(0,0,0,.1); }
+.og-dashboard-ai-dossier h4 { margin:0 0 10px; color:#d8b85b; font-size:14px; }
+.og-dashboard-ai-card { display:grid; gap:7px; margin-top:9px; padding:12px; border:1px solid rgba(183,207,185,.16); border-radius:7px; background:rgba(255,255,255,.025); }
+.og-dashboard-ai-card > strong { color:#f2f5ee; }
+.og-dashboard-ai-state { margin:0; color:#9ed4a6; font-size:12px; font-weight:800; }
+.og-dashboard-ai-result { margin:0; color:#c6d2c8; font-size:12px; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere; }
+.og-dashboard-ai-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.og-dashboard-ai-frame-host { width:100%; }
+.og-dashboard-ai-frame-host:empty { display:none; }
+.og-dashboard-ai-frame { display:block; width:100%; height:min(1000px, 82vh); margin-top:12px; border:1px solid rgba(183,207,185,.24); border-radius:8px; background:#f5f7f3; }
+@media (max-width:600px) { .og-dashboard-ai-frame { height:82vh; } }
