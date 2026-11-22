@@ -376,8 +376,18 @@
             });
             var signedUrl = signed.signedURL || signed.signedUrl;
             if (!signedUrl) throw new Error('URL PDF signée manquante dans la réponse Storage.');
-            var viewer = window.parent !== window && window.parent.DoctrineViewer
-                ? window.parent.DoctrineViewer : window.DoctrineViewer;
+            var viewer = null;
+            // La visionneuse doit être ouverte dans le document de plus haut niveau
+            // pour passer devant le tableau de bord, même si celui-ci est intégré.
+            try {
+                if (window.top && window.top.DoctrineViewer) viewer = window.top.DoctrineViewer;
+            } catch (_) {}
+            if (!viewer) {
+                try {
+                    if (window.parent && window.parent.DoctrineViewer) viewer = window.parent.DoctrineViewer;
+                } catch (_) {}
+            }
+            if (!viewer && window.DoctrineViewer) viewer = window.DoctrineViewer;
             if (!viewer || typeof viewer.openSignedPdf !== 'function') {
                 throw new Error('La visionneuse PDF est indisponible. Rechargez la page.');
             }
