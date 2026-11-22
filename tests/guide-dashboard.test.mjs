@@ -15,7 +15,7 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(script, /guideDashboardNav/);
     assert.match(script, /id = 'guideDashboard'/);
     assert.doesNotMatch(script, /btn-mod8|modal-module8/i);
-    assert.match(script, /app\/guide-module8\.html/);
+    assert.doesNotMatch(script, /app\/guide-module8\.html|guide_action|og-dashboard-ai-frame/);
 });
 
 test('le tableau de bord utilise les données filtrées par le RPC guide', () => {
@@ -36,10 +36,13 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /Évaluer avec la grille BM4/);
     assert.match(script, /Correction IA — Proposition/);
     assert.match(script, /Correction IA — Fichette orale/);
-    assert.match(script, /guide_action: action/);
-    assert.match(script, /candidate_id: candidate\.candidate\.id/);
-    assert.match(script, /submission_id: submission\.id/);
-    assert.match(script, /og-dashboard-ai-frame/);
+    assert.match(script, /openCandidatePdf\(submission/);
+    assert.match(script, /openDashboardReview\(candidate, submission, false\)/);
+    assert.match(script, /openDashboardReview\(candidate, submission, true\)/);
+    assert.match(script, /correct-fiche-ai/);
+    assert.match(script, /fiche_reviews\?on_conflict=submission_id/);
+    assert.match(script, /ogDashboardReviewDialog/);
+    assert.match(script, /og-dashboard-review-criteria/);
     assert.match(script, /eligibility\.append\(renderOralTracking\(candidate\)\)/);
     assert.match(script, /eligibility\.append\(renderCcpmTracking\(candidate\)\)/);
 
@@ -80,5 +83,6 @@ test('l’interface possède des cartes, accordéons et styles responsive isolé
     assert.match(css, /\.og-dashboard-overlay\[hidden\]/);
     assert.match(css, /\.og-dashboard-module-grid/);
     assert.match(css, /\.og-dashboard-oral-fields/);
-    assert.match(css, /\.og-dashboard-ai-frame/);
+    assert.match(css, /\.og-dashboard-review-dialog/);
+    assert.match(css, /\.og-dashboard-review-criteria/);
 });
