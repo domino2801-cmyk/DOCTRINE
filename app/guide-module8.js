@@ -414,15 +414,13 @@
         const container = document.getElementById('guideProgressModules');
         if (!container) return;
         container.replaceChildren();
+
         const doctrine = candidate.doctrine || {};
         const events = doctrine.progress_events || [];
-        const moduleOneDone = events.some(function (event) {
-            return event.module_id === '1' && event.event_type === 'module_completed';
-        });
+        const submissions = doctrine.submissions || [];
         const documents = new Set((doctrine.documents || []).map(function (doc) {
             return doc.document_title;
         }).filter(Boolean)).size;
-        const submissions = doctrine.submissions || [];
         const proposalCount = submissions.filter(function (submission) {
             return submission.submission_type !== 'support_oral';
         }).length;
@@ -432,12 +430,85 @@
         const corrections = new Set(events.filter(function (event) {
             return event.module_id === '4' && event.event_type === 'correction_accessible';
         }).map(function (event) { return String(event.dossier); })).size;
+        const qcmScores = (candidate.qcm?.results || []).map(function (result) {
+            return Number(result.score);
+        }).filter(function (score) { return Number.isFinite(score); });
+        const qcmAverage = qcmScores.length
+            ? qcmScores.reduce(function (sum, score) { return sum + score; }, 0) / qcmScores.length
+            : null;
+        const module4Dossiers = Number(doctrine.module4_submission_count || 0);
+        const cv = doctrine.candidate_cv || null;
+        const retex = doctrine.retex || null;
+
+        function completionEvent(moduleId) {
+            return events.find(function (event) {
+                return event.module_id === String(moduleId) && event.event_type === 'module_completed';
+            }) || null;
+        }
+
+        function dateLabel(value) {
+            if (!value) return '';
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? '' : ' · ' + formatDate(value);
+        }
+
+        const modules = [
+            {
+                name: 'Module 1',
+                done: Boolean(completionEvent(1)),
+                detail: 'Lecture et validation de la présentation'
+            },
+            {
+                name: 'Module 2',
+                done: Boolean(completionEvent(2)),
+                detail: documents + ' document(s) consulté(s)'
+            },
+            {
+                name: 'Module 3',
+                done: Boolean(completionEvent(3)),
+                detail: 'Validation à la première ouverture'
+            },
+            {
+                name: 'Module 4',
+                done: Boolean(completionEvent(4)) || module4Dossiers >= 2,
+                detail: module4Dossiers + ' dossier(s) avec fiche(s) transmise(s) · ' +
+                    corrections + ' corrigé(s) accessible(s)'
+            },
+            {
+                name: 'Module 5',
+                done: Boolean(completionEvent(5)) || (qcmAverage !== null && qcmAverage >= 13),
+                detail: qcmAverage === null
+                    ? 'Aucun résultat QCM enregistré'
+                    : 'Moyenne QCM-MAJOR : ' + qcmAverage.toFixed(2) + ' / 20'
+            },
+            {
+                name: 'Module 6',
+                done: Boolean(cv) || Boolean(completionEvent(6)),
+                detail: cv ? 'CV transmis le ' + formatDate(cv.uploaded_at) : 'CV en attente'
+            },
+            {
+                name: 'Module 7',
+                done: Boolean(retex) || Boolean(completionEvent(7)),
+                detail: retex ? 'RETEX transmis le ' + formatDate(retex.created_at) : 'RETEX en attente'
+            }
+        ];
+
+        modules.forEach(function (module, index) {
+            const event = completionEvent(index + 1);
+            const card = element('article', 'guide-progress-card');
+            card.classList.toggle('is-complete', module.done);
+            const label = element('span', '', module.name);
+            const value = element('strong', '', module.done
+                ? 'Validé' + dateLabel(event?.created_at || (index === 5 ? cv?.uploaded_at : index === 6 ? retex?.created_at : null))
+                : (module.detail ? 'En cours' : 'Non commencé'));
+            const detail = element('small', 'guide-progress-detail', module.detail);
+            card.append(label, value, detail);
+            container.appendChild(card);
+        });
+
         [
-            ['Module 1', moduleOneDone ? 'Validé' : 'Non validé'],
-            ['Module 2', documents + ' document(s) lu(s)'],
             ['Fiches de proposition', proposalCount + ' dépôt(s)'],
-            ['Supports oraux', oralSupportCount + ' dépôt(s)'],
-            ['Module 4', corrections + ' corrigé(s) débloqué(s)']
+            ['Supports oraux', oralSupportCount + ' dépôt(s)']
         ].forEach(function (item) {
             const card = element('article', 'guide-progress-card');
             card.append(element('span', '', item[0]), element('strong', '', item[1]));
