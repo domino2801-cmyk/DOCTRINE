@@ -196,7 +196,13 @@
             var observer = new MutationObserver(function () { createCard(); });
             observer.observe(body, { childList: true, subtree: false });
         }
+        document.addEventListener('doctrine:logout', function () {
+            var notice = document.getElementById('module6CompletionMessage');
+            if (notice) notice.hidden = true;
+        });
         document.addEventListener('doctrine:login', function () {
+            var notice = document.getElementById('module6CompletionMessage');
+            if (notice) notice.hidden = true;
             createCard();
             var card = document.getElementById('module6CvCard');
             if (!card) return;
