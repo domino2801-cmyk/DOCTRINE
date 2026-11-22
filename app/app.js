@@ -142,6 +142,55 @@ const module1Key = 'module1_validated';
         });
     }
 
+    let module3AutoValidationRequest = null;
+
+    function verifierValidationAutomatiqueModule3() {
+        const auth = window.DoctrineAuth;
+        if (!auth || isAdminUser()) return Promise.resolve(false);
+
+        const modal = document.getElementById('modal-module3');
+        const content = modal && modal.querySelector('.modal-content');
+        if (!content) return Promise.resolve(false);
+
+        let status = content.querySelector('.module3-auto-validation-status');
+        if (!status) {
+            status = document.createElement('p');
+            status.className = 'module3-auto-validation-status';
+            status.setAttribute('role', 'status');
+            status.setAttribute('aria-live', 'polite');
+            status.style.cssText = 'margin:28px 0 12px;padding:14px;border-left:4px solid #0b2240;background:#f8fafc;color:#334155;';
+            content.appendChild(status);
+        }
+
+        let alreadyValidated = false;
+        try {
+            alreadyValidated = localStorage.getItem('doctrine-module3-auto-validated') === 'true';
+        } catch (error) {
+            // La synchronisation serveur reste prioritaire si le stockage local est indisponible.
+        }
+        if (alreadyValidated) {
+            status.textContent = 'Module 3 déjà validé automatiquement lors de son ouverture. Le suivi des dossiers « Fait » reste indépendant.';
+            return Promise.resolve(true);
+        }
+        if (module3AutoValidationRequest) return module3AutoValidationRequest;
+
+        status.textContent = 'Validation automatique du module 3 en cours…';
+        module3AutoValidationRequest = enregistrerEvenementProgression('module_completed', '3').then(function(saved) {
+            if (!saved) {
+                status.textContent = 'La validation automatique du module 3 n’a pas été synchronisée. Fermez puis rouvrez le module après avoir vérifié votre connexion.';
+                return false;
+            }
+            try {
+                localStorage.setItem('doctrine-module3-auto-validated', 'true');
+            } catch (error) {
+                // L'événement serveur est déjà enregistré.
+            }
+            status.textContent = 'Module 3 validé automatiquement dès son ouverture. Le suivi des dossiers « Fait » reste indépendant.';
+            return true;
+        }).finally(function() { module3AutoValidationRequest = null; });
+        return module3AutoValidationRequest;
+    }
+
     let module5AutoValidationRequest = null;
 
     function verifierValidationAutomatiqueModule5() {
@@ -781,6 +830,7 @@ const module1Key = 'module1_validated';
                 });
             }
             ensureModuleCompletionControl(id, modal);
+            if (id === 'module3') verifierValidationAutomatiqueModule3();
             if (id === 'module5') verifierValidationAutomatiqueModule5();
             if (id === 'module4') verifierValidationAutomatiqueModule4();
             if (id === 'module8') {
