@@ -571,9 +571,14 @@ test("le suivi Officier Guide consolide les validations des sept modules et les 
 });
 
 test('la grille BM4 peut être ouverte directement depuis le suivi Officier Guide pour une fiche du dossier', () => {
-    assert.match(script, /launch_ai/);
+    assert.match(script, /guide_action/);
     assert.match(script, /candidate_id/);
     assert.match(script, /submission_id/);
+    assert.match(script, /guideAction === 'open'/);
+    assert.match(script, /openSubmission\(candidate, submission\)/);
+    assert.match(script, /guideAction === 'evaluate'/);
+    assert.match(script, /openReview\(candidate, submission\)/);
+    assert.match(script, /guideAction === 'correct'/);
     assert.match(script, /runAiCorrection\(candidate, submission, null\)/);
     assert.match(script, /doctrine:guide-review-saved/);
 });
