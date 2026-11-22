@@ -189,15 +189,17 @@
             setStatus('Le Module 7 est momentanément indisponible.', true);
             return;
         }
+        // Le tableau de bord est une surcouche : le fermer avant d'ouvrir le module évite
+        // qu'il reste au-dessus du Module 7 et intercepte visuellement les interactions.
+        close();
         window.openModal('module7');
         var card = document.getElementById(cardId);
         var form = document.getElementById(formId);
         var heading = card && card.querySelector(':scope > p');
-        if (form && form.hidden && heading) heading.click();
-        if (form) {
-            var firstField = form.querySelector('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])');
-            if (firstField) firstField.focus({ preventScroll: true });
-        }
+        if (!form || !heading) return;
+        if (form.hidden) heading.click();
+        var firstField = form.querySelector('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])');
+        if (firstField) firstField.focus({ preventScroll: true });
     }
     function openAssignCandidateDialog() {
         var dialog = node('dialog', 'og-dashboard-assign-dialog');
