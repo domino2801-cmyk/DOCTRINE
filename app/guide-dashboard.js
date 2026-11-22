@@ -116,10 +116,17 @@
             return (submission.reviews || []).some(function (review) { return review.status === 'valide'; });
         }).length;
     }
-    function attention(candidate) {
+    function candidateFollowUpStatus(candidate) {
         var score = qcmAverage(candidate);
         var activity = Date.parse(candidate.doctrine && candidate.doctrine.last_activity || '');
-        return score === null || score < 10 || !Number.isFinite(activity) || Date.now() - activity > 14 * 86400000;
+        if (score !== null && score < 10) return { label: 'EN DIFFICULTÉ', className: 'is-danger', ready: false };
+        if (score === null || !Number.isFinite(activity) || Date.now() - activity > 14 * 86400000) {
+            return { label: 'À SURVEILLER', className: 'is-warning', ready: false };
+        }
+        return { label: 'PRÊT', className: 'is-ok', ready: true };
+    }
+    function attention(candidate) {
+        return !candidateFollowUpStatus(candidate).ready;
     }
     function renderMetrics() {
         metricsNode.replaceChildren();
@@ -327,8 +334,8 @@
             var summary = node('summary', 'og-dashboard-accordion-title');
             var title = node('span', 'og-dashboard-candidate-title', candidateName(candidate));
             var score = qcmAverage(candidate);
-            var pill = node('span', 'og-dashboard-pill ' + (attention(candidate) ? 'is-warning' : 'is-ok'),
-                attention(candidate) ? 'À ACCOMPAGNER' : 'SUIVI NORMAL');
+            var followUp = candidateFollowUpStatus(candidate);
+            var pill = node('span', 'og-dashboard-pill ' + followUp.className, followUp.label);
             summary.append(title, pill);
             card.append(summary);
             var body = node('div', 'og-dashboard-candidate-body');
