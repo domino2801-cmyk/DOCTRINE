@@ -1438,7 +1438,8 @@
             }
             await loadDashboard();
             const launchParams = new URLSearchParams(window.location.search);
-            if (launchParams.get('launch_ai') === '1') {
+            const guideAction = launchParams.get('guide_action') || '';
+            if (guideAction) {
                 const candidateId = launchParams.get('candidate_id') || '';
                 const submissionId = launchParams.get('submission_id') || '';
                 const candidate = candidates.find(function (item) {
@@ -1451,7 +1452,15 @@
                     (submission.submission_type === 'proposition' || submission.submission_type === 'support_oral')) {
                     selectedCandidateId = candidateId;
                     renderCohort();
-                    runAiCorrection(candidate, submission, null);
+                    if (guideAction === 'open') {
+                        await openSubmission(candidate, submission);
+                    } else if (guideAction === 'evaluate') {
+                        openReview(candidate, submission);
+                    } else if (guideAction === 'correct') {
+                        runAiCorrection(candidate, submission, null);
+                    } else {
+                        setStatus(status, 'Action demandée non reconnue.', 'error');
+                    }
                 } else {
                     setStatus(status, 'Fiche introuvable dans la cohorte ou type de document non autorisé.', 'error');
                 }
