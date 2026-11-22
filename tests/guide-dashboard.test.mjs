@@ -39,7 +39,7 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /openCandidatePdf\(submission/);
     assert.match(script, /openDashboardReview\(candidate, submission, false\)/);
     assert.match(script, /openDashboardReview\(candidate, submission, true\)/);
-    assert.match(script, /correct-fiche-ai/);
+    assert.match(script, /functionsApi\('\/functions\/v1\/correct-fiche-ai'/);
     assert.match(script, /fiche_reviews\?on_conflict=submission_id/);
     assert.match(script, /ogDashboardReviewDialog/);
     assert.match(script, /og-dashboard-review-criteria/);
