@@ -264,7 +264,9 @@
     function construire() {
         gate = document.createElement('div');
         gate.id = 'auth-gate';
-        gate.hidden = !!accesQcm;
+        // En accès QCM-MAJOR, afficher immédiatement l'écran d'attente du relais.
+        // Sinon auth-locked masque toute la page et produit un écran noir pendant 15 s.
+        gate.hidden = false;
         gate.innerHTML =
             '<div class="auth-stage">' +
             '<div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="auth-titre">' +
