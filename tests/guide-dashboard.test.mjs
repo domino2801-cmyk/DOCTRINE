@@ -43,7 +43,8 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /fiche_reviews\?on_conflict=submission_id/);
     assert.match(script, /ogDashboardReviewDialog/);
     assert.match(script, /relativeStorageUrl\(signedUrl\)/);
-    assert.match(script, /window\.parent\.DoctrineViewer/);
+    assert.match(script, /window\.top\.DoctrineViewer/);
+    assert.match(script, /panneau\.style\.zIndex = '2147483647'/);
     assert.match(script, /og-dashboard-review-criteria/);
     assert.match(script, /eligibility\.append\(renderOralTracking\(candidate\)\)/);
     assert.match(script, /eligibility\.append\(renderCcpmTracking\(candidate\)\)/);
