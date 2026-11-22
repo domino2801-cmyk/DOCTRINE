@@ -232,7 +232,7 @@ test('le lien du module 5 conserve la navigation normale si le retour ne peut ê
 
 test('un compte non confirmé ne déverrouille pas l’armoire', async () => {
     const f = fixture({ confirmed: false });
-    assert.equal(f.gateHiddenOnAppend, true);
+    assert.equal(f.gateHiddenOnAppend, false);
     await settle();
     assert.equal(f.classes.has('auth-locked'), true);
     assert.equal(f.gate.hidden, false);
