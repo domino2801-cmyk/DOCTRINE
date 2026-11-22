@@ -511,6 +511,7 @@ test("les cases du jury sont précochées selon les notes et restent modifiables
     assert.match(oralChecklist[1], /orientée vers la décision ou les suites à donner \(\/3\)/);
     assert.doesNotMatch(oralChecklist[1], /copier-coller|langue|chronométrage|paperboard|lecture/);
     assert.match(script, /const initial = hasSavedChecklist\s*\?\s*saved\s*:\s*automaticJuryChecklist/);
+    assert.match(script, /checklist\.some\(function \(item\) \{\s+return Object\.prototype\.hasOwnProperty\.call\(saved, item\.key\);/);
     assert.match(script, /if \(input\.dataset\.juryManual === 'true'\) return/);
     assert.match(script, /input\.addEventListener\('change', function \(\)/);
     assert.match(script, /jury_checklist: juryChecklist/);
