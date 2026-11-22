@@ -189,8 +189,56 @@ const module1Key = 'module1_validated';
         return module5AutoValidationRequest;
     }
 
+    let module4AutoValidationRequest = null;
+
+    function verifierValidationAutomatiqueModule4() {
+        const auth = window.DoctrineAuth;
+        if (!auth || isAdminUser()) return Promise.resolve(false);
+        if (module4AutoValidationRequest) return module4AutoValidationRequest;
+        const modal = document.getElementById('modal-module4');
+        const content = modal && modal.querySelector('.modal-content');
+        if (!content) return Promise.resolve(false);
+        let status = content.querySelector('.module4-submissions-auto-status');
+        if (!status) {
+            status = document.createElement('p');
+            status.className = 'module4-submissions-auto-status';
+            status.setAttribute('role', 'status');
+            status.setAttribute('aria-live', 'polite');
+            status.style.cssText = 'margin:28px 0 12px;padding:14px;border-left:4px solid #0b2240;background:#f8fafc;color:#334155;';
+            content.appendChild(status);
+        }
+        status.textContent = 'Vérification des fiches transmises à l’Officier Guide…';
+        module4AutoValidationRequest = auth.jeton().then(function(token) {
+            if (!token) throw new Error('Session candidate indisponible.');
+            return fetch(auth.url.replace(/\\/$/, '') + '/rest/v1/rpc/verify_doctrine_module4_completion', {
+                method: 'POST',
+                headers: { apikey: auth.key, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: '{}'
+            });
+        }).then(function(response) {
+            if (!response.ok) return response.text().then(function(detail) {
+                throw new Error('Vérification des envois impossible (HTTP ' + response.status + ')' + (detail ? ' : ' + detail : ''));
+            });
+            return response.json();
+        }).then(function(result) {
+            const count = Number(result && result.submission_count || 0);
+            if (result && result.completed === true) {
+                try { localStorage.setItem('doctrine-module-completed-4', 'true'); } catch (error) {}
+                status.textContent = 'Module 4 validé automatiquement : fiches transmises sur au moins 2 dossiers distincts. Aucune validation manuelle nécessaire.';
+                return true;
+            }
+            status.textContent = 'Module 4 en attente : ' + count + ' dossier(s) transmis sur 2 requis. Transmettez vos fiches à l’Officier Guide sur un deuxième dossier distinct.';
+            return false;
+        }).catch(function(error) {
+            console.error('Validation automatique du module 4 impossible.', error);
+            status.textContent = 'La vérification automatique des envois n’a pas abouti. Réessayez après avoir vérifié votre connexion.';
+            return false;
+        }).finally(function() { module4AutoValidationRequest = null; });
+        return module4AutoValidationRequest;
+    }
+
     function ensureModuleCompletionControl(id, modal) {
-        if (!['module2', 'module4', 'module6', 'module7'].includes(id)) return;
+        if (!['module2', 'module6', 'module7'].includes(id)) return;
         const content = modal.querySelector('.modal-content');
         if (!content || content.querySelector('.module-completion-control')) return;
 
@@ -565,6 +613,7 @@ const module1Key = 'module1_validated';
                     if (data.recorded !== true || data.submission_type !== config.submissionType) {
                         throw new Error('Le serveur n’a pas confirmé le type de fiche enregistré. N’effectuez pas un nouvel envoi ; contactez l’administration.');
                     }
+                    verifierValidationAutomatiqueModule4();
                     if (config.submissionType === 'proposition') {
                         transmittedDossiers.add(String(dossierId));
                         updateCorrectionAccess();
@@ -731,6 +780,7 @@ const module1Key = 'module1_validated';
             }
             ensureModuleCompletionControl(id, modal);
             if (id === 'module5') verifierValidationAutomatiqueModule5();
+            if (id === 'module4') verifierValidationAutomatiqueModule4();
             if (id === 'module8') {
                 const guideFrame = document.getElementById('guideModule8Frame');
                 if (guideFrame && !guideFrame.dataset.loaded && guideFrame.dataset.src) {
@@ -783,6 +833,7 @@ const module1Key = 'module1_validated';
     document.addEventListener('doctrine:login', function(event) {
         qcmModuleAccess = Boolean(event.detail && event.detail.accesQcm);
         verifierValidationAutomatiqueModule5();
+        verifierValidationAutomatiqueModule4();
         correctionAccessEventsLogged = new Set();
         loadOgCorrectionAccess();
         updateModuleLockUI();
