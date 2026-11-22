@@ -20,7 +20,21 @@
     font:inherit; font-weight:700; text-decoration:none; cursor:pointer;
 }
 .og-dashboard-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:18px 0 24px; }
-.og-dashboard-metric { display:grid; gap:5px; padding:15px; border:1px solid rgba(183,207,185,.2); border-radius:8px; background:rgba(255,255,255,.035); }
+.og-dashboard-metric { display:grid; gap:5px; padding:15px; border:1px solid rgba(183,207,185,.2); border-radius:8px; background:rgba(255,255,255,.035); text-align:left; }
+.og-dashboard-metric-action { width:100%; color:inherit; font:inherit; cursor:pointer; transition:border-color .18s ease, background .18s ease, transform .18s ease; }
+.og-dashboard-metric-action:hover, .og-dashboard-metric-action:focus-visible { border-color:#d8b85b; background:rgba(216,184,91,.1); outline:2px solid rgba(216,184,91,.45); outline-offset:2px; }
+.og-dashboard-metric-action .og-dashboard-metric-value { color:#d8b85b; }
+.og-dashboard-assign-dialog { width:min(520px,calc(100% - 32px)); padding:22px; border:1px solid rgba(183,207,185,.3); border-radius:12px; background:#101c17; color:#e8efe8; box-shadow:0 24px 80px rgba(0,0,0,.6); }
+.og-dashboard-assign-dialog::backdrop { background:rgba(3,9,6,.78); }
+.og-dashboard-assign-form { display:grid; gap:14px; }
+.og-dashboard-assign-heading h3 { margin:0; color:#f2f5ee; font-size:21px; }
+.og-dashboard-assign-heading .og-dashboard-kicker { margin-bottom:6px; }
+.og-dashboard-assign-form label { display:grid; gap:7px; color:#e8efe8; font-weight:700; }
+.og-dashboard-assign-input { box-sizing:border-box; width:100%; padding:12px; border:1px solid rgba(183,207,185,.35); border-radius:6px; background:#0b1510; color:#f2f5ee; font:inherit; text-transform:uppercase; letter-spacing:.12em; }
+.og-dashboard-assign-feedback { min-height:20px; margin:0; color:#c8dfc9; }
+.og-dashboard-assign-feedback.is-error { color:#ffaaa0; }
+.og-dashboard-assign-actions { display:flex; justify-content:flex-end; }
+.og-dashboard-assign-primary { background:#526b4e; border-color:#829b77; }
 .og-dashboard-metric-label { color:#d8b85b; font-size:11px; font-weight:800; letter-spacing:.08em; }
 .og-dashboard-metric-value { color:#f5f7ef; font-size:28px; line-height:1.1; }
 .og-dashboard-metric small, .og-dashboard-muted { color:#b8c8bb; }
