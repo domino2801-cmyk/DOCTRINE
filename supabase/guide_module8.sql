@@ -1103,33 +1103,42 @@ create table if not exists public.guide_course_catalog (
     updated_at timestamptz not null default now()
 );
 
-create index if not exists guide_course_catalog_owner_category_idx
-    on public.guide_course_catalog (guide_id, category, title);
+create index if not exists guide_course_catalog_category_title_idx
+    on public.guide_course_catalog (category, title);
 
 alter table public.guide_course_catalog enable row level security;
 revoke all on public.guide_course_catalog from public, anon;
 grant select, insert, update, delete on public.guide_course_catalog to authenticated;
 
+-- Catalogue commun : lecture Officier Guide, gestion réservée aux administrateurs.
+alter table public.guide_course_catalog
+    alter column guide_id set default auth.uid();
+
 drop policy if exists guide_course_catalog_select_own on public.guide_course_catalog;
-create policy guide_course_catalog_select_own
-    on public.guide_course_catalog for select to authenticated
-    using (guide_id = auth.uid() and public.doctrine_is_guide());
-
 drop policy if exists guide_course_catalog_insert_own on public.guide_course_catalog;
-create policy guide_course_catalog_insert_own
-    on public.guide_course_catalog for insert to authenticated
-    with check (guide_id = auth.uid() and public.doctrine_is_guide());
-
 drop policy if exists guide_course_catalog_update_own on public.guide_course_catalog;
-create policy guide_course_catalog_update_own
-    on public.guide_course_catalog for update to authenticated
-    using (guide_id = auth.uid() and public.doctrine_is_guide())
-    with check (guide_id = auth.uid() and public.doctrine_is_guide());
-
 drop policy if exists guide_course_catalog_delete_own on public.guide_course_catalog;
-create policy guide_course_catalog_delete_own
+drop policy if exists guide_course_catalog_read_guides on public.guide_course_catalog;
+drop policy if exists guide_course_catalog_admin_insert on public.guide_course_catalog;
+drop policy if exists guide_course_catalog_admin_update on public.guide_course_catalog;
+drop policy if exists guide_course_catalog_admin_delete on public.guide_course_catalog;
+
+create policy guide_course_catalog_read_guides
+    on public.guide_course_catalog for select to authenticated
+    using (public.doctrine_is_guide() or public.doctrine_is_admin());
+
+create policy guide_course_catalog_admin_insert
+    on public.guide_course_catalog for insert to authenticated
+    with check (public.doctrine_is_admin());
+
+create policy guide_course_catalog_admin_update
+    on public.guide_course_catalog for update to authenticated
+    using (public.doctrine_is_admin())
+    with check (public.doctrine_is_admin());
+
+create policy guide_course_catalog_admin_delete
     on public.guide_course_catalog for delete to authenticated
-    using (guide_id = auth.uid() and public.doctrine_is_guide());
+    using (public.doctrine_is_admin());
 
 create or replace function public.guide_course_catalog_set_updated_at()
 returns trigger
