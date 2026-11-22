@@ -96,7 +96,7 @@
                 if (!token) throw new Error('Session expirée. Reconnectez-vous.');
                 return getCandidateId(token).then(function (candidateId) {
                     var path = candidateId + '/cv.pdf';
-                    return fetch(auth.url.replace(/\\/$/, '') + '/storage/v1/object/' + BUCKET + '/' + path, {
+                    return fetch(auth.url.replace(/\/$/, '') + '/storage/v1/object/' + BUCKET + '/' + path, {
                         method: 'POST',
                         headers: Object.assign(apiHeaders(token, false), {
                             'Content-Type': 'application/pdf',
@@ -106,7 +106,7 @@
                         body: file
                     }).then(function (response) {
                         if (!response.ok) return apiError(response);
-                        return fetch(auth.url.replace(/\\/$/, '') + '/rest/v1/doctrine_candidate_cvs?on_conflict=candidate_id', {
+                        return fetch(auth.url.replace(/\/$/, '') + '/rest/v1/doctrine_candidate_cvs?on_conflict=candidate_id', {
                             method: 'POST',
                             headers: Object.assign(apiHeaders(token, true), {
                                 Prefer: 'resolution=merge-duplicates,return=minimal'
