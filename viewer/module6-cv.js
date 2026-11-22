@@ -44,7 +44,7 @@
         if (!list) return;
         var card = body.querySelector('#module6CvCard');
         if (!card) {
-            card = element('li', '', '');
+            card = element('li', 'part-card module6-cv-card', '');
             card.id = 'module6CvCard';
             card.appendChild(element('div', 'section-title', '6.4. Dépôt de votre CV'));
             card.appendChild(element('p', '', 'Insérez votre CV réglementaire au format PDF. Il sera enregistré dans un espace privé Supabase et pourra être consulté par votre Officier Guide rattaché et par l’administration.'));
