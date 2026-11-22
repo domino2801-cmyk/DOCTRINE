@@ -468,7 +468,10 @@
         contexteModule = module || '';
         dossierCourant = null;
         panneau.hidden = false;
+        panneau.style.zIndex = '2147483647';
+        panneau.setAttribute('tabindex', '-1');
         document.body.classList.add('dv-open');
+        panneau.focus({ preventScroll: true });
         panneau.querySelector('.dv-btn:last-child').focus();
 
         var numero = ++requete;
