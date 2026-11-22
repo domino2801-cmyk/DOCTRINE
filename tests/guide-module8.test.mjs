@@ -569,3 +569,11 @@ test("le suivi Officier Guide consolide les validations des sept modules et les 
     assert.match(progressSyncSql, /create or replace function public\.doctrine_progress_events_set_identity/);
     assert.match(progressSyncSql, /if auth\.uid\(\) is not null[\s\S]*new\.user_id := auth\.uid\(\)[\s\S]*elsif new\.user_id is null/);
 });
+
+test('la grille BM4 peut être ouverte directement depuis le suivi Officier Guide pour une fiche du dossier', () => {
+    assert.match(script, /launch_ai/);
+    assert.match(script, /candidate_id/);
+    assert.match(script, /submission_id/);
+    assert.match(script, /runAiCorrection\(candidate, submission, null\)/);
+    assert.match(script, /doctrine:guide-review-saved/);
+});
