@@ -1052,3 +1052,24 @@
     margin: 1px 0 0;
     accent-color: #8fbd91;
 }
+
+
+/* Catalogue des cours — réservé à l’Officier Guide */
+.guide-course-panel .guide-panel-heading { align-items: flex-start; }
+.guide-course-panel .guide-muted { max-width: 760px; margin: 7px 0 0; }
+.guide-course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 14px; margin-top: 16px; }
+.guide-course-card { min-width: 0; padding: 17px; background: linear-gradient(145deg, rgba(70, 96, 75, .22), rgba(15, 25, 22, .88)); border: 1px solid var(--guide-line); border-left: 3px solid #b52e35; border-radius: 9px; }
+.guide-course-card h3 { margin: 8px 0; color: var(--guide-ink); font-size: 1.05rem; }
+.guide-course-category { display: inline-flex; padding: 4px 8px; color: #e5c158; background: rgba(229, 193, 88, .1); border: 1px solid rgba(229, 193, 88, .22); border-radius: 999px; font-size: .72rem; font-weight: 800; }
+.guide-course-description { color: var(--guide-muted); font-size: .88rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.guide-course-actions, .guide-course-form-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.guide-course-actions a { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; padding: 8px 11px; color: #e8f0e9; background: #263b30; border: 1px solid rgba(165, 190, 170, .3); border-radius: 6px; font-size: .82rem; font-weight: 750; text-decoration: none; }
+.guide-course-actions a:hover { background: #385640; }
+.guide-course-actions button { min-height: 36px; padding: 7px 10px; font-size: .8rem; }
+.guide-course-dialog form { display: grid; gap: 12px; }
+.guide-course-dialog .guide-dialog-heading { margin-bottom: 6px; }
+@media (max-width: 600px) {
+  .guide-course-panel .guide-panel-heading { align-items: stretch; flex-direction: column; }
+  .guide-course-panel .guide-panel-heading > button { width: 100%; }
+  .guide-course-actions > * { flex: 1 1 100%; }
+}
