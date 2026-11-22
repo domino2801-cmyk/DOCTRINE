@@ -5,6 +5,12 @@
 
 begin;
 
+-- Les lignes historiques sont insérées pour plusieurs candidats depuis SQL Editor.
+-- Suspendre temporairement le trigger d'identité (auth.uid() est nul dans ce contexte),
+-- puis le rétablir avant la fin de la transaction.
+drop trigger if exists doctrine_progress_events_set_identity
+    on public.doctrine_progress_events;
+
 -- Les Officiers Guides rattachés peuvent lire le RETEX du candidat qu'ils suivent.
 grant select on public.doctrine_retex to authenticated;
 drop policy if exists doctrine_retex_assigned_guide_read on public.doctrine_retex;
@@ -86,6 +92,10 @@ where not exists (
       and event.module_id = '7'
       and event.event_type = 'module_completed'
 );
+
+create trigger doctrine_progress_events_set_identity
+    before insert on public.doctrine_progress_events
+    for each row execute function public.doctrine_progress_events_set_identity();
 
 notify pgrst, 'reload schema';
 commit;
