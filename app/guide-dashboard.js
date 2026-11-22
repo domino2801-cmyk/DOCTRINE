@@ -573,7 +573,23 @@
                     content_grade: totals.contentGrade,
                     grade: totals.grade,
                     rubric_scores: totals.scores,
-                    jury_checklist: review.jury_checklist || {},
+                    jury_checklist: (function () {
+                        var allowed = isOral
+                            ? ['oral_operatoire', 'oral_introduction', 'oral_argumentaire', 'oral_conclusion']
+                            : ['p_form_pages', 'p_form_header', 'p_form_references', 'p_form_style',
+                                'p_intro_context', 'p_intro_solution', 'p_intro_plan',
+                                'p_problem_facts', 'p_problem_level', 'p_problem_criteria',
+                                'p_solutions_three', 'p_solutions_details', 'p_solutions_risks',
+                                'p_opinion', 'p_risk_mitigation', 'p_conclusion'];
+                        var existing = review.jury_checklist && typeof review.jury_checklist === 'object'
+                            ? review.jury_checklist : {};
+                        return Object.keys(existing).reduce(function (clean, key) {
+                            if (allowed.indexOf(key) !== -1 && typeof existing[key] === 'boolean') {
+                                clean[key] = existing[key];
+                            }
+                            return clean;
+                        }, {});
+                    })(),
                     status: decision.value,
                     comment: comment.value.trim()
                 }
