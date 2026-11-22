@@ -42,6 +42,8 @@ jobs:
         run: node --test tests/auth-relay.test.mjs
       - name: Test Module 8 access and cohort flow
         run: node --test tests/guide-module8.test.mjs
+      - name: Test independent Guide dashboard
+        run: node --test tests/guide-dashboard.test.mjs
 
   deploy:
     needs: test

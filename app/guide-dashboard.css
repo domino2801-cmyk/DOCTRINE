@@ -1,0 +1,71 @@
+/* Espace Officier Guide — identité visuelle DOCTRINE, isolée des modules 1 à 8. */
+.og-dashboard-overlay {
+    position: fixed; inset: 0; z-index: 9600; display: flex; align-items: center; justify-content: center;
+    padding: 16px; background: rgba(5, 13, 10, .84); color: #e8efe8;
+    font: 14px 'Helvetica Neue', Arial, sans-serif;
+}
+.og-dashboard-overlay[hidden] { display: none !important; }
+.og-dashboard-panel {
+    width: min(1240px, 100%); max-height: min(94vh, 1100px); overflow: auto;
+    padding: clamp(16px, 2.8vw, 30px); border: 1px solid rgba(183, 207, 185, .28);
+    border-radius: 12px; background: #101c17; box-shadow: 0 24px 80px rgba(0,0,0,.48);
+}
+.og-dashboard-header { display:flex; justify-content:space-between; align-items:flex-start; gap:18px; padding-bottom:18px; border-bottom:1px solid rgba(183,207,185,.2); }
+.og-dashboard-kicker { margin:0 0 7px; color:#d8b85b; font-size:11px; font-weight:800; letter-spacing:.13em; }
+.og-dashboard-intro h2 { margin:0; color:#f2f5ee; font-size:clamp(22px,3vw,30px); }
+.og-dashboard-subtitle { margin:7px 0 0; color:#b8c8bb; }
+.og-dashboard-close, .og-dashboard-download {
+    display:inline-flex; align-items:center; justify-content:center; min-height:38px; padding:8px 13px;
+    border:1px solid rgba(183,207,185,.35); border-radius:6px; background:#24382d; color:#eef5ef;
+    font:inherit; font-weight:700; text-decoration:none; cursor:pointer;
+}
+.og-dashboard-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:18px 0 24px; }
+.og-dashboard-metric { display:grid; gap:5px; padding:15px; border:1px solid rgba(183,207,185,.2); border-radius:8px; background:rgba(255,255,255,.035); }
+.og-dashboard-metric-label { color:#d8b85b; font-size:11px; font-weight:800; letter-spacing:.08em; }
+.og-dashboard-metric-value { color:#f5f7ef; font-size:28px; line-height:1.1; }
+.og-dashboard-metric small, .og-dashboard-muted { color:#b8c8bb; }
+.og-dashboard-section { margin-top:22px; }
+.og-dashboard-section h3 { margin:0 0 12px; color:#f2f5ee; font-size:19px; }
+.og-dashboard-search { width:100%; box-sizing:border-box; margin:0 0 12px; padding:11px 12px; border:1px solid rgba(183,207,185,.3); border-radius:6px; background:#0b1510; color:#f2f5ee; font:inherit; }
+.og-dashboard-candidates, .og-dashboard-courses { display:grid; gap:10px; }
+.og-dashboard-candidate, .og-dashboard-course-group { overflow:hidden; border:1px solid rgba(183,207,185,.2); border-radius:8px; background:rgba(255,255,255,.025); }
+.og-dashboard-accordion-title { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 15px; background:rgba(83,111,86,.2); color:#f2f5ee; cursor:pointer; font-weight:700; }
+.og-dashboard-candidate-title { min-width:0; overflow-wrap:anywhere; }
+.og-dashboard-pill, .og-dashboard-count { flex-shrink:0; color:#d8b85b; font-size:11px; font-weight:800; }
+.og-dashboard-pill.is-warning { color:#f0c66a; }
+.og-dashboard-pill.is-ok { color:#9ed4a6; }
+.og-dashboard-candidate-body { padding:14px 15px; }
+.og-dashboard-candidate-body > p { margin:0 0 12px; }
+.og-dashboard-facts { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
+.og-dashboard-fact { display:grid; gap:5px; min-width:0; padding:10px; border:1px solid rgba(183,207,185,.14); border-radius:6px; background:rgba(0,0,0,.12); }
+.og-dashboard-fact span { color:#aebfb1; font-size:11px; }
+.og-dashboard-fact strong { color:#f2f5ee; overflow-wrap:anywhere; }
+.og-dashboard-subaccordion { margin-top:12px; border-top:1px solid rgba(183,207,185,.16); padding-top:10px; }
+.og-dashboard-subaccordion summary { color:#d8b85b; cursor:pointer; font-weight:700; }
+.og-dashboard-document-list { display:grid; grid-template-columns:minmax(120px,1fr) 2fr; gap:6px 12px; }
+.og-dashboard-document-list dt { color:#aebfb1; text-transform:capitalize; }
+.og-dashboard-document-list dd { margin:0; color:#f2f5ee; overflow-wrap:anywhere; }
+.og-dashboard-course { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:13px 15px; border-top:1px solid rgba(183,207,185,.13); }
+.og-dashboard-course h4 { margin:0; color:#edf3ed; font-size:15px; }
+.og-dashboard-course p { margin:5px 0 0; color:#aebfb1; line-height:1.45; }
+.og-dashboard-download { flex-shrink:0; background:#d8b85b; color:#142019; border-color:#d8b85b; }
+.og-dashboard-download[aria-disabled="true"] { opacity:.55; pointer-events:none; }
+.og-dashboard-status { min-height:18px; margin:16px 0 0; color:#b8c8bb; }
+.og-dashboard-status.og-dashboard-error { color:#ffaaa0; }
+.og-dashboard-empty { padding:16px; color:#bdcdbf; text-align:center; border:1px dashed rgba(183,207,185,.2); border-radius:8px; }
+@media (max-width:800px) {
+    .og-dashboard-facts { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:600px) {
+    .og-dashboard-overlay { padding:7px; }
+    .og-dashboard-panel { max-height:96vh; padding:13px; }
+    .og-dashboard-header { flex-direction:column; }
+    .og-dashboard-close { align-self:flex-end; }
+    .og-dashboard-metrics { grid-template-columns:1fr; gap:8px; }
+    .og-dashboard-metric { grid-template-columns:1fr auto; align-items:center; }
+    .og-dashboard-metric small { grid-column:1 / -1; }
+    .og-dashboard-course { align-items:stretch; flex-direction:column; }
+    .og-dashboard-download { width:100%; box-sizing:border-box; }
+    .og-dashboard-document-list { grid-template-columns:1fr; gap:2px; }
+    .og-dashboard-document-list dd { margin-bottom:8px; }
+}
