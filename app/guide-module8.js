@@ -90,6 +90,7 @@
     let activeReviewSubmission = null;
     let savedReviewReport = null;
     let isAuthorized = false;
+    let isAdminUser = false;
     let pageBindingsAttached = false;
 
     function rubricFor(submission) {
@@ -1366,6 +1367,7 @@
             });
             setStatus(status, 'Suivi admission enregistré.', 'success');
             await loadDashboard();
+            await loadGuideCourses();
         } catch (error) {
             setStatus(status, error.message || 'Enregistrement du suivi admission impossible.', 'error');
         } finally {
@@ -1443,28 +1445,30 @@
         const courses = Array.isArray(rows) ? rows : [];
         if (empty) empty.hidden = courses.length > 0;
         courses.forEach(function (course) {
-            const card = element('article', 'guide-course-card');
-            card.appendChild(element('span', 'guide-course-category', course.category));
-            card.appendChild(element('h3', '', course.title));
-            if (course.description) card.appendChild(element('p', 'guide-course-description', course.description));
+            const item = element('article', 'guide-course-card');
+            const heading = element('h3', '', course.title);
+            item.appendChild(heading);
+            if (isAdminUser) {
+                item.appendChild(element('span', 'guide-course-category', course.category));
+                if (course.description) item.appendChild(element('p', 'guide-course-description', course.description));
+            }
             const actions = element('div', 'guide-course-actions');
-            const open = element('a', '', 'Ouvrir dans Google Drive');
-            open.href = course.drive_url;
-            open.target = '_blank';
-            open.rel = 'noopener noreferrer';
-            const download = element('a', '', 'Télécharger le cours');
+            const download = element('a', 'guide-course-download', 'Télécharger');
             download.href = driveDownloadUrl(course.drive_url);
-            download.target = '_blank';
+            download.setAttribute('download', '');
             download.rel = 'noopener noreferrer';
-            const edit = element('button', 'guide-button', 'Modifier');
-            edit.type = 'button';
-            edit.addEventListener('click', function () { openGuideCourseForm(course); });
-            const remove = element('button', 'guide-button', 'Supprimer');
-            remove.type = 'button';
-            remove.addEventListener('click', function () { deleteGuideCourse(course); });
-            actions.append(open, download, edit, remove);
-            card.appendChild(actions);
-            list.appendChild(card);
+            actions.appendChild(download);
+            if (isAdminUser) {
+                const edit = element('button', 'guide-button', 'Modifier');
+                edit.type = 'button';
+                edit.addEventListener('click', function () { openGuideCourseForm(course); });
+                const remove = element('button', 'guide-button', 'Supprimer');
+                remove.type = 'button';
+                remove.addEventListener('click', function () { deleteGuideCourse(course); });
+                actions.append(edit, remove);
+            }
+            item.appendChild(actions);
+            list.appendChild(item);
         });
     }
 
@@ -1481,6 +1485,7 @@
     }
 
     function openGuideCourseForm(course) {
+        if (!isAdminUser) return;
         const form = document.getElementById('guideCourseForm');
         form.reset();
         document.getElementById('guideCourseId').value = course?.id || '';
@@ -1495,6 +1500,7 @@
 
     async function saveGuideCourse(event) {
         event.preventDefault();
+        if (!isAdminUser) return;
         const form = event.currentTarget;
         if (!form.reportValidity()) return;
         const id = document.getElementById('guideCourseId').value;
@@ -1524,6 +1530,7 @@
     }
 
     async function deleteGuideCourse(course) {
+        if (!isAdminUser) return;
         if (!window.confirm('Supprimer le cours « ' + course.title + ' » du catalogue ?')) return;
         try {
             await api(GUIDE_COURSES_ENDPOINT + '?id=eq.' + encodeURIComponent(course.id), { method: 'DELETE' });
@@ -1594,6 +1601,9 @@
         try {
             const access = await currentAccess();
             isAuthorized = Boolean(access && access.allowed);
+            isAdminUser = Boolean(access && access.isAdmin);
+            const adminControls = document.getElementById('guideCourseAdminControls');
+            if (adminControls) adminControls.hidden = !isAdminUser;
             updateNavigation(isAuthorized);
             if (!isAuthorized) {
                 if (accessState) {
@@ -1649,6 +1659,9 @@
         document.addEventListener('doctrine:login', initializePage);
         document.addEventListener('doctrine:logout', function () {
             isAuthorized = false;
+            isAdminUser = false;
+            const adminControls = document.getElementById('guideCourseAdminControls');
+            if (adminControls) adminControls.hidden = true;
             requestGeneration++;
             candidates = [];
             selectedCandidateId = '';
