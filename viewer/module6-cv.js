@@ -166,7 +166,13 @@
     function initialize() {
         if (!auth) return;
         createCard();
+        var body = document.querySelector('#modal-module6 .mod-body[data-mod="6"]');
+        if (body) {
+            var observer = new MutationObserver(function () { createCard(); });
+            observer.observe(body, { childList: true, subtree: false });
+        }
         document.addEventListener('doctrine:login', function () {
+            createCard();
             var card = document.getElementById('module6CvCard');
             if (!card) return;
             loadExisting(card, document.getElementById('module6CvFile'),
