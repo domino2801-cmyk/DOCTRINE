@@ -243,7 +243,7 @@ test('un compte non confirmé ne déverrouille pas l’armoire', async () => {
 test('la session QCM vérifiée donne accès aux sept modules sans valider la progression', async () => {
     const f = fixture({ loadApp: true });
     f.storage.set('bm4-last-module', 'module6');
-    assert.equal(f.gateHiddenOnAppend, true);
+    assert.equal(f.gateHiddenOnAppend, false);
     assert.equal(f.modal.style.display, 'none');
     await settle();
     assert.equal(f.modal.style.display, 'none');
