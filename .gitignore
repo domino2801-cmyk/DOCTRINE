@@ -5,3 +5,5 @@ desktop.ini
 ._*
 supabase/.temp/
 .env
+
+node_modules/
