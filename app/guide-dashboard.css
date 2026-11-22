@@ -96,3 +96,17 @@
     .og-dashboard-oral-date-label { grid-column:auto; }
     .og-dashboard-oral-feedback { display:block; margin-left:0; }
 }
+
+/* Suivi CCPM — reprend les composants du suivi des oraux. */
+.og-dashboard-ccpm-fields { grid-template-columns: minmax(120px,.7fr) minmax(220px,2fr) minmax(130px,.8fr); align-items:start; }
+.og-dashboard-ccpm-fields textarea { resize:vertical; min-height:76px; }
+.og-dashboard-ccpm-validated-label { display:flex; flex-direction:row !important; align-items:center; gap:9px !important; min-height:40px; }
+.og-dashboard-ccpm-validated-label input { width:18px; height:18px; accent-color:#9ed4a6; }
+@media (max-width:800px) {
+    .og-dashboard-ccpm-fields { grid-template-columns:1fr 1fr; }
+    .og-dashboard-ccpm-notes-label { grid-column:1 / -1; grid-row:2; }
+}
+@media (max-width:480px) {
+    .og-dashboard-ccpm-fields { grid-template-columns:1fr; }
+    .og-dashboard-ccpm-notes-label { grid-column:auto; grid-row:auto; }
+}
