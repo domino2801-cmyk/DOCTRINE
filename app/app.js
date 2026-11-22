@@ -163,7 +163,7 @@ const module1Key = 'module1_validated';
         status.textContent = 'Vérification automatique du résultat QCM-MAJOR…';
         module5AutoValidationRequest = auth.jeton().then(function(token) {
             if (!token) throw new Error('Session candidate indisponible.');
-            return fetch(auth.url.replace(/\\/$/, '') + '/rest/v1/rpc/verify_qcm_module5_completion', {
+            return fetch(auth.url.replace(/\/$/, '') + '/rest/v1/rpc/verify_qcm_module5_completion', {
                 method: 'POST',
                 headers: { apikey: auth.key, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
                 body: '{}'
