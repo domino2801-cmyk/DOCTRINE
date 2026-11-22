@@ -64,10 +64,10 @@ test("module 5 is completed automatically from the QCM-MAJOR ready threshold", (
 
 
 test("module 4 is completed automatically after submissions on two distinct dossiers", () => {
-    assert.match(app, /function verifierValidationAutomatiqueModule4\\(\\)/);
+    assert.match(app, /function verifierValidationAutomatiqueModule4\(\)/);
     assert.match(app, /verify_doctrine_module4_completion/);
-    assert.match(app, /id === 'module4'\\) verifierValidationAutomatiqueModule4\\(\\)/);
-    assert.doesNotMatch(app, /if \\(!\\['module2', 'module4', 'module6', 'module7'\\]\\.includes\\(id\\)\\) return/);
+    assert.match(app, /id === 'module4'\) verifierValidationAutomatiqueModule4\(\)/);
+    assert.doesNotMatch(app, /if \(!\['module2', 'module6', 'module7'\]\.includes\(id\)\) return/);
     assert.match(app, /verifierValidationAutomatiqueModule4\\(\\);/);
     assert.match(module4Migration, /count\\(distinct dossier\\)/i);
     assert.match(module4Migration, /submission_count >= 2/);
