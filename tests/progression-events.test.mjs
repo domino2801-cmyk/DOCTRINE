@@ -89,7 +89,7 @@ test("module 4 is completed automatically after submissions on two distinct doss
 test("module 7 is completed automatically when a RETEX is inserted", async () => {
     const retexMigration = readFileSync(path.join(root, "supabase", "module7-retex-auto-validation.sql"), "utf8");
     const retexViewer = readFileSync(path.join(root, "viewer", "retex-signalements.js"), "utf8");
-    assert.match(app, /if \(!\['module2', 'module6'\]\.includes\(id\)\) return/);
+    assert.match(app, /if \(id !== 'module2'\) return/);
     assert.doesNotMatch(app, /if \(!\['module2', 'module6', 'module7'\]\.includes\(id\)\) return/);
     assert.match(retexViewer, /insertRow\('doctrine_retex', row\)\.then\(function \(\) \{[\s\S]*Module 7 validé automatiquement/);
     const retexCardStart = html.indexOf('id="retexCard"');
@@ -117,7 +117,7 @@ test("module 6 is validated automatically after a private candidate CV PDF is up
     assert.match(html, /6\.4\. Dépôt de votre CV/);
     assert.match(html, /id="module6CvFile" type="file" accept="application\/pdf,\.pdf"/);
     assert.match(html, /id="module6CvUpload"/);
-    assert.match(cvViewer, /storage\/v1\/object\/doctrine-candidate-cv/);
+    assert.match(cvViewer, /var BUCKET = 'doctrine-candidate-cv'/);
     assert.match(cvViewer, /doctrine_candidate_cvs\?on_conflict=candidate_id/);
     assert.match(cvViewer, /application\/pdf/);
     assert.match(cvSql, /create table if not exists public\.doctrine_candidate_cvs/i);
