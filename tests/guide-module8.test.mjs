@@ -273,6 +273,8 @@ test("le catalogue commun est administré par admin et consultable en téléchar
     assert.match(page, /id="guideCourseCatalog"/);
     assert.match(page, /id="guideCourseAdminControls" hidden/);
     assert.match(page, /id="guideCourseForm"/);
+    assert.match(page, /<dialog id="guideCourseDialog"[^>]*aria-labelledby="guideCourseDialogTitle">/);
+    assert.doesNotMatch(page, /<dialog id="guideCourseDialog"[^>]*\shidden(?:\s|>)/);
     assert.match(script, /let isAdminUser = false/);
     assert.match(script, /if \(!isAdminUser\) return/);
     assert.match(script, /function driveDownloadUrl\(value\)/);
