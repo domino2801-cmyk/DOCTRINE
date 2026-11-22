@@ -13,6 +13,8 @@
     var courses = [];
     var loading = false;
     var moduleEventsAvailable = true;
+    var candidateCvs = Object.create(null);
+    var cvStatusAvailable = true;
 
     function auth() { return window.DoctrineAuth; }
     function node(tag, className, text) {
@@ -56,6 +58,24 @@
         }).then(function (response) {
             return response.json().catch(function () { return {}; }).then(function (payload) {
                 if (!response.ok) throw new Error(payload.message || payload.details || 'Erreur HTTP ' + response.status);
+                return payload;
+            });
+        });
+    }
+    function storageApi(path, options) {
+        options = options || {};
+        return auth().jeton().then(function (token) {
+            if (!token) throw new Error('Session expirée. Reconnectez-vous.');
+            var headers = { apikey: auth().key, Authorization: 'Bearer ' + token };
+            if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+            return fetch(auth().url.replace(/\\/$/, '') + '/storage/v1/' + path, {
+                method: options.method || 'GET',
+                headers: headers,
+                body: options.body === undefined ? undefined : JSON.stringify(options.body)
+            });
+        }).then(function (response) {
+            return response.json().catch(function () { return {}; }).then(function (payload) {
+                if (!response.ok) throw new Error(payload.message || payload.error || 'Erreur stockage HTTP ' + response.status);
                 return payload;
             });
         });
@@ -331,22 +351,61 @@
             body.append(renderModuleProgress(candidate));
             body.append(renderOralTracking(candidate));
             body.append(renderCcpmTracking(candidate));
-            var admission = candidate.admission;
-            if (admission && typeof admission === 'object' && Object.keys(admission).length) {
-                var docs = node('details', 'og-dashboard-subaccordion');
-                docs.append(node('summary', '', 'Dossier et documents demandés'));
-                var list = node('dl', 'og-dashboard-document-list');
-                Object.keys(admission).filter(function (key) {
-                    return !['candidate_id', 'created_at', 'updated_at', 'id', 'ccpm_date', 'ccpm_score', 'guide_notes', 'ccpm_validated', 'mock_orals_done', 'mock_orals_target', 'next_oral_date'].includes(key);
-                }).forEach(function (key) {
-                    var value = admission[key];
-                    if (value === null || value === undefined || typeof value === 'object') return;
-                    list.append(node('dt', '', key.replace(/_/g, ' ')), node('dd', '', String(value)));
+            var admission = candidate.admission || {};
+            var docs = node('details', 'og-dashboard-subaccordion');
+            docs.append(node('summary', '', 'Dossier et documents demandés'));
+            var list = node('dl', 'og-dashboard-document-list');
+            var cv = candidateCvs[candidate.candidate.id];
+            list.append(node('dt', '', 'CV du candidat'));
+            var cvValue = node('dd', 'og-dashboard-cv-value');
+            if (!cvStatusAvailable) {
+                cvValue.append(node('span', 'og-dashboard-pill is-unknown', 'Statut indisponible'));
+            } else if (!cv) {
+                cvValue.append(node('span', 'og-dashboard-pill is-pending', 'Non fourni'));
+            } else {
+                cvValue.append(node('span', 'og-dashboard-pill is-ok', 'Fourni'));
+                cvValue.append(node('span', 'og-dashboard-cv-filename', cv.original_filename || 'CV.pdf'));
+                if (cv.uploaded_at) cvValue.append(node('small', 'og-dashboard-muted',
+                    'Déposé le ' + new Date(cv.uploaded_at).toLocaleDateString('fr-FR')));
+                var download = node('button', 'og-dashboard-download og-dashboard-cv-download', 'Préparer le téléchargement');
+                download.type = 'button';
+                download.addEventListener('click', function () {
+                    download.disabled = true;
+                    download.textContent = 'Préparation…';
+                    storageApi('object/sign/doctrine-candidate-cv/' + encodeURIComponent(candidate.candidate.id) + '%2Fcv.pdf', {
+                        method: 'POST', body: { expiresIn: 300 }
+                    }).then(function (signed) {
+                        var signedPath = signed.signedURL || signed.signedUrl;
+                        if (!signedPath) throw new Error('Lien de téléchargement non retourné.');
+                        var absoluteUrl = /^https?:\\/\\//i.test(signedPath)
+                            ? signedPath : auth().url.replace(/\\/$/, '') + '/storage/v1' + (signedPath.charAt(0) === '/' ? signedPath : '/' + signedPath);
+                        var link = node('a', 'og-dashboard-download og-dashboard-cv-download', 'Télécharger le CV');
+                        link.href = absoluteUrl;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        link.download = cv.original_filename || 'CV.pdf';
+                        download.replaceWith(link);
+                    }).catch(function (error) {
+                        download.disabled = false;
+                        download.textContent = 'Réessayer le téléchargement';
+                        cvValue.append(node('small', 'og-dashboard-oral-feedback is-error', error.message));
+                    });
                 });
-                if (!list.children.length) list.append(node('p', 'og-dashboard-muted', 'Aucun état de document renseigné.'));
-                docs.append(list);
-                body.append(docs);
+                cvValue.append(download);
             }
+            list.append(cvValue);
+            Object.keys(admission).filter(function (key) {
+                return !['candidate_id', 'created_at', 'updated_at', 'id', 'ccpm_date', 'ccpm_score', 'guide_notes', 'ccpm_validated', 'mock_orals_done', 'mock_orals_target', 'next_oral_date'].includes(key);
+            }).forEach(function (key) {
+                var value = admission[key];
+                if (value === null || value === undefined || typeof value === 'object') return;
+                list.append(node('dt', '', key.replace(/_/g, ' ')), node('dd', '', String(value)));
+            });
+            if (list.children.length <= 2 && !Object.keys(admission).length) {
+                list.append(node('p', 'og-dashboard-muted', 'Aucun autre état de document renseigné.'));
+            }
+            docs.append(list);
+            body.append(docs);
             card.append(body);
             candidatesNode.append(card);
         });
@@ -397,14 +456,20 @@
             method: 'POST', body: { p_candidate_id: null }
         });
         var courseRequest = api('guide_course_catalog?select=id,title,category,description,drive_url&order=category.asc,title.asc');
-        var progressRequest = candidateRequest.then(function (payload) {
-            var ids = (payload.candidates || []).map(function (candidate) {
+        var idsRequest = candidateRequest.then(function (payload) {
+            return (payload.candidates || []).map(function (candidate) {
                 return candidate.candidate && candidate.candidate.id;
             }).filter(Boolean);
+        });
+        var progressRequest = idsRequest.then(function (ids) {
             if (!ids.length) return [];
             return api('doctrine_progress_events?select=user_id,module_id,event_type,created_at&user_id=in.(' + ids.join(',') + ')&order=created_at.desc');
         });
-        Promise.allSettled([candidateRequest, courseRequest, progressRequest]).then(function (results) {
+        var cvRequest = idsRequest.then(function (ids) {
+            if (!ids.length) return [];
+            return api('doctrine_candidate_cvs?select=candidate_id,storage_path,original_filename,uploaded_at&candidate_id=in.(' + ids.join(',') + ')');
+        });
+        Promise.allSettled([candidateRequest, courseRequest, progressRequest, cvRequest]).then(function (results) {
             if (results[0].status === 'fulfilled') {
                 candidates = Array.isArray(results[0].value.candidates) ? results[0].value.candidates : [];
             } else {
@@ -419,6 +484,13 @@
             }
             moduleEventsAvailable = results[2].status === 'fulfilled';
             var progressEvents = moduleEventsAvailable && Array.isArray(results[2].value) ? results[2].value : [];
+            cvStatusAvailable = results[3].status === 'fulfilled';
+            candidateCvs = Object.create(null);
+            if (cvStatusAvailable) {
+                (Array.isArray(results[3].value) ? results[3].value : []).forEach(function (cv) {
+                    candidateCvs[cv.candidate_id] = cv;
+                });
+            }
             candidates.forEach(function (candidate) {
                 candidate.doctrine = candidate.doctrine || {};
                 candidate.doctrine.progress_events = progressEvents.filter(function (event) {
