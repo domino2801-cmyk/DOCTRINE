@@ -34,6 +34,12 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /guide_notes: notes\.value\.trim\(\) \|\| null/);
     assert.match(script, /ccpm_validated: validated\.checked/);
     assert.match(script, /'ccpm_date'/);
+    assert.match(script, /doctrine_candidate_cvs\?select=candidate_id,storage_path,original_filename,uploaded_at/);
+    assert.match(script, /CV du candidat/);
+    assert.match(script, /Non fourni/);
+    assert.match(script, /Fourni/);
+    assert.match(script, /object\/sign\/doctrine-candidate-cv/);
+    assert.match(script, /Préparer le téléchargement/);
     assert.doesNotMatch(script, /ccpm_date\s*:/);
     assert.match(script, /Progression des modules 1 à 7/);
     assert.match(script, /admin \|\| role === 'guide' \|\| role === 'officier_guide' \|\| specialty === 'OG'/);
