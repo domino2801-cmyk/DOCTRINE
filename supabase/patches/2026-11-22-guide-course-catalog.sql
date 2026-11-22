@@ -1,10 +1,10 @@
--- Catalogue de cours de l’Officier Guide — Module 8.
+-- Catalogue commun des supports pédagogiques Officier Guide.
 -- Exécuter une seule fois dans Supabase > SQL Editor.
 begin;
 
 create table if not exists public.guide_course_catalog (
     id uuid primary key default gen_random_uuid(),
-    guide_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+    guide_id uuid references auth.users (id) on delete cascade,
     title text not null check (char_length(trim(title)) between 1 and 160),
     category text not null check (char_length(trim(category)) between 1 and 100),
     description text not null default '' check (char_length(description) <= 1200),
@@ -25,7 +25,8 @@ grant select, insert, update, delete on public.guide_course_catalog to authentic
 
 -- Catalogue commun : lecture Officier Guide, gestion réservée aux administrateurs.
 alter table public.guide_course_catalog
-    alter column guide_id set default auth.uid();
+    alter column guide_id drop not null,
+    alter column guide_id drop default;
 
 drop policy if exists guide_course_catalog_select_own on public.guide_course_catalog;
 drop policy if exists guide_course_catalog_insert_own on public.guide_course_catalog;
