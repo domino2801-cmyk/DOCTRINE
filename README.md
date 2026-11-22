@@ -27,6 +27,10 @@ Les états détaillés des dossiers restent conservés sur l’appareil. À part
 
 Pour activer le journal, exécutez en entier `supabase/progression-events.sql` dans **Supabase > SQL Editor**, sur le même projet partagé que QCM-MAJOR, après `supabase/fiche-submissions.sql`. Le script crée `public.doctrine_progress_events` dans le schéma `public` (ce n’est pas un dossier). Vérifiez ensuite dans **Database > Tables** que `doctrine_progress_events` apparaît sous le schéma `public`. QCM-MAJOR doit également avoir reçu sa migration `20261110120000_admin_candidate_tracking.sql` pour afficher ces événements dans la chronologie administrateur. Les événements sont envoyés lorsque l’application est connectée ; le statut indique si une étape n’a pas pu être synchronisée.
 
+### Validation de fin des modules
+
+Les modules 2, 4, 5, 6 et 7 proposent une action explicite « Valider la fin du module ». Cette validation déclarative est enregistrée dans `doctrine_progress_events` avec l’événement `module_completed`. Le module 1 conserve sa validation après lecture de la présentation ; le module 3 est validé lorsque tous ses dossiers sont marqués « Fait ». Les modules 1 à 7 sont ainsi pris en compte dans le tableau de bord Admin de QCM-MAJOR. Une validation manuelle reste une déclaration du candidat et ne constitue pas une preuve inviolable de maîtrise.
+
 ## Compte administrateur
 
 Les administrateurs disposent, dans les modules, de commandes pour modifier le contenu, gérer les liens et organiser les rubriques. Les changements enregistrés sont publiés pour les utilisateurs. Les options de sauvegarde et de restauration permettent d’exporter ou de réimporter le contenu personnalisé.
