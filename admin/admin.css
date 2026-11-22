@@ -236,37 +236,3 @@ body.adm-on .adm-row-tools, body.adm-on .adm-row-tools * { pointer-events: auto;
     .anc-cohort-list { grid-template-columns: 1fr; padding: 10px; }
 }
 
-
-/* Carte unique de pilotage administrateur dans le module 8 */
-#modal-module8 .module-nav-controls .adm-toolbar-toggle,
-#modal-module8 .module-nav-controls .adm-views-toolbar-toggle,
-#modal-module8 .module-nav-controls .adm-fiches-toolbar-signalements,
-#modal-module8 .module-nav-controls .adm-fiches-toolbar-retex,
-#modal-module8 .module-nav-controls .adm-fiches-toolbar-notifications,
-#modal-module8 .module-nav-controls .adm-course-catalog-toggle,
-#modal-module8 .module-nav-controls .adm-cohort-toolbar { display: none !important; }
-.module8-admin-hub {
-    margin: 0 0 18px; padding: 20px; border: 1px solid rgba(229,193,88,.55);
-    border-radius: 14px; color: #edf3e9;
-    background: linear-gradient(135deg, #142820 0%, #203d30 58%, #102019 100%);
-    box-shadow: 0 12px 28px rgba(0,0,0,.22);
-}
-.module8-admin-hub[hidden] { display: none !important; }
-.module8-admin-hub-heading p { margin: 0 0 5px; color: #e5c158; font-size: 11px; font-weight: 800; letter-spacing: .16em; }
-.module8-admin-hub-heading h3 { margin: 0; color: #fff; font-size: 21px; }
-.module8-admin-hub-heading span { display: block; margin-top: 5px; color: #c5d3c8; font-size: 13px; }
-.module8-admin-hub-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-top: 18px; }
-.module8-admin-hub-grid button {
-    min-height: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
-    padding: 10px 8px; border: 1px solid rgba(229,193,88,.45); border-radius: 9px;
-    background: rgba(255,255,255,.07); color: #fff; font: 700 12px 'Helvetica Neue',Arial,sans-serif;
-    letter-spacing: .04em; cursor: pointer; transition: background .18s ease, transform .18s ease;
-}
-.module8-admin-hub-grid button span { font-size: 22px; }
-.module8-admin-hub-grid button:hover { background: rgba(229,193,88,.2); transform: translateY(-2px); }
-.module8-admin-hub-grid button:focus-visible { outline: 3px solid #e5c158; outline-offset: 3px; }
-@media (max-width: 620px) {
-    .module8-admin-hub { padding: 15px; }
-    .module8-admin-hub-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    .module8-admin-hub-grid button { min-height: 68px; }
-}
