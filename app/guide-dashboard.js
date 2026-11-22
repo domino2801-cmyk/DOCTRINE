@@ -350,32 +350,45 @@
             { key: 'avis_conclusion', label: 'Avis et conclusion', max: 4, group: 'content' }
         ];
     }
-    function openCandidatePdf(submission, title, button) {
-        if (!submission.storage_path) return;
+    function relativeStorageUrl(signedUrl) {
+        if (/^https?:\\/\\//i.test(signedUrl)) return signedUrl;
+        if (signedUrl.startsWith('/storage/v1/')) return new URL(signedUrl, auth().url).href;
+        if (signedUrl.startsWith('/object/')) return new URL('/storage/v1' + signedUrl, auth().url).href;
+        if (signedUrl.startsWith('object/')) return new URL('/storage/v1/' + signedUrl, auth().url).href;
+        return new URL(signedUrl, auth().url).href;
+    }
+    async function openCandidatePdf(candidate, submission, button) {
+        if (!submission.storage_path) {
+            setStatus('Aucun PDF n’est associé à cette fiche.', true);
+            return;
+        }
+        var isOral = submission.submission_type === 'support_oral';
+        var title = candidateName(candidate) + ' — ' +
+            (isOral ? 'Fiche support oral' : 'Fiche de proposition') +
+            ' — Dossier ' + submission.dossier;
         button.disabled = true;
+        var originalLabel = button.textContent;
         button.textContent = 'Ouverture…';
-        var path = submission.storage_path.split('/').map(encodeURIComponent).join('/');
-        storageApi('object/sign/candidate-fiches/' + path, {
-            method: 'POST', body: { expiresIn: 300 }
-        }).then(function (payload) {
-            var signedUrl = payload.signedURL || payload.signedUrl;
-            if (!signedUrl) throw new Error('URL PDF signée manquante.');
-            if (!/^https?:\/\//i.test(signedUrl)) {
-                signedUrl = new URL(signedUrl.replace(/^\/?storage\/v1\//, '/storage/v1/'),
-                    auth().url).href;
-            }
-            var viewer = window.DoctrineViewer;
+        try {
+            var path = submission.storage_path.split('/').map(encodeURIComponent).join('/');
+            var signed = await storageApi('object/sign/candidate-fiches/' + path, {
+                method: 'POST', body: { expiresIn: 300 }
+            });
+            var signedUrl = signed.signedURL || signed.signedUrl;
+            if (!signedUrl) throw new Error('URL PDF signée manquante dans la réponse Storage.');
+            var viewer = window.parent !== window && window.parent.DoctrineViewer
+                ? window.parent.DoctrineViewer : window.DoctrineViewer;
             if (!viewer || typeof viewer.openSignedPdf !== 'function') {
                 throw new Error('La visionneuse PDF est indisponible. Rechargez la page.');
             }
-            return viewer.openSignedPdf(signedUrl, title, '8');
-        }).catch(function (error) {
-            setStatus('Ouverture du PDF impossible : ' + error.message, true);
-        }).finally(function () {
+            await viewer.openSignedPdf(relativeStorageUrl(signedUrl), title, '8');
+            setStatus('Fiche ouverte : ' + title, false);
+        } catch (error) {
+            setStatus('Ouverture du PDF impossible : ' + (error.message || error), true);
+        } finally {
             button.disabled = false;
-            button.textContent = title.indexOf('oral') !== -1
-                ? 'Ouvrir la fiche support oral' : 'Ouvrir la fiche de proposition';
-        });
+            button.textContent = originalLabel;
+        }
     }
     function openDashboardReview(candidate, submission, runCorrection) {
         var dialog = document.getElementById('ogDashboardReviewDialog');
@@ -633,7 +646,7 @@
                     button.title = submission.storage_path ? button.textContent : 'Aucun PDF archivé pour cette fiche.';
                 });
                 openButton.addEventListener('click', function () {
-                    openCandidatePdf(submission, openButton.textContent, openButton);
+                    openCandidatePdf(candidate, submission, openButton);
                 });
                 evaluateButton.addEventListener('click', function () {
                     openDashboardReview(candidate, submission, false);
