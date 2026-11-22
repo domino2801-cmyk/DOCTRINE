@@ -372,7 +372,7 @@
                 download.addEventListener('click', function () {
                     download.disabled = true;
                     download.textContent = 'Préparation…';
-                    storageApi('object/sign/doctrine-candidate-cv/' + encodeURIComponent(candidate.candidate.id) + '%2Fcv.pdf', {
+                    storageApi('object/sign/doctrine-candidate-cv/' + encodeURIComponent(candidate.candidate.id) + '/cv.pdf', {
                         method: 'POST', body: { expiresIn: 300 }
                     }).then(function (signed) {
                         var signedPath = signed.signedURL || signed.signedUrl;
