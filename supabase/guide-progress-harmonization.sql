@@ -50,6 +50,47 @@ begin
 end;
 $$;
 
+-- Autoriser la lecture des événements uniquement au candidat concerné,
+-- à son Officier Guide rattaché ou à un administrateur.
+-- Ne supprimer aucune politique existante : si une politique de même nom existe,
+-- le contrôle ci-dessous impose une vérification manuelle en cas de périmètre différent.
+grant select on public.doctrine_progress_events to authenticated;
+do $policy_check$
+declare
+    existing_qual text;
+begin
+    select qual into existing_qual
+    from pg_catalog.pg_policies
+    where schemaname = 'public'
+      and tablename = 'doctrine_progress_events'
+      and policyname = 'doctrine_progress_events_candidate_or_assigned_guide_read'
+      and cmd = 'SELECT';
+
+    if existing_qual is null then
+        if exists (
+            select 1 from pg_catalog.pg_policies
+            where schemaname = 'public'
+              and tablename = 'doctrine_progress_events'
+              and policyname = 'doctrine_progress_events_candidate_or_assigned_guide_read'
+        ) then
+            raise exception 'Politique de lecture des événements existante avec une commande inattendue ; vérification manuelle requise.';
+        end if;
+        execute $create_policy$
+            create policy doctrine_progress_events_candidate_or_assigned_guide_read
+            on public.doctrine_progress_events
+            for select to authenticated
+            using (
+                user_id = auth.uid()
+                or public.doctrine_can_access_candidate(user_id)
+            )
+        $create_policy$;
+    elsif replace(replace(existing_qual, ' ', ''), E'\\n', '') not ilike
+          '%user_id=auth.uid()%public.doctrine_can_access_candidate(user_id)%' then
+        raise exception 'La politique de lecture des événements existe avec une règle différente ; aucune modification automatique effectuée.';
+    end if;
+end;
+$policy_check$;
+
 -- Préserver le trigger d'identité : un utilisateur connecté ne peut jamais
 -- choisir l'identité d'un événement. Depuis une migration SQL privilégiée,
 -- auth.uid() est NULL ; l'identité explicite du candidat est alors conservée.
