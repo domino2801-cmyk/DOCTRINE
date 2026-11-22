@@ -87,5 +87,5 @@ test("module 7 is completed automatically when a RETEX is inserted", async () =>
     assert.match(retexMigration, /event_type = 'module_completed'/i);
     assert.match(retexMigration, /module_id = '7'/i);
     assert.match(retexMigration, /insert into public\.doctrine_progress_events/i);
-    assert.match(readme, /Module 7 est validé automatiquement dès que le candidat transmet son RETEX/);
+    assert.match(readme, /module 7 est validé automatiquement dès que le candidat transmet son RETEX/i);
 });
