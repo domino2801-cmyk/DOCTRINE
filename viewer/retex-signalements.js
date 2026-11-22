@@ -5,6 +5,26 @@
     var signalementForm = document.getElementById('signalementForm');
     if (!retexForm || !signalementForm) return;
 
+    function showModule7CompletionMessage(message) {
+        var content = document.querySelector('#modal-module7 .modal-content');
+        if (!content) return;
+        var notice = document.getElementById('module7CompletionMessage');
+        if (!notice) {
+            notice = document.createElement('section');
+            notice.id = 'module7CompletionMessage';
+            notice.className = 'module-completion-control';
+            notice.style.cssText = 'margin:28px 0 12px;padding:16px;border:2px solid #0b2240;border-radius:8px;background:#f8fafc;';
+            var text = document.createElement('p');
+            text.className = 'module-completion-status';
+            text.style.cssText = 'margin:0;color:#166534;font-size:.95rem;font-weight:700;';
+            text.setAttribute('role', 'status');
+            text.setAttribute('aria-live', 'polite');
+            notice.appendChild(text);
+            content.appendChild(notice);
+        }
+        notice.querySelector('p').textContent = message;
+    }
+
     function checked(form, name) {
         var el = form.querySelector('input[name="' + name + '"]:checked');
         return el ? el.value : null;
@@ -87,6 +107,7 @@
         retexForm.querySelectorAll('input, textarea').forEach(function (el) { el.disabled = true; });
         retexSubmit.disabled = true;
         setStatus(retexStatus, message, true);
+        showModule7CompletionMessage('RETEX déjà transmis. Module 7 validé automatiquement. Merci pour ton retour !');
         retexCard.classList.add('is-sent');
         retexForm.hidden = true;
         retexBadge.hidden = false;
@@ -165,7 +186,7 @@
         retexSubmit.disabled = true;
         setStatus(retexStatus, 'Envoi en cours…', true);
         insertRow('doctrine_retex', row).then(function () {
-            lockRetex('RETEX transmis. Module 7 validé automatiquement. Merci pour ton retour !');
+            lockRetex('RETEX déjà transmis. Module 7 validé automatiquement. Merci pour ton retour !');
         }).catch(function (err) {
             retexSubmit.disabled = false;
             if (err.code === '23505') lockRetex(errorMessage(err));
