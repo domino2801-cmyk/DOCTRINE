@@ -107,7 +107,8 @@
     function lockRetex(message) {
         retexForm.querySelectorAll('input, textarea').forEach(function (el) { el.disabled = true; });
         retexSubmit.disabled = true;
-        setStatus(retexStatus, message, true);
+        // La confirmation est affichée uniquement dans le bloc de fin du module.
+        setStatus(retexStatus, '', true);
         showModule7CompletionMessage('RETEX déjà transmis. Module 7 validé automatiquement. Merci pour ton retour !');
         retexCard.classList.add('is-sent');
         retexForm.hidden = true;
