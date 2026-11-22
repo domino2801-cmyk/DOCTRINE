@@ -70,6 +70,9 @@ begin
     if auth.uid() is null then
         raise exception 'Une session candidat est requise.' using errcode = '42501';
     end if;
+    if public.doctrine_is_admin() or public.doctrine_is_guide() then
+        raise exception 'Le dépôt de CV est réservé aux comptes candidats.' using errcode = '42501';
+    end if;
     new.candidate_id := auth.uid();
     new.uploaded_at := now();
     if new.storage_path <> auth.uid()::text || '/cv.pdf' then
