@@ -168,3 +168,70 @@ body.adm-on .adm-row-tools, body.adm-on .adm-row-tools * { pointer-events: auto;
 .adm-views-specialty:focus {
     outline: 2px solid #a82025; outline-offset: 2px;
 }
+
+
+/* Tableau de bord de cohorte global — administration ANC */
+.adm-cohort-toolbar { border-color: #e5c158; }
+.adm-cohort-toolbar[hidden] { display: none; }
+.anc-cohort-dialog {
+    position: fixed; inset: 0; z-index: 9400; display: flex; align-items: center; justify-content: center;
+    padding: 16px; background: rgba(5, 14, 12, .76); color: #17231d;
+    font: 14px 'Helvetica Neue', Arial, sans-serif;
+}
+.anc-cohort-dialog[hidden] { display: none; }
+.anc-cohort-panel {
+    width: min(1120px, 100%); max-height: 92vh; overflow: auto; padding: 22px;
+    border: 1px solid #b8c4b7; border-radius: 10px; background: #f7f8f4;
+    box-shadow: 0 18px 60px rgba(0,0,0,.35);
+}
+.anc-cohort-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+.anc-cohort-kicker { margin: 0 0 5px; color: #647568; font-size: 11px; font-weight: 800; letter-spacing: .12em; }
+.anc-cohort-header h2 { margin: 0 0 6px; color: #1d382b; font-size: 24px; }
+.anc-cohort-subtitle, .anc-cohort-description { margin: 0; color: #617064; line-height: 1.5; }
+.anc-cohort-close, .anc-cohort-refresh, .anc-cohort-mail {
+    display: inline-block; padding: 9px 13px; border: 1px solid #365644; border-radius: 6px;
+    background: #fff; color: #254533; font: inherit; font-weight: 700; cursor: pointer; text-decoration: none;
+}
+.anc-cohort-close:hover, .anc-cohort-refresh:hover, .anc-cohort-mail:hover { background: #eaf0e9; }
+.anc-cohort-controls { display: flex; gap: 10px; margin: 16px 0 8px; }
+.anc-cohort-search, .anc-cohort-period {
+    min-width: 0; padding: 10px 12px; border: 1px solid #c5cec4; border-radius: 6px; background: #fff; color: #17231d; font: inherit;
+}
+.anc-cohort-search { flex: 1; }
+.anc-cohort-status { color: #536456; }
+.anc-cohort-group { margin: 12px 0; border: 1px solid #cbd4c9; border-radius: 8px; background: #fff; overflow: hidden; }
+.anc-cohort-summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 15px 17px; cursor: pointer; font-size: 16px; font-weight: 800; list-style: none; }
+.anc-cohort-summary::-webkit-details-marker { display: none; }
+.anc-cohort-summary::after { content: '+'; margin-left: auto; font-size: 20px; }
+.anc-cohort-group[open] .anc-cohort-summary::after { content: '−'; }
+.anc-cohort-group-ready .anc-cohort-summary { border-left: 6px solid #31845a; color: #205b3a; background: #edf6ef; }
+.anc-cohort-group-watch .anc-cohort-summary { border-left: 6px solid #d18a23; color: #795014; background: #fff5e5; }
+.anc-cohort-group-difficulty .anc-cohort-summary { border-left: 6px solid #b64a45; color: #812f2c; background: #fff0ef; }
+.anc-cohort-count { min-width: 28px; padding: 3px 8px; border-radius: 20px; background: rgba(0,0,0,.08); text-align: center; }
+.anc-cohort-description { padding: 10px 17px 0; font-size: 12px; }
+.anc-cohort-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 10px; padding: 12px 16px 16px; }
+.anc-cohort-candidate { padding: 13px; border: 1px solid #dce2d9; border-radius: 7px; background: #fff; }
+.anc-cohort-candidate-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.anc-cohort-name { color: #1d382b; font-size: 15px; }
+.anc-cohort-pill { flex: 0 0 auto; padding: 4px 7px; border-radius: 4px; font-size: 10px; font-weight: 800; }
+.anc-cohort-pill-ready { background: #e3f2e7; color: #205b3a; }
+.anc-cohort-pill-watch { background: #fff0d6; color: #795014; }
+.anc-cohort-pill-difficulty { background: #fbe4e2; color: #812f2c; }
+.anc-cohort-meta { margin: 7px 0 10px; color: #667368; font-size: 12px; overflow-wrap: anywhere; }
+.anc-cohort-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.anc-cohort-metric { padding: 7px; border-radius: 5px; background: #f3f5f1; }
+.anc-cohort-metric span, .anc-cohort-metric strong { display: block; }
+.anc-cohort-metric span { color: #657267; font-size: 11px; }
+.anc-cohort-metric strong { margin-top: 3px; color: #263d2f; }
+.anc-cohort-actions { margin-top: 10px; }
+.anc-cohort-mail { padding: 6px 9px; font-size: 12px; }
+.anc-cohort-empty { grid-column: 1 / -1; margin: 0; padding: 10px; color: #647568; }
+.anc-cohort-footer { display: flex; justify-content: flex-end; margin-top: 14px; }
+.anc-cohort-refresh:disabled { opacity: .6; cursor: wait; }
+@media (max-width: 620px) {
+    .anc-cohort-panel { padding: 14px; }
+    .anc-cohort-header { flex-direction: column; }
+    .anc-cohort-close { align-self: flex-end; }
+    .anc-cohort-controls { flex-direction: column; }
+    .anc-cohort-list { grid-template-columns: 1fr; padding: 10px; }
+}
