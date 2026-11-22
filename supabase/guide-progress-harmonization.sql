@@ -69,16 +69,45 @@ begin
 end;
 $$;
 
--- Ajouter uniquement la politique dédiée aux guides affectés.
--- Les politiques candidat et administrateur existantes restent intactes.
-drop policy if exists doctrine_retex_assigned_guide_read on public.doctrine_retex;
-create policy doctrine_retex_assigned_guide_read
-    on public.doctrine_retex
-    for select to authenticated
-    using (
-        user_id = auth.uid()
-        or public.doctrine_can_access_candidate(user_id)
-    );
+-- Ajouter la politique de lecture RETEX uniquement si son nom est libre.
+-- Si elle existe déjà, vérifier qu'elle a exactement le périmètre attendu ;
+-- ne jamais la supprimer/remplacer silencieusement.
+do $
+declare
+    existing_qual text;
+begin
+    select qual into existing_qual
+    from pg_catalog.pg_policies
+    where schemaname = 'public'
+      and tablename = 'doctrine_retex'
+      and policyname = 'doctrine_retex_assigned_guide_read'
+      and cmd = 'SELECT';
+
+    if existing_qual is null then
+        if exists (
+            select 1 from pg_catalog.pg_policies
+            where schemaname = 'public'
+              and tablename = 'doctrine_retex'
+              and policyname = 'doctrine_retex_assigned_guide_read'
+        ) then
+            raise exception 'Politique doctrine_retex_assigned_guide_read existante avec une commande inattendue ; vérification manuelle requise.';
+        end if;
+
+        execute $policy$
+            create policy doctrine_retex_assigned_guide_read
+            on public.doctrine_retex
+            for select to authenticated
+            using (
+                user_id = auth.uid()
+                or public.doctrine_can_access_candidate(user_id)
+            )
+        $policy$;
+    elsif replace(replace(existing_qual, ' ', ''), E'\\n', '') not ilike
+          '%user_id=auth.uid()%public.doctrine_can_access_candidate(user_id)%' then
+        raise exception 'La politique doctrine_retex_assigned_guide_read existe avec une règle différente ; aucune modification automatique effectuée.';
+    end if;
+end;
+$;
 
 -- Module 3 : l'événement module_started constitue la preuve de première ouverture.
 insert into public.doctrine_progress_events (user_id, event_type, module_id)
