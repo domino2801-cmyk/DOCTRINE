@@ -77,6 +77,44 @@
             <p id="guideEmptyCohort" class="guide-empty" hidden>Aucun candidat n’est encore rattaché à votre cohorte.</p>
         </section>
 
+        <section id="guideCourseCatalog" class="guide-panel guide-course-panel" aria-labelledby="guideCourseTitle">
+            <div class="guide-panel-heading">
+                <div>
+                    <p class="guide-kicker">SYNTHÈSE OPÉRATIONNELLE</p>
+                    <h2 id="guideCourseTitle">Catalogue des cours</h2>
+                    <p class="guide-muted">Espace réservé à l’Officier Guide — préparation et téléchargement des supports à dispenser aux candidats.</p>
+                </div>
+                <button id="guideCourseAdd" class="guide-button guide-button-primary" type="button">+ Ajouter un cours</button>
+            </div>
+            <p id="guideCourseStatus" class="guide-form-status" role="status" aria-live="polite"></p>
+            <div id="guideCourseList" class="guide-course-grid"></div>
+            <p id="guideCourseEmpty" class="guide-empty" hidden>Aucun cours enregistré. Ajoutez votre premier support avec son lien Google Drive.</p>
+        </section>
+
+        <dialog id="guideCourseDialog" class="guide-dialog guide-course-dialog" aria-labelledby="guideCourseDialogTitle">
+            <form id="guideCourseForm">
+                <div class="guide-dialog-heading">
+                    <div><p class="guide-kicker">SYNTHÈSE OPÉRATIONNELLE</p><h2 id="guideCourseDialogTitle">Ajouter un cours</h2></div>
+                    <button class="guide-icon-button" type="button" data-guide-close="guideCourseDialog" aria-label="Fermer">×</button>
+                </div>
+                <input id="guideCourseId" type="hidden">
+                <label for="guideCourseName">Intitulé du cours</label>
+                <input id="guideCourseName" type="text" maxlength="160" required placeholder="Ex. : Méthodologie de la fiche de proposition">
+                <label for="guideCourseCategory">Thème / catégorie</label>
+                <input id="guideCourseCategory" type="text" maxlength="100" required placeholder="Ex. : Méthodologie BM4">
+                <label for="guideCourseDescription">Description (facultatif)</label>
+                <textarea id="guideCourseDescription" rows="4" maxlength="1200" placeholder="Objectifs, contenu, durée, public concerné…"></textarea>
+                <label for="guideCourseDriveUrl">Lien Google Drive du cours</label>
+                <input id="guideCourseDriveUrl" type="url" maxlength="1000" required placeholder="https://drive.google.com/file/d/…/view">
+                <p class="guide-muted">Le fichier doit être partagé avec le compte Google qui télécharge le support. Le téléchargement dépend des autorisations définies dans Google Drive.</p>
+                <p id="guideCourseFormStatus" class="guide-form-status" role="status" aria-live="polite"></p>
+                <div class="guide-course-form-actions">
+                    <button class="guide-button guide-button-primary" type="submit">Enregistrer le cours</button>
+                    <button class="guide-button" type="button" data-guide-close="guideCourseDialog">Annuler</button>
+                </div>
+            </form>
+        </dialog>
+
         <section id="guideCandidateDetail" class="guide-panel guide-detail-panel" aria-labelledby="guideDetailTitle" hidden>
             <div class="guide-panel-heading guide-detail-heading">
                 <div>
