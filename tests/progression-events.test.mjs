@@ -92,6 +92,8 @@ test("module 7 is completed automatically when a RETEX is inserted", async () =>
     assert.match(app, /if \(!\['module2', 'module6'\]\.includes\(id\)\) return/);
     assert.doesNotMatch(app, /if \(!\['module2', 'module6', 'module7'\]\.includes\(id\)\) return/);
     assert.match(retexViewer, /insertRow\('doctrine_retex', row\)\.then\(function \(\) \{[\s\S]*Module 7 validé automatiquement/);
+    assert.match(retexViewer, /rows\.length\) lockRetex\('RETEX déjà transmis\. Module 7 validé automatiquement/);
+    assert.match(retexViewer, /err\.code === '23505'\) return 'RETEX déjà transmis\. Module 7 validé automatiquement/);
     assert.match(retexMigration, /create or replace function public\.doctrine_retex_complete_module7\(\)/i);
     assert.match(retexMigration, /after insert on public\.doctrine_retex/i);
     assert.match(retexMigration, /event_type = 'module_completed'/i);

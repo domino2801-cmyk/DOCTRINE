@@ -44,7 +44,7 @@
 
     function errorMessage(err) {
         if (err.message === 'session' || err.status === 401) return 'Session expirée : reconnectez-vous puis réessayez.';
-        if (err.code === '23505') return 'Vous avez déjà transmis votre RETEX. Merci !';
+        if (err.code === '23505') return 'RETEX déjà transmis. Module 7 validé automatiquement. Merci pour ton retour !';
         if (err.status === 404 || err.code === 'PGRST205') return 'Le service n’est pas encore configuré. Contactez l’administrateur.';
         if (err.status === 403) return 'Envoi refusé pour ce compte.';
         return 'Envoi impossible pour le moment. Réessayez plus tard.';
@@ -124,7 +124,7 @@
                 if (!response.ok) return [];
                 return response.json();
             }).then(function (rows) {
-                if (current === requestId && rows.length) lockRetex('Vous avez déjà transmis votre RETEX. Merci !');
+                if (current === requestId && rows.length) lockRetex('RETEX déjà transmis. Module 7 validé automatiquement. Merci pour ton retour !');
             });
         }).catch(function () {});
     }
