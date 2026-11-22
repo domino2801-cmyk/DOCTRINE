@@ -107,3 +107,27 @@ test("module 7 is completed automatically when a RETEX is inserted", async () =>
     assert.match(retexMigration, /insert into public\.doctrine_progress_events/i);
     assert.match(readme, /module 7 est validé automatiquement dès que le candidat transmet son RETEX/i);
 });
+
+test("module 6 is validated automatically after a private candidate CV PDF is uploaded", async () => {
+    const cvSql = readFileSync(path.join(root, "supabase", "module6-cv-upload.sql"), "utf8");
+    const cvViewer = readFileSync(path.join(root, "viewer", "module6-cv.js"), "utf8");
+    const guideHtml = readFileSync(path.join(root, "app", "guide-module8.html"), "utf8");
+    const guideJs = readFileSync(path.join(root, "app", "guide-module8.js"), "utf8");
+    assert.match(html, /id="module6CvCard"/);
+    assert.match(html, /6\.4\. Dépôt de votre CV/);
+    assert.match(html, /id="module6CvFile" type="file" accept="application\/pdf,\.pdf"/);
+    assert.match(html, /id="module6CvUpload"/);
+    assert.match(cvViewer, /storage\/v1\/object\/doctrine-candidate-cv/);
+    assert.match(cvViewer, /doctrine_candidate_cvs\?on_conflict=candidate_id/);
+    assert.match(cvViewer, /application\/pdf/);
+    assert.match(cvSql, /create table if not exists public\.doctrine_candidate_cvs/i);
+    assert.match(cvSql, /values \('doctrine-candidate-cv', 'doctrine-candidate-cv', false/i);
+    assert.match(cvSql, /doctrine_can_access_candidate\(candidate_id\)/);
+    assert.match(cvSql, /after insert or update of storage_path on public\.doctrine_candidate_cvs/i);
+    assert.match(cvSql, /event_type, module_id\)\s*values \(new\.candidate_id, 'module_completed', '6'\)/i);
+    assert.match(guideHtml, /id="guideCandidateCvActions"/);
+    assert.match(guideJs, /renderCandidateCv\(candidate\)/);
+    assert.match(guideJs, /doctrine_candidate_cvs\?select=storage_path,original_filename,file_size,uploaded_at/);
+    assert.match(guideJs, /object\/sign\/doctrine-candidate-cv/);
+    assert.match(app, /if \(id !== 'module2'\) return/);
+});
