@@ -179,9 +179,10 @@
             });
         }).then(function (rows) {
             if (!Array.isArray(rows) || !rows.length) return;
-            status.textContent = 'CV déjà transmis : ' + rows[0].original_filename + '. Module 6 validé automatiquement le ' +
-                new Date(rows[0].uploaded_at).toLocaleDateString('fr-FR') + '. Vous pouvez déposer une version actualisée si nécessaire.';
-            status.classList.add('is-ok');
+            // En 6.4, ne pas afficher le récapitulatif du CV déjà transmis.
+            // Le dépôt existant reste détecté et le remplacement reste disponible.
+            status.textContent = '';
+            status.classList.remove('is-ok', 'is-error');
             showModule6CompletionMessage('CV transmis avec succès. Module 6 validé automatiquement. Votre Officier Guide et l’administration peuvent maintenant le consulter.');
             button.textContent = 'Remplacer mon CV';
         }).catch(function (error) {
