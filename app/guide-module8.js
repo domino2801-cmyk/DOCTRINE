@@ -1620,6 +1620,7 @@
             if (accessState) accessState.hidden = true;
             bindPageEvents();
             await loadDashboard();
+            await loadGuideCourses();
         } catch (error) {
             isAuthorized = false;
             updateNavigation(false);
