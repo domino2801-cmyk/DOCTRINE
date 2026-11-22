@@ -1330,6 +1330,7 @@
                 setStatus(status, 'Évaluation enregistrée. Enregistrez les modifications en cours pour télécharger le compte rendu.', 'success');
             }
             await loadDashboard();
+            await loadGuideCourses();
         } catch (error) {
             setStatus(status, error.message || 'Enregistrement de l’évaluation impossible.', 'error');
         } finally {
@@ -1416,10 +1417,128 @@
         }
     }
 
+    const GUIDE_COURSES_ENDPOINT = '/rest/v1/guide_course_catalog';
+
+    function normalizeDriveUrl(value) {
+        const url = String(value || '').trim();
+        if (!/^https:\/\/(?:drive\.google\.com|docs\.google\.com)\//i.test(url)) {
+            throw new Error('Saisissez un lien Google Drive ou Google Docs valide en HTTPS.');
+        }
+        return url;
+    }
+
+    function driveDownloadUrl(value) {
+        const url = normalizeDriveUrl(value);
+        const match = url.match(/\/(?:file|document|spreadsheets|presentation|forms)\/d\/([a-zA-Z0-9_-]+)/);
+        const queryId = new URL(url).searchParams.get('id');
+        const id = match ? match[1] : queryId;
+        return id ? 'https://drive.google.com/uc?export=download&id=' + encodeURIComponent(id) : url;
+    }
+
+    function renderGuideCourses(rows) {
+        const list = document.getElementById('guideCourseList');
+        const empty = document.getElementById('guideCourseEmpty');
+        if (!list) return;
+        list.replaceChildren();
+        const courses = Array.isArray(rows) ? rows : [];
+        if (empty) empty.hidden = courses.length > 0;
+        courses.forEach(function (course) {
+            const card = element('article', 'guide-course-card');
+            card.appendChild(element('span', 'guide-course-category', course.category));
+            card.appendChild(element('h3', '', course.title));
+            if (course.description) card.appendChild(element('p', 'guide-course-description', course.description));
+            const actions = element('div', 'guide-course-actions');
+            const open = element('a', '', 'Ouvrir dans Google Drive');
+            open.href = course.drive_url;
+            open.target = '_blank';
+            open.rel = 'noopener noreferrer';
+            const download = element('a', '', 'Télécharger le cours');
+            download.href = driveDownloadUrl(course.drive_url);
+            download.target = '_blank';
+            download.rel = 'noopener noreferrer';
+            const edit = element('button', 'guide-button', 'Modifier');
+            edit.type = 'button';
+            edit.addEventListener('click', function () { openGuideCourseForm(course); });
+            const remove = element('button', 'guide-button', 'Supprimer');
+            remove.type = 'button';
+            remove.addEventListener('click', function () { deleteGuideCourse(course); });
+            actions.append(open, download, edit, remove);
+            card.appendChild(actions);
+            list.appendChild(card);
+        });
+    }
+
+    async function loadGuideCourses() {
+        const status = document.getElementById('guideCourseStatus');
+        setStatus(status, 'Chargement du catalogue…');
+        try {
+            const rows = await api(GUIDE_COURSES_ENDPOINT + '?select=id,title,category,description,drive_url,created_at&order=category.asc,title.asc');
+            renderGuideCourses(rows);
+            setStatus(status, '');
+        } catch (error) {
+            setStatus(status, error.message || 'Chargement du catalogue impossible.', 'error');
+        }
+    }
+
+    function openGuideCourseForm(course) {
+        const form = document.getElementById('guideCourseForm');
+        form.reset();
+        document.getElementById('guideCourseId').value = course?.id || '';
+        document.getElementById('guideCourseName').value = course?.title || '';
+        document.getElementById('guideCourseCategory').value = course?.category || '';
+        document.getElementById('guideCourseDescription').value = course?.description || '';
+        document.getElementById('guideCourseDriveUrl').value = course?.drive_url || '';
+        document.getElementById('guideCourseDialogTitle').textContent = course ? 'Modifier un cours' : 'Ajouter un cours';
+        setStatus(document.getElementById('guideCourseFormStatus'), '');
+        document.getElementById('guideCourseDialog').showModal();
+    }
+
+    async function saveGuideCourse(event) {
+        event.preventDefault();
+        const form = event.currentTarget;
+        if (!form.reportValidity()) return;
+        const id = document.getElementById('guideCourseId').value;
+        const status = document.getElementById('guideCourseFormStatus');
+        const button = form.querySelector('button[type="submit"]');
+        const payload = {
+            title: document.getElementById('guideCourseName').value.trim(),
+            category: document.getElementById('guideCourseCategory').value.trim(),
+            description: document.getElementById('guideCourseDescription').value.trim(),
+            drive_url: normalizeDriveUrl(document.getElementById('guideCourseDriveUrl').value)
+        };
+        if (button) button.disabled = true;
+        setStatus(status, 'Enregistrement du cours…');
+        try {
+            await api(GUIDE_COURSES_ENDPOINT + (id ? '?id=eq.' + encodeURIComponent(id) : ''), {
+                method: id ? 'PATCH' : 'POST',
+                prefer: 'return=representation',
+                body: payload
+            });
+            document.getElementById('guideCourseDialog').close();
+            await loadGuideCourses();
+        } catch (error) {
+            setStatus(status, error.message || 'Enregistrement du cours impossible.', 'error');
+        } finally {
+            if (button) button.disabled = false;
+        }
+    }
+
+    async function deleteGuideCourse(course) {
+        if (!window.confirm('Supprimer le cours « ' + course.title + ' » du catalogue ?')) return;
+        try {
+            await api(GUIDE_COURSES_ENDPOINT + '?id=eq.' + encodeURIComponent(course.id), { method: 'DELETE' });
+            await loadGuideCourses();
+        } catch (error) {
+            setStatus(document.getElementById('guideCourseStatus'), error.message || 'Suppression impossible.', 'error');
+        }
+    }
+
     function bindPageEvents() {
         if (pageBindingsAttached) return;
         pageBindingsAttached = true;
         document.getElementById('guideRefresh')?.addEventListener('click', loadDashboard);
+        document.getElementById('guideCourseAdd')?.addEventListener('click', function () { openGuideCourseForm(null); });
+        document.getElementById('guideCourseForm')?.addEventListener('submit', saveGuideCourse);
         document.getElementById('guideCandidateFilter')?.addEventListener('change', function (event) {
             if (event.target.value) selectedCandidateId = event.target.value;
             renderCohort();
