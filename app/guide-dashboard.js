@@ -315,6 +315,83 @@
         section.append(fields, save, feedback);
         return section;
     }
+    function renderAiCorrection(candidate) {
+        var section = node('details', 'og-dashboard-subaccordion og-dashboard-ai-correction');
+        section.append(node('summary', '', 'Correction assistée par IA'));
+        var items = (candidate.doctrine && Array.isArray(candidate.doctrine.submissions)
+            ? candidate.doctrine.submissions : []).filter(function (submission) {
+            return submission.submission_type === 'proposition' || submission.submission_type === 'support_oral';
+        });
+        if (!items.length) {
+            section.append(node('p', 'og-dashboard-muted', 'Aucune fiche de proposition ou fichette orale transmise.'));
+            return section;
+        }
+        var groups = Object.create(null);
+        items.forEach(function (submission) {
+            var key = String(submission.dossier || 'Non renseigné');
+            (groups[key] || (groups[key] = [])).push(submission);
+        });
+        Object.keys(groups).sort(function (a, b) {
+            return a.localeCompare(b, 'fr', { numeric: true });
+        }).forEach(function (dossier) {
+            var group = node('section', 'og-dashboard-ai-dossier');
+            group.append(node('h4', '', 'Dossier ' + dossier));
+            groups[dossier].forEach(function (submission) {
+                var isOral = submission.submission_type === 'support_oral';
+                var review = (submission.reviews || [])[0] || null;
+                var card = node('article', 'og-dashboard-ai-card');
+                var title = isOral ? 'Fichette orale' : 'Fiche de proposition';
+                card.append(node('strong', '', title));
+                var state = !review || !review.status || review.status === 'en_attente'
+                    ? 'En attente de correction'
+                    : review.status === 'valide' ? 'Évaluation validée par le guide'
+                    : review.status === 'a_reprendre' ? 'À reprendre' : 'Évaluation enregistrée';
+                var grade = review && review.grade !== null && review.grade !== undefined
+                    ? ' · ' + Number(review.grade).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' / 20'
+                    : '';
+                card.append(node('p', 'og-dashboard-ai-state', state + grade));
+                if (review && review.comment) {
+                    var result = node('p', 'og-dashboard-ai-result');
+                    var comment = String(review.comment);
+                    result.textContent = comment.length > 360 ? comment.slice(0, 357) + '…' : comment;
+                    card.append(result);
+                } else {
+                    card.append(node('p', 'og-dashboard-muted',
+                        'Aucun résultat enregistré. La correction IA reste une proposition à vérifier par l’Officier Guide.'));
+                }
+                var actions = node('div', 'og-dashboard-ai-actions');
+                var launch = node('button', 'og-dashboard-save-oral', 'Lancer la correction IA et ouvrir la grille BM4');
+                launch.type = 'button';
+                launch.disabled = !submission.storage_path;
+                launch.title = submission.storage_path ? 'Ouvrir la grille interactive du Module 8 pour cette fiche.'
+                    : 'Aucun PDF archivé pour cette fiche.';
+                var frameHost = node('div', 'og-dashboard-ai-frame-host');
+                launch.addEventListener('click', function () {
+                    if (!frameHost.firstChild) {
+                        var frame = node('iframe', 'og-dashboard-ai-frame');
+                        var params = new URLSearchParams({
+                            embedded: '1',
+                            launch_ai: '1',
+                            candidate_id: candidate.candidate.id,
+                            submission_id: submission.id
+                        });
+                        frame.src = 'app/guide-module8.html?' + params.toString();
+                        frame.title = 'Grille interactive BM4 — ' + title + ' — Dossier ' + dossier;
+                        frame.loading = 'lazy';
+                        frameHost.append(frame);
+                    }
+                    frameHost.hidden = false;
+                    launch.disabled = true;
+                    launch.textContent = 'Grille BM4 ouverte ci-dessous';
+                });
+                actions.append(launch);
+                card.append(actions, frameHost);
+                group.append(card);
+            });
+            section.append(group);
+        });
+        return section;
+    }
     function renderCandidates() {
         candidatesNode.replaceChildren();
         var term = String(searchNode.value || '').trim().toLocaleLowerCase('fr');
@@ -416,6 +493,7 @@
             }
             docs.append(list);
             body.append(docs);
+            body.append(renderAiCorrection(candidate));
             card.append(body);
             candidatesNode.append(card);
         });
