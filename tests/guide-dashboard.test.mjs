@@ -31,7 +31,12 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /Suivi admissibilité/);
     assert.match(script, /Correction assistée par IA/);
     assert.match(script, /renderAiCorrection\(candidate\)/);
-    assert.match(script, /Lancer la correction IA et ouvrir la grille BM4/);
+    assert.match(script, /Ouvrir la fiche de proposition/);
+    assert.match(script, /Ouvrir la fiche support oral/);
+    assert.match(script, /Évaluer avec la grille BM4/);
+    assert.match(script, /Correction IA — Proposition/);
+    assert.match(script, /Correction IA — Fichette orale/);
+    assert.match(script, /guide_action: action/);
     assert.match(script, /candidate_id: candidate\.candidate\.id/);
     assert.match(script, /submission_id: submission\.id/);
     assert.match(script, /og-dashboard-ai-frame/);
