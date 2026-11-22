@@ -436,11 +436,13 @@
                 return String(event.module_id) === String(id) && event.event_type === 'module_completed';
             }) || null;
         }
-        function card(name, done, detail, date) {
+        function card(name, done, started, detail, date) {
             const item = element('article', 'guide-progress-card');
             item.classList.toggle('is-complete', Boolean(done));
             item.append(element('span', '', name));
-            item.append(element('strong', '', done ? 'Validé' + (date ? ' · ' + formatDate(date) : '') : 'En cours'));
+            item.append(element('strong', '', done
+                ? 'Validé' + (date ? ' · ' + formatDate(date) : '')
+                : (started ? 'En cours' : 'Non commencé')));
             if (detail) item.append(element('small', 'guide-progress-detail', detail));
             container.appendChild(item);
         }
@@ -454,18 +456,23 @@
         const module7 = eventFor(7);
         const cv = doctrine.candidate_cv;
         const retex = doctrine.retex;
-        card('Module 1', Boolean(module1), 'Présentation lue et validation enregistrée', module1?.created_at);
-        card('Module 2', Boolean(module2), documents + ' document(s) consulté(s)', module2?.created_at);
-        card('Module 3', Boolean(module3), 'Validation à la première ouverture', module3?.created_at);
-        card('Module 4', Boolean(module4) || dossierCount >= 2,
+        function started(id) {
+            return events.some(function (event) {
+                return String(event.module_id) === String(id) && event.event_type === 'module_started';
+            });
+        }
+        card('Module 1', Boolean(module1), started(1), 'Présentation lue et validation enregistrée', module1?.created_at);
+        card('Module 2', Boolean(module2), started(2) || documents > 0, documents + ' document(s) consulté(s)', module2?.created_at);
+        card('Module 3', Boolean(module3), started(3), 'Validation à la première ouverture', module3?.created_at);
+        card('Module 4', Boolean(module4) || dossierCount >= 2, started(4) || dossierCount > 0,
             dossierCount + ' dossier(s) avec fiche(s) transmise(s) · ' + corrections + ' corrigé(s) accessible(s)', module4?.created_at);
-        card('Module 5', Boolean(module5) || (average !== null && average >= 13),
+        card('Module 5', Boolean(module5) || (average !== null && average >= 13), started(5) || scores.length > 0,
             average === null ? 'Aucun résultat QCM enregistré' : 'Moyenne QCM-MAJOR : ' + average.toFixed(2) + ' / 20',
             module5?.created_at);
-        card('Module 6', Boolean(cv) || Boolean(module6),
+        card('Module 6', Boolean(cv) || Boolean(module6), Boolean(cv) || started(6),
             cv ? 'CV transmis le ' + formatDate(cv.uploaded_at) : 'CV en attente',
             module6?.created_at || cv?.uploaded_at);
-        card('Module 7', Boolean(retex) || Boolean(module7),
+        card('Module 7', Boolean(retex) || Boolean(module7), Boolean(retex) || started(7),
             retex ? 'RETEX transmis le ' + formatDate(retex.created_at) : 'RETEX en attente',
             module7?.created_at || retex?.created_at);
         [
