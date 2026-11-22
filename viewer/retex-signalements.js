@@ -165,7 +165,7 @@
         retexSubmit.disabled = true;
         setStatus(retexStatus, 'Envoi en cours…', true);
         insertRow('doctrine_retex', row).then(function () {
-            lockRetex('RETEX transmis. Merci pour ton retour !');
+            lockRetex('RETEX transmis. Module 7 validé automatiquement. Merci pour ton retour !');
         }).catch(function (err) {
             retexSubmit.disabled = false;
             if (err.code === '23505') lockRetex(errorMessage(err));
