@@ -1437,6 +1437,25 @@
                 setStatus(status, 'Évaluation enregistrée. Enregistrez les modifications en cours pour télécharger le compte rendu.', 'success');
             }
             await loadDashboard();
+            const launchParams = new URLSearchParams(window.location.search);
+            if (launchParams.get('launch_ai') === '1') {
+                const candidateId = launchParams.get('candidate_id') || '';
+                const submissionId = launchParams.get('submission_id') || '';
+                const candidate = candidates.find(function (item) {
+                    return String(item.candidate.id) === candidateId;
+                });
+                const submission = candidate && (candidate.doctrine?.submissions || []).find(function (item) {
+                    return String(item.id) === submissionId;
+                });
+                if (candidate && submission &&
+                    (submission.submission_type === 'proposition' || submission.submission_type === 'support_oral')) {
+                    selectedCandidateId = candidateId;
+                    renderCohort();
+                    runAiCorrection(candidate, submission, null);
+                } else {
+                    setStatus(status, 'Fiche introuvable dans la cohorte ou type de document non autorisé.', 'error');
+                }
+            }
             await loadGuideCourses();
         } catch (error) {
             setStatus(status, error.message || 'Enregistrement de l’évaluation impossible.', 'error');
@@ -1474,6 +1493,9 @@
             setStatus(status, 'Suivi admission enregistré.', 'success');
             await loadDashboard();
             await loadGuideCourses();
+            if (window.parent !== window) {
+                window.parent.postMessage({ type: 'doctrine:guide-review-saved' }, window.location.origin);
+            }
         } catch (error) {
             setStatus(status, error.message || 'Enregistrement du suivi admission impossible.', 'error');
         } finally {
