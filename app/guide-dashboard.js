@@ -351,7 +351,7 @@
         ];
     }
     function relativeStorageUrl(signedUrl) {
-        if (/^https?:\\/\\//i.test(signedUrl)) return signedUrl;
+        if (signedUrl.indexOf('http://') === 0 || signedUrl.indexOf('https://') === 0) return signedUrl;
         if (signedUrl.startsWith('/storage/v1/')) return new URL(signedUrl, auth().url).href;
         if (signedUrl.startsWith('/object/')) return new URL('/storage/v1' + signedUrl, auth().url).href;
         if (signedUrl.startsWith('object/')) return new URL('/storage/v1/' + signedUrl, auth().url).href;
