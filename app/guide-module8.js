@@ -1550,32 +1550,44 @@
         list.replaceChildren();
         const courses = Array.isArray(rows) ? rows : [];
         if (empty) empty.hidden = courses.length > 0;
+        const groups = new Map();
         courses.forEach(function (course) {
-            const item = element('article', 'guide-course-card');
-            const heading = element('h3', '', course.title);
-            item.appendChild(heading);
-            if (isAdminUser) {
-                item.appendChild(element('span', 'guide-course-category', course.category));
-                if (course.description) item.appendChild(element('p', 'guide-course-description', course.description));
-            }
-            const actions = element('div', 'guide-course-actions');
-            const download = element('a', 'guide-course-download', 'Télécharger');
-            download.href = driveDownloadUrl(course.drive_url);
-            download.setAttribute('download', '');
-            download.rel = 'noopener noreferrer';
-            actions.appendChild(download);
-            if (isAdminUser) {
-                const edit = element('button', 'guide-button', 'Modifier');
-                edit.type = 'button';
-                edit.addEventListener('click', function () { openGuideCourseForm(course); });
-                const remove = element('button', 'guide-button', 'Supprimer');
-                remove.type = 'button';
-                remove.addEventListener('click', function () { deleteGuideCourse(course); });
-                actions.append(edit, remove);
-            }
-            item.appendChild(actions);
-            list.appendChild(item);
+            const category = String(course.category || 'Sans catégorie');
+            if (!groups.has(category)) groups.set(category, []);
+            groups.get(category).push(course);
         });
+        Array.from(groups.keys()).sort(function (a, b) { return a.localeCompare(b, 'fr'); })
+            .forEach(function (category) {
+                const group = element('section', 'guide-course-category-group');
+                const heading = element('h3', 'guide-course-group-title', category);
+                const count = element('span', 'guide-course-group-count', String(groups.get(category).length) + ' cours');
+                heading.appendChild(count);
+                group.appendChild(heading);
+                groups.get(category).forEach(function (course) {
+                    const item = element('article', 'guide-course-card');
+                    const content = element('div', 'guide-course-card-content');
+                    content.appendChild(element('h4', '', course.title));
+                    if (course.description) content.appendChild(element('p', 'guide-course-description', course.description));
+                    const actions = element('div', 'guide-course-actions');
+                    const download = element('a', 'guide-course-download', 'Télécharger');
+                    download.href = driveDownloadUrl(course.drive_url);
+                    download.setAttribute('download', '');
+                    download.rel = 'noopener noreferrer';
+                    actions.appendChild(download);
+                    if (isAdminUser) {
+                        const edit = element('button', 'guide-button', 'Modifier');
+                        edit.type = 'button';
+                        edit.addEventListener('click', function () { openGuideCourseForm(course); });
+                        const remove = element('button', 'guide-button', 'Supprimer');
+                        remove.type = 'button';
+                        remove.addEventListener('click', function () { deleteGuideCourse(course); });
+                        actions.append(edit, remove);
+                    }
+                    item.append(content, actions);
+                    group.appendChild(item);
+                });
+                list.appendChild(group);
+            });
     }
 
     async function loadGuideCourses() {
