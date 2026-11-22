@@ -5,6 +5,11 @@
 -- Exécuter une seule fois dans Supabase > SQL Editor.
 begin;
 
+-- Catalogue partagé : un support n'appartient pas à un Officier Guide précis.
+alter table public.guide_course_catalog
+    alter column guide_id drop not null,
+    alter column guide_id drop default;
+
 insert into public.guide_course_catalog (title, category, description, drive_url)
 select
     seed.title,
