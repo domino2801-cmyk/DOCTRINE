@@ -49,10 +49,13 @@ test("the exercise progress reaches 100 percent after half the dossiers while re
 });
 
 
-test("modules 2 and 4 to 7 provide an explicit server-synchronized completion action", () => {
-    assert.ok(app.includes("function ensureModuleCompletionControl(id, modal)"));
-    assert.match(app, /'module2', 'module4', 'module5', 'module6', 'module7'/);
-    assert.ok(app.includes("enregistrerEvenementProgression") && app.includes("module_completed"));
-    assert.match(app, /doctrine-module-completed-/);
-    assert.ok(app.includes("ensureModuleCompletionControl(id, modal)"));
+test("module 5 is completed automatically from the QCM-MAJOR ready threshold", () => {
+    assert.match(app, /function verifierValidationAutomatiqueModule5\\(\\)/);
+    assert.match(app, /verify_qcm_module5_completion/);
+    assert.match(app, /id === 'module5'\\) verifierValidationAutomatiqueModule5\\(\\)/);
+    assert.doesNotMatch(app, /if \\(!\\['module2', 'module4', 'module5', 'module6', 'module7'\\]\\.includes\\(id\\)\\) return/);
+    assert.match(readme, /moyenne des résultats QCM-MAJOR.*au moins 13\\/20/);
+    assert.match(migration, /create or replace function public\\.verify_qcm_module5_completion\\(\\)/i);
+    assert.match(migration, /average_score.*< 13/is);
+    assert.match(migration, /event_type = 'module_completed'/);
 });
