@@ -27,7 +27,7 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /Objectif d’oraux blancs/);
     assert.match(script, /Date du prochain oral/);
     assert.match(script, /Progression des modules 1 à 7/);
-    assert.match(script, /role === 'guide' \|\| role === 'officier_guide' \|\| specialty === 'OG'/);
+    assert.match(script, /admin \|\| role === 'guide' \|\| role === 'officier_guide' \|\| specialty === 'OG'/);
 });
 
 test('les supports OG sont fournis par le catalogue commun, sans créer de module', () => {

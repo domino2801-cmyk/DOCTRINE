@@ -34,8 +34,11 @@
             var meta = claims && claims.app_metadata || {};
             var role = String(meta.role || '').trim().toLowerCase();
             var specialty = String(meta.specialty || '').trim().toUpperCase();
+            var admin = role === 'admin' || meta.bm4_admin === true ||
+                meta.bm4_admin === 'true' || meta.bm4_admin === 1 || meta.bm4_admin === '1' ||
+                (typeof auth().estAdmin === 'function' && auth().estAdmin());
             return !!(claims && claims.sub &&
-                (role === 'guide' || role === 'officier_guide' || specialty === 'OG'));
+                (admin || role === 'guide' || role === 'officier_guide' || specialty === 'OG'));
         }).catch(function () { return false; });
     }
     function api(path, options) {
