@@ -2,11 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const [html, script, css, seed] = await Promise.all([
+const [html, script, css, seed, viewerScript, viewerCss] = await Promise.all([
     readFile(new URL('../index.html', import.meta.url), 'utf8'),
     readFile(new URL('../app/guide-dashboard.js', import.meta.url), 'utf8'),
     readFile(new URL('../app/guide-dashboard.css', import.meta.url), 'utf8'),
-    readFile(new URL('../supabase/patches/2026-11-22-guide-course-catalog-seed.sql', import.meta.url), 'utf8')
+    readFile(new URL('../supabase/patches/2026-11-22-guide-course-catalog-seed.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../viewer/viewer.js', import.meta.url), 'utf8'),
+    readFile(new URL('../viewer/viewer.css', import.meta.url), 'utf8')
 ]);
 
 test('l’espace Officier Guide est chargé séparément des modules existants', () => {
@@ -44,7 +46,9 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /ogDashboardReviewDialog/);
     assert.match(script, /relativeStorageUrl\(signedUrl\)/);
     assert.match(script, /window\.top\.DoctrineViewer/);
-    assert.match(script, /panneau\.style\.zIndex = '2147483647'/);
+    assert.match(viewerScript, /panneau\.style\.zIndex = '2147483647'/);
+    assert.match(viewerScript, /panneau\.focus\(\{ preventScroll: true \}\)/);
+    assert.match(viewerCss, /z-index:\s*2147483647/);
     assert.match(script, /og-dashboard-review-criteria/);
     assert.match(script, /eligibility\.append\(renderOralTracking\(candidate\)\)/);
     assert.match(script, /eligibility\.append\(renderCcpmTracking\(candidate\)\)/);
