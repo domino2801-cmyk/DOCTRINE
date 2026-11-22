@@ -10,6 +10,7 @@ const app = readFileSync(path.join(root, "app", "app.js"), "utf8");
 const html = readFileSync(path.join(root, "index.html"), "utf8");
 const readme = readFileSync(path.join(root, "README.md"), "utf8");
 const migration = readFileSync(path.join(root, "supabase", "progression-events.sql"), "utf8");
+const module5Migration = readFileSync(path.join(root, "supabase", "module5-qcm-auto-validation.sql"), "utf8");
 const boundary = app.indexOf("    function updateCorrectionDossierOptions()");
 if (boundary < 0) throw new Error("Study progress functions not found");
 const progressContext = vm.createContext({ window: {} });
@@ -55,7 +56,7 @@ test("module 5 is completed automatically from the QCM-MAJOR ready threshold", (
     assert.match(app, /id === 'module5'\\) verifierValidationAutomatiqueModule5\\(\\)/);
     assert.doesNotMatch(app, /if \\(!\\['module2', 'module4', 'module5', 'module6', 'module7'\\]\\.includes\\(id\\)\\) return/);
     assert.match(readme, /moyenne des résultats QCM-MAJOR.*au moins 13\\/20/);
-    assert.match(migration, /create or replace function public\\.verify_qcm_module5_completion\\(\\)/i);
-    assert.match(migration, /average_score.*< 13/is);
-    assert.match(migration, /event_type = 'module_completed'/);
+    assert.match(module5Migration, /create or replace function public\\.verify_qcm_module5_completion\\(\\)/i);
+    assert.match(module5Migration, /average_score.*< 13/is);
+    assert.match(module5Migration, /event_type = 'module_completed'/);
 });
