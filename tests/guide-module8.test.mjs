@@ -269,6 +269,23 @@ test("la soumission conserve l’envoi e-mail et archive les PDF sous le dossier
     assert.match(edgeFunction, /storage_path: storagePath/);
 });
 
+test("le catalogue des cours est réservé à l’Officier Guide et gère les liens Drive", () => {
+    assert.match(page, /id="guideCourseCatalog"/);
+    assert.match(page, /Catalogue des cours/);
+    assert.match(page, /id="guideCourseForm"/);
+    assert.match(script, /const GUIDE_COURSES_ENDPOINT = '\/rest\/v1\/guide_course_catalog'/);
+    assert.match(script, /function loadGuideCourses\(\)/);
+    assert.match(script, /function saveGuideCourse\(event\)/);
+    assert.match(script, /function deleteGuideCourse\(course\)/);
+    assert.match(script, /function driveDownloadUrl\(value\)/);
+    assert.match(script, /Télécharger le cours/);
+    assert.match(sql, /create table if not exists public\.guide_course_catalog/);
+    assert.match(sql, /public\.doctrine_is_guide\(\)/);
+    assert.match(sql, /guide_id = auth\.uid\(\)/);
+    assert.match(sql, /enable row level security/);
+    assert.match(styles, /\.guide-course-grid/);
+});
+
 test("l’entrée Module 8 est conditionnelle et la page propose les parcours demandés", () => {
     assert.match(index, /id="guideModule8Nav" hidden/);
     assert.match(index, /id="btn-mod8"[^>]*onclick="openModal\('module8'\)"/);
