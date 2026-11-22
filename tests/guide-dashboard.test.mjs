@@ -26,6 +26,15 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /Oraux blancs réalisés/);
     assert.match(script, /Objectif d’oraux blancs/);
     assert.match(script, /Date du prochain oral/);
+    assert.match(script, /Suivi du CCPM/);
+    assert.match(script, /Note CCPM \/ 20/);
+    assert.match(script, /Notes de l’Officier Guide/);
+    assert.match(script, /CCPM validé/);
+    assert.match(script, /ccpm_score: numericScore/);
+    assert.match(script, /guide_notes: notes\.value\.trim\(\) \|\| null/);
+    assert.match(script, /ccpm_validated: validated\.checked/);
+    assert.match(script, /'ccpm_date'/);
+    assert.doesNotMatch(script, /ccpm_date\s*:/);
     assert.match(script, /Progression des modules 1 à 7/);
     assert.match(script, /admin \|\| role === 'guide' \|\| role === 'officier_guide' \|\| specialty === 'OG'/);
 });
