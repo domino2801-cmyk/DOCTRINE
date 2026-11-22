@@ -269,20 +269,20 @@ test("la soumission conserve l’envoi e-mail et archive les PDF sous le dossier
     assert.match(edgeFunction, /storage_path: storagePath/);
 });
 
-test("le catalogue des cours est réservé à l’Officier Guide et gère les liens Drive", () => {
+test("le catalogue commun est administré par admin et consultable en téléchargement par les officiers guides", () => {
     assert.match(page, /id="guideCourseCatalog"/);
-    assert.match(page, /Catalogue des cours/);
+    assert.match(page, /id="guideCourseAdminControls" hidden/);
     assert.match(page, /id="guideCourseForm"/);
-    assert.match(script, /const GUIDE_COURSES_ENDPOINT = '\/rest\/v1\/guide_course_catalog'/);
-    assert.match(script, /function loadGuideCourses\(\)/);
-    assert.match(script, /function saveGuideCourse\(event\)/);
-    assert.match(script, /function deleteGuideCourse\(course\)/);
+    assert.match(script, /let isAdminUser = false/);
+    assert.match(script, /if \(!isAdminUser\) return/);
     assert.match(script, /function driveDownloadUrl\(value\)/);
-    assert.match(script, /Télécharger le cours/);
+    assert.match(script, /element\('a', 'guide-course-download', 'Télécharger'\)/);
+    assert.doesNotMatch(script, /Ouvrir dans Google Drive/);
     assert.match(sql, /create table if not exists public\.guide_course_catalog/);
-    assert.match(sql, /public\.doctrine_is_guide\(\)/);
-    assert.match(sql, /guide_id = auth\.uid\(\)/);
-    assert.match(sql, /enable row level security/);
+    assert.match(sql, /create policy guide_course_catalog_read_guides[\s\S]*public\.doctrine_is_guide\(\)[\s\S]*public\.doctrine_is_admin\(\)/);
+    assert.match(sql, /create policy guide_course_catalog_admin_insert[\s\S]*public\.doctrine_is_admin\(\)/);
+    assert.match(sql, /create policy guide_course_catalog_admin_update[\s\S]*public\.doctrine_is_admin\(\)/);
+    assert.match(sql, /create policy guide_course_catalog_admin_delete[\s\S]*public\.doctrine_is_admin\(\)/);
     assert.match(styles, /\.guide-course-grid/);
 });
 
