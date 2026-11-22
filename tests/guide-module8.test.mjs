@@ -548,17 +548,17 @@ test("les cases du jury sont précochées selon les notes et restent modifiables
 
 
 test("le suivi Officier Guide consolide les validations des sept modules et les preuves existantes", () => {
-    assert.equal((script.match(/card\\('Module [1-7]'/g) || []).length, 7);
+    assert.equal((script.match(/card\('Module [1-7]'/g) || []).length, 7);
     assert.match(script, /async function enrichCandidateProgress/);
-    assert.match(script, /doctrine_progress_events\\?select=event_type,module_id,dossier,created_at/);
-    assert.match(script, /doctrine_retex\\?select=created_at/);
-    assert.match(script, /doctrine_candidate_cvs\\?select=uploaded_at,original_filename,file_size/);
-    assert.match(script, /'Module 7', Boolean\\(retex\\) \\|\\| Boolean\\(module7\\)/);
-    assert.match(progressSyncSql, /grant select on public\\.doctrine_retex to authenticated/);
-    assert.match(progressSyncSql, /doctrine_can_access_candidate\\(user_id\\)/);
-    assert.match(progressSyncSql, /count\\(distinct submission\\.dossier\\) >= 2/);
+    assert.match(script, /doctrine_progress_events\?select=event_type,module_id,dossier,created_at/);
+    assert.match(script, /doctrine_retex\?select=created_at/);
+    assert.match(script, /doctrine_candidate_cvs\?select=uploaded_at,original_filename,file_size/);
+    assert.match(script, /'Module 7', Boolean\(retex\) \|\| Boolean\(module7\)/);
+    assert.match(progressSyncSql, /grant select on public\.doctrine_retex to authenticated/);
+    assert.match(progressSyncSql, /doctrine_can_access_candidate\(user_id\)/);
+    assert.match(progressSyncSql, /count\(distinct submission\.dossier\) >= 2/);
     assert.match(progressSyncSql, /average_score >= 13/);
-    assert.match(progressSyncSql, /public\\.doctrine_candidate_cvs/);
-    assert.match(progressSyncSql, /public\\.doctrine_retex retex/);
-    assert.match(progressSyncSql, /event\\.event_type = 'module_started'/);
+    assert.match(progressSyncSql, /public\.doctrine_candidate_cvs/);
+    assert.match(progressSyncSql, /public\.doctrine_retex retex/);
+    assert.match(progressSyncSql, /event\.event_type = 'module_started'/);
 });
