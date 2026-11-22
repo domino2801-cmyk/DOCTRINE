@@ -68,7 +68,7 @@
             if (!token) throw new Error('Session expirée. Reconnectez-vous.');
             var headers = { apikey: auth().key, Authorization: 'Bearer ' + token };
             if (options.body !== undefined) headers['Content-Type'] = 'application/json';
-            return fetch(auth().url.replace(/\\/$/, '') + '/storage/v1/' + path, {
+            return fetch(auth().url.replace(/\/$/, '') + '/storage/v1/' + path, {
                 method: options.method || 'GET',
                 headers: headers,
                 body: options.body === undefined ? undefined : JSON.stringify(options.body)
@@ -377,8 +377,8 @@
                     }).then(function (signed) {
                         var signedPath = signed.signedURL || signed.signedUrl;
                         if (!signedPath) throw new Error('Lien de téléchargement non retourné.');
-                        var absoluteUrl = /^https?:\\/\\//i.test(signedPath)
-                            ? signedPath : auth().url.replace(/\\/$/, '') + '/storage/v1' + (signedPath.charAt(0) === '/' ? signedPath : '/' + signedPath);
+                        var absoluteUrl = /^https?:\/\//i.test(signedPath)
+                            ? signedPath : auth().url.replace(/\/$/, '') + '/storage/v1' + (signedPath.charAt(0) === '/' ? signedPath : '/' + signedPath);
                         var link = node('a', 'og-dashboard-download og-dashboard-cv-download', 'Télécharger le CV');
                         link.href = absoluteUrl;
                         link.target = '_blank';
