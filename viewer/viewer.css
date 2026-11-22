@@ -62,3 +62,22 @@ body.dv-open { overflow: hidden; }
     #doc-viewer .dv-download { transition: none; }
     #doc-viewer .dv-download-done { animation: none; }
 }
+
+
+/* Module 6 — dépôt sécurisé du CV */
+.module6-cv-card {
+    margin: 24px 0 12px;
+    padding: 18px;
+    border: 1px solid #cbd5e1;
+    border-left: 4px solid #0b2240;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #1e293b;
+}
+.module6-cv-card h3 { margin-top: 0; color: #0b2240; }
+.module6-cv-card p { line-height: 1.55; }
+.module6-cv-label { display: block; margin: 14px 0 7px; font-weight: 700; }
+.module6-cv-card input[type="file"] { display: block; max-width: 100%; margin-bottom: 12px; }
+.module6-cv-status { margin: 12px 0 0; font-size: .92rem; }
+.module6-cv-status.is-ok { color: #166534; font-weight: 700; }
+.module6-cv-status.is-error { color: #b91c1c; font-weight: 700; }
