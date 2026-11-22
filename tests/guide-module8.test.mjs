@@ -555,8 +555,8 @@ test("le suivi Officier Guide consolide les validations des sept modules et les 
     assert.match(script, /doctrine_candidate_cvs\?select=uploaded_at,original_filename,file_size/);
     assert.match(script, /'Module 7', Boolean\(retex\) \|\| Boolean\(module7\)/);
     assert.match(progressSyncSql, /grant select on public\.doctrine_retex to authenticated/);
-    assert.match(progressSyncSql, /grant select on public\\.doctrine_progress_events to authenticated/);
-    assert.match(progressSyncSql, /create policy doctrine_progress_events_candidate_or_assigned_guide_read[\\s\\S]*user_id = auth\\.uid\\(\\)[\\s\\S]*public\\.doctrine_can_access_candidate\\(user_id\\)/);
+    assert.match(progressSyncSql, /grant select on public\.doctrine_progress_events to authenticated/);
+    assert.match(progressSyncSql, /create policy doctrine_progress_events_candidate_or_assigned_guide_read[\s\S]*user_id = auth\.uid\(\)[\s\S]*public\.doctrine_can_access_candidate\(user_id\)/);
     assert.doesNotMatch(progressSyncSql, /drop policy[^;]*doctrine_progress_events/i);
     assert.match(progressSyncSql, /relrowsecurity/);
     assert.match(progressSyncSql, /doctrine_can_access_candidate\(user_id\)/);
@@ -564,7 +564,7 @@ test("le suivi Officier Guide consolide les validations des sept modules et les 
     assert.match(progressSyncSql, /average_score >= 13/);
     assert.match(progressSyncSql, /public\.doctrine_candidate_cvs/);
     assert.match(progressSyncSql, /public\.doctrine_retex retex/);
-    assert.match(progressSyncSql, /event\.event_type = 'module_started'/);
+    assert.match(progressSyncSql, /started\.event_type = 'module_started'/);
     assert.doesNotMatch(progressSyncSql, /drop trigger if exists doctrine_progress_events_set_identity/);
     assert.match(progressSyncSql, /create or replace function public\.doctrine_progress_events_set_identity/);
     assert.match(progressSyncSql, /if auth\.uid\(\) is not null[\s\S]*new\.user_id := auth\.uid\(\)[\s\S]*elsif new\.user_id is null/);
