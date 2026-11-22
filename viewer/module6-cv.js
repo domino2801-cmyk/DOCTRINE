@@ -40,29 +40,34 @@
     function createCard() {
         var body = document.querySelector('#modal-module6 .mod-body[data-mod="6"]');
         if (!body) return;
+        var list = body.querySelector('.modal-list');
+        if (!list) return;
         var card = body.querySelector('#module6CvCard');
         if (!card) {
-            card = element('section', 'part-card module6-cv-card');
+            card = element('li', '', '');
             card.id = 'module6CvCard';
-            card.append(
-                element('div', 'section-title', '6.4. Dépôt de votre CV'),
-                element('p', '', 'Insérez votre CV réglementaire au format PDF. Il sera enregistré dans un espace privé Supabase et pourra être consulté par votre Officier Guide rattaché et par l’administration.')
-            );
-            var label = element('label', 'module6-cv-label', 'Sélectionner votre CV (PDF, 10 Mo maximum)');
+            card.appendChild(element('div', 'section-title', '6.4. Dépôt de votre CV'));
+            card.appendChild(element('p', '', 'Insérez votre CV réglementaire au format PDF. Il sera enregistré dans un espace privé Supabase et pourra être consulté par votre Officier Guide rattaché et par l’administration.'));
+            var inputRow = element('div', 'align-row');
+            var label = element('label', 'row-text module6-cv-label', 'Sélectionner votre CV (PDF, 10 Mo maximum)');
+            label.htmlFor = 'module6CvFile';
             var newInput = document.createElement('input');
             newInput.type = 'file';
             newInput.id = 'module6CvFile';
             newInput.accept = 'application/pdf,.pdf';
-            label.appendChild(newInput);
-            var newButton = element('button', 'btn-link', 'Téléverser mon CV');
+            inputRow.append(label, newInput);
+            var actionRow = element('div', 'align-row');
+            actionRow.append(element('span', 'row-text', 'Transmission et validation du module 6'));
+            var newButton = element('button', 'doc-link', 'Téléverser mon CV');
             newButton.id = 'module6CvUpload';
             newButton.type = 'button';
+            actionRow.appendChild(newButton);
             var newStatus = element('p', 'module6-cv-status', 'Le dépôt de votre CV validera automatiquement le module 6.');
             newStatus.id = 'module6CvStatus';
             newStatus.setAttribute('role', 'status');
             newStatus.setAttribute('aria-live', 'polite');
-            card.append(label, newButton, newStatus);
-            body.appendChild(card);
+            card.append(inputRow, actionRow, newStatus);
+            list.appendChild(card);
         }
 
         var input = document.getElementById('module6CvFile');
