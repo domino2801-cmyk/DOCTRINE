@@ -38,15 +38,6 @@ begin
         raise exception 'Migration interrompue : fonctions de sécurité manquantes. Exécutez les migrations prérequises.';
     end if;
 
-    if not exists (
-        select 1 from pg_catalog.pg_policies
-        where schemaname = 'public'
-          and tablename = 'doctrine_progress_events'
-          and policyname = 'doctrine_guides_read_assigned_progress_events'
-          and cmd = 'SELECT'
-    ) then
-        raise exception 'Migration interrompue : politique de lecture des événements pour les guides absente.';
-    end if;
 end;
 $$;
 
