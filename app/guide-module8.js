@@ -680,9 +680,10 @@
                     });
                     const signedUrl = signed.signedURL || signed.signedUrl;
                     if (!signedUrl) throw new Error('Lien sécurisé du CV indisponible.');
-                    const absoluteUrl = relativeStorageUrl(signedUrl);
-                    const tab = window.open(absoluteUrl, '_blank', 'noopener');
+                    const tab = window.open('about:blank', '_blank');
                     if (!tab) throw new Error('Autorisez les fenêtres contextuelles pour consulter le CV.');
+                    tab.opener = null;
+                    tab.location.href = relativeStorageUrl(signedUrl);
                 } catch (error) {
                     setStatus(status, error.message || 'Ouverture du CV impossible.', 'error');
                 } finally {
