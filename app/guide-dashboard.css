@@ -174,3 +174,15 @@
 .og-dashboard-review-ai-criterion p { margin:6px 0; }
 .og-dashboard-review-ai-criterion small { color:#d8b85b; }
 @media(max-width:600px) { .og-dashboard-review-criteria { grid-template-columns:1fr; } .og-dashboard-review-heading,.og-dashboard-review-form { padding:15px; } .og-dashboard-review-dialog { max-height:94vh; } }
+
+/* Carte de référence de la grille BM4 dans la correction assistée par IA. */
+.og-dashboard-ai-grid-card { display:grid; gap:16px; margin:12px 0 16px; padding:18px; border:1px solid rgba(216,184,91,.42); border-left:4px solid #b52e35; border-radius:9px; background:linear-gradient(135deg,rgba(216,184,91,.10),rgba(255,255,255,.025) 58%); }
+.og-dashboard-ai-grid-content { display:grid; gap:9px; }
+.og-dashboard-ai-grid-kicker { margin:0; color:#d8b85b; font-size:10px; font-weight:850; letter-spacing:.13em; }
+.og-dashboard-ai-grid-content h4 { margin:0; color:#f5f7ef; font-size:18px; }
+.og-dashboard-ai-grid-content p:not(.og-dashboard-ai-grid-kicker) { margin:0; color:#d0dbd1; font-size:13px; line-height:1.6; }
+.og-dashboard-ai-grid-actions { display:flex; flex-wrap:wrap; gap:9px; }
+.og-dashboard-ai-grid-link { display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:9px 13px; border:1px solid rgba(216,184,91,.55); border-radius:6px; background:#24382d; color:#f2f5ee; font-size:12px; font-weight:800; text-decoration:none; }
+.og-dashboard-ai-grid-link:hover,.og-dashboard-ai-grid-link:focus-visible { border-color:#f0d47c; outline:2px solid rgba(216,184,91,.35); outline-offset:2px; }
+.og-dashboard-ai-grid-link.is-primary { background:#d8b85b; color:#17251e; }
+@media(max-width:600px) { .og-dashboard-ai-grid-card { padding:14px; } .og-dashboard-ai-grid-actions { flex-direction:column; } .og-dashboard-ai-grid-link { width:100%; box-sizing:border-box; } }
