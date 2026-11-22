@@ -21,6 +21,12 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /rpc\/get_guide_candidate_dashboard/);
     assert.match(script, /body:\s*\{\s*p_candidate_id:\s*null\s*\}/);
     assert.match(script, /guide_course_catalog\?select=/);
+    assert.match(script, /doctrine_progress_events\?select=user_id,module_id,event_type/);
+    assert.match(script, /candidate_admission_tracking\?on_conflict=candidate_id/);
+    assert.match(script, /Oraux blancs réalisés/);
+    assert.match(script, /Objectif d’oraux blancs/);
+    assert.match(script, /Date du prochain oral/);
+    assert.match(script, /Progression des modules 1 à 7/);
     assert.match(script, /role === 'guide' \|\| role === 'officier_guide' \|\| specialty === 'OG'/);
 });
 
@@ -36,4 +42,6 @@ test('l’interface possède des cartes, accordéons et styles responsive isolé
     assert.match(css, /\.og-dashboard-course-group/);
     assert.match(css, /@media\s*\(max-width:\s*600px\)/);
     assert.match(css, /\.og-dashboard-overlay\[hidden\]/);
+    assert.match(css, /\.og-dashboard-module-grid/);
+    assert.match(css, /\.og-dashboard-oral-fields/);
 });
