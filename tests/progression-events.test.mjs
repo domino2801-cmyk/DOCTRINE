@@ -74,3 +74,18 @@ test("module 4 is completed automatically after submissions on two distinct doss
     assert.match(module4Migration, /event_type = 'module_completed'/);
     assert.match(readme, /au moins deux dossiers distincts/);
 });
+
+
+test("module 7 is completed automatically when a RETEX is inserted", async () => {
+    const retexMigration = readFileSync(path.join(root, "supabase", "module7-retex-auto-validation.sql"), "utf8");
+    const retexViewer = readFileSync(path.join(root, "viewer", "retex-signalements.js"), "utf8");
+    assert.match(app, /if \(!\['module2', 'module6'\]\.includes\(id\)\) return/);
+    assert.doesNotMatch(app, /if \(!\['module2', 'module6', 'module7'\]\.includes\(id\)\) return/);
+    assert.match(retexViewer, /insertRow\('doctrine_retex', row\)\.then\(function \(\) \{[\s\S]*Module 7 validé automatiquement/);
+    assert.match(retexMigration, /create or replace function public\.doctrine_retex_complete_module7\(\)/i);
+    assert.match(retexMigration, /after insert on public\.doctrine_retex/i);
+    assert.match(retexMigration, /event_type = 'module_completed'/i);
+    assert.match(retexMigration, /module_id = '7'/i);
+    assert.match(retexMigration, /insert into public\.doctrine_progress_events/i);
+    assert.match(readme, /module 7 est validé automatiquement dès que le candidat transmet son RETEX/i);
+});

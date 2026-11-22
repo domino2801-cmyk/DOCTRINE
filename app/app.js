@@ -240,7 +240,7 @@ const module1Key = 'module1_validated';
     }
 
     function ensureModuleCompletionControl(id, modal) {
-        if (!['module2', 'module6', 'module7'].includes(id)) return;
+        if (!['module2', 'module6'].includes(id)) return;
         const content = modal.querySelector('.modal-content');
         if (!content || content.querySelector('.module-completion-control')) return;
 
