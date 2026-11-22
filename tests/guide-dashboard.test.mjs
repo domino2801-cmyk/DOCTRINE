@@ -23,6 +23,8 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(script, /Rédiger et transmettre un signalement/);
     assert.match(script, /openModule7Form\('retexCard', 'retexForm'\)/);
     assert.match(script, /openModule7Form\('signalementCard', 'signalementForm'\)/);
+    assert.match(script, /close\(\);\s*window\.openModal\('module7'\)/, 'le tableau de bord doit être fermé avant le Module 7');
+    assert.match(script, /if \(form\.hidden\) heading\.click\(\)/);
     assert.match(script, /window\.openModal\('module7'\)/);
     assert.match(script, /rpc\/assign_guide_candidate_by_code/);
     assert.match(script, /p_code: code/);
