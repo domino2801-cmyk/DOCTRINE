@@ -39,6 +39,15 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /Suivi du CCPM/);
     assert.match(script, /Suivi admissibilité/);
     assert.match(script, /Correction assistée par IA/);
+    assert.match(script, /Grille interactive d’évaluation BM4/);
+    assert.match(script, /fiche de proposition \(70 %\)/);
+    assert.match(script, /support oral \(30 %\)/);
+    assert.match(script, /moyenne pondérée de l’épreuve/);
+    assert.match(script, /axes d’amélioration selon la grille officielle/);
+    assert.match(script, /Le compte rendu PDF officiel est généré après son enregistrement/);
+    assert.match(script, /grille-evaluation-synthese-bm4-interactive\.pdf/);
+    assert.match(css, /\.og-dashboard-ai-grid-card/);
+    assert.match(css, /\.og-dashboard-ai-grid-link/);
     assert.match(script, /renderAiCorrection\(candidate\)/);
     assert.match(script, /Ouvrir la fiche de proposition/);
     assert.match(script, /Ouvrir la fiche support oral/);
