@@ -495,6 +495,9 @@ test("les points clés du jury sont cochables manuellement et conservés pour le
     assert.match(script, /jury_checklist: savedRow\?\.jury_checklist \?\? juryChecklist/);
     assert.match(sql, /add column if not exists jury_checklist jsonb not null default '\{\}'::jsonb/);
     assert.match(sql, /jsonb_each\(new\.jury_checklist\)/);
+    assert.match(sql, /'oral_operatoire',\s*'oral_introduction',\s*'oral_argumentaire',\s*'oral_conclusion'/);
+    assert.doesNotMatch(sql, /'o_operatoire'|'o_five_cases'|'o_readability'/);
+
     assert.match(sql, /'jury_checklist', review\.jury_checklist/);
     assert.match(styles, /\.guide-jury-check-item input\[type="checkbox"\]/);
 });
