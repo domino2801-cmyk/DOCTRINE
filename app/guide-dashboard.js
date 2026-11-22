@@ -224,6 +224,70 @@
         section.append(fields, save, feedback);
         return section;
     }
+    function renderCcpmTracking(candidate) {
+        var data = candidate.admission || {};
+        var section = node('section', 'og-dashboard-oral-tracking og-dashboard-ccpm-tracking');
+        section.append(node('h4', '', 'Suivi du CCPM'));
+        var fields = node('div', 'og-dashboard-oral-fields og-dashboard-ccpm-fields');
+        var scoreLabel = node('label', '', 'Note CCPM / 20');
+        var score = node('input', 'og-dashboard-oral-input');
+        score.type = 'number'; score.min = '0'; score.max = '20'; score.step = '0.5';
+        score.value = data.ccpm_score == null ? '' : String(data.ccpm_score);
+        score.placeholder = 'Ex. : 17';
+        scoreLabel.append(score);
+        var notesLabel = node('label', 'og-dashboard-ccpm-notes-label', 'Notes de l’Officier Guide');
+        var notes = node('textarea', 'og-dashboard-oral-input');
+        notes.rows = 3; notes.value = data.guide_notes == null ? '' : String(data.guide_notes);
+        notes.placeholder = 'Observations et axes de progression…';
+        notesLabel.append(notes);
+        var validatedLabel = node('label', 'og-dashboard-ccpm-validated-label', 'CCPM validé');
+        var validated = node('input');
+        validated.type = 'checkbox'; validated.checked = data.ccpm_validated === true || data.ccpm_validated === 'true';
+        validatedLabel.append(validated);
+        fields.append(scoreLabel, notesLabel, validatedLabel);
+        var save = node('button', 'og-dashboard-save-oral', 'Enregistrer le CCPM');
+        save.type = 'button';
+        var feedback = node('span', 'og-dashboard-oral-feedback');
+        save.addEventListener('click', function () {
+            var rawScore = String(score.value || '').trim();
+            var numericScore = rawScore === '' ? null : Number(rawScore);
+            if (numericScore !== null && (!Number.isFinite(numericScore) || numericScore < 0 || numericScore > 20)) {
+                feedback.textContent = 'La note CCPM doit être comprise entre 0 et 20.';
+                feedback.classList.add('is-error');
+                return;
+            }
+            save.disabled = true;
+            save.textContent = 'Enregistrement…';
+            feedback.textContent = '';
+            feedback.classList.remove('is-error');
+            api('candidate_admission_tracking?on_conflict=candidate_id', {
+                method: 'POST',
+                prefer: 'resolution=merge-duplicates,return=minimal',
+                body: {
+                    candidate_id: candidate.candidate.id,
+                    ccpm_score: numericScore,
+                    guide_notes: notes.value.trim() || null,
+                    ccpm_validated: validated.checked
+                }
+            }).then(function () {
+                candidate.admission = Object.assign({}, candidate.admission || {}, {
+                    ccpm_score: numericScore,
+                    guide_notes: notes.value.trim() || null,
+                    ccpm_validated: validated.checked
+                });
+                feedback.textContent = 'Suivi CCPM enregistré.';
+                feedback.classList.remove('is-error');
+            }).catch(function (error) {
+                feedback.textContent = 'Enregistrement impossible : ' + error.message;
+                feedback.classList.add('is-error');
+            }).finally(function () {
+                save.disabled = false;
+                save.textContent = 'Enregistrer le CCPM';
+            });
+        });
+        section.append(fields, save, feedback);
+        return section;
+    }
     function renderCandidates() {
         candidatesNode.replaceChildren();
         var term = String(searchNode.value || '').trim().toLocaleLowerCase('fr');
@@ -266,13 +330,14 @@
             body.append(facts);
             body.append(renderModuleProgress(candidate));
             body.append(renderOralTracking(candidate));
+            body.append(renderCcpmTracking(candidate));
             var admission = candidate.admission;
             if (admission && typeof admission === 'object' && Object.keys(admission).length) {
                 var docs = node('details', 'og-dashboard-subaccordion');
                 docs.append(node('summary', '', 'Dossier et documents demandés'));
                 var list = node('dl', 'og-dashboard-document-list');
                 Object.keys(admission).filter(function (key) {
-                    return !['candidate_id', 'created_at', 'updated_at', 'id'].includes(key);
+                    return !['candidate_id', 'created_at', 'updated_at', 'id', 'ccpm_date', 'ccpm_score', 'guide_notes', 'ccpm_validated', 'mock_orals_done', 'mock_orals_target', 'next_oral_date'].includes(key);
                 }).forEach(function (key) {
                     var value = admission[key];
                     if (value === null || value === undefined || typeof value === 'object') return;
