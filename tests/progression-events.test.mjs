@@ -63,6 +63,16 @@ test("module 5 is completed automatically from the QCM-MAJOR ready threshold", (
 });
 
 
+test("module 3 is completed automatically when the candidate opens it", () => {
+    assert.match(app, /function verifierValidationAutomatiqueModule3\(\)/);
+    assert.match(app, /if \(id === 'module3'\) verifierValidationAutomatiqueModule3\(\)/);
+    assert.match(app, /enregistrerEvenementProgression\('module_completed', '3'\)/);
+    assert.match(app, /doctrine-module3-auto-validated/);
+    assert.match(app, /Le suivi des dossiers « Fait » reste indépendant/);
+    assert.doesNotMatch(readme, /module 3 est validé lorsque tous ses dossiers sont marqués/);
+});
+
+
 test("module 4 is completed automatically after submissions on two distinct dossiers", () => {
     assert.match(app, /function verifierValidationAutomatiqueModule4\(\)/);
     assert.match(app, /verify_doctrine_module4_completion/);
