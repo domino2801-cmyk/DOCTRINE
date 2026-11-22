@@ -70,7 +70,7 @@ test("module 4 is completed automatically after submissions on two distinct doss
     assert.doesNotMatch(app, /if \(!\['module2', 'module4', 'module6', 'module7'\]\.includes\(id\)\) return/);
     assert.match(app, /verifierValidationAutomatiqueModule4\(\);/);
     assert.match(module4Migration, /count\(distinct dossier\)/i);
-    assert.match(module4Migration, /submission_count >= 2/);
+    assert.match(module4Migration, /coalesce\(submission_count,\s*0\)\s*>=\s*2/i);
     assert.match(module4Migration, /event_type = 'module_completed'/);
     assert.match(readme, /au moins deux dossiers distincts/);
 });
