@@ -47,3 +47,12 @@ test("the exercise progress reaches 100 percent after half the dossiers while re
     assert.equal(progress(12, 16), 100);
     assert.equal(progress(0, 0), 0);
 });
+
+
+test("modules 2 and 4 to 7 provide an explicit server-synchronized completion action", () => {
+    assert.match(app, /function ensureModuleCompletionControl\\(id, modal\\)/);
+    assert.match(app, /'module2', 'module4', 'module5', 'module6', 'module7'/);
+    assert.match(app, /enregistrerEvenementProgression\\('module_completed', number\\)/);
+    assert.match(app, /doctrine-module-completed-/);
+    assert.match(app, /ensureModuleCompletionControl\\(id, modal\\)/);
+});
