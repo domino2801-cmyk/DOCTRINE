@@ -333,11 +333,16 @@ select
     result.user_id,
     'module_completed',
     '5'
-from public.quiz_results result
-where result.user_id is not null
-group by result.user_id
-having avg(result.score) >= 13
-   and not exists (
+from (
+    select
+        user_id,
+        avg(score) as average_score
+    from public.quiz_results
+    where user_id is not null
+    group by user_id
+) result
+where result.average_score >= 13
+  and not exists (
        select 1
        from public.doctrine_progress_events event
        where event.user_id = result.user_id
