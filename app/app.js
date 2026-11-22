@@ -288,6 +288,27 @@ const module1Key = 'module1_validated';
         return module4AutoValidationRequest;
     }
 
+    function showModule1CompletionMessage() {
+        const content = document.querySelector('#modal-module1 .modal-content');
+        if (!content) return;
+        let notice = document.getElementById('module1CompletionMessage');
+        if (!notice) {
+            notice = document.createElement('section');
+            notice.id = 'module1CompletionMessage';
+            notice.className = 'module-completion-control';
+            notice.style.cssText = 'margin:28px 0 12px;padding:16px;border:2px solid #0b2240;border-radius:8px;background:#f8fafc;';
+            const text = document.createElement('p');
+            text.className = 'module-completion-status';
+            text.style.cssText = 'margin:0;color:#166534;font-size:.95rem;font-weight:700;';
+            text.setAttribute('role', 'status');
+            text.setAttribute('aria-live', 'polite');
+            text.textContent = 'Module 1 validé.';
+            notice.appendChild(text);
+            content.appendChild(notice);
+        }
+        notice.hidden = false;
+    }
+
     function ensureModuleCompletionControl(id, modal) {
         if (id !== 'module2') return;
         const content = modal.querySelector('.modal-content');
@@ -848,6 +869,7 @@ const module1Key = 'module1_validated';
                 modal.querySelectorAll('.jury-accordeon').forEach(function(accordeon) {
                     accordeon.open = false;
                 });
+                if (getModule1State()) showModule1CompletionMessage();
             }
             modal.style.display = 'block';
             const position = moduleScrollPositions.get(modal.id);
@@ -1416,6 +1438,7 @@ const module1Key = 'module1_validated';
                     setModule1State(true);
                     enregistrerEvenementProgression('module_completed', '1');
                     updateModuleLockUI();
+                    showModule1CompletionMessage();
                 }).catch(function() {
                     box.disabled = false;
                     box.checked = false;

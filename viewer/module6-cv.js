@@ -37,6 +37,25 @@
         });
     }
 
+    function showModule6CompletionMessage(message) {
+        var content = document.querySelector('#modal-module6 .modal-content');
+        if (!content) return;
+        var notice = document.getElementById('module6CompletionMessage');
+        if (!notice) {
+            notice = element('section', 'module-completion-control');
+            notice.id = 'module6CompletionMessage';
+            notice.style.cssText = 'margin:28px 0 12px;padding:16px;border:2px solid #0b2240;border-radius:8px;background:#f8fafc;';
+            var text = element('p', 'module-completion-status', '');
+            text.style.cssText = 'margin:0;color:#166534;font-size:.95rem;font-weight:700;';
+            text.setAttribute('role', 'status');
+            text.setAttribute('aria-live', 'polite');
+            notice.appendChild(text);
+            content.appendChild(notice);
+        }
+        notice.hidden = false;
+        notice.querySelector('p').textContent = message;
+    }
+
     function createCard() {
         var body = document.querySelector('#modal-module6 .mod-body[data-mod="6"]');
         if (!body) return;
@@ -130,8 +149,9 @@
                 });
             }).then(function () {
                 if (current !== requestId) return;
-                status.textContent = 'CV transmis avec succès. Module 6 validé automatiquement. Votre Officier Guide et l’administration peuvent maintenant le consulter.';
+                status.textContent = 'CV enregistré dans votre espace privé.';
                 status.classList.add('is-ok');
+                showModule6CompletionMessage('CV transmis avec succès. Module 6 validé automatiquement. Votre Officier Guide et l’administration peuvent maintenant le consulter.');
                 input.value = '';
                 button.textContent = 'Remplacer mon CV';
                 button.disabled = false;
@@ -162,6 +182,7 @@
             status.textContent = 'CV déjà transmis : ' + rows[0].original_filename + '. Module 6 validé automatiquement le ' +
                 new Date(rows[0].uploaded_at).toLocaleDateString('fr-FR') + '. Vous pouvez déposer une version actualisée si nécessaire.';
             status.classList.add('is-ok');
+            showModule6CompletionMessage('CV transmis avec succès. Module 6 validé automatiquement. Votre Officier Guide et l’administration peuvent maintenant le consulter.');
             button.textContent = 'Remplacer mon CV';
         }).catch(function (error) {
             console.warn('Vérification du CV déjà transmis impossible.', error);
@@ -176,7 +197,13 @@
             var observer = new MutationObserver(function () { createCard(); });
             observer.observe(body, { childList: true, subtree: false });
         }
+        document.addEventListener('doctrine:logout', function () {
+            var notice = document.getElementById('module6CompletionMessage');
+            if (notice) notice.hidden = true;
+        });
         document.addEventListener('doctrine:login', function () {
+            var notice = document.getElementById('module6CompletionMessage');
+            if (notice) notice.hidden = true;
             createCard();
             var card = document.getElementById('module6CvCard');
             if (!card) return;
