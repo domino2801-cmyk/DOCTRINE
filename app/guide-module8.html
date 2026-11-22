@@ -82,16 +82,16 @@
                 <div>
                     <p class="guide-kicker">SYNTHÈSE OPÉRATIONNELLE</p>
                     <h2 id="guideCourseTitle">Catalogue des cours</h2>
-                    <p class="guide-muted">Espace réservé à l’Officier Guide — préparation et téléchargement des supports à dispenser aux candidats.</p>
+                    <p class="guide-muted">Supports pédagogiques mis à disposition par l’administrateur.</p>
                 </div>
-                <button id="guideCourseAdd" class="guide-button guide-button-primary" type="button">+ Ajouter un cours</button>
+                <div id="guideCourseAdminControls" hidden><button id="guideCourseAdd" class="guide-button guide-button-primary" type="button">+ Ajouter un cours</button></div>
             </div>
             <p id="guideCourseStatus" class="guide-form-status" role="status" aria-live="polite"></p>
             <div id="guideCourseList" class="guide-course-grid"></div>
-            <p id="guideCourseEmpty" class="guide-empty" hidden>Aucun cours enregistré. Ajoutez votre premier support avec son lien Google Drive.</p>
+            <p id="guideCourseEmpty" class="guide-empty" hidden>Aucun cours n’est disponible pour le moment.</p>
         </section>
 
-        <dialog id="guideCourseDialog" class="guide-dialog guide-course-dialog" aria-labelledby="guideCourseDialogTitle">
+        <dialog id="guideCourseDialog" class="guide-dialog guide-course-dialog" aria-labelledby="guideCourseDialogTitle" hidden>
             <form id="guideCourseForm">
                 <div class="guide-dialog-heading">
                     <div><p class="guide-kicker">SYNTHÈSE OPÉRATIONNELLE</p><h2 id="guideCourseDialogTitle">Ajouter un cours</h2></div>
