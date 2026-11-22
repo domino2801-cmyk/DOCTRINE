@@ -143,11 +143,9 @@
         }).then(function (rows) {
             if (!Array.isArray(rows) || !rows.length) return;
             status.textContent = 'CV déjà transmis : ' + rows[0].original_filename + '. Module 6 validé automatiquement le ' +
-                new Date(rows[0].uploaded_at).toLocaleDateString('fr-FR') + '.';
+                new Date(rows[0].uploaded_at).toLocaleDateString('fr-FR') + '. Vous pouvez déposer une version actualisée si nécessaire.';
             status.classList.add('is-ok');
-            input.disabled = true;
-            button.disabled = true;
-            button.textContent = 'CV déjà transmis — Module 6 validé';
+            button.textContent = 'Remplacer mon CV';
         }).catch(function (error) {
             console.warn('Vérification du CV déjà transmis impossible.', error);
         });
@@ -156,9 +154,12 @@
     function initialize() {
         if (!auth) return;
         createCard();
-        var observer = new MutationObserver(function () { createCard(); });
-        var body = document.querySelector('#modal-module6 .mod-body[data-mod="6"]');
-        if (body) observer.observe(body, { childList: true, subtree: false });
+        document.addEventListener('doctrine:login', function () {
+            var card = document.getElementById('module6CvCard');
+            if (!card) return;
+            loadExisting(card, document.getElementById('module6CvFile'),
+                document.getElementById('module6CvUpload'), document.getElementById('module6CvStatus'));
+        });
     }
 
     if (document.readyState === 'loading') {
