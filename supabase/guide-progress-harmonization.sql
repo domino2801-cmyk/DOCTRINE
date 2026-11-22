@@ -101,10 +101,14 @@ begin
 end;
 $$;
 
+-- Autoriser techniquement la lecture RETEX par les comptes authentifiés ; la RLS ci-dessous
+-- limite strictement les lignes au candidat, à son guide rattaché ou à un administrateur.
+grant select on public.doctrine_retex to authenticated;
+
 -- Ajouter la politique de lecture RETEX uniquement si son nom est libre.
 -- Si elle existe déjà, vérifier qu'elle a exactement le périmètre attendu ;
 -- ne jamais la supprimer/remplacer silencieusement.
-do $
+do $$
 declare
     existing_qual text;
 begin
@@ -139,7 +143,7 @@ begin
         raise exception 'La politique doctrine_retex_assigned_guide_read existe avec une règle différente ; aucune modification automatique effectuée.';
     end if;
 end;
-$;
+$$;
 
 -- Module 3 : l'événement module_started constitue la preuve de première ouverture.
 insert into public.doctrine_progress_events (user_id, event_type, module_id)
