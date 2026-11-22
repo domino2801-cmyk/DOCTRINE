@@ -111,9 +111,9 @@ const module1Key = 'module1_validated';
 
     function enregistrerEvenementProgression(typeEvenement, moduleId, dossierId) {
         const auth = window.DoctrineAuth;
-        if (!auth || isAdminUser()) return;
+        if (!auth || isAdminUser()) return Promise.resolve(false);
 
-        auth.jeton().then(function(token) {
+        return auth.jeton().then(function(token) {
             if (!token) throw new Error('Session authentifiée indisponible.');
             const event = { event_type: typeEvenement, module_id: moduleId };
             if (dossierId !== undefined && dossierId !== null) event.dossier = Number(dossierId);
@@ -133,11 +133,69 @@ const module1Key = 'module1_validated';
                         throw new Error('HTTP ' + response.status + (detail ? ' : ' + detail : ''));
                     });
                 }
+                return true;
             });
         }).catch(function(error) {
             console.error('Échec de l’enregistrement de la progression DOCTRINE.', error);
             afficherStatutSynchronisationProgression('Étape non synchronisée. Vérifiez votre connexion puis réessayez.', true);
+            return false;
         });
+    }
+
+    function ensureModuleCompletionControl(id, modal) {
+        if (!['module2', 'module4', 'module5', 'module6', 'module7'].includes(id)) return;
+        const content = modal.querySelector('.modal-content');
+        if (!content || content.querySelector('.module-completion-control')) return;
+
+        const number = id.replace('module', '');
+        const control = document.createElement('section');
+        control.className = 'module-completion-control';
+        control.style.cssText = 'margin:28px 0 12px;padding:16px;border:2px solid #0b2240;border-radius:8px;background:#f8fafc;';
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'module-completion-button';
+        button.textContent = 'Valider la fin du module ' + number;
+        button.style.cssText = 'padding:10px 16px;border:0;border-radius:6px;background:#0b2240;color:#fff;font-weight:700;cursor:pointer;';
+        const status = document.createElement('p');
+        status.className = 'module-completion-status';
+        status.setAttribute('role', 'status');
+        status.setAttribute('aria-live', 'polite');
+        status.style.cssText = 'margin:10px 0 0;color:#334155;font-size:.9rem;';
+        let alreadyCompleted = false;
+        try {
+            alreadyCompleted = localStorage.getItem('doctrine-module-completed-' + number) === 'true';
+        } catch (error) {
+            // La validation serveur reste prioritaire si le stockage local est indisponible.
+        }
+        if (alreadyCompleted) {
+            button.disabled = true;
+            button.textContent = 'Module ' + number + ' déjà validé sur cet appareil';
+            status.textContent = 'Validation enregistrée localement. La progression synchronisée est conservée dans votre compte.';
+        } else {
+            status.textContent = 'Après avoir terminé les contenus de ce module, cliquez pour enregistrer votre validation.';
+        }
+        button.addEventListener('click', async function() {
+            if (button.disabled) return;
+            button.disabled = true;
+            button.textContent = 'Enregistrement…';
+            status.textContent = 'Synchronisation de la validation avec votre compte…';
+            const saved = await enregistrerEvenementProgression('module_completed', number);
+            if (!saved) {
+                button.disabled = false;
+                button.textContent = 'Réessayer la validation du module ' + number;
+                status.textContent = 'La validation n’a pas été synchronisée. Vérifiez votre connexion puis réessayez.';
+                return;
+            }
+            try {
+                localStorage.setItem('doctrine-module-completed-' + number, 'true');
+            } catch (error) {
+                // L'événement serveur est déjà enregistré.
+            }
+            button.textContent = 'Module ' + number + ' validé';
+            status.textContent = 'Validation enregistrée dans votre compte.';
+        });
+        control.append(button, status);
+        content.appendChild(control);
     }
 
     // Un dossier du module 4 n'est consultable que s'il est marqué « Fait » dans le module 3 (sauf admin).
@@ -624,6 +682,7 @@ const module1Key = 'module1_validated';
                     content: currentContent ? currentContent.scrollTop : 0
                 });
             }
+            ensureModuleCompletionControl(id, modal);
             if (id === 'module8') {
                 const guideFrame = document.getElementById('guideModule8Frame');
                 if (guideFrame && !guideFrame.dataset.loaded && guideFrame.dataset.src) {
