@@ -27,6 +27,10 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /Objectif d’oraux blancs/);
     assert.match(script, /Date du prochain oral/);
     assert.match(script, /Suivi du CCPM/);
+    assert.match(script, /Suivi admissibilité/);
+    assert.match(script, /eligibility\.append\(renderOralTracking\(candidate\)\)/);
+    assert.match(script, /eligibility\.append\(renderCcpmTracking\(candidate\)\)/);
+
     assert.match(script, /Note CCPM \/ 20/);
     assert.match(script, /Notes de l’Officier Guide/);
     assert.match(script, /CCPM validé/);
