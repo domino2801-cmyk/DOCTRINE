@@ -775,7 +775,9 @@
         if (!activeReviewSubmission) return;
         const totals = collectReviewScores();
         const suggested = automaticJuryChecklist(activeReviewSubmission, totals.rubricScores);
-        document.querySelectorAll('[data-jury-checklist]').forEach(function (input) {
+        const container = document.getElementById('guideJuryChecklistItems');
+        if (!container) return;
+        container.querySelectorAll('[data-jury-checklist]').forEach(function (input) {
             if (input.dataset.juryManual === 'true') return;
             input.checked = suggested[input.dataset.juryChecklist] === true;
         });
@@ -813,10 +815,16 @@
         });
     }
 
-    function collectJuryChecklist() {
+    function collectJuryChecklist(submission) {
+        const type = submission?.submission_type;
+        const allowedItems = JURY_CHECKLISTS[type];
+        const container = document.getElementById('guideJuryChecklistItems');
         const checklist = {};
-        document.querySelectorAll('[data-jury-checklist]').forEach(function (input) {
-            checklist[input.dataset.juryChecklist] = input.checked;
+        if (!allowedItems || !container) return checklist;
+        const allowedKeys = new Set(allowedItems.map(function (item) { return item.key; }));
+        container.querySelectorAll('[data-jury-checklist]').forEach(function (input) {
+            const key = input.dataset.juryChecklist;
+            if (allowedKeys.has(key)) checklist[key] = input.checked;
         });
         return checklist;
     }
@@ -1257,6 +1265,11 @@
         if (!form.reportValidity()) return;
         const submissionId = document.getElementById('guideReviewSubmissionId').value;
         const status = document.getElementById('guideReviewStatus');
+        if (!activeReviewSubmission || !JURY_CHECKLISTS[activeReviewSubmission.submission_type] ||
+            String(activeReviewSubmission.id) !== String(submissionId)) {
+            setStatus(status, 'La fiche sélectionnée ne correspond plus à l’évaluation ouverte. Fermez puis rouvrez la fiche.', 'error');
+            return;
+        }
         const totals = collectReviewScores();
         if (!totals.complete) {
             setStatus(status, 'Renseignez une note valide pour chaque critère de la grille.', 'error');
@@ -1267,7 +1280,7 @@
         const editGeneration = reviewEditGeneration;
         const comment = document.getElementById('guideReviewComment').value.trim();
         const decision = document.getElementById('guideReviewDecision').value;
-        const juryChecklist = collectJuryChecklist();
+        const juryChecklist = collectJuryChecklist(activeReviewSubmission);
         if (button) button.disabled = true;
         setStatus(status, 'Enregistrement de l’évaluation…');
         try {
