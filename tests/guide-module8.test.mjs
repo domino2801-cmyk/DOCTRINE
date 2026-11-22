@@ -561,4 +561,6 @@ test("le suivi Officier Guide consolide les validations des sept modules et les 
     assert.match(progressSyncSql, /public\.doctrine_candidate_cvs/);
     assert.match(progressSyncSql, /public\.doctrine_retex retex/);
     assert.match(progressSyncSql, /event\.event_type = 'module_started'/);
+    assert.match(progressSyncSql, /drop trigger if exists doctrine_progress_events_set_identity/);
+    assert.match(progressSyncSql, /create trigger doctrine_progress_events_set_identity[\s\S]*execute function public\.doctrine_progress_events_set_identity/);
 });
