@@ -22,6 +22,7 @@
     <script src="viewer/dossier-fiches.js" defer></script>
     <script src="viewer/jury-bm4.js" defer></script>
     <script src="viewer/retex-signalements.js" defer></script>
+    <script src="viewer/module6-cv.js" defer></script>
     <title>Corpus de Préparation au BM4 - Édition 2027</title>
     <link rel="stylesheet" href="app/styles.css">
 
@@ -737,6 +738,14 @@
                 </div>
             </li>
         </ul>
+        <section id="module6CvCard" class="module6-cv-card part-card" aria-labelledby="module6CvTitle">
+            <h3 id="module6CvTitle">6.4. Dépôt de votre CV</h3>
+            <p>Insérez votre CV réglementaire au format PDF. Il sera enregistré dans un espace privé Supabase et pourra être consulté par votre Officier Guide rattaché et par l’administration.</p>
+            <label class="module6-cv-label" for="module6CvFile">Sélectionner votre CV (PDF, 10 Mo maximum)</label>
+            <input id="module6CvFile" type="file" accept="application/pdf,.pdf">
+            <button id="module6CvUpload" class="btn-link" type="button">Téléverser mon CV</button>
+            <p id="module6CvStatus" class="module6-cv-status" role="status" aria-live="polite">Le dépôt de votre CV validera automatiquement le module 6.</p>
+        </section>
 </div><!-- /mod-body -->
 
     </div>
