@@ -555,6 +555,10 @@ test("le suivi Officier Guide consolide les validations des sept modules et les 
     assert.match(script, /doctrine_candidate_cvs\?select=uploaded_at,original_filename,file_size/);
     assert.match(script, /'Module 7', Boolean\(retex\) \|\| Boolean\(module7\)/);
     assert.match(progressSyncSql, /grant select on public\.doctrine_retex to authenticated/);
+    assert.match(progressSyncSql, /grant select on public\\.doctrine_progress_events to authenticated/);
+    assert.match(progressSyncSql, /create policy doctrine_progress_events_candidate_or_assigned_guide_read[\\s\\S]*user_id = auth\\.uid\\(\\)[\\s\\S]*public\\.doctrine_can_access_candidate\\(user_id\\)/);
+    assert.doesNotMatch(progressSyncSql, /drop policy[^;]*doctrine_progress_events/i);
+    assert.match(progressSyncSql, /relrowsecurity/);
     assert.match(progressSyncSql, /doctrine_can_access_candidate\(user_id\)/);
     assert.match(progressSyncSql, /count\(distinct submission\.dossier\) >= 2/);
     assert.match(progressSyncSql, /average_score >= 13/);
