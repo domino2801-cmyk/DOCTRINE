@@ -125,6 +125,11 @@
 .og-dashboard-ai-state { margin:0; color:#9ed4a6; font-size:12px; font-weight:800; }
 .og-dashboard-ai-result { margin:0; color:#c6d2c8; font-size:12px; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere; }
 .og-dashboard-ai-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.og-dashboard-ai-action { min-height:38px; padding:8px 11px; border:1px solid rgba(183,207,185,.3); border-radius:6px; background:#293d32; color:#f2f5ee; font:inherit; font-size:12px; font-weight:750; cursor:pointer; }
+.og-dashboard-ai-action.is-primary { background:#354d3d; border-color:#8aa58d; }
+.og-dashboard-ai-action:disabled { opacity:.55; cursor:wait; }
+.og-dashboard-ai-dossier { border-left:3px solid #b52e35; }
+.og-dashboard-ai-card > strong { letter-spacing:.04em; }
 .og-dashboard-ai-frame-host { width:100%; }
 .og-dashboard-ai-frame-host:empty { display:none; }
 .og-dashboard-ai-frame { display:block; width:100%; height:min(1000px, 82vh); margin-top:12px; border:1px solid rgba(183,207,185,.24); border-radius:8px; background:#f5f7f3; }
