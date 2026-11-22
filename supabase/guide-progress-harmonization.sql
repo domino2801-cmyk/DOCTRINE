@@ -125,8 +125,7 @@ begin
 
     if not found then
         execute $policy$
-            create policy
-                doctrine_progress_events_candidate_or_assigned_guide_read
+            create policy doctrine_progress_events_candidate_or_assigned_guide_read
             on public.doctrine_progress_events
             as permissive
             for select
