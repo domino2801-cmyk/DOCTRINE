@@ -690,6 +690,25 @@
     function renderAiCorrection(candidate) {
         var section = node('details', 'og-dashboard-subaccordion og-dashboard-ai-correction');
         section.append(node('summary', '', 'Correction assistée par IA'));
+        var gridCard = node('article', 'og-dashboard-ai-grid-card');
+        var gridContent = node('div', 'og-dashboard-ai-grid-content');
+        gridContent.append(node('p', 'og-dashboard-ai-grid-kicker', 'RÉFÉRENTIEL OFFICIEL · BM4'));
+        gridContent.append(node('h4', '', 'Grille interactive d’évaluation BM4'));
+        gridContent.append(node('p', '', 'Évaluez séparément la fiche de proposition (70 %) et le support oral (30 %) selon les critères de la grille. La moyenne pondérée de l’épreuve est disponible lorsque les deux fiches du dossier sont évaluées.'));
+        gridContent.append(node('p', '', 'La correction assistée par IA est disponible pour les fiches de proposition et les fichette(s) orales. Elle propose une analyse, des notes, des annotations et des axes d’amélioration selon la grille officielle.'));
+        gridContent.append(node('p', '', 'L’Officier Guide vérifie, ajuste et valide toujours l’évaluation finale. Le compte rendu PDF officiel est généré après son enregistrement.'));
+        var gridActions = node('div', 'og-dashboard-ai-grid-actions');
+        var gridOpen = node('a', 'og-dashboard-ai-grid-link is-primary', 'Ouvrir la grille (PDF)');
+        gridOpen.href = 'https://domino2801-cmyk.github.io/DOCTRINE/app/grille-evaluation-synthese-bm4-interactive.pdf';
+        gridOpen.target = '_blank';
+        gridOpen.rel = 'noopener noreferrer';
+        var gridDownload = node('a', 'og-dashboard-ai-grid-link', 'Télécharger une copie vierge');
+        gridDownload.href = 'https://domino2801-cmyk.github.io/DOCTRINE/app/grille-evaluation-synthese-bm4-interactive.pdf';
+        gridDownload.setAttribute('download', 'grille-evaluation-synthese-bm4-interactive.pdf');
+        gridDownload.rel = 'noopener noreferrer';
+        gridActions.append(gridOpen, gridDownload);
+        gridCard.append(gridContent, gridActions);
+        section.append(gridCard);
         var items = (candidate.doctrine && Array.isArray(candidate.doctrine.submissions)
             ? candidate.doctrine.submissions : []).filter(function (submission) {
             return submission.submission_type === 'proposition' || submission.submission_type === 'support_oral';
