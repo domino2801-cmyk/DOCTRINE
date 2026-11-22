@@ -12,6 +12,7 @@
     var candidates = [];
     var courses = [];
     var loading = false;
+    var moduleEventsAvailable = true;
 
     function auth() { return window.DoctrineAuth; }
     function node(tag, className, text) {
@@ -43,6 +44,7 @@
             if (!token) throw new Error('Session expirée. Reconnectez-vous.');
             var headers = { apikey: auth().key, Authorization: 'Bearer ' + token };
             if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+            if (options.prefer) headers.Prefer = options.prefer;
             return fetch(auth().url.replace(/\/$/, '') + '/rest/v1/' + path, {
                 method: options.method || 'GET',
                 headers: headers,
@@ -111,6 +113,114 @@
             metricsNode.append(card);
         });
     }
+    function moduleState(candidate, moduleId) {
+        if (!moduleEventsAvailable) return { label: 'Non vérifiable', className: 'is-unknown' };
+        var events = candidate.doctrine && Array.isArray(candidate.doctrine.progress_events)
+            ? candidate.doctrine.progress_events : [];
+        if (events.some(function (event) {
+            return String(event.module_id) === String(moduleId) && event.event_type === 'module_completed';
+        })) return { label: 'Validé', className: 'is-ok' };
+        if (events.some(function (event) {
+            return String(event.module_id) === String(moduleId) && event.event_type === 'module_started';
+        })) return { label: 'En cours', className: 'is-warning' };
+        return { label: 'Non commencé', className: 'is-pending' };
+    }
+    function renderModuleProgress(candidate) {
+        var section = node('details', 'og-dashboard-subaccordion og-dashboard-module-progress');
+        var summary = node('summary', '', 'Progression des modules 1 à 7');
+        section.append(summary);
+        var grid = node('div', 'og-dashboard-module-grid');
+        for (var moduleId = 1; moduleId <= 7; moduleId++) {
+            var status = moduleState(candidate, moduleId);
+            var item = node('div', 'og-dashboard-module-item');
+            item.append(node('strong', '', 'Module ' + moduleId));
+            item.append(node('span', 'og-dashboard-pill ' + status.className, status.label));
+            grid.append(item);
+        }
+        section.append(grid);
+        return section;
+    }
+    function localDateTime(value) {
+        if (!value) return '';
+        var date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '';
+        return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    }
+    function renderOralTracking(candidate) {
+        var data = candidate.admission || {};
+        var section = node('section', 'og-dashboard-oral-tracking');
+        section.append(node('h4', '', 'Suivi des oraux blancs'));
+        var fields = node('div', 'og-dashboard-oral-fields');
+        var doneLabel = node('label', '', 'Oraux blancs réalisés');
+        var done = node('input', 'og-dashboard-oral-input');
+        done.type = 'number'; done.min = '0'; done.max = '100'; done.step = '1';
+        done.value = String(data.mock_orals_done == null ? 0 : data.mock_orals_done);
+        doneLabel.append(done);
+        var targetLabel = node('label', '', 'Objectif d’oraux blancs');
+        var target = node('input', 'og-dashboard-oral-input');
+        target.type = 'number'; target.min = '1'; target.max = '100'; target.step = '1';
+        target.value = String(data.mock_orals_target == null ? 4 : data.mock_orals_target);
+        targetLabel.append(target);
+        var dateLabel = node('label', 'og-dashboard-oral-date-label', 'Date du prochain oral');
+        var date = node('input', 'og-dashboard-oral-input');
+        date.type = 'datetime-local';
+        date.value = localDateTime(data.next_oral_date);
+        dateLabel.append(date);
+        fields.append(doneLabel, targetLabel, dateLabel);
+        var save = node('button', 'og-dashboard-save-oral', 'Enregistrer le suivi');
+        save.type = 'button';
+        var feedback = node('span', 'og-dashboard-oral-feedback');
+        save.addEventListener('click', function () {
+            var completed = Number(done.value);
+            var objective = Number(target.value);
+            if (!Number.isInteger(completed) || completed < 0 || completed > 100 ||
+                !Number.isInteger(objective) || objective < 1 || objective > 100) {
+                feedback.textContent = 'Saisissez des nombres valides (0 à 100 et objectif de 1 à 100).';
+                feedback.classList.add('is-error');
+                return;
+            }
+            var nextDate = null;
+            if (date.value) {
+                var parsed = new Date(date.value);
+                if (Number.isNaN(parsed.getTime())) {
+                    feedback.textContent = 'La date du prochain oral est invalide.';
+                    feedback.classList.add('is-error');
+                    return;
+                }
+                nextDate = parsed.toISOString();
+            }
+            save.disabled = true;
+            save.textContent = 'Enregistrement…';
+            feedback.textContent = '';
+            feedback.classList.remove('is-error');
+            api('candidate_admission_tracking?on_conflict=candidate_id', {
+                method: 'POST',
+                prefer: 'resolution=merge-duplicates,return=minimal',
+                body: {
+                    candidate_id: candidate.candidate.id,
+                    mock_orals_done: completed,
+                    mock_orals_target: objective,
+                    next_oral_date: nextDate
+                }
+            }).then(function () {
+                candidate.admission = Object.assign({}, candidate.admission || {}, {
+                    mock_orals_done: completed,
+                    mock_orals_target: objective,
+                    next_oral_date: nextDate
+                });
+                feedback.textContent = 'Suivi enregistré.';
+                feedback.classList.remove('is-error');
+            }).catch(function (error) {
+                feedback.textContent = 'Enregistrement impossible : ' + error.message;
+                feedback.classList.add('is-error');
+            }).finally(function () {
+                save.disabled = false;
+                save.textContent = 'Enregistrer le suivi';
+            });
+        });
+        section.append(fields, save, feedback);
+        return section;
+    }
     function renderCandidates() {
         candidatesNode.replaceChildren();
         var term = String(searchNode.value || '').trim().toLocaleLowerCase('fr');
@@ -151,6 +261,8 @@
                 facts.append(item);
             });
             body.append(facts);
+            body.append(renderModuleProgress(candidate));
+            body.append(renderOralTracking(candidate));
             var admission = candidate.admission;
             if (admission && typeof admission === 'object' && Object.keys(admission).length) {
                 var docs = node('details', 'og-dashboard-subaccordion');
@@ -217,7 +329,14 @@
             method: 'POST', body: { p_candidate_id: null }
         });
         var courseRequest = api('guide_course_catalog?select=id,title,category,description,drive_url&order=category.asc,title.asc');
-        Promise.allSettled([candidateRequest, courseRequest]).then(function (results) {
+        var progressRequest = candidateRequest.then(function (payload) {
+            var ids = (payload.candidates || []).map(function (candidate) {
+                return candidate.candidate && candidate.candidate.id;
+            }).filter(Boolean);
+            if (!ids.length) return [];
+            return api('doctrine_progress_events?select=user_id,module_id,event_type,created_at&user_id=in.(' + ids.join(',') + ')&order=created_at.desc');
+        });
+        Promise.allSettled([candidateRequest, courseRequest, progressRequest]).then(function (results) {
             if (results[0].status === 'fulfilled') {
                 candidates = Array.isArray(results[0].value.candidates) ? results[0].value.candidates : [];
             } else {
@@ -230,11 +349,21 @@
                 courses = [];
                 setStatus('Supports pédagogiques indisponibles : ' + results[1].reason.message, true);
             }
+            moduleEventsAvailable = results[2].status === 'fulfilled';
+            var progressEvents = moduleEventsAvailable && Array.isArray(results[2].value) ? results[2].value : [];
+            candidates.forEach(function (candidate) {
+                candidate.doctrine = candidate.doctrine || {};
+                candidate.doctrine.progress_events = progressEvents.filter(function (event) {
+                    return event.user_id === candidate.candidate.id;
+                });
+            });
             renderMetrics();
             renderCandidates();
             renderCourses();
             if (results.every(function (result) { return result.status === 'fulfilled'; })) {
                 setStatus(candidates.length + ' candidat(s) suivi(s) · ' + courses.length + ' support(s) pédagogique(s) disponibles.');
+            } else if (results[2].status === 'rejected') {
+                setStatus('Suivi des modules indisponible : ' + results[2].reason.message, true);
             }
         }).finally(function () { loading = false; });
     }
