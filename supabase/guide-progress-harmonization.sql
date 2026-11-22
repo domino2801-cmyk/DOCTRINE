@@ -50,7 +50,7 @@ with candidate_averages as (
         from public.quiz_results result
     ) results
     where coalesce(data ->> 'user_id', data ->> 'candidate_id') ~
-          '^[0-9a-fA-F-]{36}$'
+          '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
       and coalesce(data ->> 'score', '') ~ '^-?[0-9]+([.][0-9]+)?$'
     group by coalesce(data ->> 'user_id', data ->> 'candidate_id')
 )
