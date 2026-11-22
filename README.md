@@ -29,7 +29,9 @@ Pour activer le journal, exécutez en entier `supabase/progression-events.sql` d
 
 ### Validation de fin des modules
 
-Les modules 2, 4, 5, 6 et 7 proposent une action explicite « Valider la fin du module ». Cette validation déclarative est enregistrée dans `doctrine_progress_events` avec l’événement `module_completed`. Le module 1 conserve sa validation après lecture de la présentation ; le module 3 est validé lorsque tous ses dossiers sont marqués « Fait ». Les modules 1 à 7 sont ainsi pris en compte dans le tableau de bord Admin de QCM-MAJOR. Une validation manuelle reste une déclaration du candidat et ne constitue pas une preuve inviolable de maîtrise.
+Pour activer la validation automatique du module 5, exécutez aussi en entier `supabase/module5-qcm-auto-validation.sql` dans **Supabase > SQL Editor**, après `supabase/progression-events.sql`, sur le projet partagé avec QCM-MAJOR. La fonction vérifie la moyenne des notes QCM du compte connecté (identifiant utilisateur ou identifiant candidat) et crée une seule fois l’événement de fin du module 5 lorsque la moyenne atteint 13/20.
+
+Les modules 2, 4, 6 et 7 proposent une action explicite « Valider la fin du module ». Le module 5 est validé automatiquement dès que la moyenne des résultats QCM-MAJOR du candidat atteint le statut « Prêt », soit au moins 13/20 ; aucune action ni validation manuelle n’est demandée. La vérification est effectuée par une fonction Supabase qui lit les résultats du compte authentifié et inscrit l’événement `module_completed` dans `doctrine_progress_events`. Le module 1 conserve sa validation après lecture de la présentation ; le module 3 est validé lorsque tous ses dossiers sont marqués « Fait ». Les modules 1 à 7 sont ainsi pris en compte dans le tableau de bord Admin de QCM-MAJOR. Cette validation automatique atteste du seuil QCM atteint, pas de la maîtrise de l’ensemble des contenus.
 
 ## Compte administrateur
 

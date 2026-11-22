@@ -142,8 +142,55 @@ const module1Key = 'module1_validated';
         });
     }
 
+    let module5AutoValidationRequest = null;
+
+    function verifierValidationAutomatiqueModule5() {
+        const auth = window.DoctrineAuth;
+        if (!auth || isAdminUser()) return Promise.resolve(false);
+        if (module5AutoValidationRequest) return module5AutoValidationRequest;
+        const modal = document.getElementById('modal-module5');
+        const content = modal && modal.querySelector('.modal-content');
+        if (!content) return Promise.resolve(false);
+        let status = content.querySelector('.module5-qcm-auto-status');
+        if (!status) {
+            status = document.createElement('p');
+            status.className = 'module5-qcm-auto-status';
+            status.setAttribute('role', 'status');
+            status.setAttribute('aria-live', 'polite');
+            status.style.cssText = 'margin:28px 0 12px;padding:14px;border-left:4px solid #0b2240;background:#f8fafc;color:#334155;';
+            content.appendChild(status);
+        }
+        status.textContent = 'Vérification automatique du résultat QCM-MAJOR…';
+        module5AutoValidationRequest = auth.jeton().then(function(token) {
+            if (!token) throw new Error('Session candidate indisponible.');
+            return fetch(auth.url.replace(/\/$/, '') + '/rest/v1/rpc/verify_qcm_module5_completion', {
+                method: 'POST',
+                headers: { apikey: auth.key, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: '{}'
+            });
+        }).then(function(response) {
+            if (!response.ok) return response.text().then(function(detail) {
+                throw new Error('Vérification QCM-MAJOR impossible (HTTP ' + response.status + ')' + (detail ? ' : ' + detail : ''));
+            });
+            return response.json();
+        }).then(function(ready) {
+            if (ready !== true) {
+                status.textContent = 'Module 5 en attente : la moyenne QCM-MAJOR doit atteindre 13/20 pour valider automatiquement ce module.';
+                return false;
+            }
+            try { localStorage.setItem('doctrine-module-completed-5', 'true'); } catch (error) {}
+            status.textContent = 'Module 5 validé automatiquement : moyenne QCM-MAJOR égale ou supérieure à 13/20. Aucune validation manuelle nécessaire.';
+            return true;
+        }).catch(function(error) {
+            console.error('Validation automatique du module 5 impossible.', error);
+            status.textContent = 'La vérification automatique n’a pas abouti. Réessayez après avoir vérifié votre connexion QCM-MAJOR.';
+            return false;
+        }).finally(function() { module5AutoValidationRequest = null; });
+        return module5AutoValidationRequest;
+    }
+
     function ensureModuleCompletionControl(id, modal) {
-        if (!['module2', 'module4', 'module5', 'module6', 'module7'].includes(id)) return;
+        if (!['module2', 'module4', 'module6', 'module7'].includes(id)) return;
         const content = modal.querySelector('.modal-content');
         if (!content || content.querySelector('.module-completion-control')) return;
 
@@ -683,6 +730,7 @@ const module1Key = 'module1_validated';
                 });
             }
             ensureModuleCompletionControl(id, modal);
+            if (id === 'module5') verifierValidationAutomatiqueModule5();
             if (id === 'module8') {
                 const guideFrame = document.getElementById('guideModule8Frame');
                 if (guideFrame && !guideFrame.dataset.loaded && guideFrame.dataset.src) {
@@ -723,8 +771,18 @@ const module1Key = 'module1_validated';
         }
     }
 
+    function recontrolerValidationModule5AuRetour() {
+        if (qcmModuleAccess && document.visibilityState !== 'hidden') {
+            verifierValidationAutomatiqueModule5();
+        }
+    }
+    window.addEventListener('focus', recontrolerValidationModule5AuRetour);
+    window.addEventListener('pageshow', recontrolerValidationModule5AuRetour);
+    document.addEventListener('visibilitychange', recontrolerValidationModule5AuRetour);
+
     document.addEventListener('doctrine:login', function(event) {
         qcmModuleAccess = Boolean(event.detail && event.detail.accesQcm);
+        verifierValidationAutomatiqueModule5();
         correctionAccessEventsLogged = new Set();
         loadOgCorrectionAccess();
         updateModuleLockUI();
