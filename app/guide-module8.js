@@ -676,31 +676,17 @@
         actions.replaceChildren();
         status.textContent = 'Vérification du dépôt du CV…';
         try {
-            const rows = await api('/rest/v1/doctrine_candidate_cvs?select=storage_path,original_filename,file_size,uploaded_at&candidate_id=eq.' +
-                encodeURIComponent(candidate.candidate.id) + '&limit=1');
-            if (!rows.length) {
+            const cv = candidate.doctrine?.candidate_cv;
+            if (!cv) {
                 status.textContent = 'Aucun CV déposé pour ce candidat. Le module 6 reste en attente de son CV.';
-                const progressGrid = document.getElementById('guideProgressModules');
-                if (progressGrid) {
-                    progressGrid.querySelector('[data-module6-cv-progress]')?.remove();
-                    const progressCard = element('article', 'guide-progress-card');
-                    progressCard.dataset.module6CvProgress = 'true';
-                    progressCard.append(element('span', '', 'Module 6'), element('strong', '', 'CV en attente'));
-                    progressGrid.appendChild(progressCard);
-                }
                 return;
             }
-            const cv = rows[0];
             status.textContent = 'CV reçu : ' + cv.original_filename + ' — déposé le ' +
                 formatDate(cv.uploaded_at) + ' — ' + Math.ceil(Number(cv.file_size || 0) / 1024) + ' Ko.';
-            const progressGrid = document.getElementById('guideProgressModules');
-            if (progressGrid) {
-                progressGrid.querySelector('[data-module6-cv-progress]')?.remove();
-                const progressCard = element('article', 'guide-progress-card');
-                progressCard.dataset.module6CvProgress = 'true';
-                progressCard.append(element('span', '', 'Module 6'), element('strong', '', 'CV transmis — validé'));
-                progressGrid.appendChild(progressCard);
-            }
+            const metadataRows = await api('/rest/v1/doctrine_candidate_cvs?select=storage_path&candidate_id=eq.' +
+                encodeURIComponent(candidate.candidate.id) + '&limit=1');
+            if (!metadataRows.length) throw new Error('Métadonnées du CV indisponibles.');
+            cv.storage_path = metadataRows[0].storage_path;
             const button = element('button', 'guide-button guide-button-primary', 'Consulter le CV (PDF)');
             button.type = 'button';
             button.addEventListener('click', async function () {
@@ -729,6 +715,23 @@
         }
     }
 
+    async function enrichCandidateProgress(candidate) {
+        const candidateId = encodeURIComponent(candidate.candidate.id);
+        const doctrine = candidate.doctrine || (candidate.doctrine = {});
+        const requests = await Promise.allSettled([
+            api('/rest/v1/doctrine_progress_events?select=event_type,module_id,dossier,created_at&user_id=eq.' +
+                candidateId + '&order=created_at.desc'),
+            api('/rest/v1/doctrine_retex?select=created_at&user_id=eq.' + candidateId + '&limit=1'),
+            api('/rest/v1/doctrine_candidate_cvs?select=uploaded_at,original_filename,file_size&candidate_id=eq.' +
+                candidateId + '&limit=1')
+        ]);
+        if (requests[0].status === 'fulfilled') doctrine.progress_events = requests[0].value || [];
+        if (requests[1].status === 'fulfilled') doctrine.retex = requests[1].value?.[0] || null;
+        if (requests[2].status === 'fulfilled') doctrine.candidate_cv = requests[2].value?.[0] || null;
+        doctrine.progress_sync_error = requests.some(function (request) { return request.status === 'rejected'; });
+        return candidate;
+    }
+
     async function loadDashboard() {
         const status = document.getElementById('guideStatus');
         const generation = ++requestGeneration;
@@ -740,6 +743,8 @@
             });
             if (generation !== requestGeneration) return;
             candidates = Array.isArray(result.candidates) ? result.candidates : [];
+            await Promise.all(candidates.map(enrichCandidateProgress));
+            if (generation !== requestGeneration) return;
             if (!candidates.some(function (candidate) { return candidate.candidate.id === selectedCandidateId; })) {
                 selectedCandidateId = '';
             }
