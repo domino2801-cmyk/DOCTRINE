@@ -315,6 +315,249 @@
         section.append(fields, save, feedback);
         return section;
     }
+    function reviewRubric(submission) {
+        if (submission.submission_type === 'support_oral') {
+            return [
+                { key: 'operatoire_forme', label: 'Caractère opératoire et gabarit 5 cases', max: 6, group: 'form' },
+                { key: 'introduction', label: 'Introduction structurée en cinq points', max: 4, group: 'content' },
+                { key: 'argumentaire', label: 'Argumentaire ID1 / ID2 / ID3 et preuves', max: 7, group: 'content' },
+                { key: 'conclusion', label: 'Conclusion', max: 3, group: 'content' }
+            ];
+        }
+        return [
+            { key: 'form', label: 'Forme, Présentation & Langue', max: 6, group: 'form' },
+            { key: 'introduction', label: 'Introduction', max: 3, group: 'content' },
+            { key: 'problematique_donnees', label: 'Problématique et données', max: 3, group: 'content' },
+            { key: 'solutions', label: 'Solutions réalisables', max: 4, group: 'content' },
+            { key: 'avis_conclusion', label: 'Avis et conclusion', max: 4, group: 'content' }
+        ];
+    }
+    function openCandidatePdf(submission, title, button) {
+        if (!submission.storage_path) return;
+        button.disabled = true;
+        button.textContent = 'Ouverture…';
+        var path = submission.storage_path.split('/').map(encodeURIComponent).join('/');
+        storageApi('object/sign/candidate-fiches/' + path, {
+            method: 'POST', body: { expiresIn: 300 }
+        }).then(function (payload) {
+            var signedUrl = payload.signedURL || payload.signedUrl;
+            if (!signedUrl) throw new Error('URL PDF signée manquante.');
+            if (!/^https?:\/\//i.test(signedUrl)) {
+                signedUrl = new URL(signedUrl.replace(/^\/?storage\/v1\//, '/storage/v1/'),
+                    auth().url).href;
+            }
+            var viewer = window.DoctrineViewer;
+            if (!viewer || typeof viewer.openSignedPdf !== 'function') {
+                throw new Error('La visionneuse PDF est indisponible. Rechargez la page.');
+            }
+            return viewer.openSignedPdf(signedUrl, title, '8');
+        }).catch(function (error) {
+            setStatus('Ouverture du PDF impossible : ' + error.message, true);
+        }).finally(function () {
+            button.disabled = false;
+            button.textContent = title.indexOf('oral') !== -1
+                ? 'Ouvrir la fiche support oral' : 'Ouvrir la fiche de proposition';
+        });
+    }
+    function openDashboardReview(candidate, submission, runCorrection) {
+        var dialog = document.getElementById('ogDashboardReviewDialog');
+        if (!dialog) {
+            dialog = node('dialog', 'og-dashboard-review-dialog');
+            dialog.id = 'ogDashboardReviewDialog';
+            document.body.append(dialog);
+        }
+        dialog.replaceChildren();
+        var isOral = submission.submission_type === 'support_oral';
+        var rubric = reviewRubric(submission);
+        var review = (submission.reviews || [])[0] || {};
+        var heading = node('div', 'og-dashboard-review-heading');
+        var headingText = node('div');
+        headingText.append(node('p', 'og-dashboard-review-kicker', 'ÉVALUATION BM4 · DOSSIER ' + submission.dossier));
+        headingText.append(node('h2', '', (isOral ? 'Fiche support oral — ' : 'Fiche de proposition — ') + candidateName(candidate)));
+        var closeButton = node('button', 'og-dashboard-review-close', 'Fermer');
+        closeButton.type = 'button';
+        closeButton.addEventListener('click', function () { dialog.close(); });
+        heading.append(headingText, closeButton);
+        var form = node('form', 'og-dashboard-review-form');
+        var intro = node('p', 'og-dashboard-review-help',
+            'Renseignez chaque critère sur son barème. La correction IA, lorsqu’elle est demandée, reste une proposition à vérifier et à valider par l’Officier Guide.');
+        var aiPanel = node('section', 'og-dashboard-review-ai');
+        aiPanel.hidden = true;
+        var criteria = node('div', 'og-dashboard-review-criteria');
+        rubric.forEach(function (criterion) {
+            var label = node('label', 'og-dashboard-review-criterion');
+            label.append(node('span', '', criterion.label + ' — /' + criterion.max));
+            var input = node('input');
+            input.type = 'number'; input.min = '0'; input.max = String(criterion.max);
+            input.step = '0.01'; input.required = true;
+            input.dataset.rubricScore = criterion.key;
+            var saved = review.rubric_scores && review.rubric_scores[criterion.key];
+            if (saved !== undefined && saved !== null && saved !== '') input.value = String(saved);
+            label.append(input);
+            criteria.append(label);
+        });
+        var total = node('p', 'og-dashboard-review-total', 'Note calculée : à compléter / 20');
+        var decisionLabel = node('label', 'og-dashboard-review-field', 'Décision');
+        var decision = node('select');
+        [['valide','Validé'],['a_reprendre','À reprendre']].forEach(function (option) {
+            var item = node('option', '', option[1]); item.value = option[0]; decision.append(item);
+        });
+        decision.value = review.status === 'a_reprendre' ? 'a_reprendre' : 'valide';
+        decisionLabel.append(decision);
+        var commentLabel = node('label', 'og-dashboard-review-field', 'Commentaires de l’Officier Guide');
+        var comment = node('textarea'); comment.rows = 6; comment.maxLength = 4000;
+        comment.value = review.comment || '';
+        commentLabel.append(comment);
+        var status = node('p', 'og-dashboard-review-status');
+        status.setAttribute('role', 'status');
+        var actions = node('div', 'og-dashboard-review-actions');
+        var save = node('button', 'og-dashboard-ai-action is-primary', 'Enregistrer l’évaluation');
+        save.type = 'submit';
+        var correction = node('button', 'og-dashboard-ai-action', 'Lancer la correction IA');
+        correction.type = 'button';
+        correction.addEventListener('click', runAi);
+        actions.append(correction, save);
+        form.append(intro, aiPanel, criteria, total, decisionLabel, commentLabel, status, actions);
+        dialog.append(heading, form);
+        function collectScores() {
+            var scores = {};
+            var formGrade = 0, contentGrade = 0, complete = true;
+            rubric.forEach(function (criterion) {
+                var input = criteria.querySelector('[data-rubric-score="' + criterion.key + '"]');
+                var value = input.value === '' ? NaN : Number(input.value);
+                if (!Number.isFinite(value) || value < 0 || value > criterion.max) complete = false;
+                else {
+                    scores[criterion.key] = Math.round(value * 100) / 100;
+                    if (criterion.group === 'form') formGrade += value;
+                    else contentGrade += value;
+                }
+            });
+            return { scores: scores, formGrade: formGrade, contentGrade: contentGrade,
+                grade: Math.round((formGrade + contentGrade) * 100) / 100, complete: complete };
+        }
+        function updateTotal() {
+            var totals = collectScores();
+            total.textContent = totals.complete
+                ? 'Note calculée : ' + totals.grade.toLocaleString('fr-FR') + ' / 20'
+                : 'Note calculée : à compléter / 20';
+        }
+        criteria.addEventListener('input', updateTotal);
+        updateTotal();
+        function renderAiSuggestion(suggestion) {
+            aiPanel.replaceChildren();
+            aiPanel.hidden = false;
+            aiPanel.append(node('h3', '', isOral
+                ? 'Proposition de correction IA — Fichette orale'
+                : 'Proposition de correction IA — Fiche de proposition'));
+            if (!suggestion.readable) {
+                aiPanel.append(node('p', '', 'Aucune note n’a été reprise : le document doit être vérifié manuellement.'),
+                    node('p', '', suggestion.limitations || 'Document incomplet ou illisible.'));
+                return;
+            }
+            aiPanel.append(node('p', 'og-dashboard-review-warning',
+                'Suggestion non enregistrée. Vérifiez la fiche et les notes avant de valider.'));
+            aiPanel.append(node('p', '', (isOral ? 'Note du premier critère : ' : 'Note de forme : ') +
+                suggestion.form_grade + ' / 6 · Autres critères : ' + suggestion.content_grade +
+                ' / ' + (suggestion.content_max_grade || 14) + ' · Fiabilité estimée : ' + (suggestion.confidence || 'non précisée')));
+            (Array.isArray(suggestion.criteria) ? suggestion.criteria : []).forEach(function (criterion) {
+                var item = node('article', 'og-dashboard-review-ai-criterion');
+                item.append(node('strong', '', criterion.label + ' — ' + criterion.grade + ' / ' + criterion.max_grade));
+                item.append(node('p', '', criterion.observation || 'Observation non renseignée.'));
+                if (criterion.evidence) item.append(node('small', '', 'Indice à vérifier : ' + criterion.evidence));
+                aiPanel.append(item);
+            });
+            if (!isOral) {
+                aiPanel.append(node('p', '', 'Forme : ' + (suggestion.form_observations || '') +
+                    ' · Indice : ' + (suggestion.form_evidence || 'non repéré')));
+            } else {
+                aiPanel.append(node('h4', '', 'Comparaison avec la fiche écrite'),
+                    node('p', '', suggestion.anti_copy_analysis || 'Comparaison non renseignée.'));
+            }
+            aiPanel.append(node('p', '', 'Points forts : ' + ((suggestion.strengths || []).join(' · ') || 'Non précisés')),
+                node('p', '', 'Axes de progrès : ' + ((suggestion.improvements || []).join(' · ') || 'Non précisés')),
+                node('p', '', suggestion.overall_comment || ''));
+            var addComment = node('button', 'og-dashboard-ai-action', 'Ajouter la synthèse aux commentaires');
+            addComment.type = 'button';
+            addComment.addEventListener('click', function () {
+                var summary = [suggestion.overall_comment || '',
+                    'Points forts : ' + ((suggestion.strengths || []).join('; ') || 'non précisés'),
+                    'Axes de progrès : ' + ((suggestion.improvements || []).join('; ') || 'non précisés')].filter(Boolean).join('\n');
+                if ((comment.value.trim() + '\n\n' + summary).length > comment.maxLength) {
+                    status.textContent = 'La synthèse dépasse la limite de commentaires.';
+                    return;
+                }
+                comment.value = (comment.value.trim() ? comment.value.trim() + '\n\n' : '') + summary;
+                status.textContent = 'Synthèse ajoutée. Relisez et modifiez le commentaire avant l’enregistrement.';
+            });
+            aiPanel.append(addComment);
+        }
+        async function runAi() {
+            correction.disabled = true;
+            correction.textContent = 'Analyse Gemini en cours…';
+            status.textContent = 'Transmission du PDF à Google Gemini…';
+            aiPanel.hidden = false;
+            aiPanel.replaceChildren(node('p', '', 'Analyse du document par Google Gemini…'));
+            try {
+                var suggestion = await api('/functions/v1/correct-fiche-ai', {
+                    method: 'POST', body: { submission_id: submission.id }
+                });
+                if (suggestion.readable) {
+                    var formCriterion = rubric.find(function (item) { return item.group === 'form'; });
+                    var formInput = formCriterion && criteria.querySelector('[data-rubric-score="' + formCriterion.key + '"]');
+                    if (formInput) formInput.value = String(suggestion.form_grade);
+                    rubric.filter(function (item) { return item.group === 'content'; }).forEach(function (item, index) {
+                        var input = criteria.querySelector('[data-rubric-score="' + item.key + '"]');
+                        var proposed = (suggestion.criteria || [])[index];
+                        if (input && proposed) input.value = String(proposed.grade);
+                    });
+                    updateTotal();
+                }
+                renderAiSuggestion(suggestion);
+                status.textContent = suggestion.readable
+                    ? 'Proposition générée. Vérifiez les critères, puis enregistrez si vous la confirmez.'
+                    : 'Le PDF ne peut pas être évalué automatiquement. Vérifiez-le manuellement.';
+            } catch (error) {
+                status.textContent = 'Correction IA impossible : ' + error.message;
+                aiPanel.hidden = true;
+            } finally {
+                correction.disabled = false;
+                correction.textContent = 'Relancer la correction IA';
+            }
+        }
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            var totals = collectScores();
+            if (!totals.complete) {
+                status.textContent = 'Renseignez une note valide pour chaque critère de la grille.';
+                return;
+            }
+            save.disabled = true;
+            status.textContent = 'Enregistrement de l’évaluation…';
+            api('fiche_reviews?on_conflict=submission_id%2Cguide_id', {
+                method: 'POST',
+                prefer: 'resolution=merge-duplicates,return=representation',
+                body: {
+                    submission_id: submission.id,
+                    form_grade: totals.formGrade,
+                    content_grade: totals.contentGrade,
+                    grade: totals.grade,
+                    rubric_scores: totals.scores,
+                    jury_checklist: review.jury_checklist || {},
+                    status: decision.value,
+                    comment: comment.value.trim()
+                }
+            }).then(function () {
+                status.textContent = 'Évaluation enregistrée.';
+                dialog.close();
+                load();
+            }).catch(function (error) {
+                status.textContent = 'Enregistrement impossible : ' + error.message;
+            }).finally(function () { save.disabled = false; });
+        });
+        if (dialog.showModal) dialog.showModal();
+        else dialog.setAttribute('open', '');
+        if (runCorrection) runAi();
+    }
     function renderAiCorrection(candidate) {
         var section = node('details', 'og-dashboard-subaccordion og-dashboard-ai-correction');
         section.append(node('summary', '', 'Correction assistée par IA'));
@@ -336,11 +579,10 @@
         }).forEach(function (dossier) {
             var group = node('section', 'og-dashboard-ai-dossier');
             group.append(node('h4', '', 'DOSSIER ' + dossier));
-            var dossierItems = groups[dossier].slice().sort(function (a, b) {
+            groups[dossier].slice().sort(function (a, b) {
                 return (a.submission_type === 'proposition' ? 0 : 1) -
                     (b.submission_type === 'proposition' ? 0 : 1);
-            });
-            dossierItems.forEach(function (submission) {
+            }).forEach(function (submission) {
                 var isOral = submission.submission_type === 'support_oral';
                 var review = (submission.reviews || [])[0] || null;
                 var card = node('article', 'og-dashboard-ai-card');
@@ -351,53 +593,38 @@
                     : review.status === 'valide' ? 'Validée par l’Officier Guide'
                     : review.status === 'a_reprendre' ? 'À reprendre' : 'Évaluation enregistrée';
                 var grade = review && review.grade !== null && review.grade !== undefined
-                    ? ' · ' + Number(review.grade).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' / 20'
-                    : '';
+                    ? ' · ' + Number(review.grade).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' / 20' : '';
                 card.append(node('p', 'og-dashboard-ai-state', state + grade));
                 if (review && review.comment) {
                     var result = node('p', 'og-dashboard-ai-result');
-                    var comment = String(review.comment);
-                    result.textContent = comment.length > 360 ? comment.slice(0, 357) + '…' : comment;
+                    var commentText = String(review.comment);
+                    result.textContent = commentText.length > 360 ? commentText.slice(0, 357) + '…' : commentText;
                     card.append(result);
                 }
                 var actions = node('div', 'og-dashboard-ai-actions');
-                var frameHost = node('div', 'og-dashboard-ai-frame-host');
-                function openModule8(action, button) {
-                    if (!submission.storage_path) return;
-                    var frame = frameHost.querySelector('iframe');
-                    var params = new URLSearchParams({
-                        embedded: '1',
-                        guide_action: action,
-                        candidate_id: candidate.candidate.id,
-                        submission_id: submission.id
-                    });
-                    if (!frame) {
-                        frame = node('iframe', 'og-dashboard-ai-frame');
-                        frame.title = 'Module 8 — ' + title + ' — Dossier ' + dossier;
-                        frame.loading = 'lazy';
-                        frameHost.append(frame);
-                    }
-                    frame.src = 'app/guide-module8.html?' + params.toString();
-                    frameHost.hidden = false;
-                    actions.querySelectorAll('button').forEach(function (item) { item.disabled = false; });
-                    button.disabled = true;
-                }
-                [
-                    ['open', isOral ? 'Ouvrir la fiche support oral' : 'Ouvrir la fiche de proposition', 'is-primary'],
-                    ['evaluate', 'Évaluer avec la grille BM4', ''],
-                    ['correct', isOral ? 'Correction IA — Fichette orale' : 'Correction IA — Proposition', '']
-                ].forEach(function (actionConfig) {
-                    var button = node('button', 'og-dashboard-ai-action ' + actionConfig[2], actionConfig[1]);
-                    button.type = 'button';
+                var openButton = node('button', 'og-dashboard-ai-action is-primary',
+                    isOral ? 'Ouvrir la fiche support oral' : 'Ouvrir la fiche de proposition');
+                openButton.type = 'button';
+                var evaluateButton = node('button', 'og-dashboard-ai-action', 'Évaluer avec la grille BM4');
+                evaluateButton.type = 'button';
+                var correctionButton = node('button', 'og-dashboard-ai-action',
+                    isOral ? 'Correction IA — Fichette orale' : 'Correction IA — Proposition');
+                correctionButton.type = 'button';
+                [openButton, evaluateButton, correctionButton].forEach(function (button) {
                     button.disabled = !submission.storage_path;
-                    button.title = submission.storage_path ? actionConfig[1] :
-                        'Aucun PDF archivé pour cette fiche.';
-                    button.addEventListener('click', function () {
-                        openModule8(actionConfig[0], button);
-                    });
-                    actions.append(button);
+                    button.title = submission.storage_path ? button.textContent : 'Aucun PDF archivé pour cette fiche.';
                 });
-                card.append(actions, frameHost);
+                openButton.addEventListener('click', function () {
+                    openCandidatePdf(submission, openButton.textContent, openButton);
+                });
+                evaluateButton.addEventListener('click', function () {
+                    openDashboardReview(candidate, submission, false);
+                });
+                correctionButton.addEventListener('click', function () {
+                    openDashboardReview(candidate, submission, true);
+                });
+                actions.append(openButton, evaluateButton, correctionButton);
+                card.append(actions);
                 group.append(card);
             });
             section.append(group);
