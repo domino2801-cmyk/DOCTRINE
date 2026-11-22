@@ -124,7 +124,7 @@
                 if (!response.ok) return [];
                 return response.json();
             }).then(function (rows) {
-                if (current === requestId && rows.length) lockRetex('Vous avez déjà transmis votre RETEX. Merci !');
+                if (current === requestId && rows.length) lockRetex('RETEX déjà transmis. Module 7 validé automatiquement. Merci pour ton retour !');
             });
         }).catch(function () {});
     }
