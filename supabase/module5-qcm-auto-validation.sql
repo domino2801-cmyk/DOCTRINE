@@ -5,8 +5,8 @@
 create or replace function public.verify_qcm_module5_completion()
 returns boolean
 language plpgsql
-security invoker
-set search_path = public, pg_temp
+security definer
+set search_path = ''
 as $$
 declare
     average_score numeric;
@@ -15,11 +15,11 @@ begin
         raise exception 'Authentication required';
     end if;
 
-    perform pg_advisory_xact_lock(hashtextextended(auth.uid()::text || ':doctrine-module5', 0));
+    perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(auth.uid()::text || ':doctrine-module5', 0));
 
     select avg((data ->> 'score')::numeric)
       into average_score
-      from (select to_jsonb(result) as data from public.quiz_results result) candidate_results
+      from (select pg_catalog.to_jsonb(result) as data from public.quiz_results result) candidate_results
      where (
          data ->> 'user_id' = auth.uid()::text
          or data ->> 'candidate_id' = auth.uid()::text
