@@ -105,9 +105,7 @@ $$;
 -- 2. Lecture sécurisée des événements de progression
 -- ============================================================
 
-grant select
-on public.doctrine_progress_events
-to authenticated;
+grant select on public.doctrine_progress_events to authenticated;
 
 do $$
 declare
@@ -181,8 +179,7 @@ $$;
 -- Cela permet le rattrapage historique sans permettre à un
 -- candidat connecté de choisir l'identité d'un événement.
 
-create or replace function
-public.doctrine_progress_events_set_identity()
+create or replace function public.doctrine_progress_events_set_identity()
 returns trigger
 language plpgsql
 set search_path = ''
@@ -205,9 +202,7 @@ $$;
 -- 4. Lecture sécurisée des fiches RETEX par l'Officier Guide
 -- ============================================================
 
-grant select
-on public.doctrine_retex
-to authenticated;
+grant select on public.doctrine_retex to authenticated;
 
 do $$
 declare
