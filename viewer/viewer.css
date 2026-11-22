@@ -64,16 +64,21 @@ body.dv-open { overflow: hidden; }
 }
 
 
-/* Module 6 — dépôt CV : le conteneur reprend le style commun .part-card. */
-.module6-cv-card p { line-height: 1.55; }
-.module6-cv-label { display: block; margin: 14px 0 7px; font-weight: 700; color: inherit; }
-.module6-cv-card input[type="file"] {
+/* Module 6 — dépôt CV : mêmes lignes et mêmes contrôles que les autres rubriques. */
+.module6-cv-label { display: block; margin: 0; font-weight: 600; color: inherit; }
+#module6CvCard input[type="file"] {
     display: block;
     max-width: 100%;
-    margin: 0 0 12px;
+    min-width: 0;
+    margin: 4px 0;
     color: inherit;
     font: inherit;
 }
-.module6-cv-status { margin: 12px 0 0; font-size: .92rem; }
+.module6-cv-status { margin: 10px 0 0; font-size: .92rem; }
 .module6-cv-status.is-ok { color: #70bd83; font-weight: 700; }
 .module6-cv-status.is-error { color: #ff8585; font-weight: 700; }
+
+@media (max-width: 560px) {
+    #module6CvCard .align-row { flex-wrap: wrap; gap: 8px; }
+    #module6CvCard input[type="file"] { width: 100%; }
+}
