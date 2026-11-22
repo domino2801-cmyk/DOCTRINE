@@ -194,7 +194,9 @@ const module1Key = 'module1_validated';
     function verifierValidationAutomatiqueModule4() {
         const auth = window.DoctrineAuth;
         if (!auth || isAdminUser()) return Promise.resolve(false);
-        if (module4AutoValidationRequest) return module4AutoValidationRequest;
+        if (module4AutoValidationRequest) return module4AutoValidationRequest.then(function() {
+            return verifierValidationAutomatiqueModule4();
+        });
         const modal = document.getElementById('modal-module4');
         const content = modal && modal.querySelector('.modal-content');
         if (!content) return Promise.resolve(false);
