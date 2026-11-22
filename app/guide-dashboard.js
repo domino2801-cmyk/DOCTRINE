@@ -160,6 +160,78 @@
             card.append(node('small', '', metric[2]));
             metricsNode.append(card);
         });
+        var assignCard = node('button', 'og-dashboard-metric og-dashboard-metric-action');
+        assignCard.type = 'button';
+        assignCard.append(node('span', 'og-dashboard-metric-label', 'RATTACHER UN CANDIDAT'));
+        assignCard.append(node('strong', 'og-dashboard-metric-value', '+'));
+        assignCard.append(node('small', '', 'Associer à ma cohorte'));
+        assignCard.addEventListener('click', openAssignCandidateDialog);
+        metricsNode.append(assignCard);
+    }
+    function openAssignCandidateDialog() {
+        var dialog = node('dialog', 'og-dashboard-assign-dialog');
+        var form = node('form', 'og-dashboard-assign-form');
+        form.method = 'dialog';
+        var heading = node('div', 'og-dashboard-assign-heading');
+        heading.append(node('p', 'og-dashboard-kicker', 'COHORTE BM4'));
+        heading.append(node('h3', '', 'Rattacher un candidat'));
+        var closeButton = node('button', 'og-dashboard-close', 'Fermer');
+        closeButton.type = 'button';
+        closeButton.addEventListener('click', function () { dialog.close(); });
+        var label = node('label', '', 'Code candidat de 8 caractères (communiqué par le candidat)');
+        var input = node('input', 'og-dashboard-assign-input');
+        input.type = 'text';
+        input.minLength = 8;
+        input.maxLength = 8;
+        input.pattern = '[A-HJ-NP-Za-hj-np-z2-9]{8}';
+        input.placeholder = 'ABCD2345';
+        input.autocomplete = 'off';
+        input.autocapitalize = 'characters';
+        input.spellcheck = false;
+        input.required = true;
+        label.append(input);
+        var hint = node('p', 'og-dashboard-muted', 'Saisissez le code transmis par le candidat, puis confirmez le rattachement.');
+        var feedback = node('p', 'og-dashboard-assign-feedback');
+        feedback.setAttribute('role', 'status');
+        feedback.setAttribute('aria-live', 'polite');
+        var actions = node('div', 'og-dashboard-assign-actions');
+        var verify = node('button', 'og-dashboard-close og-dashboard-assign-primary', 'Vérifier le code');
+        verify.type = 'submit';
+        actions.append(verify);
+        form.append(heading, closeButton, label, hint, feedback, actions);
+        dialog.append(form);
+        root.append(dialog);
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            var code = input.value.trim().toUpperCase();
+            if (!/^[A-HJ-NP-Z2-9]{8}$/.test(code)) {
+                feedback.textContent = 'Le code doit comporter 8 caractères valides.';
+                feedback.classList.add('is-error');
+                return;
+            }
+            verify.disabled = true;
+            feedback.classList.remove('is-error');
+            feedback.textContent = 'Vérification du code et rattachement…';
+            api('rpc/assign_guide_candidate_by_code', {
+                method: 'POST',
+                body: { p_code: code }
+            }).then(function (candidateId) {
+                if (typeof candidateId !== 'string' ||
+                    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(candidateId)) {
+                    throw new Error('Le service de rattachement a retourné un identifiant candidat invalide.');
+                }
+                feedback.textContent = 'Candidat rattaché à votre cohorte.';
+                dialog.close();
+                load();
+            }).catch(function (error) {
+                feedback.textContent = error.message || 'Rattachement impossible.';
+                feedback.classList.add('is-error');
+                verify.disabled = false;
+            });
+        });
+        dialog.addEventListener('close', function () { dialog.remove(); });
+        dialog.showModal();
+        input.focus();
     }
     function moduleState(candidate, moduleId) {
         if (!moduleEventsAvailable) return { label: 'Non vérifiable', className: 'is-unknown' };
