@@ -36,12 +36,14 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /Évaluer avec la grille BM4/);
     assert.match(script, /Correction IA — Proposition/);
     assert.match(script, /Correction IA — Fichette orale/);
-    assert.match(script, /openCandidatePdf\(submission/);
+    assert.match(script, /openCandidatePdf\(candidate, submission/);
     assert.match(script, /openDashboardReview\(candidate, submission, false\)/);
     assert.match(script, /openDashboardReview\(candidate, submission, true\)/);
     assert.match(script, /functionsApi\('\/functions\/v1\/correct-fiche-ai'/);
     assert.match(script, /fiche_reviews\?on_conflict=submission_id/);
     assert.match(script, /ogDashboardReviewDialog/);
+    assert.match(script, /relativeStorageUrl\(signedUrl\)/);
+    assert.match(script, /window\.parent\.DoctrineViewer/);
     assert.match(script, /og-dashboard-review-criteria/);
     assert.match(script, /eligibility\.append\(renderOralTracking\(candidate\)\)/);
     assert.match(script, /eligibility\.append\(renderCcpmTracking\(candidate\)\)/);
