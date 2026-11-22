@@ -771,6 +771,15 @@ const module1Key = 'module1_validated';
         }
     }
 
+    function recontrolerValidationModule5AuRetour() {
+        if (qcmModuleAccess && document.visibilityState !== 'hidden') {
+            verifierValidationAutomatiqueModule5();
+        }
+    }
+    window.addEventListener('focus', recontrolerValidationModule5AuRetour);
+    window.addEventListener('pageshow', recontrolerValidationModule5AuRetour);
+    document.addEventListener('visibilitychange', recontrolerValidationModule5AuRetour);
+
     document.addEventListener('doctrine:login', function(event) {
         qcmModuleAccess = Boolean(event.detail && event.detail.accesQcm);
         verifierValidationAutomatiqueModule5();
