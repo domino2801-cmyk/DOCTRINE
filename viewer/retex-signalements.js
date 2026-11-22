@@ -253,6 +253,8 @@
     document.addEventListener('doctrine:login', refreshRetexProfile);
     document.addEventListener('doctrine:logout', function () {
         requestId++;
+        var completionNotice = document.getElementById('module7CompletionMessage');
+        if (completionNotice) completionNotice.hidden = true;
         retexForm.reset();
         signalementForm.reset();
         sigCount.textContent = '0';
