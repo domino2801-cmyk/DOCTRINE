@@ -46,6 +46,11 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /Préparer le téléchargement/);
     assert.doesNotMatch(script, /ccpm_date\s*:/);
     assert.match(script, /Progression des modules 1 à 7/);
+    assert.match(script, /candidateFollowUpStatus/);
+    assert.match(script, /EN DIFFICULTÉ/);
+    assert.match(script, /À SURVEILLER/);
+    assert.match(script, /PRÊT/);
+    assert.doesNotMatch(script, /SUIVI NORMAL/);
     assert.match(script, /admin \|\| role === 'guide' \|\| role === 'officier_guide' \|\| specialty === 'OG'/);
 });
 
