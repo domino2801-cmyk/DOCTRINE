@@ -631,8 +631,69 @@
         if (maxLevel) maxLevel.textContent = (candidate.qcm?.progress?.max_unlocked_questions || 10) + ' Q';
         renderThemeHistory(candidate);
         renderProgress(candidate);
+        renderCandidateCv(candidate);
         renderSubmissions(candidate);
         renderAdmission(candidate);
+    }
+
+    async function renderCandidateCv(candidate) {
+        const status = document.getElementById('guideCandidateCvStatus');
+        const actions = document.getElementById('guideCandidateCvActions');
+        if (!status || !actions) return;
+        actions.replaceChildren();
+        status.textContent = 'Vérification du dépôt du CV…';
+        try {
+            const rows = await api('/rest/v1/doctrine_candidate_cvs?select=storage_path,original_filename,file_size,uploaded_at&candidate_id=eq.' +
+                encodeURIComponent(candidate.candidate.id) + '&limit=1');
+            if (!rows.length) {
+                status.textContent = 'Aucun CV déposé pour ce candidat. Le module 6 reste en attente de son CV.';
+                const progressGrid = document.getElementById('guideProgressModules');
+                if (progressGrid) {
+                    progressGrid.querySelector('[data-module6-cv-progress]')?.remove();
+                    const progressCard = element('article', 'guide-progress-card');
+                    progressCard.dataset.module6CvProgress = 'true';
+                    progressCard.append(element('span', '', 'Module 6'), element('strong', '', 'CV en attente'));
+                    progressGrid.appendChild(progressCard);
+                }
+                return;
+            }
+            const cv = rows[0];
+            status.textContent = 'CV reçu : ' + cv.original_filename + ' — déposé le ' +
+                formatDate(cv.uploaded_at) + ' — ' + Math.ceil(Number(cv.file_size || 0) / 1024) + ' Ko.';
+            const progressGrid = document.getElementById('guideProgressModules');
+            if (progressGrid) {
+                progressGrid.querySelector('[data-module6-cv-progress]')?.remove();
+                const progressCard = element('article', 'guide-progress-card');
+                progressCard.dataset.module6CvProgress = 'true';
+                progressCard.append(element('span', '', 'Module 6'), element('strong', '', 'CV transmis — validé'));
+                progressGrid.appendChild(progressCard);
+            }
+            const button = element('button', 'guide-button guide-button-primary', 'Consulter le CV (PDF)');
+            button.type = 'button';
+            button.addEventListener('click', async function () {
+                button.disabled = true;
+                try {
+                    const path = cv.storage_path.split('/').map(encodeURIComponent).join('/');
+                    const signed = await api('/storage/v1/object/sign/doctrine-candidate-cv/' + path, {
+                        method: 'POST',
+                        body: { expiresIn: 300 }
+                    });
+                    const signedUrl = signed.signedURL || signed.signedUrl;
+                    if (!signedUrl) throw new Error('Lien sécurisé du CV indisponible.');
+                    const tab = window.open('about:blank', '_blank');
+                    if (!tab) throw new Error('Autorisez les fenêtres contextuelles pour consulter le CV.');
+                    tab.opener = null;
+                    tab.location.href = relativeStorageUrl(signedUrl);
+                } catch (error) {
+                    setStatus(status, error.message || 'Ouverture du CV impossible.', 'error');
+                } finally {
+                    button.disabled = false;
+                }
+            });
+            actions.appendChild(button);
+        } catch (error) {
+            setStatus(status, error.message || 'Vérification du CV impossible.', 'error');
+        }
     }
 
     async function loadDashboard() {
