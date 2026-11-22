@@ -119,6 +119,8 @@ test("module 6 is validated automatically after a private candidate CV PDF is up
     assert.match(html, /id="module6CvUpload"/);
     assert.match(cvViewer, /var BUCKET = 'doctrine-candidate-cv'/);
     assert.match(cvViewer, /doctrine_candidate_cvs\?on_conflict=candidate_id/);
+    assert.doesNotMatch(cvViewer, /CV déjà transmis :/);
+    assert.match(cvViewer, /status\.textContent = '';[\s\S]*button\.textContent = 'Remplacer mon CV'/);
     assert.match(cvViewer, /application\/pdf/);
     assert.ok(cvViewer.includes("!/\\.pdf$/i.test(file.name)"), "Le contrôle d’extension doit reconnaître le point de .pdf");
     assert.match(cvSql, /create table if not exists public\.doctrine_candidate_cvs/i);
