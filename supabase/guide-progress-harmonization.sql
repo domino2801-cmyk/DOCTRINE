@@ -1,39 +1,164 @@
--- Harmonisation du suivi Officier Guide et rattrapage des validations déjà acquises.
--- À exécuter une fois dans Supabase SQL Editor après les migrations DOCTRINE
--- progression-events.sql, guide_module8.sql, module6-cv-upload.sql et
--- retex-signalements.sql. Cette migration ne modifie aucune règle de validation.
+-- Synchronisation sécurisée du suivi Officier Guide.
+-- Prérequis : progression-events.sql, guide_module8.sql, module6-cv-upload.sql,
+-- retex-signalements.sql, module4-two-dossiers-auto-validation.sql et
+-- module5-qcm-auto-validation.sql déjà appliqués.
+-- Cette migration ne crée ni ne supprime de table et ne désactive jamais la RLS.
 
 begin;
 
--- Les lignes historiques sont insérées pour plusieurs candidats depuis SQL Editor.
--- Suspendre temporairement le trigger d'identité (auth.uid() est nul dans ce contexte),
--- puis le rétablir avant la fin de la transaction.
-drop trigger if exists doctrine_progress_events_set_identity
-    on public.doctrine_progress_events;
+-- Arrêt immédiat si les protections ou objets attendus ne sont pas en place.
+do $$
+begin
+    if to_regclass('public.doctrine_progress_events') is null
+       or to_regclass('public.doctrine_retex') is null
+       or to_regclass('public.doctrine_candidate_cvs') is null
+       or to_regclass('public.doctrine_fiche_submissions') is null
+       or to_regclass('public.quiz_results') is null then
+        raise exception 'Migration interrompue : une table source manque. Vérifiez les migrations prérequises.';
+    end if;
 
--- Les Officiers Guides rattachés peuvent lire le RETEX du candidat qu'ils suivent.
+    if not coalesce((
+        select relrowsecurity
+        from pg_catalog.pg_class
+        where oid = 'public.doctrine_progress_events'::regclass
+    ), false) then
+        raise exception 'Migration interrompue : RLS doit être activée sur doctrine_progress_events.';
+    end if;
+
+    if not coalesce((
+        select relrowsecurity
+        from pg_catalog.pg_class
+        where oid = 'public.doctrine_retex'::regclass
+    ), false) then
+        raise exception 'Migration interrompue : RLS doit être activée sur doctrine_retex.';
+    end if;
+
+    if to_regprocedure('public.doctrine_can_access_candidate(uuid)') is null
+       or to_regprocedure('public.doctrine_progress_events_set_identity()') is null then
+        raise exception 'Migration interrompue : fonctions de sécurité manquantes. Exécutez les migrations prérequises.';
+    end if;
+
+end;
+$$;
+
+-- Autoriser la lecture des événements uniquement au candidat concerné,
+-- à son Officier Guide rattaché ou à un administrateur.
+-- Ne supprimer aucune politique existante : si une politique de même nom existe,
+-- le contrôle ci-dessous impose une vérification manuelle en cas de périmètre différent.
+grant select on public.doctrine_progress_events to authenticated;
+do $policy_check$
+declare
+    existing_qual text;
+begin
+    select qual into existing_qual
+    from pg_catalog.pg_policies
+    where schemaname = 'public'
+      and tablename = 'doctrine_progress_events'
+      and policyname = 'doctrine_progress_events_candidate_or_assigned_guide_read'
+      and cmd = 'SELECT';
+
+    if existing_qual is null then
+        if exists (
+            select 1 from pg_catalog.pg_policies
+            where schemaname = 'public'
+              and tablename = 'doctrine_progress_events'
+              and policyname = 'doctrine_progress_events_candidate_or_assigned_guide_read'
+        ) then
+            raise exception 'Politique de lecture des événements existante avec une commande inattendue ; vérification manuelle requise.';
+        end if;
+        execute $create_policy$
+            create policy doctrine_progress_events_candidate_or_assigned_guide_read
+            on public.doctrine_progress_events
+            for select to authenticated
+            using (
+                user_id = auth.uid()
+                or public.doctrine_can_access_candidate(user_id)
+            )
+        $create_policy$;
+    elsif replace(replace(existing_qual, ' ', ''), E'\\n', '') not ilike
+          '%user_id=auth.uid()%public.doctrine_can_access_candidate(user_id)%' then
+        raise exception 'La politique de lecture des événements existe avec une règle différente ; aucune modification automatique effectuée.';
+    end if;
+end;
+$policy_check$;
+
+-- Préserver le trigger d'identité : un utilisateur connecté ne peut jamais
+-- choisir l'identité d'un événement. Depuis une migration SQL privilégiée,
+-- auth.uid() est NULL ; l'identité explicite du candidat est alors conservée.
+create or replace function public.doctrine_progress_events_set_identity()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+    if auth.uid() is not null then
+        new.user_id := auth.uid();
+        new.created_at := now();
+    elsif new.user_id is null then
+        raise exception 'Identifiant candidat requis pour une insertion administrative.';
+    end if;
+    return new;
+end;
+$$;
+
+-- Autoriser techniquement la lecture RETEX par les comptes authentifiés ; la RLS ci-dessous
+-- limite strictement les lignes au candidat, à son guide rattaché ou à un administrateur.
 grant select on public.doctrine_retex to authenticated;
-drop policy if exists doctrine_retex_assigned_guide_read on public.doctrine_retex;
-create policy doctrine_retex_assigned_guide_read
-    on public.doctrine_retex
-    for select to authenticated
-    using (public.doctrine_can_access_candidate(user_id));
 
--- Rattrapage idempotent du Module 3 : son ouverture initiale est déjà journalisée
--- par module_started et constitue sa règle de validation existante.
+-- Ajouter la politique de lecture RETEX uniquement si son nom est libre.
+-- Si elle existe déjà, vérifier qu'elle a exactement le périmètre attendu ;
+-- ne jamais la supprimer/remplacer silencieusement.
+do $$
+declare
+    existing_qual text;
+begin
+    select qual into existing_qual
+    from pg_catalog.pg_policies
+    where schemaname = 'public'
+      and tablename = 'doctrine_retex'
+      and policyname = 'doctrine_retex_assigned_guide_read'
+      and cmd = 'SELECT';
+
+    if existing_qual is null then
+        if exists (
+            select 1 from pg_catalog.pg_policies
+            where schemaname = 'public'
+              and tablename = 'doctrine_retex'
+              and policyname = 'doctrine_retex_assigned_guide_read'
+        ) then
+            raise exception 'Politique doctrine_retex_assigned_guide_read existante avec une commande inattendue ; vérification manuelle requise.';
+        end if;
+
+        execute $policy$
+            create policy doctrine_retex_assigned_guide_read
+            on public.doctrine_retex
+            for select to authenticated
+            using (
+                user_id = auth.uid()
+                or public.doctrine_can_access_candidate(user_id)
+            )
+        $policy$;
+    elsif replace(replace(existing_qual, ' ', ''), E'\\n', '') not ilike
+          '%user_id=auth.uid()%public.doctrine_can_access_candidate(user_id)%' then
+        raise exception 'La politique doctrine_retex_assigned_guide_read existe avec une règle différente ; aucune modification automatique effectuée.';
+    end if;
+end;
+$$;
+
+-- Module 3 : l'événement module_started constitue la preuve de première ouverture.
 insert into public.doctrine_progress_events (user_id, event_type, module_id)
-select distinct event.user_id, 'module_completed', '3'
-from public.doctrine_progress_events event
-where event.module_id = '3'
-  and event.event_type = 'module_started'
+select distinct started.user_id, 'module_completed', '3'
+from public.doctrine_progress_events started
+where started.module_id = '3'
+  and started.event_type = 'module_started'
   and not exists (
       select 1 from public.doctrine_progress_events completed
-      where completed.user_id = event.user_id
+      where completed.user_id = started.user_id
         and completed.module_id = '3'
         and completed.event_type = 'module_completed'
   );
 
--- Module 4 : deux dossiers distincts comportant au moins une fiche transmise.
+-- Module 4 : même seuil que verify_doctrine_module4_completion().
 insert into public.doctrine_progress_events (user_id, event_type, module_id)
 select submission.user_id, 'module_completed', '4'
 from public.doctrine_fiche_submissions submission
@@ -46,7 +171,7 @@ having count(distinct submission.dossier) >= 2
          and event.event_type = 'module_completed'
    );
 
--- Module 5 : moyenne des résultats QCM-MAJOR >= 13/20, même règle que la fonction existante.
+-- Module 5 : même moyenne et même seuil que verify_qcm_module5_completion().
 with candidate_averages as (
     select
         coalesce(data ->> 'user_id', data ->> 'candidate_id') as candidate_id,
@@ -55,8 +180,10 @@ with candidate_averages as (
         select pg_catalog.to_jsonb(result) as data
         from public.quiz_results result
     ) results
-    where coalesce(data ->> 'user_id', data ->> 'candidate_id') ~
-          '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+    where (
+        coalesce(data ->> 'user_id', data ->> 'candidate_id')
+        ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+    )
       and coalesce(data ->> 'score', '') ~ '^-?[0-9]+([.][0-9]+)?$'
     group by coalesce(data ->> 'user_id', data ->> 'candidate_id')
 )
@@ -71,7 +198,7 @@ where average.average_score >= 13
         and event.event_type = 'module_completed'
   );
 
--- Module 6 : CV déjà enregistré dans le dépôt sécurisé.
+-- Module 6 : uniquement les CV présents dans la table de dépôt sécurisé.
 insert into public.doctrine_progress_events (user_id, event_type, module_id)
 select cv.candidate_id, 'module_completed', '6'
 from public.doctrine_candidate_cvs cv
@@ -82,7 +209,7 @@ where not exists (
       and event.event_type = 'module_completed'
 );
 
--- Module 7 : RETEX déjà transmis. Un signalement seul ne valide jamais le module.
+-- Module 7 : RETEX effectivement transmis ; aucun signalement ne valide le module.
 insert into public.doctrine_progress_events (user_id, event_type, module_id)
 select retex.user_id, 'module_completed', '7'
 from public.doctrine_retex retex
@@ -92,10 +219,6 @@ where not exists (
       and event.module_id = '7'
       and event.event_type = 'module_completed'
 );
-
-create trigger doctrine_progress_events_set_identity
-    before insert on public.doctrine_progress_events
-    for each row execute function public.doctrine_progress_events_set_identity();
 
 notify pgrst, 'reload schema';
 commit;
