@@ -289,7 +289,7 @@ const module1Key = 'module1_validated';
     }
 
     function ensureModuleCompletionControl(id, modal) {
-        if (!['module2', 'module6'].includes(id)) return;
+        if (id !== 'module2') return;
         const content = modal.querySelector('.modal-content');
         if (!content || content.querySelector('.module-completion-control')) return;
 
