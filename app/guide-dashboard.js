@@ -62,6 +62,24 @@
             });
         });
     }
+    function functionsApi(path, options) {
+        options = options || {};
+        return auth().jeton().then(function (token) {
+            if (!token) throw new Error('Session expirée. Reconnectez-vous.');
+            var headers = { apikey: auth().key, Authorization: 'Bearer ' + token };
+            if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+            return fetch(auth().url.replace(/\\/$/, '') + path, {
+                method: options.method || 'POST',
+                headers: headers,
+                body: options.body === undefined ? undefined : JSON.stringify(options.body)
+            });
+        }).then(function (response) {
+            return response.json().catch(function () { return {}; }).then(function (payload) {
+                if (!response.ok) throw new Error(payload.message || payload.msg || payload.error || 'Erreur fonction IA HTTP ' + response.status);
+                return payload;
+            });
+        });
+    }
     function storageApi(path, options) {
         options = options || {};
         return auth().jeton().then(function (token) {
@@ -498,7 +516,7 @@
             aiPanel.hidden = false;
             aiPanel.replaceChildren(node('p', '', 'Analyse du document par Google Gemini…'));
             try {
-                var suggestion = await api('/functions/v1/correct-fiche-ai', {
+                var suggestion = await functionsApi('/functions/v1/correct-fiche-ai', {
                     method: 'POST', body: { submission_id: submission.id }
                 });
                 if (suggestion.readable) {
