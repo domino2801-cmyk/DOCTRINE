@@ -2149,3 +2149,30 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
             font-size: 0.9rem;
         }
     }
+
+
+/* Module 6.4 — cadre dédié au dépôt du CV */
+#modal-module6 .modal-list > #module6CvCard {
+    display: block !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    margin: 0 0 14px !important;
+    padding: 16px 18px !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-left: 4px solid #e5c158 !important;
+    border-radius: 8px !important;
+    background: #0a1110 !important;
+    color: #fff !important;
+    list-style: none !important;
+}
+#modal-module6 .modal-list > #module6CvCard > .section-title {
+    margin: 0 0 12px !important;
+    padding: 0 0 10px !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(229, 193, 88, 0.35) !important;
+    color: #e5c158 !important;
+    background: transparent !important;
+}
+@media (max-width: 560px) {
+    #modal-module6 .modal-list > #module6CvCard { padding: 14px 12px !important; }
+}
