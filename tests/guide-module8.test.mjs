@@ -484,7 +484,13 @@ test("les points clés du jury sont cochables manuellement et conservés pour le
     assert.match(script, /input\.dataset\.juryManual === 'true'/);
     assert.match(script, /input\.dataset\.juryManual = 'true'/);
     assert.match(script, /input\.addEventListener\('input', syncAutomaticJuryChecklist\)/);
-    assert.match(script, /function collectJuryChecklist\(\)/);
+    assert.match(script, /function collectJuryChecklist\(submission\)/);
+    assert.match(script, /const allowedItems = JURY_CHECKLISTS\[type\]/);
+    assert.match(script, /container\.querySelectorAll\('\[data-jury-checklist\]'\)/);
+    assert.match(script, /if \(allowedKeys\.has\(key\)\) checklist\[key\] = input\.checked/);
+    assert.match(script, /collectJuryChecklist\(activeReviewSubmission\)/);
+    assert.match(script, /String\(activeReviewSubmission\.id\) !== String\(submissionId\)/);
+    assert.match(script, /container\.querySelectorAll\('\[data-jury-checklist\]'\)/);
     assert.match(script, /jury_checklist: juryChecklist/);
     assert.match(script, /jury_checklist: savedRow\?\.jury_checklist \?\? juryChecklist/);
     assert.match(sql, /add column if not exists jury_checklist jsonb not null default '\{\}'::jsonb/);
