@@ -1,0 +1,51 @@
+
+/* Catalogue partagé des cours Officiers Guides — administration ANC */
+.adm-course-catalog {
+    position: fixed; inset: 0; z-index: 9400; display: flex; align-items: center; justify-content: center;
+    padding: 16px; background: rgba(4, 12, 9, .78); color: #e8efe8;
+    font: 14px 'Helvetica Neue', Arial, sans-serif;
+}
+.adm-course-catalog[hidden], .adm-course-form-panel[hidden] { display: none; }
+.adm-course-card {
+    width: min(1120px, 100%); max-height: min(92vh, 980px); overflow: auto;
+    padding: clamp(16px, 3vw, 28px); border: 1px solid rgba(183, 207, 185, .25);
+    border-radius: 12px; background: #101c17; box-shadow: 0 24px 80px rgba(0,0,0,.42);
+}
+.adm-course-header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:0 0 18px; border-bottom:1px solid rgba(183,207,185,.2); }
+.adm-course-kicker { margin:0 0 7px; color:#d8b85b; font-size:11px; font-weight:800; letter-spacing:.12em; }
+.adm-course-header h2 { margin:0; color:#f2f5ee; font-size:clamp(20px,3vw,28px); }
+.adm-course-subtitle { margin:7px 0 0; color:#b8c8bb; }
+.adm-course-close, .adm-course-secondary, .adm-course-danger, .adm-course-primary {
+    min-height:38px; padding:8px 13px; border:1px solid rgba(183,207,185,.35); border-radius:6px;
+    background:#24382d; color:#eef5ef; font:inherit; font-weight:700; cursor:pointer;
+}
+.adm-course-primary { background:#d8b85b; color:#142019; border-color:#d8b85b; }
+.adm-course-danger { color:#ffc1b9; border-color:rgba(255,130,115,.55); background:rgba(120,35,30,.25); }
+.adm-course-toolbar { display:flex; gap:10px; margin:18px 0 10px; }
+.adm-course-toolbar input { flex:1; min-width:0; padding:10px 12px; border:1px solid rgba(183,207,185,.35); border-radius:6px; background:#0b1510; color:#f2f5ee; font:inherit; }
+.adm-course-status { min-height:20px; margin:8px 0 14px; color:#bdcdbf; }
+.adm-course-status.is-error { color:#ffaaa0; }
+.adm-course-status.is-success { color:#a8d6ad; }
+.adm-course-groups { display:grid; gap:10px; }
+.adm-course-group { border:1px solid rgba(183,207,185,.2); border-radius:8px; overflow:hidden; background:rgba(255,255,255,.025); }
+.adm-course-group summary { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:13px 15px; background:rgba(83,111,86,.2); cursor:pointer; }
+.adm-course-count { color:#d8b85b; font-size:12px; font-weight:700; }
+.adm-course-item { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:13px 15px; border-top:1px solid rgba(183,207,185,.13); }
+.adm-course-item h3 { margin:0; color:#edf3ed; font-size:15px; }
+.adm-course-item p { margin:5px 0 0; color:#aebfb1; line-height:1.45; }
+.adm-course-item-actions { display:flex; flex-wrap:wrap; gap:7px; flex-shrink:0; }
+.adm-course-download { display:inline-flex; align-items:center; min-height:36px; padding:7px 12px; border-radius:6px; background:#263d30; border:1px solid rgba(183,207,185,.35); color:#eaf3eb; font-weight:700; text-decoration:none; }
+.adm-course-empty { padding:20px; color:#c0cec2; text-align:center; }
+.adm-course-form-panel { margin-top:18px; padding:16px; border:1px solid rgba(216,184,91,.4); border-radius:8px; background:#17271e; }
+.adm-course-form-panel h3 { margin:0 0 12px; }
+.adm-course-form-panel form { display:grid; gap:9px; }
+.adm-course-form-panel label { color:#dce8dd; font-weight:700; }
+.adm-course-form-panel input, .adm-course-form-panel textarea { width:100%; padding:10px; border:1px solid rgba(183,207,185,.35); border-radius:6px; background:#0b1510; color:#f2f5ee; font:inherit; }
+.adm-course-hint { margin:0; color:#aebfb1; font-size:12px; }
+.adm-course-form-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:7px; }
+@media (max-width:700px) {
+    .adm-course-toolbar, .adm-course-item { align-items:stretch; flex-direction:column; }
+    .adm-course-toolbar > *, .adm-course-item-actions > * { width:100%; }
+    .adm-course-header { flex-direction:column; }
+    .adm-course-close { align-self:flex-end; }
+}
