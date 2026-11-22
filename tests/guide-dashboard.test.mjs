@@ -14,7 +14,8 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(html, /app\/guide-dashboard\.js/);
     assert.match(script, /guideDashboardNav/);
     assert.match(script, /id = 'guideDashboard'/);
-    assert.doesNotMatch(script, /module8|btn-mod8|modal-module8/i);
+    assert.doesNotMatch(script, /btn-mod8|modal-module8/i);
+    assert.match(script, /app\/guide-module8\.html/);
 });
 
 test('le tableau de bord utilise les données filtrées par le RPC guide', () => {
