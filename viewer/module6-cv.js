@@ -39,26 +39,37 @@
 
     function createCard() {
         var body = document.querySelector('#modal-module6 .mod-body[data-mod="6"]');
-        if (!body || body.querySelector('#module6CvCard')) return;
-        var card = element('section', 'module6-cv-card');
-        card.id = 'module6CvCard';
-        var title = element('h3', '', '6.4. Dépôt de votre CV');
-        var intro = element('p', '', 'Déposez votre CV réglementaire au format PDF. Ce document sera conservé dans votre espace privé et pourra être consulté par votre Officier Guide rattaché et par l’administration.');
-        var label = element('label', 'module6-cv-label', 'Insérer votre CV (PDF — 10 Mo maximum)');
-        var input = document.createElement('input');
-        input.type = 'file';
-        input.id = 'module6CvFile';
-        input.accept = 'application/pdf,.pdf';
-        input.required = true;
-        label.appendChild(input);
-        var button = element('button', 'btn-link module6-cv-upload', 'Téléverser mon CV');
-        button.type = 'button';
-        var status = element('p', 'module6-cv-status', 'Le dépôt de votre CV validera automatiquement le module 6.');
-        status.id = 'module6CvStatus';
-        status.setAttribute('role', 'status');
-        status.setAttribute('aria-live', 'polite');
-        card.append(title, intro, label, button, status);
-        body.appendChild(card);
+        if (!body) return;
+        var card = body.querySelector('#module6CvCard');
+        if (!card) {
+            card = element('section', 'module6-cv-card');
+            card.id = 'module6CvCard';
+            card.append(
+                element('h3', '', '6.4. Dépôt de votre CV'),
+                element('p', '', 'Insérez votre CV réglementaire au format PDF. Il sera enregistré dans un espace privé Supabase et pourra être consulté par votre Officier Guide rattaché et par l’administration.')
+            );
+            var label = element('label', 'module6-cv-label', 'Sélectionner votre CV (PDF, 10 Mo maximum)');
+            var newInput = document.createElement('input');
+            newInput.type = 'file';
+            newInput.id = 'module6CvFile';
+            newInput.accept = 'application/pdf,.pdf';
+            label.appendChild(newInput);
+            var newButton = element('button', 'btn-link', 'Téléverser mon CV');
+            newButton.id = 'module6CvUpload';
+            newButton.type = 'button';
+            var newStatus = element('p', 'module6-cv-status', 'Le dépôt de votre CV validera automatiquement le module 6.');
+            newStatus.id = 'module6CvStatus';
+            newStatus.setAttribute('role', 'status');
+            newStatus.setAttribute('aria-live', 'polite');
+            card.append(label, newButton, newStatus);
+            body.appendChild(card);
+        }
+
+        var input = document.getElementById('module6CvFile');
+        var button = document.getElementById('module6CvUpload');
+        var status = document.getElementById('module6CvStatus');
+        if (!input || !button || !status || button.dataset.cvBound === 'true') return;
+        button.dataset.cvBound = 'true';
 
         button.addEventListener('click', function () {
             var file = input.files && input.files[0];
@@ -67,7 +78,7 @@
                 status.classList.add('is-error');
                 return;
             }
-            if (file.type !== 'application/pdf' || !/\.pdf$/i.test(file.name)) {
+            if (file.type !== 'application/pdf' || !/\\.pdf$/i.test(file.name)) {
                 status.textContent = 'Format refusé : seul un fichier PDF est accepté.';
                 status.classList.add('is-error');
                 return;
@@ -78,14 +89,14 @@
                 return;
             }
             button.disabled = true;
-            status.classList.remove('is-error');
+            status.classList.remove('is-error', 'is-ok');
             status.textContent = 'Téléversement sécurisé du CV en cours…';
             var current = ++requestId;
             auth.jeton().then(function (token) {
                 if (!token) throw new Error('Session expirée. Reconnectez-vous.');
                 return getCandidateId(token).then(function (candidateId) {
                     var path = candidateId + '/cv.pdf';
-                    return fetch(auth.url.replace(/\/$/, '') + '/storage/v1/object/' + BUCKET + '/' + path, {
+                    return fetch(auth.url.replace(/\\/$/, '') + '/storage/v1/object/' + BUCKET + '/' + path, {
                         method: 'POST',
                         headers: Object.assign(apiHeaders(token, false), {
                             'Content-Type': 'application/pdf',
@@ -95,7 +106,7 @@
                         body: file
                     }).then(function (response) {
                         if (!response.ok) return apiError(response);
-                        return fetch(auth.url.replace(/\/$/, '') + '/rest/v1/doctrine_candidate_cvs?on_conflict=candidate_id', {
+                        return fetch(auth.url.replace(/\\/$/, '') + '/rest/v1/doctrine_candidate_cvs?on_conflict=candidate_id', {
                             method: 'POST',
                             headers: Object.assign(apiHeaders(token, true), {
                                 Prefer: 'resolution=merge-duplicates,return=minimal'
@@ -116,8 +127,9 @@
                 if (current !== requestId) return;
                 status.textContent = 'CV transmis avec succès. Module 6 validé automatiquement. Votre Officier Guide et l’administration peuvent maintenant le consulter.';
                 status.classList.add('is-ok');
-                input.disabled = true;
-                button.textContent = 'CV transmis — Module 6 validé';
+                input.value = '';
+                button.textContent = 'Remplacer mon CV';
+                button.disabled = false;
             }).catch(function (error) {
                 if (current !== requestId) return;
                 console.error('Dépôt du CV Module 6 impossible.', error);
