@@ -22,6 +22,7 @@
             notice.appendChild(text);
             content.appendChild(notice);
         }
+        notice.hidden = false;
         notice.querySelector('p').textContent = message;
     }
 
