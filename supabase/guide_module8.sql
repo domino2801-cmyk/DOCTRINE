@@ -213,10 +213,10 @@ begin
         ];
     elsif submission_type = 'support_oral' then
         allowed_checklist_keys := array[
-            'o_operatoire', 'o_five_cases', 'o_readability',
-            'o_intro_five_points', 'o_intro_clarity',
-            'o_id123', 'o_demonstration', 'o_proofs', 'o_fact_analysis',
-            'o_conclusion_clarity', 'o_decision', 'o_anti_copy'
+            'oral_operatoire',
+            'oral_introduction',
+            'oral_argumentaire',
+            'oral_conclusion'
         ];
     else
         raise exception 'Type de fiche non évaluable.'
