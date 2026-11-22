@@ -54,23 +54,10 @@
             { key: 'p_conclusion', label: 'Conclusion et suites : idée maîtresse reformulée et actions immédiates pour initier la décision.' }
         ],
         support_oral: [
-            { key: 'o_anti_copy', label: 'Non-recopie : le support n’est pas un copier-coller miniature de la fiche état-major.' },
-            { key: 'o_five_cases', label: 'Gabarit e-Form : tableau structuré en cinq cases, sans en-tête administratif.' },
-            { key: 'o_operatoire', label: 'Exploitabilité orale : mots-clés, listes aérées et chiffres saillants permettant de parler sans lire sa feuille.' },
-            { key: 'o_language', label: 'Langue : orthographe soignée et acronymes explicités.' },
-            { key: 'o_intro_five_points', label: 'Accroche : fait marquant, chiffre choc ou opposition illustrant l’enjeu.' },
-            { key: 'o_intro_clarity', label: 'Problématique : question centrale claire.' },
-            { key: 'o_limits', label: 'Limites : contraintes et impératifs du dossier.' },
-            { key: 'o_main_idea', label: 'Idée maîtresse : solution préconisée affirmée avec son argument maître.' },
-            { key: 'o_plan', label: 'Annonce du plan : présente et claire.' },
-            { key: 'o_demonstration', label: 'Logique de plaidoyer : défense de la solution choisie, sans redévelopper les solutions écartées.' },
-            { key: 'o_id123', label: 'ID 1 : situation et solution préconisée présentées brièvement.' },
-            { key: 'o_id2', label: 'ID 2 : arguments démontrant la pertinence de la solution au regard des critères.' },
-            { key: 'o_fact_analysis', label: 'ID 3 : argument majeur démontrant la supériorité de la solution et la réduction des risques.' },
-            { key: 'o_proofs', label: 'Preuves : exemples concrets, références et données chiffrées.' },
-            { key: 'o_conclusion_clarity', label: 'Synthèse : rappel des idées directrices principales.' },
-            { key: 'o_decision', label: 'Réaffirmation : rappel percutant de l’idée maîtresse.' },
-            { key: 'o_execution', label: 'Suites et ouverture : mesures d’exécution et ouverture pertinente.' }
+            { key: 'oral_operatoire', label: '1. Caractère opératoire et respect du gabarit des cinq cases (/6).' },
+            { key: 'oral_introduction', label: '2. Introduction structurée selon les cinq points attendus (/4).' },
+            { key: 'oral_argumentaire', label: '3. Argumentaire : articulation des ID1 / ID2 / ID3 et preuves vérifiables (/7).' },
+            { key: 'oral_conclusion', label: '4. Conclusion cohérente avec l’argumentaire et orientée vers la décision ou les suites à donner (/3).' }
         ]
     };
     const JURY_CHECKLIST_SCORE_MAP = {
@@ -82,10 +69,10 @@
             avis_conclusion: ['p_opinion', 'p_risk_mitigation', 'p_conclusion']
         },
         support_oral: {
-            operatoire_forme: ['o_anti_copy', 'o_five_cases', 'o_operatoire', 'o_language'],
-            introduction: ['o_intro_five_points', 'o_intro_clarity', 'o_limits', 'o_main_idea', 'o_plan'],
-            argumentaire: ['o_demonstration', 'o_id123', 'o_id2', 'o_fact_analysis', 'o_proofs'],
-            conclusion: ['o_conclusion_clarity', 'o_decision', 'o_execution']
+            operatoire_forme: ['oral_operatoire'],
+            introduction: ['oral_introduction'],
+            argumentaire: ['oral_argumentaire'],
+            conclusion: ['oral_conclusion']
         }
     };
     const auth = window.DoctrineAuth;
