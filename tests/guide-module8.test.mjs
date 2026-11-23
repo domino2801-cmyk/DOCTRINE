@@ -431,6 +431,13 @@ test("l’observation et l’indice du critère Forme sont persistés séparéme
     assert.match(sql, /add column if not exists rubric_evidence jsonb/);
 });
 
+test("la correction IA exige observation et indice pour chacun des neuf critères BM4", () => {
+    assert.match(edgeFunction, /criteria\.some\(\(criterion\) =>[\s\S]*!criterion\.observation\.trim\(\) \|\| !criterion\.evidence\.trim\(\)/);
+    assert.match(edgeFunction, /\[operatoire, introduction, argumentaire, conclusion\]\.some\(\(criterion\) =>[\s\S]*!criterion\.observation\.trim\(\) \|\| !criterion\.evidence\.trim\(\)/);
+    assert.match(edgeFunction, /Observation ou indice documentaire absent pour un critère de la fiche de proposition/);
+    assert.match(edgeFunction, /Observation ou indice documentaire absent pour un critère de la fichette orale/);
+});
+
 test("la migration dédiée crée les deux dictionnaires et reprend les anciennes observations Forme", async () => {
     const migration = await read("supabase/patches/2026-11-23-bm4-structured-rubric-feedback.sql");
     assert.match(migration, /add column if not exists rubric_observations jsonb not null default '\{\}'::jsonb/);
