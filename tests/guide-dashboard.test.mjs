@@ -203,6 +203,12 @@ test('les deux bibliothèques utilisent des cartes de largeur identique, titres 
 });
 
 
+test('la page principale charge pdf-lib avant les exports PDF du dossier Officier Guide', () => {
+    assert.ok(html.includes('pdf-lib@1.17.1/dist/pdf-lib.min.js'));
+    assert.ok(html.indexOf('pdf-lib@1.17.1/dist/pdf-lib.min.js') < html.indexOf('app/guide-dashboard.js'));
+    assert.ok(script.includes("await import('./bm4-official-pdf.mjs')"));
+});
+
 test('le dossier candidat Officier Guide propose les deux exports PDF BM4 avec les mêmes règles de validation', () => {
     assert.match(script, /function buildDossierBm4Report\(candidate, dossierItems\)/);
     assert.match(script, /function reviewGradeForExport\(submission, review\)/);
