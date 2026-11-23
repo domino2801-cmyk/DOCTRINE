@@ -117,7 +117,7 @@ async function chaineParentsDrive(id: string, parents: string[], jeton: string):
 
 // Les dossiers de la nouvelle bibliothèque suivent la publication Supabase,
 // y compris lorsque l'utilisateur demande directement un sous-dossier ou un fichier.
-async function accesBibliothequePubliee(ids: string[], admin: boolean): Promise<boolean> {
+async function accesBibliothequePubliee(ids: string[], admin: boolean): Promise<boolean | null> {
   if (admin) return true;
   const url = Deno.env.get('SUPABASE_URL');
   const cle = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -145,8 +145,8 @@ async function accesBibliothequePubliee(ids: string[], admin: boolean): Promise<
       return true;
     }
   }
-  // Les bibliothèques historiques restent soumises à leurs contrôles habituels.
-  return true;
+  // null = document historique : conserver ses contrôles d'accès existants.
+  return null;
 }
 
 async function jetonDrive() {
@@ -203,13 +203,14 @@ Deno.serve(async (req) => {
     if (!meta.ok) return erreur(502, 'Erreur Google Drive');
     const fichier = await meta.json();
 
+    let accesBibliotheque: boolean | null = null;
     if (!candidat.admin) {
       const chemin = await chaineParentsDrive(id, fichier.parents || [], jeton);
-      const autorise = await accesBibliothequePubliee(chemin, false);
-      if (!autorise) return erreur(403, 'Ce dossier ou document n’est pas publié pour les Officiers Guides');
+      accesBibliotheque = await accesBibliothequePubliee(chemin, false);
+      if (accesBibliotheque === false) return erreur(403, 'Ce dossier ou document n’est pas publié pour les Officiers Guides');
     }
 
-        if (!candidat.admin) {
+        if (!candidat.admin && accesBibliotheque === null) {
           const requis = await dossierRequis(id, fichier.parents || [], jeton);
           if (requis !== null && !(await fichesTransmises(candidat.id)).has(requis)) {
             return erreur(403, 'Transmettez votre fiche du dossier ' + requis + ' pour ouvrir ce corrigé');
