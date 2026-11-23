@@ -2,14 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const [migration, admin, adminCss, guide, guideCss, html, sw] = await Promise.all([
+const [migration, admin, adminCss, guide, guideCss, html, sw, viewer, driveProxy] = await Promise.all([
     readFile(new URL('../supabase/patches/2026-11-23-guide-exercise-correction-library.sql', import.meta.url), 'utf8'),
     readFile(new URL('../admin/guide-library.js', import.meta.url), 'utf8'),
     readFile(new URL('../admin/guide-library.css', import.meta.url), 'utf8'),
     readFile(new URL('../app/guide-dashboard.js', import.meta.url), 'utf8'),
     readFile(new URL('../app/guide-dashboard.css', import.meta.url), 'utf8'),
     readFile(new URL('../index.html', import.meta.url), 'utf8'),
-    readFile(new URL('../sw.js', import.meta.url), 'utf8')
+    readFile(new URL('../sw.js', import.meta.url), 'utf8'),
+    readFile(new URL('../viewer/viewer.js', import.meta.url), 'utf8'),
+    readFile(new URL('../supabase/functions/drive-proxy/index.ts', import.meta.url), 'utf8')
 ]);
 
 test('les deux bibliothèques sont isolées des 30 supports et des progressions existantes', () => {
@@ -57,4 +59,22 @@ test('le panneau Admin est chargé séparément et fonctionne hors connexion via
     assert.match(sw, /\.\/admin\/guide-library\.js/);
     assert.match(sw, /\.\/admin\/guide-library\.css/);
     assert.match(adminCss, /@media\(max-width:760px\)/);
+});
+
+
+test('les exercices et corrections réutilisent la visionneuse intégrée et le ZIP complet', () => {
+    assert.match(viewer, /openDrive: ouvrirDrive/);
+    assert.match(viewer, /function ouvrirDrive\(url, nom, module\)/);
+    assert.match(viewer, /function telechargerTout\(\)/);
+    assert.match(viewer, /creerZip\(entrees\)/);
+    assert.match(viewer, /profondeur < 8/);
+    assert.match(viewer, /if \(bilan\.echecs\) throw new Error/);
+    assert.match(driveProxy, /pageSize=1000/);
+    assert.match(driveProxy, /nextPageToken/);
+    assert.match(driveProxy, /accesBibliothequePubliee/);
+    assert.match(driveProxy, /accesBibliotheque === false/);
+    assert.match(driveProxy, /accesBibliotheque === null/);
+    assert.match(driveProxy, /chaineParentsDrive/);
+    assert.match(admin, /openDriveInViewer\(item\.drive_url, item\.title\)/);
+    assert.doesNotMatch(admin, /open\.target = '_blank'/);
 });

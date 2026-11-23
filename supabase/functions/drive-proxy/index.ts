@@ -98,6 +98,57 @@ async function dossierRequis(id: string, parents: string[], jeton: string): Prom
   return null;
 }
 
+async function chaineParentsDrive(id: string, parents: string[], jeton: string): Promise<string[]> {
+  const trouves = new Set<string>([id]);
+  let courants = parents;
+  for (let niveau = 0; niveau < MAX_PROFONDEUR && courants.length; niveau++) {
+    const suivants: string[] = [];
+    for (const parent of courants) {
+      if (trouves.has(parent)) continue;
+      trouves.add(parent);
+      const r = await drive(`/files/${parent}?fields=parents&supportsAllDrives=true`, jeton);
+      if (!r.ok) throw new Error('Lecture des dossiers parents impossible');
+      suivants.push(...((await r.json()).parents || []));
+    }
+    courants = suivants;
+  }
+  return [...trouves];
+}
+
+// Les dossiers de la nouvelle bibliothèque suivent la publication Supabase,
+// y compris lorsque l'utilisateur demande directement un sous-dossier ou un fichier.
+async function accesBibliothequePubliee(ids: string[], admin: boolean): Promise<boolean | null> {
+  if (admin) return true;
+  const url = Deno.env.get('SUPABASE_URL');
+  const cle = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !cle) throw new Error('Configuration Supabase manquante');
+  const headers = { apikey: cle, Authorization: `Bearer ${cle}` };
+  for (const id of ids) {
+    const driveIdFilter = encodeURIComponent(`*${id}*`);
+    const ex = await fetch(`${url}/rest/v1/guide_exercise_library?drive_url=like.${driveIdFilter}&select=id,is_published`, { headers });
+    if (!ex.ok) throw new Error('Vérification de publication des exercices impossible');
+    const exercices: { id: string; is_published: boolean }[] = await ex.json();
+    if (exercices.length) return exercices.some((e) => e.is_published);
+
+    const co = await fetch(`${url}/rest/v1/guide_correction_library?drive_url=like.${driveIdFilter}&select=id,exercise_id,is_published`, { headers });
+    if (!co.ok) throw new Error('Vérification de publication des corrections impossible');
+    const corrections: { id: string; exercise_id: string; is_published: boolean }[] = await co.json();
+    if (corrections.length) {
+      if (!corrections.some((c) => c.is_published)) return false;
+      const exerciseIds = [...new Set(corrections.map((c) => c.exercise_id))];
+      for (const exerciseId of exerciseIds) {
+        const parent = await fetch(`${url}/rest/v1/guide_exercise_library?id=eq.${encodeURIComponent(exerciseId)}&select=is_published`, { headers });
+        if (!parent.ok) throw new Error('Vérification de publication de l’exercice associé impossible');
+        const parents: { is_published: boolean }[] = await parent.json();
+        if (!parents.length || !parents.every((e) => e.is_published)) return false;
+      }
+      return true;
+    }
+  }
+  // null = document historique : conserver ses contrôles d'accès existants.
+  return null;
+}
+
 async function jetonDrive() {
   if (jetonGoogle && jetonGoogle.expire > Date.now() + 60_000) return jetonGoogle.valeur;
   const sa = JSON.parse(Deno.env.get('GOOGLE_SERVICE_ACCOUNT_JSON') || '{}');
@@ -152,7 +203,14 @@ Deno.serve(async (req) => {
     if (!meta.ok) return erreur(502, 'Erreur Google Drive');
     const fichier = await meta.json();
 
-        if (!candidat.admin) {
+    let accesBibliotheque: boolean | null = null;
+    if (!candidat.admin) {
+      const chemin = await chaineParentsDrive(id, fichier.parents || [], jeton);
+      accesBibliotheque = await accesBibliothequePubliee(chemin, false);
+      if (accesBibliotheque === false) return erreur(403, 'Ce dossier ou document n’est pas publié pour les Officiers Guides');
+    }
+
+        if (!candidat.admin && accesBibliotheque === null) {
           const requis = await dossierRequis(id, fichier.parents || [], jeton);
           if (requis !== null && !(await fichesTransmises(candidat.id)).has(requis)) {
             return erreur(403, 'Transmettez votre fiche du dossier ' + requis + ' pour ouvrir ce corrigé');
@@ -161,13 +219,20 @@ Deno.serve(async (req) => {
     if (action === 'list') {
       if (fichier.mimeType !== FOLDER) return erreur(400, 'Ce n\'est pas un dossier');
       const q = encodeURIComponent(`'${id}' in parents and trashed = false`);
-      const liste = await drive(
-        `/files?q=${q}&fields=files(id,name,mimeType)&orderBy=folder,name&pageSize=200&supportsAllDrives=true&includeItemsFromAllDrives=true`,
-        jeton,
-      );
-      if (!liste.ok) return erreur(502, 'Erreur Google Drive');
-      const d = await liste.json();
-      return reponse(JSON.stringify({ name: fichier.name, files: d.files || [] }), 200, { 'Content-Type': 'application/json' });
+      const fichiers: { id: string; name: string; mimeType: string }[] = [];
+      let pageToken = '';
+      do {
+        const pagination = pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '';
+        const liste = await drive(
+          `/files?q=${q}&fields=nextPageToken,files(id,name,mimeType)&orderBy=folder,name&pageSize=1000&supportsAllDrives=true&includeItemsFromAllDrives=true${pagination}`,
+          jeton,
+        );
+        if (!liste.ok) return erreur(502, 'Erreur Google Drive');
+        const page = await liste.json();
+        fichiers.push(...(page.files || []));
+        pageToken = page.nextPageToken || '';
+      } while (pageToken);
+      return reponse(JSON.stringify({ name: fichier.name, files: fichiers }), 200, { 'Content-Type': 'application/json' });
     }
 
     if (fichier.mimeType === FOLDER) return erreur(400, 'Ce document est un dossier');

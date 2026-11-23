@@ -217,6 +217,15 @@
         if (!/^https:\/\/(?:drive\.google\.com|docs\.google\.com)\//i.test(url)) return '';
         return url;
     }
+    function openDriveInViewer(value, title) {
+        var viewer = window.DoctrineViewer;
+        try { if (window.top && window.top.DoctrineViewer) viewer = window.top.DoctrineViewer; } catch (_) {}
+        if (!viewer || typeof viewer.openDrive !== 'function' || !viewer.openDrive(value, title, 'exercices-corrections')) {
+            if (statusNode) setStatus('La visionneuse intégrée est indisponible. Actualisez DOCTRINE puis réessayez.', true);
+            return false;
+        }
+        return true;
+    }
     function driveDownload(value) {
         var url = safeDriveUrl(value);
         if (!url) return '';
@@ -1103,10 +1112,9 @@
                 if (exercise.category) card.append(node('span', 'og-dashboard-library-category', exercise.category));
                 if (exercise.description) card.append(node('p', '', exercise.description));
                 var actions = node('div', 'og-dashboard-library-actions');
-                var open = node('a', 'og-dashboard-download', 'Ouvrir l’exercice');
-                open.href = exercise.drive_url;
-                open.target = '_blank';
-                open.rel = 'noopener noreferrer';
+                var open = node('button', 'og-dashboard-download', 'Ouvrir l’exercice');
+                open.type = 'button';
+                open.addEventListener('click', function () { openDriveInViewer(exercise.drive_url, exercise.title); });
                 actions.append(open);
                 var related = correctionLibraryItems.filter(function (correction) {
                     return correction.exercise_id === exercise.id;
@@ -1118,10 +1126,9 @@
                     related.forEach(function (correction) {
                         var line = node('div', 'og-dashboard-library-correction');
                         var title = node('strong', '', correction.title);
-                        var link = node('a', 'og-dashboard-download', 'Ouvrir la correction');
-                        link.href = correction.drive_url;
-                        link.target = '_blank';
-                        link.rel = 'noopener noreferrer';
+                        var link = node('button', 'og-dashboard-download', 'Ouvrir la correction');
+                        link.type = 'button';
+                        link.addEventListener('click', function () { openDriveInViewer(correction.drive_url, correction.title); });
                         line.append(title, link);
                         if (correction.description) line.append(node('p', '', correction.description));
                         details.append(line);
