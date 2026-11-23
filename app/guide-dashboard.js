@@ -60,7 +60,8 @@
                 (typeof auth().estAdmin === 'function' && auth().estAdmin());
             var isGuide = !!(claims && claims.sub && !admin &&
                 (role === 'guide' || role === 'officier_guide' || specialty === 'OG'));
-            setGuideModulesHidden(isGuide);\n            if (isGuide) renderGuideCorpus();
+            setGuideModulesHidden(isGuide);
+            if (isGuide) renderGuideCorpus();
         }).catch(function () { setGuideModulesHidden(false); });
     }
 
