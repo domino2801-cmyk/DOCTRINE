@@ -174,6 +174,13 @@ function observationFor(comment, label, fallback = '') {
     const fallbackText = String(fallback || '').trim();
     if (!expectedLabel) return fallbackText;
 
+    // Le critère « Forme, Présentation & Langue » est aussi produit
+    // par certaines corrections IA sous le libellé court « Forme ».
+    const acceptedLabels = new Set([expectedLabel]);
+    if (expectedLabel === 'forme presentation langue') {
+        acceptedLabels.add('forme');
+    }
+
     const lines = String(comment || '').split(/\r?\n/);
     for (const rawLine of lines) {
         const line = rawLine.trim();
@@ -181,20 +188,19 @@ function observationFor(comment, label, fallback = '') {
         if (colon < 0) continue;
 
         const actualLabel = normalizeObservationLabel(line.slice(0, colon));
-        if (actualLabel !== expectedLabel) continue;
+        if (!acceptedLabels.has(actualLabel)) continue;
 
         let observation = line.slice(colon + 1).trim();
-        // Tolère les notes (/6), tirets typographiques et préfixes "Observation :".
+        // Retire uniquement les séparateurs et notes de notation placés avant l'observation.
         observation = observation.replace(/^\s*(?:—|–|-)\s*/, '');
         observation = observation.replace(/^\d+(?:[,.]\d+)?\s*\/\s*\d+(?:[,.]\d+)?\s*(?:—|–|-)\s*/, '');
         observation = observation.replace(/^Observation\s*:\s*/i, '');
-        observation = observation.replace(/\s+(?:—|–|-)\s*Indice\s*:.*/i, '').trim();
-        if (observation) return observation;
+        // L'indice documentaire fait partie de l'observation : ne jamais le supprimer.
+        if (observation) return observation.trim();
     }
 
     return fallbackText;
 }
-
 function formatDebriefSection(value) {
     return String(value ?? '')
         // Convertit les séquences de caractères « \n » en vrais retours à la ligne.
