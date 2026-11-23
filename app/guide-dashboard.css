@@ -240,3 +240,15 @@
 .og-dashboard-library-correction strong { color:#e6eee7; font-size:12px; }
 .og-dashboard-library-correction p { margin:0; color:#aebfb1; font-size:12px; }
 @media(max-width:800px) { .og-dashboard-library-grid { grid-template-columns:1fr; } }
+
+
+/* Filtres rapides de l'état d'accompagnement des candidats. */
+.og-dashboard-status-filters { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 14px; }
+.og-dashboard-status-filter { min-height:38px; padding:8px 12px; border:1px solid rgba(183,207,185,.28); border-radius:999px; background:rgba(255,255,255,.035); color:#dce7dd; font:inherit; font-size:11px; font-weight:850; letter-spacing:.025em; cursor:pointer; transition:background .15s ease,border-color .15s ease,transform .15s ease; }
+.og-dashboard-status-filter:hover { transform:translateY(-1px); border-color:#d8b85b; }
+.og-dashboard-status-filter:focus-visible { outline:2px solid #e6c96f; outline-offset:2px; }
+.og-dashboard-status-filter.is-active { background:rgba(216,184,91,.16); border-color:#d8b85b; color:#fff2c4; box-shadow:inset 0 0 0 1px rgba(216,184,91,.12); }
+.og-dashboard-status-filter.is-ok:not(.is-active) { color:#9ed4a6; }
+.og-dashboard-status-filter.is-danger:not(.is-active) { color:#ffaaa0; }
+.og-dashboard-status-filter.is-warning:not(.is-active) { color:#f0ce79; }
+@media(max-width:480px) { .og-dashboard-status-filters { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); } .og-dashboard-status-filter { width:100%; padding-inline:7px; } }
