@@ -193,7 +193,7 @@ function observationFor(comment, label, fallback = '') {
         let observation = line.slice(colon + 1).trim();
         // Retire uniquement les séparateurs et notes de notation placés avant l'observation.
         observation = observation.replace(/^\s*(?:—|–|-)\s*/, '');
-        observation = observation.replace(/^\d+(?:[,.]\d+)?\s*\/\s*\d+(?:[,.]\]\d+)?\s*(?:—|–|-)\s*/, '');
+        observation = observation.replace(/^\d+(?:[,.]\d+)?\s*\/\s*\d+(?:[,.]\d+)?\s*(?:—|–|-)\s*/, '');
         observation = observation.replace(/^Observation\s*:\s*/i, '');
         // L'indice documentaire fait partie de l'observation : ne jamais le supprimer.
         if (observation) return observation.trim();
