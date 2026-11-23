@@ -894,8 +894,8 @@
                     rubric_scores: totals.scores,
                     rubric_observations: totals.observations,
                     rubric_evidence: totals.evidence,
-                    form_observations: isOral ? null : formObservation.value.trim(),
-                    form_evidence: isOral ? null : formEvidence.value.trim(),
+                    form_observations: isOral ? null : totals.observations.form,
+                    form_evidence: isOral ? null : totals.evidence.form,
                     jury_checklist: (function () {
                         var allowed = isOral
                             ? ['oral_operatoire', 'oral_introduction', 'oral_argumentaire', 'oral_conclusion']
