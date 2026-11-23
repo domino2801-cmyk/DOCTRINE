@@ -330,7 +330,7 @@ function strictJsonSchema(schema: Record<string, unknown>): Record<string, unkno
     return clone;
 }
 
-async function requestOpenAiFallback(
+async function requestGeminiFallback(
     apiKey: string,
     model: string,
     pdfBytes: Uint8Array,
@@ -339,80 +339,38 @@ async function requestOpenAiFallback(
     analysisPrompt: string,
     schema: Record<string, unknown>
 ): Promise<string> {
-    const content: Record<string, unknown>[] = [{
-        type: "input_file",
-        filename: "fiche-candidat.pdf",
-        file_data: "data:application/pdf;base64," + encodeBase64(pdfBytes),
-        detail: "high"
-    }];
-    if (referenceWrittenBytes) {
-        content.push({
-            type: "input_file",
-            filename: "fiche-proposition-reference.pdf",
-            file_data: "data:application/pdf;base64," + encodeBase64(referenceWrittenBytes),
-            detail: "high"
-        });
-    }
-    for (const reference of subjectReferences) {
-        if (reference.kind === "document") {
-            content.push({
-                type: "input_file",
-                filename: reference.name.toLowerCase().endsWith(".pdf") ? reference.name : reference.name + ".pdf",
-                file_data: "data:application/pdf;base64," + encodeBase64(reference.bytes),
-                detail: "high"
-            });
-        } else {
-            content.push({
-                type: "input_image",
-                image_url: "data:" + reference.mimeType + ";base64," + encodeBase64(reference.bytes),
-                detail: "high"
-            });
+    const parts = [
+        { inlineData: { mimeType: "application/pdf", data: encodeBase64(pdfBytes) } },
+        ...(referenceWrittenBytes
+            ? [{ inlineData: { mimeType: "application/pdf", data: encodeBase64(referenceWrittenBytes) } }]
+            : []),
+        ...subjectReferences.map((item) => ({
+            inlineData: { mimeType: item.mimeType, data: encodeBase64(item.bytes) }
+        })),
+        { text: analysisPrompt }
+    ];
+    const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent",
+        {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+            body: JSON.stringify({
+                systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+                contents: [{ role: "user", parts }],
+                generationConfig: { responseMimeType: "application/json", responseSchema: schema }
+            }),
+            signal: AbortSignal.timeout(60000)
         }
-    }
-    content.push({ type: "input_text", text: analysisPrompt });
-    const response = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + apiKey
-        },
-        body: JSON.stringify({
-            model,
-            instructions: SYSTEM_INSTRUCTION,
-            input: [{ role: "user", content }],
-            text: {
-                format: {
-                    type: "json_schema",
-                    name: "bm4_correction",
-                    strict: true,
-                    schema: strictJsonSchema(schema)
-                }
-            },
-            store: false
-        }),
-        signal: AbortSignal.timeout(90000)
-    });
+    );
     if (!response.ok) {
         const detail = await response.text().catch(() => "");
-        console.error("OpenAI correction fallback returned HTTP", response.status, "model:", model,
+        console.error("Gemini secondary model returned HTTP", response.status, "model:", model,
             "detail:", detail.slice(0, 2000));
-        throw new Error("OpenAI indisponible (HTTP " + response.status + ").");
+        throw new Error("Gemini de secours indisponible (HTTP " + response.status + ").");
     }
     const payload: unknown = await response.json();
-    if (!isRecord(payload)) throw new Error("Réponse OpenAI absente.");
-    if (typeof payload.output_text === "string" && payload.output_text.trim()) return payload.output_text;
-    if (Array.isArray(payload.output)) {
-        const outputText = payload.output.flatMap((item) => {
-            if (!isRecord(item) || item.type !== "message" || !Array.isArray(item.content)) return [];
-            return item.content.flatMap((part) =>
-                isRecord(part) && part.type === "output_text" && typeof part.text === "string" ? [part.text] : []
-            );
-        }).join("\\n");
-        if (outputText.trim()) return outputText;
-    }
-    throw new Error("OpenAI n’a retourné aucun texte de correction.");
+    return extractGenerateContentText(payload);
 }
-
 
 
 // Identifiants des 16 dossiers Google Drive de référence, un par sujet.
@@ -674,16 +632,20 @@ Deno.serve(async (request) => {
         }
 
         const apiKey = Deno.env.get("GOOGLE_API_KEY") || Deno.env.get("GEMINI_API_KEY");
-        const openAiApiKey = Deno.env.get("OPENAI_API_KEY");
         const model = (Deno.env.get("GEMINI_MODEL") || DEFAULT_MODEL).trim();
-        const openAiModel = (Deno.env.get("OPENAI_MODEL") || "gpt-6.2-astra").trim();
+        const fallbackModel = (Deno.env.get("GEMINI_FALLBACK_MODEL") || "gemini-3.1-flash-lite").trim();
         const validGeminiModel = /^gemini-[a-z0-9.-]+$/i.test(model);
-        if (!apiKey && !openAiApiKey) {
-            console.error("AI correction is missing both Gemini and OpenAI API keys.");
-            return jsonResponse({ error: "Aucune clé IA n’est configurée. Configurez GEMINI_API_KEY ou OPENAI_API_KEY." }, 503);
+        const validGeminiFallbackModel = /^gemini-[a-z0-9.-]+$/i.test(fallbackModel) &&
+            fallbackModel !== model;
+        if (!apiKey) {
+            console.error("AI correction is missing its Gemini API key.");
+            return jsonResponse({ error: "Aucune clé Gemini configurée. Configurez GOOGLE_API_KEY ou GEMINI_API_KEY." }, 503);
         }
-        if (apiKey && !validGeminiModel) {
-            console.warn("Gemini model configuration is invalid; trying OpenAI fallback.", model);
+        if (!validGeminiModel) {
+            console.warn("Gemini primary model configuration is invalid; trying the secondary Gemini model.", model);
+        }
+        if (!validGeminiFallbackModel) {
+            console.warn("Gemini secondary model configuration is invalid or duplicates the primary model.", fallbackModel);
         }
 
         const { data: pdf, error: downloadError } = await database.storage.from(BUCKET).download(submission.storage_path);
@@ -757,8 +719,8 @@ Deno.serve(async (request) => {
         const responseSchema = isOral ? ORAL_RESPONSE_SCHEMA : RESPONSE_SCHEMA;
 
         let outputText: string | null = null;
-        let correctionProvider: "Gemini" | "OpenAI" | null = null;
-        let geminiFailure = "Gemini indisponible.";
+        let correctionProvider: "Gemini" | null = null;
+        let geminiFailure = "Gemini principal indisponible.";
         if (apiKey && validGeminiModel) {
             let geminiResponse: Response | null = null;
             let geminiApi: "interactions" | "generateContent" = "interactions";
@@ -782,13 +744,14 @@ Deno.serve(async (request) => {
                 });
             } catch (error) {
                 console.error("Gemini correction request failed.", error);
-                geminiFailure = "Gemini ne répond pas.";
+                geminiFailure = "Gemini principal ne répond pas.";
             }
 
             if (geminiResponse && !geminiResponse.ok) {
                 const responseDetail = await geminiResponse.text().catch(() => "");
-                console.error("Gemini correction API returned HTTP", geminiResponse.status, "model:", model, "detail:", responseDetail.slice(0, 2000));
-                geminiFailure = "Gemini a refusé l’analyse (HTTP " + geminiResponse.status + ", modèle " + model + ").";
+                console.error("Gemini correction API returned HTTP", geminiResponse.status, "model:", model,
+                    "detail:", responseDetail.slice(0, 2000));
+                geminiFailure = "Gemini principal indisponible (HTTP " + geminiResponse.status + ", modèle " + model + ").";
                 if (geminiResponse.status !== 429) {
                     try {
                         geminiResponse = await fetch(
@@ -814,7 +777,7 @@ Deno.serve(async (request) => {
                         );
                         geminiApi = "generateContent";
                     } catch (error) {
-                        console.error("Gemini generateContent fallback failed.", error);
+                        console.error("Gemini generateContent retry failed.", error);
                         geminiResponse = null;
                     }
                 }
@@ -826,37 +789,37 @@ Deno.serve(async (request) => {
                     outputText = geminiApi === "generateContent" ? extractGenerateContentText(payload) : extractOutputText(payload);
                     correctionProvider = "Gemini";
                 } catch (error) {
-                    console.error("Gemini correction response could not be read.", error);
-                    geminiFailure = "La réponse Gemini est incomplète ou invalide.";
+                    console.error("Gemini primary model response could not be read.", error);
+                    geminiFailure = "La réponse du modèle Gemini principal est incomplète ou invalide.";
                     outputText = null;
                 }
             } else if (geminiResponse) {
                 const detail = await geminiResponse.text().catch(() => "");
-                geminiFailure = "Gemini indisponible (HTTP " + geminiResponse.status + ").";
-                console.error("Gemini correction fallback returned HTTP", geminiResponse.status, "model:", model, "detail:", detail.slice(0, 2000));
+                geminiFailure = "Gemini principal indisponible (HTTP " + geminiResponse.status + ").";
+                console.error("Gemini primary model retry returned HTTP", geminiResponse.status, "model:", model,
+                    "detail:", detail.slice(0, 2000));
             }
-        } else if (!apiKey) {
-            geminiFailure = "Aucune clé Gemini configurée.";
         }
 
-        if (!outputText && openAiApiKey) {
+        if (!outputText && apiKey && validGeminiFallbackModel) {
             try {
-                console.warn("Using OpenAI as correction fallback after:", geminiFailure);
-                outputText = await requestOpenAiFallback(
-                    openAiApiKey, openAiModel, pdfBytes, referenceWrittenBytes,
+                console.warn("Using Gemini secondary model after primary model failed:", model, "->", fallbackModel);
+                outputText = await requestGeminiFallback(
+                    apiKey, fallbackModel, pdfBytes, referenceWrittenBytes,
                     subjectReferences, analysisPrompt, responseSchema
                 );
-                correctionProvider = "OpenAI";
+                correctionProvider = "Gemini";
             } catch (error) {
-                console.error("OpenAI correction fallback failed.", error);
+                console.error("Gemini secondary model fallback failed.", error);
                 return jsonResponse({
-                    error: geminiFailure + " Le modèle OpenAI de secours a également échoué. Vérifiez OPENAI_API_KEY et OPENAI_MODEL, puis réessayez."
+                    error: geminiFailure + " Le modèle Gemini de secours (" + fallbackModel +
+                        ") a également échoué. Vérifiez les quotas gratuits et la disponibilité des deux modèles, puis réessayez."
                 }, 502);
             }
         }
         if (!outputText || !correctionProvider) {
             return jsonResponse({
-                error: geminiFailure + " Configurez OPENAI_API_KEY pour activer le modèle de secours."
+                error: geminiFailure + " Aucun modèle Gemini de secours valide n’est disponible. Vérifiez GEMINI_FALLBACK_MODEL et les quotas gratuits."
             }, 502);
         }
 
