@@ -246,6 +246,12 @@
                     <option value="a_reprendre">À reprendre</option>
                 </select>
             </label>
+            <section id="guideFormObservationFields" class="guide-review-form-observation" hidden aria-label="Observation structurée du critère Forme">
+                <h3>Critère Forme — observation obligatoire</h3>
+                <label>Observation<textarea id="guideFormObservation" rows="3" maxlength="3000"></textarea></label>
+                <label>Indice documentaire / preuve<textarea id="guideFormEvidence" rows="2" maxlength="1500"></textarea></label>
+                <p class="guide-form-hint">Ces champs sont enregistrés séparément des commentaires et alimentent directement la grille PDF officielle.</p>
+            </section>
             <label>Commentaires du guide<textarea id="guideReviewComment" rows="7" maxlength="4000"></textarea></label>
             <p id="guideReviewStatus" class="guide-form-status" role="status" aria-live="polite"></p>
             <button class="guide-button guide-button-primary" type="submit">Enregistrer l’évaluation</button>
