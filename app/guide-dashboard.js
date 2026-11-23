@@ -1425,7 +1425,7 @@
                     .map(function (submission) { return submission.id; }).filter(Boolean));
             }, []);
             if (!submissionIds.length) return [];
-            return api('fiche_reviews?select=submission_id,guide_id,form_observations,form_evidence&submission_id=in.(' +
+            return api('fiche_reviews?select=submission_id,guide_id,form_observations,form_evidence,rubric_observations,rubric_evidence&submission_id=in.(' +
                 submissionIds.map(encodeURIComponent).join(',') + ')');
         });
         Promise.allSettled([candidateRequest, courseRequest, progressRequest, cvRequest, reviewRequest]).then(function (results) {
@@ -1445,7 +1445,7 @@
                             var structured = structuredReviews.get(String(submission.id) + ':' + String(review.guide_id));
                             if (structured) {
                                 review.form_observations = structured.form_observations || '';
-                                review.form_evidence = structured.form_evidence || '';
+                                review.form_evidence = structured.form_evidence || '';\n                                review.rubric_observations = structured.rubric_observations || {};\n                                review.rubric_evidence = structured.rubric_evidence || {};
                             }
                         });
                     });
