@@ -159,7 +159,9 @@ alter table public.fiche_reviews
     add column if not exists jury_checklist jsonb not null default '{}'::jsonb;
 alter table public.fiche_reviews
     add column if not exists form_observations text,
-    add column if not exists form_evidence text,\n    add column if not exists rubric_observations jsonb not null default '{}'::jsonb,\n    add column if not exists rubric_evidence jsonb not null default '{}'::jsonb;
+    add column if not exists form_evidence text,
+    add column if not exists rubric_observations jsonb not null default '{}'::jsonb,
+    add column if not exists rubric_evidence jsonb not null default '{}'::jsonb;
 
 create index if not exists fiche_reviews_guide_reviewed_idx
     on public.fiche_reviews (guide_id, reviewed_at desc);
