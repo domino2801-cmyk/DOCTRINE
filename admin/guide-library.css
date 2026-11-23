@@ -14,7 +14,7 @@
 .adm-guide-library-item { display:grid; gap:10px; padding:12px; border:1px solid rgba(183,207,185,.16); border-radius:8px; background:rgba(0,0,0,.13); }
 .adm-guide-library-copy h4 { margin:0; color:#f2f5ee; font-size:14px; overflow-wrap:anywhere; }
 .adm-guide-library-copy p { margin:5px 0 0; color:#bdcdbf; font-size:12px; line-height:1.45; overflow-wrap:anywhere; }
-.adm-guide-library-copy .adm-guide-library-stars { display:inline-flex; align-items:center; width:fit-content; margin-top:8px; padding:5px 9px; border:1px solid rgba(230,201,111,.38); border-radius:7px; background:rgba(230,201,111,.09); color:#ffdc75; font-size:19px; line-height:1.25; letter-spacing:2px; font-weight:900; text-shadow:0 0 8px rgba(230,201,111,.22); }
+.adm-guide-library-copy .adm-guide-library-stars { display:inline-flex; align-items:center; width:fit-content; margin-top:8px; padding:4px 8px; border:1px solid rgba(230,201,111,.38); border-radius:7px; background:rgba(230,201,111,.09); color:#ffdc75; font-size:17px; line-height:1.25; letter-spacing:1.8px; font-weight:900; text-shadow:0 0 8px rgba(230,201,111,.22); }
 .adm-guide-library-publication { display:inline-block; margin-top:8px; padding:3px 8px; border:1px solid rgba(183,207,185,.3); border-radius:999px; color:#e6c96f; font-size:11px; font-weight:800; }
 .adm-guide-library-publication.is-published { color:#9ed4a6; border-color:rgba(158,212,166,.45); }
 .adm-guide-library-item-actions,.adm-guide-library-actions { display:flex; flex-wrap:wrap; gap:8px; }
