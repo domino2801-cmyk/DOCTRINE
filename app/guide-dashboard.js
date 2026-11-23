@@ -60,7 +60,7 @@
                 (typeof auth().estAdmin === 'function' && auth().estAdmin());
             var isGuide = !!(claims && claims.sub && !admin &&
                 (role === 'guide' || role === 'officier_guide' || specialty === 'OG'));
-            setGuideModulesHidden(isGuide);
+            setGuideModulesHidden(isGuide);\n            if (isGuide) renderGuideCorpus();
         }).catch(function () { setGuideModulesHidden(false); });
     }
 
@@ -76,6 +76,50 @@
             var match = button.getAttribute('onclick').match(/navigateModule\\(['"]module(1|2|5|6|7)['"]\\)/);
             if (match) button.hidden = hidden;
         });
+    }
+
+    function renderGuideCorpus() {
+        var section = document.getElementById('corpusPreface');
+        var box = section && section.querySelector('.preface-box');
+        if (!box) return;
+        box.replaceChildren();
+        var paragraphs = [
+            'Encadrer un candidat au Brevet Militaire de 4e niveau (BM4) constitue un acte de commandement majeur. Au-delà du simple contrôle des connaissances, votre rôle d’officier guide est d’aider le candidat à changer de dimension : quitter sa posture de technicien expert pour adopter la hauteur de vue, l’esprit de synthèse et la capacité de conseil attendus d’un futur major ou officier issu du rang.'
+        ];
+        paragraphs.forEach(function (content) {
+            var p = document.createElement('p');
+            p.textContent = content;
+            box.append(p);
+        });
+        var intro = document.createElement('p');
+        intro.textContent = 'Pour optimiser son accompagnement, votre action s’articule autour de trois leviers décisifs :';
+        box.append(intro);
+        var list = document.createElement('ul');
+        [
+            ['Structurer la durée', 'en l’aidant à sanctuariser ses créneaux de travail et son entraînement physique malgré ses charges opérationnelles.'],
+            ['Affûter la méthode', 'par la relecture exigeante de ses synthèses écrites et l’orientation vers les textes doctrinaux et réglementaires essentiels.'],
+            ['Forger la posture', 'en organisant des entretiens blancs pour tester sa solidité face au jury et ancrer son positionnement de futur cadre supérieur.']
+        ].forEach(function (entry) {
+            var li = document.createElement('li');
+            var strong = document.createElement('strong');
+            strong.textContent = entry[0];
+            li.append(strong, document.createTextNode(', ' + entry[1]));
+            list.append(li);
+        });
+        box.append(list);
+        var conclusion = document.createElement('p');
+        conclusion.textContent = 'Votre exigence bienveillante et votre expérience du commandement sont les meilleurs catalyseurs de sa réussite. Soyez le guide qui transforme son potentiel en excellence.';
+        box.append(conclusion);
+        var signature = document.createElement('p');
+        signature.style.textAlign = 'right';
+        signature.style.marginTop = '20px';
+        var author = document.createElement('strong');
+        author.textContent = 'Major Dominique';
+        signature.append(author, document.createElement('br'));
+        var distinction = document.createElement('em');
+        distinction.textContent = 'Lauréat du BM4 2025 — Spécialité « RHL »';
+        signature.append(distinction);
+        box.append(signature);
     }
     function api(path, options) {
         options = options || {};
