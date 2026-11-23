@@ -410,6 +410,8 @@ test("l’observation du premier critère de la fiche de proposition est automat
     assert.match(script, /const label = REVIEW_RUBRICS\.proposition\.formLabel/);
     assert.match(script, /Observation du critère Forme non ajoutée automatiquement/);
     assert.match(script, /retainedComment/);
+    assert.match(script, /const available = maxLength - line\.length - separator\.length/);
+    assert.match(script, /comment\.value = retainedComment \? retainedComment \+ .\\n\\n. \+ line : line/);
 
     const helper = await read("app/bm4-official-pdf.mjs");
     assert.match(helper, /function observationFor\(comment, label, fallback = ''\)/);
