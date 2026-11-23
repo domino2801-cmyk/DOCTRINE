@@ -270,14 +270,16 @@
 /* Bibliothèque Officier Guide : exercices classés par difficulté en quatre accordéons. */
 .og-dashboard-library-levels { display:grid; gap:10px; }
 .og-dashboard-library-level-group { overflow:hidden; border:1px solid rgba(216,184,91,.34); border-radius:9px; background:rgba(255,255,255,.025); }
-.og-dashboard-library-level-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:52px; padding:13px 16px; color:#ffdc75; background:rgba(216,184,91,.07); font-size:15px; font-weight:850; cursor:pointer; list-style:none; }
+.og-dashboard-library-level-group[open] { border-color:rgba(216,184,91,.68); background:rgba(216,184,91,.035); }
+.og-dashboard-library-level-heading { display:flex; align-items:center; justify-content:flex-start; gap:8px; min-height:52px; padding:13px 16px; color:#ffdc75; background:rgba(216,184,91,.07); font-size:15px; font-weight:850; cursor:pointer; list-style:none; }
 .og-dashboard-library-level-heading::-webkit-details-marker { display:none; }
-.og-dashboard-library-level-heading::after { content:'＋'; color:#d8b85b; font-size:19px; line-height:1; }
-.og-dashboard-library-level-group[open] > .og-dashboard-library-level-heading::after { content:'−'; }
 .og-dashboard-library-level-heading:hover { background:rgba(216,184,91,.13); }
 .og-dashboard-library-level-heading:focus-visible { outline:2px solid #e6c96f; outline-offset:-2px; }
-.og-dashboard-library-level-title { min-width:0; }
-.og-dashboard-library-level-count { flex-shrink:0; color:#c5d2c7; font-size:12px; font-weight:700; }
+.og-dashboard-library-level-title { min-width:0; color:inherit; overflow-wrap:anywhere; }
+.og-dashboard-library-level-count { flex-shrink:0; margin-left:auto; padding:7px 11px; border:1px solid rgba(216,184,91,.55); border-radius:6px; color:#ffdc75; background:rgba(216,184,91,.12); font:inherit; font-size:12px; font-weight:850; white-space:nowrap; cursor:pointer; }
+.og-dashboard-library-level-count:hover,.og-dashboard-library-level-count:focus-visible { background:rgba(216,184,91,.22); border-color:#e6c96f; outline:2px solid rgba(230,201,111,.35); outline-offset:2px; }
+.og-dashboard-library-level-heading { justify-content:space-between; }
+.og-dashboard-library-level-heading:hover .og-dashboard-library-level-count { background:rgba(216,184,91,.18); }
 .og-dashboard-library-level-group > .og-dashboard-library-grid { padding:12px; }
 .og-dashboard-library-level-empty { margin:0 12px 12px; }
 @media(max-width:600px) { .og-dashboard-library-level-heading { min-height:48px; padding:11px 12px; font-size:14px; } }

@@ -1092,11 +1092,24 @@
             });
             var group = node('details', 'og-dashboard-library-level-group');
             var summary = node('summary', 'og-dashboard-library-level-heading');
-            summary.append(
-                node('span', 'og-dashboard-library-level-title', level.label),
-                node('span', 'og-dashboard-library-level-count',
-                    levelRows.length + (levelRows.length > 1 ? ' exercices' : ' exercice'))
-            );
+            var levelTitle = node('span', 'og-dashboard-library-level-title', level.label);
+            var levelCount = node('button', 'og-dashboard-library-level-count',
+                levelRows.length + (levelRows.length > 1 ? ' exercices' : ' exercice'));
+            levelCount.type = 'button';
+            levelCount.setAttribute('aria-expanded', 'false');
+            levelCount.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                group.open = !group.open;
+                levelCount.setAttribute('aria-expanded', String(group.open));
+            });
+            summary.addEventListener('click', function (event) {
+                event.preventDefault();
+            });
+            group.addEventListener('toggle', function () {
+                levelCount.setAttribute('aria-expanded', String(group.open));
+            });
+            summary.append(levelTitle, levelCount);
             group.append(summary);
             if (!levelRows.length) {
                 group.append(node('p', 'og-dashboard-empty og-dashboard-library-level-empty',
