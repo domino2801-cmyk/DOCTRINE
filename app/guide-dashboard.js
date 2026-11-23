@@ -803,7 +803,7 @@
                     : 'Le PDF ne peut pas être évalué automatiquement. Vérifiez-le manuellement.';
             } catch (error) {
                 status.textContent = error.status === 502 || error.status === 503
-                    ? 'Service IA temporairement indisponible. Votre fiche n'a pas été corrigée. Vous pouvez réessayer ultérieurement.'
+                    ? "Service IA temporairement indisponible. Votre fiche n'a pas été corrigée. Vous pouvez réessayer ultérieurement."
                     : 'Correction IA impossible : ' + error.message;
                 aiPanel.hidden = true;
             } finally {
