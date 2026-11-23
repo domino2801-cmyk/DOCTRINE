@@ -1085,68 +1085,71 @@
     function renderExerciseLibraries() {
         if (!exerciseLibraryNode) return;
         exerciseLibraryNode.replaceChildren();
-        var filter = node('select', 'og-dashboard-library-filter');
-        filter.setAttribute('aria-label', 'Filtrer les exercices par difficulté');
-        [['', 'Toutes les difficultés']].concat(EXERCISE_LEVELS.map(function (level) {
-            return [level.value, level.label];
-        })).forEach(function (entry) {
-            var option = node('option', '', entry[1]);
-            option.value = entry[0];
-            filter.append(option);
-        });
-        var list = node('div', 'og-dashboard-library-grid');
-        function render() {
-            list.replaceChildren();
-            var selected = filter.value;
-            var rows = exerciseLibraryItems.filter(function (exercise) {
-                return !selected || String(exercise.difficulty_level) === selected;
+        var list = node('div', 'og-dashboard-library-levels');
+        EXERCISE_LEVELS.forEach(function (level) {
+            var levelRows = exerciseLibraryItems.filter(function (exercise) {
+                return String(Math.max(1, Math.min(4, Number(exercise.difficulty_level) || 1))) === level.value;
             });
-            if (!rows.length) {
-                list.append(node('p', 'og-dashboard-empty', 'Aucun exercice publié pour ce filtre.'));
-                return;
-            }
-            rows.forEach(function (exercise) {
-                var card = node('article', 'og-dashboard-library-card');
-                var level = Number(exercise.difficulty_level) || 1;
-                card.append(node('span', 'og-dashboard-library-stars', '★'.repeat(level) +
-                    ' · ' + EXERCISE_LEVELS[level - 1].name));
-                card.append(node('h4', '', exercise.title));
-                if (exercise.category) card.append(node('span', 'og-dashboard-library-category', exercise.category));
-                if (exercise.description) card.append(node('p', '', exercise.description));
-                var actions = node('div', 'og-dashboard-library-actions');
-                var open = node('button', 'og-dashboard-download', 'Ouvrir l’exercice');
-                open.type = 'button';
-                open.addEventListener('click', function () { openDriveInViewer(exercise.drive_url, exercise.title); });
-                actions.append(open);
-                var related = correctionLibraryItems.filter(function (correction) {
-                    return correction.exercise_id === exercise.id;
-                });
-                if (related.length) {
-                    var details = node('details', 'og-dashboard-library-corrections');
-                    var summary = node('summary', '', 'Corrections disponibles (' + related.length + ')');
-                    details.append(summary);
-                    related.forEach(function (correction) {
-                        var line = node('div', 'og-dashboard-library-correction');
-                        var correctionLevel = Math.max(1, Math.min(4, Number(correction.difficulty_level) || level));
-                        line.append(node('span', 'og-dashboard-library-correction-stars',
-                            '★'.repeat(correctionLevel) + ' · ' + EXERCISE_LEVELS[correctionLevel - 1].name));
-                        var title = node('strong', '', correction.title);
-                        var link = node('button', 'og-dashboard-download', 'Ouvrir la correction');
-                        link.type = 'button';
-                        link.addEventListener('click', function () { openDriveInViewer(correction.drive_url, correction.title); });
-                        line.append(title, link);
-                        if (correction.description) line.append(node('p', '', correction.description));
-                        details.append(line);
+            var group = node('details', 'og-dashboard-library-level-group');
+            var summary = node('summary', 'og-dashboard-library-level-heading');
+            summary.append(
+                node('span', 'og-dashboard-library-level-title', level.label),
+                node('span', 'og-dashboard-library-level-count',
+                    levelRows.length + (levelRows.length > 1 ? ' exercices' : ' exercice'))
+            );
+            group.append(summary);
+            if (!levelRows.length) {
+                group.append(node('p', 'og-dashboard-empty og-dashboard-library-level-empty',
+                    'Aucun exercice publié à ce niveau.'));
+            } else {
+                var cards = node('div', 'og-dashboard-library-grid');
+                levelRows.forEach(function (exercise) {
+                    var card = node('article', 'og-dashboard-library-card');
+                    var difficulty = Number(exercise.difficulty_level) || 1;
+                    card.append(node('span', 'og-dashboard-library-stars', '★'.repeat(difficulty) +
+                        ' · ' + EXERCISE_LEVELS[difficulty - 1].name));
+                    card.append(node('h4', '', exercise.title));
+                    if (exercise.category) card.append(node('span', 'og-dashboard-library-category', exercise.category));
+                    if (exercise.description) card.append(node('p', '', exercise.description));
+                    var actions = node('div', 'og-dashboard-library-actions');
+                    var open = node('button', 'og-dashboard-download', 'Ouvrir l’exercice');
+                    open.type = 'button';
+                    open.addEventListener('click', function () {
+                        openDriveInViewer(exercise.drive_url, exercise.title);
                     });
-                    card.append(details);
-                }
-                card.append(actions);
-                list.append(card);
-            });
-        }
-        filter.addEventListener('change', render);
-        exerciseLibraryNode.append(filter, list);
-        render();
+                    actions.append(open);
+                    var related = correctionLibraryItems.filter(function (correction) {
+                        return correction.exercise_id === exercise.id;
+                    });
+                    if (related.length) {
+                        var details = node('details', 'og-dashboard-library-corrections');
+                        var correctionSummary = node('summary', '', 'Corrections disponibles (' + related.length + ')');
+                        details.append(correctionSummary);
+                        related.forEach(function (correction) {
+                            var line = node('div', 'og-dashboard-library-correction');
+                            var correctionLevel = Math.max(1, Math.min(4, Number(correction.difficulty_level) || difficulty));
+                            line.append(node('span', 'og-dashboard-library-correction-stars',
+                                '★'.repeat(correctionLevel) + ' · ' + EXERCISE_LEVELS[correctionLevel - 1].name));
+                            var title = node('strong', '', correction.title);
+                            var link = node('button', 'og-dashboard-download', 'Ouvrir la correction');
+                            link.type = 'button';
+                            link.addEventListener('click', function () {
+                                openDriveInViewer(correction.drive_url, correction.title);
+                            });
+                            line.append(title, link);
+                            if (correction.description) line.append(node('p', '', correction.description));
+                            details.append(line);
+                        });
+                        card.append(details);
+                    }
+                    card.append(actions);
+                    cards.append(card);
+                });
+                group.append(cards);
+            }
+            list.append(group);
+        });
+        exerciseLibraryNode.append(list);
     }
     function loadExerciseLibraries() {
         if (!exerciseLibraryNode) return Promise.resolve();
