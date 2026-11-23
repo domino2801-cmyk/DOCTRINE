@@ -361,7 +361,7 @@
             return (d.files || []).reduce(function (suite, f) {
                 return suite.then(function () {
                     if (f.mimeType === 'application/vnd.google-apps.folder') {
-                        return profondeur < 3 ? collecter(f.id, prefixe + nomSur(f.name) + '/', entrees, bilan, profondeur + 1) : null;
+                        return profondeur < 8 ? collecter(f.id, prefixe + nomSur(f.name) + '/', entrees, bilan, profondeur + 1) : null;
                     }
                     bilan.total++;
                     toutBtn.textContent = '⏳ ' + bilan.fait + '/' + bilan.total + '…';
@@ -392,6 +392,7 @@
         var nomDossier = dossierNom || 'dossier';
         collecter(dossierCourant, '', entrees, bilan, 0).then(function () {
             if (!entrees.length) throw new Error('vide');
+            if (bilan.echecs) throw new Error('Échec de ' + bilan.echecs + ' fichier(s) : archive complète impossible.');
             var url = URL.createObjectURL(creerZip(entrees));
             var a = document.createElement('a');
             a.href = url;
@@ -404,8 +405,10 @@
             document.dispatchEvent(new CustomEvent('doctrine:download', {
                 detail: { module: contexteModule, title: nomSur(nomDossier) + '.zip', url: 'https://drive.google.com/drive/folders/' + dossierCourant }
             }));
-        }).catch(function () {
-            toutBtn.textContent = '⚠ Échec du téléchargement';
+        }).catch(function (error) {
+            toutBtn.textContent = bilan.echecs
+                ? '⚠ ' + bilan.echecs + ' fichier(s) non téléchargé(s)'
+                : '⚠ Échec du téléchargement';
         }).then(function () {
             toutEnCours = false;
             toutBtn.disabled = false;
@@ -446,6 +449,13 @@
         panneau.querySelector('.dv-btn:last-child').focus();
         if (cible.type === 'folder') afficherDossier(cible.id, libelle);
         else afficherFichier(cible.id, libelle, { module: module, url: urlOrigine });
+    }
+
+    function ouvrirDrive(url, nom, module) {
+        var cible = identifier(url);
+        if (!cible) return false;
+        ouvrir(cible, nom || 'Dossier', module || 'exercices-corrections', url);
+        return true;
     }
 
     function ouvrirPdfSigne(url, nom, module) {
@@ -502,7 +512,7 @@
         });
     }
 
-    window.DoctrineViewer = { openSignedPdf: ouvrirPdfSigne };
+    window.DoctrineViewer = { openSignedPdf: ouvrirPdfSigne, openDrive: ouvrirDrive };
 
     function fermer() {
         if (!panneau) return;
