@@ -215,6 +215,13 @@ test('la page principale charge pdf-lib avant les exports PDF du dossier Officie
 
 test('le dossier candidat Officier Guide propose les deux exports PDF BM4 avec les mêmes règles de validation', () => {
     assert.match(script, /function buildDossierBm4Report\(candidate, dossierItems\)/);
+    assert.match(script, /form_observations: isOral \? null : formObservation\.value\.trim\(\)/);
+    assert.match(script, /form_evidence: isOral \? null : formEvidence\.value\.trim\(\)/);
+    assert.match(script, /formObservations: review\.form_observations/);
+    assert.match(script, /formEvidence: review\.form_evidence/);
+    assert.match(script, /var reviewRequest = candidateRequest\.then/);
+    assert.match(script, /fiche_reviews\?select=submission_id,guide_id,form_observations,form_evidence/);
+    assert.match(script, /structuredReviews\.get\(String\(submission\.id\)/);
     assert.match(script, /function reviewGradeForExport\(submission, review\)/);
     assert.match(script, /createOfficialBm4Pdf\(report\)/);
     assert.match(script, /Télécharger la grille BM4 officielle/);

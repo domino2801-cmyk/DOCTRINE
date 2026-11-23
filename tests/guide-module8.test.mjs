@@ -403,21 +403,24 @@ test("la taille du texte BM4 s’adapte aux dimensions des champs PDF", async ()
     }), 10, "les champs qui disposent de suffisamment de place gardent leur police");
 });
 
-test("l’observation du premier critère de la fiche de proposition est automatiquement enregistrée et obligatoire dans le PDF", async () => {
-    assert.match(script, /function ensureAiFormObservationInComment\(suggestion\)/);
-    assert.match(script, /ensureAiFormObservationInComment\(suggestion\)/);
-    assert.match(script, /const observation = String\(suggestion\.form_observations \|\| ''\)\.trim\(\)/);
-    assert.match(script, /const label = REVIEW_RUBRICS\.proposition\.formLabel/);
-    assert.match(script, /Observation du critère Forme non ajoutée automatiquement/);
-    assert.match(script, /retainedComment/);
-    assert.match(script, /const available = maxLength - line\.length - separator\.length/);
-    assert.match(script, /comment\.value = retainedComment \? retainedComment \+ .\\n\\n. \+ line : line/);
+test("l’observation et l’indice du critère Forme sont persistés séparément et transmis au PDF", async () => {
+    assert.match(page, /id="guideFormObservation"/);
+    assert.match(page, /id="guideFormEvidence"/);
+    assert.match(script, /form_observations: formObservations/);
+    assert.match(script, /form_evidence: formEvidence/);
+    assert.match(script, /fiche_reviews\?select=submission_id,guide_id,form_observations,form_evidence/);
+    assert.match(script, /reviewByKey\.get\(String\(submission\.id\)/);
+    assert.match(script, /formObservations: saved\.form_observations/);
+    assert.match(script, /formEvidence: saved\.form_evidence/);
+    assert.doesNotMatch(script, /ensureAiFormObservationInComment/);
 
     const helper = await read("app/bm4-official-pdf.mjs");
-    assert.match(helper, /function observationFor\(comment, label, fallback = ''\)/);
-    assert.match(helper, /criterion\.key === 'form' && !observation/);
+    assert.match(helper, /structuredFormObservation/);
+    assert.match(helper, /structuredFormEvidence/);
+    assert.match(helper, /Les champs structurés sont prioritaires/);
     assert.match(helper, /observation obligatoire du critère/);
-    assert.match(helper, /setFieldText\('obs_em_' \+ number, observation\)/);
+    assert.match(sql, /add column if not exists form_observations text/);
+    assert.match(sql, /add column if not exists form_evidence text/);
 });
 
 test("la grille AcroForm officielle remplace le compte rendu et exige une validation de l’Officier Guide", async () => {
