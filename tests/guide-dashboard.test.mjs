@@ -26,7 +26,7 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(script, /Structurer la durée/);
     assert.match(script, /Affûter la méthode/);
     assert.match(script, /Forger la posture/);
-    assert.match(script, /Lauréat du BM4 2025 — Spécialité « RHL »/);
+    assert.match(script, /Officier guide BM2 et BM4/);
     assert.match(script, /if \(isGuide\) renderGuideCorpus\(\)/);
     assert.match(script, /RATTACHER UN CANDIDAT/);
     assert.match(script, /openAssignCandidateDialog/);
