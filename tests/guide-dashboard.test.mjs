@@ -201,3 +201,18 @@ test('les deux bibliothèques utilisent des cartes de largeur identique, titres 
     assert.match(css, /\.og-dashboard-library-level-count \{[^}]*padding:0[^}]*border:0[^}]*background:transparent/s);
     assert.doesNotMatch(css, /\.og-dashboard-library-level-count \{[^}]*border:1px solid/s);
 });
+
+
+test('le dossier candidat Officier Guide propose les deux exports PDF BM4 avec les mêmes règles de validation', () => {
+    assert.match(script, /function buildDossierBm4Report\(candidate, dossierItems\)/);
+    assert.match(script, /function reviewGradeForExport\(submission, review\)/);
+    assert.match(script, /createOfficialBm4Pdf\(report\)/);
+    assert.match(script, /Télécharger la grille BM4 officielle/);
+    assert.match(script, /Exporter l’évaluation finale pour le candidat/);
+    assert.match(script, /proposition\.grade \* 0\.7 \+ oral\.grade \* 0\.3/);
+    assert.match(script, /if \(hasProposition && hasOral && dossierReport\.weightedGrade !== null\)/);
+    assert.match(script, /Evaluation_finale_BM4_/);
+    assert.match(script, /Grille_BM4_Dossier_/);
+    assert.match(css, /\.og-dashboard-dossier-exports \{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+    assert.match(css, /@media\(max-width:600px\) \{ \.og-dashboard-dossier-exports \{ grid-template-columns:minmax\(0,1fr\); \} \}/);
+});
