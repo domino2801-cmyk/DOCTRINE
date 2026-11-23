@@ -175,6 +175,11 @@ test("la correction Gemini est disponible pour les deux types de fiches avec val
     assert.match(aiFunction, /const isOral = submission\.submission_type === "support_oral"/);
     assert.match(aiFunction, /Deno\.env\.get\("GEMINI_FALLBACK_MODEL"\)/);
     assert.match(aiFunction, /requestGeminiFallback/);
+    assert.match(aiFunction, /GEMINI_FALLBACK_MAX_ATTEMPTS = 3/);
+    assert.match(aiFunction, /GEMINI_FALLBACK_RETRY_DELAYS_MS = \[1200, 3000\]/);
+    assert.match(aiFunction, /GEMINI_RETRYABLE_STATUSES = new Set\(\[408, 429, 500, 502, 503, 504\]\)/);
+    assert.match(aiFunction, /Retrying Gemini secondary model after transient HTTP error/);
+    assert.match(aiFunction, /await wait\(delay\)/);
     assert.match(aiFunction, /Using Gemini secondary model after primary model failed/);
     assert.match(aiFunction, /Gemini secondary model returned HTTP/);
     assert.match(aiFunction, /Le modèle Gemini de secours/);
