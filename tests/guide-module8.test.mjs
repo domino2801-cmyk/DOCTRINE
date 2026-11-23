@@ -398,6 +398,21 @@ test("la taille du texte BM4 s’adapte aux dimensions des champs PDF", async ()
     }), 10, "les champs qui disposent de suffisamment de place gardent leur police");
 });
 
+test("l’observation du premier critère de la fiche de proposition est automatiquement enregistrée et obligatoire dans le PDF", async () => {
+    assert.match(script, /function ensureAiFormObservationInComment\(suggestion\)/);
+    assert.match(script, /ensureAiFormObservationInComment\(suggestion\)/);
+    assert.match(script, /const observation = String\(suggestion\.form_observations \|\| ''\)\.trim\(\)/);
+    assert.match(script, /const label = REVIEW_RUBRICS\.proposition\.formLabel/);
+    assert.match(script, /Observation du critère Forme non ajoutée automatiquement/);
+    assert.match(script, /retainedComment/);
+
+    const helper = await read("app/bm4-official-pdf.mjs");
+    assert.match(helper, /function observationFor\(comment, label, fallback = ''\)/);
+    assert.match(helper, /criterion\.key === 'form' && !observation/);
+    assert.match(helper, /observation obligatoire du critère/);
+    assert.match(helper, /setFieldText\('obs_em_' \+ number, observation\)/);
+});
+
 test("la grille AcroForm officielle remplace le compte rendu et exige une validation de l’Officier Guide", async () => {
     const helper = await read("app/bm4-official-pdf.mjs");
     const serviceWorker = await read("sw.js");

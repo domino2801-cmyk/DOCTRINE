@@ -1050,6 +1050,30 @@
         return lines.join('\n');
     }
 
+    function ensureAiFormObservationInComment(suggestion) {
+        if (suggestion.submission_type !== 'proposition') return false;
+        const observation = String(suggestion.form_observations || '').trim();
+        if (!observation) return false;
+
+        const comment = document.getElementById('guideReviewComment');
+        if (!comment) return false;
+        const label = REVIEW_RUBRICS.proposition.formLabel;
+        const prefix = label.toLowerCase() + ' :';
+        const lines = comment.value.split(/\r?\n/);
+        if (lines.some(function (line) { return line.trim().toLowerCase().startsWith(prefix); })) {
+            return true;
+        }
+
+        const line = label + ' : ' + suggestion.form_grade + ' / 6 — ' + observation +
+            ' — Indice : ' + (suggestion.form_evidence || 'non repéré');
+        const existing = comment.value.trim();
+        const next = existing ? existing + '\n\n' + line : line;
+        if (next.length > comment.maxLength) return false;
+        comment.value = next;
+        markReviewDirty();
+        return true;
+    }
+
     function markReviewDirty() {
         reviewEditGeneration += 1;
         savedReviewReport = null;
@@ -1120,7 +1144,13 @@
         addCommentButton.addEventListener('click', function () {
             const comment = document.getElementById('guideReviewComment');
             const feedback = formatAiFeedback(suggestion);
-            const prefix = comment.value.trim() ? comment.value.trim() + '\n\n' : '';
+            const formLabel = REVIEW_RUBRICS.proposition.formLabel.toLowerCase() + ' :';
+            const retainedComment = suggestion.submission_type === 'proposition'
+                ? comment.value.split(/\r?\n/).filter(function (line) {
+                    return !line.trim().toLowerCase().startsWith(formLabel);
+                }).join('\n').trim()
+                : comment.value.trim();
+            const prefix = retainedComment ? retainedComment + '\n\n' : '';
             if (prefix.length + feedback.length > comment.maxLength) {
                 setStatus(status, 'La synthèse dépasse la limite de commentaires. Raccourcissez-la avant de l’ajouter.', 'error');
                 return;
@@ -1179,6 +1209,12 @@
                 });
                 markReviewDirty();
                 updateFinalGrade();
+                if (submission.submission_type === 'proposition') {
+                    const observationAdded = ensureAiFormObservationInComment(suggestion);
+                    if (!observationAdded) {
+                        setStatus(status, 'Observation du critère Forme non ajoutée automatiquement. Renseignez-la dans les commentaires avant l’export PDF.', 'error');
+                    }
+                }
             }
             renderAiCorrection(suggestion);
             setStatus(status, suggestion.readable
