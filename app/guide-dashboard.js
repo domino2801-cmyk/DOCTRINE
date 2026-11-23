@@ -1092,11 +1092,9 @@
             });
             var group = node('details', 'og-dashboard-library-level-group');
             var summary = node('summary', 'og-dashboard-library-level-heading');
-            summary.append(
-                node('span', 'og-dashboard-library-level-title', level.label),
-                node('span', 'og-dashboard-library-level-count',
-                    levelRows.length + (levelRows.length > 1 ? ' exercices' : ' exercice'))
-            );
+            summary.append(node('span', 'og-dashboard-library-level-title',
+                level.label + ' · ' + levelRows.length +
+                (levelRows.length > 1 ? ' exercices' : ' exercice')));
             group.append(summary);
             if (!levelRows.length) {
                 group.append(node('p', 'og-dashboard-empty og-dashboard-library-level-empty',
