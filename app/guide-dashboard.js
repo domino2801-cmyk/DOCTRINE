@@ -710,10 +710,10 @@
         var formEvidence = node('textarea'); formEvidence.rows = 2; formEvidence.maxLength = 1500;
         formEvidence.value = review.form_evidence || '';
         formEvidenceLabel.append(formEvidence);
-        if (isOral) {
-            formObservationLabel.hidden = true;
-            formEvidenceLabel.hidden = true;
-        }
+        // Les anciens champs Forme restent masqués pour compatibilité ;
+        // l'observation et l'indice sont saisis dans la ligne du premier critère.
+        formObservationLabel.hidden = true;
+        formEvidenceLabel.hidden = true;
         var commentLabel = node('label', 'og-dashboard-review-field', 'Commentaires de l’Officier Guide');
         var comment = node('textarea'); comment.rows = 6; comment.maxLength = 4000;
         comment.value = review.comment || '';
