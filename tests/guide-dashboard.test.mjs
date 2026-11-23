@@ -221,8 +221,8 @@ test('le dossier candidat Officier Guide propose les deux exports PDF BM4 avec l
     assert.match(script, /rubric_evidence: totals\.evidence/);
     assert.match(script, /var displayCriteria = isOral/);
     assert.match(css, /\.og-dashboard-review-criterion-feedback/);
-    assert.match(script, /form_observations: isOral \\? null : totals\.observations\.form/);
-    assert.match(script, /form_evidence: isOral \\? null : totals\.evidence\.form/);
+    assert.match(script, /form_observations: isOral \? null : totals\.observations\.form/);
+    assert.match(script, /form_evidence: isOral \? null : totals\.evidence\.form/);
     assert.match(script, /rubricObservations: review\.rubric_observations/);
     assert.match(script, /rubricEvidence: review\.rubric_evidence/);
     assert.match(script, /var reviewRequest = candidateRequest\.then/);
