@@ -113,7 +113,9 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /À SURVEILLER/);
     assert.match(script, /PRÊT/);
     assert.doesNotMatch(script, /SUIVI NORMAL/);
-    assert.match(script, /role === 'guide' \|\| role === 'officier_guide'/);\n    assert.match(script, /get_current_user_specialty/);\n    assert.match(script, /setGuideModulesHidden\(true\)/);
+    assert.match(script, /role === 'guide' \\|\\| role === 'officier_guide'/);
+    assert.match(script, /get_current_user_specialty/);
+    assert.match(script, /setGuideModulesHidden\\(true\\)/);
 });
 
 test('les supports OG sont fournis par le catalogue commun, sans créer de module', () => {
