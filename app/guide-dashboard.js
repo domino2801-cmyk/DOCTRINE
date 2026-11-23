@@ -71,10 +71,13 @@
     }
 
     function applyGuideModuleVisibility() {
-        // Masquage immédiat pendant la vérification du profil : aucun flash des modules réservés.
+        // Masquage immédiat pendant la vérification du profil : aucun flash des éléments réservés.
         setGuideModulesHidden(true);
+        var progressionCard = document.querySelector('.study-dashboard');
+        if (progressionCard) progressionCard.hidden = true;
         currentGuideStatus().then(function (isGuide) {
             setGuideModulesHidden(isGuide);
+            if (progressionCard) progressionCard.hidden = isGuide;
             if (isGuide) renderGuideCorpus();
         });
     }
@@ -1208,6 +1211,8 @@
             var item = document.getElementById('guideDashboardNav');
             if (item) item.hidden = true;
             setGuideModulesHidden(false);
+            var progressionCard = document.querySelector('.study-dashboard');
+            if (progressionCard) progressionCard.hidden = false;
         });
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
