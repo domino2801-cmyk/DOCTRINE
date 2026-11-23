@@ -972,7 +972,7 @@ begin
                                     'grade', review.grade,
                                     'form_grade', review.form_grade,
                                     'content_grade', review.content_grade,
-                                    'rubric_scores', review.rubric_scores,\n                                    'rubric_observations', review.rubric_observations,\n                                    'rubric_evidence', review.rubric_evidence,
+                                    'rubric_scores', review.rubric_scores,\n                                    'rubric_observations', review.rubric_observations,\n                                    'rubric_evidence', review.rubric_evidence,\n                                    'rubric_observations', review.rubric_observations,\n                                    'rubric_evidence', review.rubric_evidence,
                                     'jury_checklist', review.jury_checklist,
                                     'status', review.status,
                                     'comment', review.comment,
