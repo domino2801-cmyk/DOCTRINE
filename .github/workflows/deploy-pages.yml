@@ -44,6 +44,8 @@ jobs:
         run: node --test tests/guide-module8.test.mjs
       - name: Test independent Guide dashboard
         run: node --test tests/guide-dashboard.test.mjs
+      - name: Test Guide exercise and correction libraries
+        run: node --test tests/guide-library.test.mjs
 
   deploy:
     needs: test
