@@ -166,3 +166,10 @@ test('les exercices Officier Guide sont regroupés en quatre accordéons par dif
     assert.match(css, /\.og-dashboard-library-level-group\[open\]/);
     assert.doesNotMatch(script, /Toutes les difficultés/);
 });
+
+
+test('chaque accordéon affiche difficulté et nombre d’exercices sur une seule ligne avec le contrôle en fin de ligne', () => {
+    assert.match(script, /level\.label \+ ' · ' \+ levelRows\.length/);
+    assert.match(css, /\.og-dashboard-library-level-heading::after \{ flex-shrink:0; margin-left:auto; \}/);
+    assert.match(css, /@media\(max-width:600px\)/);
+});
