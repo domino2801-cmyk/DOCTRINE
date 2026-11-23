@@ -252,9 +252,9 @@ test('le tableau de bord affiche un message explicite si le service IA est tempo
 
 
 test('le tableau Officier Guide bloque la modification si les observations structurées ne sont pas relues', () => {
-    assert.match(script, /submission\\.rubricFeedbackLoaded = !missingStructuredReview/);
-    assert.match(script, /submission\\.rubricFeedbackLoaded = false/);
-    assert.match(script, /submission\\.rubricFeedbackLoaded !== true/);
+    assert.match(script, /submission\.rubricFeedbackLoaded = !missingStructuredReview/);
+    assert.match(script, /submission\.rubricFeedbackLoaded = false/);
+    assert.match(script, /submission\.rubricFeedbackLoaded !== true/);
     assert.match(script, /modification est bloquée pour protéger les observations existantes/);
     assert.match(script, /Enregistrement bloqué : les observations structurées BM4/);
 });
