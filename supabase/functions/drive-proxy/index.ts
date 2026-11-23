@@ -98,6 +98,23 @@ async function dossierRequis(id: string, parents: string[], jeton: string): Prom
   return null;
 }
 
+async function chaineParentsDrive(id: string, parents: string[], jeton: string): Promise<string[]> {
+  const trouves = new Set<string>([id]);
+  let courants = parents;
+  for (let niveau = 0; niveau < MAX_PROFONDEUR && courants.length; niveau++) {
+    const suivants: string[] = [];
+    for (const parent of courants) {
+      if (trouves.has(parent)) continue;
+      trouves.add(parent);
+      const r = await drive(`/files/${parent}?fields=parents&supportsAllDrives=true`, jeton);
+      if (!r.ok) throw new Error('Lecture des dossiers parents impossible');
+      suivants.push(...((await r.json()).parents || []));
+    }
+    courants = suivants;
+  }
+  return [...trouves];
+}
+
 // Les dossiers de la nouvelle bibliothèque suivent la publication Supabase,
 // y compris lorsque l'utilisateur demande directement un sous-dossier ou un fichier.
 async function accesBibliothequePubliee(ids: string[], admin: boolean): Promise<boolean> {
@@ -187,7 +204,8 @@ Deno.serve(async (req) => {
     const fichier = await meta.json();
 
     if (!candidat.admin) {
-      const autorise = await accesBibliothequePubliee([id, ...(fichier.parents || [])], false);
+      const chemin = await chaineParentsDrive(id, fichier.parents || [], jeton);
+      const autorise = await accesBibliothequePubliee(chemin, false);
       if (!autorise) return erreur(403, 'Ce dossier ou document n’est pas publié pour les Officiers Guides');
     }
 
