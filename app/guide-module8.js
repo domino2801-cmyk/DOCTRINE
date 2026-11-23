@@ -290,10 +290,6 @@
         return node;
     }
 
-    function candidatePseudo(candidate) {
-        return candidate.name || candidate.email || 'Candidat';
-    }
-
     function candidateName(candidate) {
         return [candidate.grade, candidate.name].filter(Boolean).join(' ') || candidate.email || 'Candidat';
     }
@@ -981,13 +977,12 @@
         activeReviewSubmission = submission;
         const dialog = document.getElementById('guideReviewDialog');
         const title = document.getElementById('guideReviewTitle');
-        const kicker = document.getElementById('guideReviewKicker');
         const reviewStatus = document.getElementById('guideReviewStatus');
         const aiResult = document.getElementById('guideAiCorrectionResult');
         const review = (submission.reviews || [])[0] || {};
         const rubric = rubricFor(submission);
-        if (kicker) kicker.textContent = 'ÉVALUATION BM4 · DOSSIER ' + String(submission.dossier || '—');
-        if (title) title.textContent = rubric.label + ' — ' + candidatePseudo(candidate.candidate);
+        if (title) title.textContent = candidateName(candidate.candidate) + ' — ' +
+            rubric.label + ' — Dossier ' + submission.dossier;
         document.getElementById('guideReviewSubmissionId').value = submission.id;
         renderReviewCriteria(submission, review);
         renderJuryChecklist(submission, review);
