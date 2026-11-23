@@ -153,3 +153,16 @@ test('les exercices et corrections publiés s’ouvrent dans la visionneuse DOCT
     assert.doesNotMatch(script, /open\.target = '_blank'/);
     assert.match(viewerScript, /openDrive: ouvrirDrive/);
 });
+
+
+test('les exercices Officier Guide sont regroupés en quatre accordéons par difficulté', () => {
+    assert.match(script, /og-dashboard-library-levels/);
+    assert.match(script, /og-dashboard-library-level-group/);
+    assert.match(script, /EXERCISE_LEVELS\.forEach/);
+    assert.match(script, /Aucun exercice publié à ce niveau/);
+    assert.match(script, /Ouvrir l’exercice/);
+    assert.match(script, /Corrections disponibles/);
+    assert.match(css, /\.og-dashboard-library-level-group/);
+    assert.match(css, /\.og-dashboard-library-level-group\[open\]/);
+    assert.doesNotMatch(script, /Toutes les difficultés/);
+});
