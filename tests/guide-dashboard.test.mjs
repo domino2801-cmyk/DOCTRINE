@@ -147,6 +147,9 @@ test('l’interface possède des cartes, accordéons et styles responsive isolé
 test('les exercices et corrections publiés s’ouvrent dans la visionneuse DOCTRINE', () => {
     assert.match(script, /openDriveInViewer\(exercise\.drive_url, exercise\.title\)/);
     assert.match(script, /openDriveInViewer\(correction\.drive_url, correction\.title\)/);
+    assert.match(script, /EXERCISE_LEVELS/);
+    assert.match(script, /'★'.repeat\(correctionLevel\)/);
+    assert.doesNotMatch(script, /Fondamentaux|Application|Maîtrise|Expertise/);
     assert.doesNotMatch(script, /open\.target = '_blank'/);
     assert.match(viewerScript, /openDrive: ouvrirDrive/);
 });
