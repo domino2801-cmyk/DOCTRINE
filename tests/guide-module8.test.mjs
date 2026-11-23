@@ -173,15 +173,15 @@ test("la correction Gemini est disponible pour les deux types de fiches avec val
     assert.match(aiFunction, /Annotation ou justification du critère Forme absente/);
     assert.match(aiFunction, /Annotation ou justification du premier critère oral absente/);
     assert.match(aiFunction, /const isOral = submission\.submission_type === "support_oral"/);
-    assert.match(aiFunction, /Deno\.env\.get\("OPENAI_API_KEY"\)/);
-    assert.match(aiFunction, /Deno\.env\.get\("OPENAI_MODEL"\)/);
-    assert.match(aiFunction, /api\.openai\.com\/v1\/responses/);
-    assert.match(aiFunction, /requestOpenAiFallback/);
-    assert.match(aiFunction, /Using OpenAI as correction fallback/);
+    assert.match(aiFunction, /Deno\.env\.get\("GEMINI_FALLBACK_MODEL"\)/);
+    assert.match(aiFunction, /requestGeminiFallback/);
+    assert.match(aiFunction, /Using Gemini secondary model after primary model failed/);
+    assert.match(aiFunction, /Gemini secondary model returned HTTP/);
+    assert.match(aiFunction, /Le modèle Gemini de secours/);
     assert.match(aiFunction, /ai_provider: correctionProvider/);
-    assert.match(aiFunction, /Configurez OPENAI_API_KEY pour activer le modèle de secours/);
-    assert.match(aiFunction, /type: "input_file"/);
-    assert.match(aiFunction, /strictJsonSchema/);
+    assert.doesNotMatch(aiFunction, /OPENAI_API_KEY|OPENAI_MODEL|api\.openai\.com|requestOpenAiFallback/);
+    assert.match(aiFunction, /responseMimeType: "application\/json"/);
+    assert.match(aiFunction, /generationConfig: \{ responseMimeType: "application\/json", responseSchema: schema \}/);
 
     assert.match(aiFunction, /ORAL_RUBRIC_PROMPT/);
     assert.match(aiFunction, /SUBJECT_DRIVE_FOLDER_IDS/);
