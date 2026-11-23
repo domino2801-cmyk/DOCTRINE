@@ -201,7 +201,11 @@
             });
         }).then(function (response) {
             return response.json().catch(function () { return {}; }).then(function (payload) {
-                if (!response.ok) throw new Error(payload.message || payload.msg || payload.error || 'Erreur fonction IA HTTP ' + response.status);
+                if (!response.ok) {
+                    var error = new Error(payload.message || payload.msg || payload.error || 'Erreur fonction IA HTTP ' + response.status);
+                    error.status = response.status;
+                    throw error;
+                }
                 return payload;
             });
         });
@@ -798,7 +802,9 @@
                     ? 'Proposition générée. Vérifiez les critères, puis enregistrez si vous la confirmez.'
                     : 'Le PDF ne peut pas être évalué automatiquement. Vérifiez-le manuellement.';
             } catch (error) {
-                status.textContent = 'Correction IA impossible : ' + error.message;
+                status.textContent = error.status === 502 || error.status === 503
+                    ? 'Service IA temporairement indisponible. Votre fiche n'a pas été corrigée. Vous pouvez réessayer ultérieurement.'
+                    : 'Correction IA impossible : ' + error.message;
                 aiPanel.hidden = true;
             } finally {
                 correction.disabled = false;
