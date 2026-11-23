@@ -211,6 +211,11 @@ function parseCorrection(value: unknown) {
     if (value.readable && (!formObservations.trim() || !formEvidence.trim())) {
         throw new Error("Annotation ou justification du critère Forme absente.");
     }
+    if (value.readable && criteria.some((criterion) =>
+        !criterion.observation.trim() || !criterion.evidence.trim()
+    )) {
+        throw new Error("Observation ou indice documentaire absent pour un critère de la fiche de proposition.");
+    }
     const strings = (items: unknown[], field: string) => items.map((item) => boundedText(item, field, 300));
     const confidence = value.confidence;
     if (confidence !== "faible" && confidence !== "moyenne" && confidence !== "élevée") {
@@ -246,6 +251,11 @@ function parseOralCorrection(value: unknown, referenceWrittenFound: boolean) {
     const formEvidence = operatoire.evidence;
     if (value.readable && (!formObservations.trim() || !formEvidence.trim())) {
         throw new Error("Annotation ou justification du premier critère oral absente.");
+    }
+    if (value.readable && [operatoire, introduction, argumentaire, conclusion].some((criterion) =>
+        !criterion.observation.trim() || !criterion.evidence.trim()
+    )) {
+        throw new Error("Observation ou indice documentaire absent pour un critère de la fichette orale.");
     }
     const confidence = value.confidence;
     if (confidence !== "faible" && confidence !== "moyenne" && confidence !== "élevée") {
