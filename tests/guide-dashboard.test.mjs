@@ -228,7 +228,7 @@ test('le dossier candidat Officier Guide propose les deux exports PDF BM4 avec l
 });
 
 
-test('les deux interfaces affichent un message explicite si le service IA est temporairement indisponible', () => {
+test('le tableau de bord affiche un message explicite si le service IA est temporairement indisponible', () => {
     const unavailable = 'Service IA temporairement indisponible. Votre fiche n\'a pas été corrigée. Vous pouvez réessayer ultérieurement.';
     assert.match(script, /error\.status = response\.status/);
     assert.match(script, /error\.status === 502 \|\| error\.status === 503/);
