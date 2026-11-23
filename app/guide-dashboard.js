@@ -11,6 +11,12 @@
     var exerciseLibraryNode = null;
     var exerciseLibraryItems = [];
     var correctionLibraryItems = [];
+    var EXERCISE_LEVELS = [
+        { value: '1', label: '★ — Initiation', name: 'Initiation' },
+        { value: '2', label: '★★ — Bases', name: 'Bases' },
+        { value: '3', label: '★★★ — Approfondissement', name: 'Approfondissement' },
+        { value: '4', label: '★★★★ — Défi', name: 'Défi' }
+    ];
     var searchNode = null;
     var statusFilterNode = null;
     var selectedStatusFilter = 'all';
@@ -1081,13 +1087,9 @@
         exerciseLibraryNode.replaceChildren();
         var filter = node('select', 'og-dashboard-library-filter');
         filter.setAttribute('aria-label', 'Filtrer les exercices par difficulté');
-        [
-            ['', 'Toutes les difficultés'],
-            ['1', '★☆☆☆ — Fondamentaux'],
-            ['2', '★★☆☆ — Application'],
-            ['3', '★★★☆ — Maîtrise'],
-            ['4', '★★★★ — Expertise']
-        ].forEach(function (entry) {
+        [['', 'Toutes les difficultés']].concat(EXERCISE_LEVELS.map(function (level) {
+            return [level.value, level.label];
+        })).forEach(function (entry) {
             var option = node('option', '', entry[1]);
             option.value = entry[0];
             filter.append(option);
@@ -1106,8 +1108,8 @@
             rows.forEach(function (exercise) {
                 var card = node('article', 'og-dashboard-library-card');
                 var level = Number(exercise.difficulty_level) || 1;
-                card.append(node('span', 'og-dashboard-library-stars', '★'.repeat(level) + '☆'.repeat(4 - level) +
-                    ' · ' + ['Fondamentaux', 'Application', 'Maîtrise', 'Expertise'][level - 1]));
+                card.append(node('span', 'og-dashboard-library-stars', '★'.repeat(level) +
+                    ' · ' + EXERCISE_LEVELS[level - 1].name));
                 card.append(node('h4', '', exercise.title));
                 if (exercise.category) card.append(node('span', 'og-dashboard-library-category', exercise.category));
                 if (exercise.description) card.append(node('p', '', exercise.description));
@@ -1125,6 +1127,9 @@
                     details.append(summary);
                     related.forEach(function (correction) {
                         var line = node('div', 'og-dashboard-library-correction');
+                        var correctionLevel = Math.max(1, Math.min(4, Number(correction.difficulty_level) || level));
+                        line.append(node('span', 'og-dashboard-library-correction-stars',
+                            '★'.repeat(correctionLevel) + ' · ' + EXERCISE_LEVELS[correctionLevel - 1].name));
                         var title = node('strong', '', correction.title);
                         var link = node('button', 'og-dashboard-download', 'Ouvrir la correction');
                         link.type = 'button';
