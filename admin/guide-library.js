@@ -293,6 +293,20 @@
             }
             if (button) button.hidden = !visible;
         });
+
+        // Point d’entrée permanent depuis l’accueil : le bouton ne dépend plus
+        // de l’ouverture préalable d’un module et reste dans la barre Admin.
+        document.querySelectorAll('.app-utility-bar').forEach(function (zone) {
+            var button = zone.querySelector('.adm-guide-library-home-toggle');
+            if (!button && visible) {
+                button = el('button', 'adm-guide-library-home-toggle', '📚 Exercices & corrections');
+                button.type = 'button';
+                button.title = 'Administrer les bibliothèques d’exercices et de corrections';
+                button.addEventListener('click', openPanel);
+                zone.append(button);
+            }
+            if (button) button.hidden = !visible;
+        });
         if (!visible && root && !root.hidden) closePanel();
     }
     function init() {
