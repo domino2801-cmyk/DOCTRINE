@@ -764,7 +764,12 @@
                     }));
                     candidates.forEach(function (candidate) {
                         (candidate.doctrine?.submissions || []).forEach(function (submission) {
-                            (submission.reviews || []).forEach(function (review) {
+                            const reviews = submission.reviews || [];
+                            const missingStructuredReview = reviews.some(function (review) {
+                                return !reviewByKey.has(String(submission.id) + ':' + String(review.guide_id));
+                            });
+                            submission.rubricFeedbackLoaded = !missingStructuredReview;
+                            reviews.forEach(function (review) {
                                 const structured = reviewByKey.get(String(submission.id) + ':' + String(review.guide_id));
                                 if (structured) {
                                     review.form_observations = structured.form_observations || '';
@@ -775,8 +780,22 @@
                             });
                         });
                     });
+                    const incomplete = candidates.some(function (candidate) {
+                        return (candidate.doctrine?.submissions || []).some(function (submission) {
+                            return submission.rubricFeedbackLoaded !== true;
+                        });
+                    });
+                    if (incomplete) {
+                        setStatus(status, 'Certaines évaluations BM4 n’ont pas pu être relues intégralement. Leur modification est bloquée pour protéger les observations existantes.', 'error');
+                    }
                 } catch (reviewError) {
-                    console.warn('Chargement des observations structurées BM4 indisponible ; compatibilité commentaire conservée.', reviewError);
+                    candidates.forEach(function (candidate) {
+                        (candidate.doctrine?.submissions || []).forEach(function (submission) {
+                            submission.rubricFeedbackLoaded = false;
+                        });
+                    });
+                    console.warn('Chargement des observations structurées BM4 indisponible ; modification des évaluations bloquée.', reviewError);
+                    setStatus(status, 'Impossible de relire les observations BM4. Les évaluations sont temporairement verrouillées pour éviter tout écrasement.', 'error');
                 }
             }
             await Promise.all(candidates.map(enrichCandidateProgress));
@@ -1022,6 +1041,11 @@
     }
 
     function openReview(candidate, submission) {
+        if (submission.rubricFeedbackLoaded !== true) {
+            setStatus(document.getElementById('guideReviewStatus'),
+                'Évaluation non modifiable : rechargez la cohorte pour relire les observations BM4 avant toute sauvegarde.', 'error');
+            return;
+        }
         const generation = ++aiCorrectionGeneration;
         reviewContextGeneration += 1;
         reviewEditGeneration = 0;
@@ -1489,7 +1513,11 @@
         if (!form.reportValidity()) return;
         const submissionId = document.getElementById('guideReviewSubmissionId').value;
         const status = document.getElementById('guideReviewStatus');
-        if (!activeReviewSubmission || !JURY_CHECKLISTS[activeReviewSubmission.submission_type] ||
+        if (!activeReviewSubmission || activeReviewSubmission.rubricFeedbackLoaded !== true) {
+            setStatus(status, 'Enregistrement bloqué : les observations structurées BM4 n’ont pas été relues avec succès. Rechargez la cohorte avant de réessayer.', 'error');
+            return;
+        }
+        if (!JURY_CHECKLISTS[activeReviewSubmission.submission_type] ||
             String(activeReviewSubmission.id) !== String(submissionId)) {
             setStatus(status, 'La fiche sélectionnée ne correspond plus à l’évaluation ouverte. Fermez puis rouvrez la fiche.', 'error');
             return;
