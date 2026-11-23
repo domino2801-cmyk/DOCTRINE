@@ -852,7 +852,8 @@
         var total = 0;
         var complete = true;
         rubric.forEach(function (criterion) {
-            var value = Number(scores[criterion.key]);
+            var rawValue = scores[criterion.key];
+            var value = rawValue === null || rawValue === undefined || rawValue === '' ? NaN : Number(rawValue);
             if (!Number.isFinite(value) || value < 0 || value > criterion.max) complete = false;
             else total += value;
         });
