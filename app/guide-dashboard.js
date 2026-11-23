@@ -966,6 +966,12 @@
                 candidates.length ? 'Aucun candidat ne correspond à cette recherche.' : 'Aucun candidat rattaché à votre cohorte.'));
             return;
         }
+        var group = node('details', 'og-dashboard-candidate-group');
+        var groupSummary = node('summary', 'og-dashboard-candidate-group-title',
+            (statuses.find(function (status) { return status.key === selectedStatusFilter; }) || statuses[0]).label +
+            ' — ' + filtered.length + ' candidat(s)');
+        group.append(groupSummary);
+        var groupItems = node('div', 'og-dashboard-candidate-group-items');
         filtered.forEach(function (candidate) {
             var identity = candidate.candidate || {};
             var card = node('details', 'og-dashboard-candidate');
@@ -1056,8 +1062,10 @@
             body.append(docs);
             body.append(renderAiCorrection(candidate));
             card.append(body);
-            candidatesNode.append(card);
+            groupItems.append(card);
         });
+        group.append(groupItems);
+        candidatesNode.append(group);
     }
     function renderExerciseLibraries() {
         if (!exerciseLibraryNode) return;
