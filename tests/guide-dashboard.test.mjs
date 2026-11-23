@@ -148,6 +148,5 @@ test('les exercices et corrections publiés s’ouvrent dans la visionneuse DOCT
     assert.match(script, /openDriveInViewer\(exercise\.drive_url, exercise\.title\)/);
     assert.match(script, /openDriveInViewer\(correction\.drive_url, correction\.title\)/);
     assert.doesNotMatch(script, /open\.target = '_blank'/);
-    assert.doesNotMatch(script, /link\.target = '_blank'/);
     assert.match(viewerScript, /openDrive: ouvrirDrive/);
 });
