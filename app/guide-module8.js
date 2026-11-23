@@ -1504,9 +1504,9 @@
         const editGeneration = reviewEditGeneration;
         const comment = document.getElementById('guideReviewComment').value.trim();
         const formObservations = activeReviewSubmission.submission_type === 'proposition'
-            ? String(document.getElementById('guideFormObservation')?.value || '').trim() : '';
+            ? String(totals.rubricObservations.form || '').trim() : '';
         const formEvidence = activeReviewSubmission.submission_type === 'proposition'
-            ? String(document.getElementById('guideFormEvidence')?.value || '').trim() : '';
+            ? String(totals.rubricEvidence.form || '').trim() : '';
         const decision = document.getElementById('guideReviewDecision').value;
         const juryChecklist = collectJuryChecklist(activeReviewSubmission);
         if (button) button.disabled = true;
