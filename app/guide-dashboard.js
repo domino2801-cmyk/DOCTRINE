@@ -12,6 +12,8 @@
     var exerciseLibraryItems = [];
     var correctionLibraryItems = [];
     var searchNode = null;
+    var statusFilterNode = null;
+    var selectedStatusFilter = 'all';
     var candidates = [];
     var courses = [];
     var loading = false;
@@ -922,11 +924,42 @@
     }
     function renderCandidates() {
         candidatesNode.replaceChildren();
+        var statuses = [
+            { key: 'all', label: 'TOUS' },
+            { key: 'ready', label: 'PRÊT', className: 'is-ok' },
+            { key: 'danger', label: 'EN DIFFICULTÉ', className: 'is-danger' },
+            { key: 'watch', label: 'À SURVEILLER', className: 'is-warning' }
+        ];
+        var counts = { all: candidates.length, ready: 0, danger: 0, watch: 0 };
+        candidates.forEach(function (candidate) {
+            var status = candidateFollowUpStatus(candidate);
+            if (status.label === 'PRÊT') counts.ready += 1;
+            else if (status.label === 'EN DIFFICULTÉ') counts.danger += 1;
+            else counts.watch += 1;
+        });
+        statusFilterNode.replaceChildren();
+        statuses.forEach(function (status) {
+            var button = node('button', 'og-dashboard-status-filter' +
+                (status.className ? ' ' + status.className : '') +
+                (selectedStatusFilter === status.key ? ' is-active' : ''),
+                status.label + ' · ' + counts[status.key]);
+            button.type = 'button';
+            button.setAttribute('aria-pressed', String(selectedStatusFilter === status.key));
+            button.addEventListener('click', function () {
+                selectedStatusFilter = status.key;
+                renderCandidates();
+            });
+            statusFilterNode.append(button);
+        });
         var term = String(searchNode.value || '').trim().toLocaleLowerCase('fr');
         var filtered = candidates.filter(function (candidate) {
             var identity = candidate.candidate || {};
-            return [candidateName(candidate), identity.email, identity.unit, identity.specialty]
-                .join(' ').toLocaleLowerCase('fr').indexOf(term) !== -1;
+            var status = candidateFollowUpStatus(candidate);
+            var statusKey = status.label === 'PRÊT' ? 'ready' :
+                status.label === 'EN DIFFICULTÉ' ? 'danger' : 'watch';
+            return (selectedStatusFilter === 'all' || selectedStatusFilter === statusKey) &&
+                [candidateName(candidate), identity.email, identity.unit, identity.specialty]
+                    .join(' ').toLocaleLowerCase('fr').indexOf(term) !== -1;
         });
         if (!filtered.length) {
             candidatesNode.append(node('p', 'og-dashboard-empty',
@@ -1242,6 +1275,10 @@
         searchNode.setAttribute('aria-label', 'Rechercher un candidat');
         searchNode.addEventListener('input', renderCandidates);
         candidateSection.append(searchNode);
+        statusFilterNode = node('div', 'og-dashboard-status-filters');
+        statusFilterNode.setAttribute('role', 'group');
+        statusFilterNode.setAttribute('aria-label', 'Filtrer les candidats par état de suivi');
+        candidateSection.append(statusFilterNode);
         candidatesNode = node('div', 'og-dashboard-candidates');
         candidateSection.append(candidatesNode);
         panel.append(candidateSection);
