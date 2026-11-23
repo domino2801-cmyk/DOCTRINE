@@ -180,3 +180,12 @@ test('le niveau est à gauche et le nombre cliquable à droite ouvre ou ferme so
     assert.match(css, /@media\(max-width:600px\)/);
     assert.doesNotMatch(css, /\.og-dashboard-library-level-heading::after/);
 });
+
+
+test('les étoiles des cartes sont petites et alignées sur les quatre niveaux', () => {
+    assert.match(script, /og-dashboard-library-stars-icons/);
+    assert.match(script, /og-dashboard-library-stars-label/);
+    assert.match(script, /'★'\.repeat\(difficulty\)/);
+    assert.match(css, /\.og-dashboard-library-stars-icons \{[^}]*flex:0 0 3\.6em[^}]*font-size:15px/s);
+    assert.match(css, /\.og-dashboard-library-stars-label \{[^}]*font-size:13px/s);
+});
