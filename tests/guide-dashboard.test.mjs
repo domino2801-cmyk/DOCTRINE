@@ -171,12 +171,12 @@ test('les exercices Officier Guide sont regroupés en quatre accordéons par dif
 test('le niveau est à gauche et le nombre cliquable à droite ouvre ou ferme son accordéon', () => {
     assert.match(script, /og-dashboard-library-level-title/);
     assert.match(script, /og-dashboard-library-level-count/);
-    assert.match(script, /levelRows\\.length \\+ \\(levelRows\\.length > 1 \\? ' exercices' : ' exercice'\\)/);
-    assert.match(script, /levelCount\\.addEventListener\\('click'/);
-    assert.match(script, /group\\.open = !group\\.open/);
-    assert.match(script, /summary\\.addEventListener\\('click'/);
-    assert.match(css, /\\.og-dashboard-library-level-group\\[open\\]/);
-    assert.match(css, /\\.og-dashboard-library-level-count \\{[^}]*margin-left:auto/s);
-    assert.match(css, /@media\\(max-width:600px\\)/);
-    assert.doesNotMatch(css, /\\.og-dashboard-library-level-heading::after/);
+    assert.match(script, /levelRows\.length \+ \(levelRows\.length > 1 \? ' exercices' : ' exercice'\)/);
+    assert.match(script, /levelCount\.addEventListener\('click'/);
+    assert.match(script, /group\.open = !group\.open/);
+    assert.match(script, /summary\.addEventListener\('click'/);
+    assert.match(css, /\.og-dashboard-library-level-group\[open\]/);
+    assert.match(css, /\.og-dashboard-library-level-count \{[^}]*margin-left:auto/s);
+    assert.match(css, /@media\(max-width:600px\)/);
+    assert.doesNotMatch(css, /\.og-dashboard-library-level-heading::after/);
 });
