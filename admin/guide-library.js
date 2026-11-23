@@ -39,6 +39,15 @@
             });
         });
     }
+    function openDriveInViewer(url, title) {
+        var viewer = window.DoctrineViewer;
+        try { if (window.top && window.top.DoctrineViewer) viewer = window.top.DoctrineViewer; } catch (_) {}
+        if (!viewer || typeof viewer.openDrive !== 'function' || !viewer.openDrive(url, title, 'exercices-corrections')) {
+            setStatus('La visionneuse intégrée est indisponible. Actualisez DOCTRINE puis réessayez.', true);
+            return false;
+        }
+        return true;
+    }
     function safeDriveUrl(value) {
         var url = String(value || '').trim();
         if (!/^https:\/\/(?:drive\.google\.com|docs\.google\.com)\//i.test(url)) {
@@ -157,10 +166,9 @@
             copy.append(el('span', 'adm-guide-library-publication ' + (item.is_published ? 'is-published' : ''), item.is_published ? 'Publié' : 'Brouillon'));
             if (item.description) copy.append(el('p', '', item.description));
             var actions = el('div', 'adm-guide-library-item-actions');
-            var open = el('a', 'adm-guide-library-secondary', 'Ouvrir Drive');
-            open.href = item.drive_url;
-            open.target = '_blank';
-            open.rel = 'noopener noreferrer';
+            var open = el('button', 'adm-guide-library-secondary', 'Ouvrir dans DOCTRINE');
+            open.type = 'button';
+            open.addEventListener('click', function () { openDriveInViewer(item.drive_url, item.title); });
             var edit = el('button', 'adm-guide-library-secondary', 'Modifier');
             edit.type = 'button';
             edit.addEventListener('click', function () { openForm(type, item); });
