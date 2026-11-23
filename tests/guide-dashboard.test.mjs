@@ -143,3 +143,11 @@ test('l’interface possède des cartes, accordéons et styles responsive isolé
     assert.match(css, /\.og-dashboard-review-dialog input,\s*\.og-dashboard-review-dialog select,\s*\.og-dashboard-review-dialog textarea/);
     assert.match(css, /background-color:\s*#26392f !important/);
 });
+
+test('les exercices et corrections publiés s’ouvrent dans la visionneuse DOCTRINE', () => {
+    assert.match(script, /openDriveInViewer\(exercise\.drive_url, exercise\.title\)/);
+    assert.match(script, /openDriveInViewer\(correction\.drive_url, correction\.title\)/);
+    assert.doesNotMatch(script, /open\.target = '_blank'/);
+    assert.doesNotMatch(script, /link\.target = '_blank'/);
+    assert.match(viewerScript, /openDrive: ouvrirDrive/);
+});
