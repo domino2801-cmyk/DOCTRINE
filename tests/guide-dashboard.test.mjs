@@ -21,7 +21,7 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(script, /style\.setProperty\('display', 'none', 'important'\)/);
     assert.match(script, /getElementById\('btn-mod' \+ id\)/);
     assert.match(script, /module-nav-button\[onclick\]/);
-    assert.ok(script.includes('setGuideModulesHidden(true)'));
+    assert.match(script, /setGuideModulesHidden\(false\)/);
     assert.match(html, /id="corpusPreface"/);
     assert.match(script, /function renderGuideCorpus\(\)/);
     assert.match(script, /Encadrer un candidat au Brevet Militaire de 4e niveau/);
@@ -115,7 +115,7 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.doesNotMatch(script, /SUIVI NORMAL/);
     assert.match(script, /role === 'guide' \\|\\| role === 'officier_guide'/);
     assert.match(script, /get_current_user_specialty/);
-    assert.match(script, /setGuideModulesHidden\\(true\\)/);
+    assert.ok(script.includes('setGuideModulesHidden(true)'));
 });
 
 test('les supports OG sont fournis par le catalogue commun, sans créer de module', () => {
