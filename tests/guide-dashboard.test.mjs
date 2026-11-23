@@ -21,7 +21,7 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(script, /style\.setProperty\('display', 'none', 'important'\)/);
     assert.match(script, /getElementById\('btn-mod' \+ id\)/);
     assert.match(script, /module-nav-button\[onclick\]/);
-    assert.match(script, /setGuideModulesHidden\(false\)/);
+    assert.ok(script.includes('setGuideModulesHidden(true)'));
     assert.match(html, /id="corpusPreface"/);
     assert.match(script, /function renderGuideCorpus\(\)/);
     assert.match(script, /Encadrer un candidat au Brevet Militaire de 4e niveau/);
