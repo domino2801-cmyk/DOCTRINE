@@ -196,7 +196,9 @@
         const payload = await response.json().catch(function () { return {}; });
         if (!response.ok) {
             const detail = payload.message || payload.msg || payload.error_description || payload.error;
-            throw new Error(detail || 'Requête DOCTRINE refusée (HTTP ' + response.status + ').');
+            const error = new Error(detail || 'Requête DOCTRINE refusée (HTTP ' + response.status + ').');
+            error.status = response.status;
+            throw error;
         }
         return payload;
     }
@@ -1186,7 +1188,9 @@
         } catch (error) {
             if (generation !== aiCorrectionGeneration || !dialog.open) return;
             if (panel) panel.hidden = true;
-            setStatus(status, error.message || 'Correction IA impossible.', 'error');
+            setStatus(status, error.status === 502 || error.status === 503
+                ? 'Service IA temporairement indisponible. Votre fiche n'a pas été corrigée. Vous pouvez réessayer ultérieurement.'
+                : (error.message || 'Correction IA impossible.'), 'error');
         } finally {
             if (button) button.disabled = false;
             if (generation === aiCorrectionGeneration && saveButton) saveButton.disabled = false;
