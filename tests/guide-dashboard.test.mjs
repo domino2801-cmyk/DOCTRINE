@@ -189,3 +189,11 @@ test('les étoiles des cartes sont petites et alignées sur les quatre niveaux',
     assert.match(css, /\.og-dashboard-library-stars-icons \{[^}]*flex:0 0 3\.6em[^}]*font-size:15px/s);
     assert.match(css, /\.og-dashboard-library-stars-label \{[^}]*font-size:13px/s);
 });
+
+
+test('les deux bibliothèques utilisent des cartes de largeur identique, titres blancs et compteurs jaunes', () => {
+    assert.match(css, /\.og-dashboard-course-group, \.og-dashboard-library-level-group \{[^}]*width:100%[^}]*box-sizing:border-box/s);
+    assert.match(css, /\.og-dashboard-accordion-title, \.og-dashboard-library-level-heading \{[^}]*width:100%[^}]*color:#f2f5ee/s);
+    assert.match(css, /\.og-dashboard-count, \.og-dashboard-library-level-count \{ color:#ffdc75; \}/);
+    assert.match(css, /\.og-dashboard-library-level-group\[open\] \{ border-color:rgba\(183,207,185/);
+});
