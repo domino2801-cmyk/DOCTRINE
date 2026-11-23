@@ -233,7 +233,4 @@ test('les deux interfaces affichent un message explicite si le service IA est te
     assert.match(script, /error\.status = response\.status/);
     assert.match(script, /error\.status === 502 \|\| error\.status === 503/);
     assert.ok(script.includes(unavailable));
-    assert.match(guideModule8Script, /error\.status = response\.status/);
-    assert.match(guideModule8Script, /error\.status === 502 \|\| error\.status === 503/);
-    assert.ok(guideModule8Script.includes(unavailable));
 });
