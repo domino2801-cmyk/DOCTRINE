@@ -222,7 +222,8 @@ test('le dossier candidat Officier Guide propose les deux exports PDF BM4 avec l
     assert.match(script, /var reviewRequest = candidateRequest\.then/);
     assert.match(script, /fiche_reviews\?select=submission_id,guide_id,form_observations,form_evidence,rubric_observations,rubric_evidence/);
     assert.match(script, /structuredReviews\.get\(String\(submission\.id\)/);
-    assert.match(script, /review\.rubric_observations = structured\.rubric_observations/);\n    assert.match(script, /review\.rubric_evidence = structured\.rubric_evidence/);
+    assert.match(script, /review\.rubric_observations = structured\.rubric_observations/);
+    assert.match(script, /review\.rubric_evidence = structured\.rubric_evidence/);
     assert.match(script, /function reviewGradeForExport\(submission, review\)/);
     assert.match(script, /createOfficialBm4Pdf\(report\)/);
     assert.match(script, /Télécharger la grille BM4 officielle/);
