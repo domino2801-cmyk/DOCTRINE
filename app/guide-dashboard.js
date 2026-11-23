@@ -39,24 +39,40 @@
                 meta.bm4_admin === 'true' || meta.bm4_admin === 1 || meta.bm4_admin === '1' ||
                 (typeof auth().estAdmin === 'function' && auth().estAdmin());
             if (!claims || !claims.sub || admin) return false;
-            // La spécialité est enregistrée dans le profil Supabase, pas nécessairement
-            // dans app_metadata du JWT : utiliser l'accesseur officiel de DoctrineAuth.
-            if (typeof auth().specialite === 'function') {
-                return auth().specialite().then(function (value) {
-                    return String(value || '').trim().toUpperCase() === 'OG' ||
-                        role === 'guide' || role === 'officier_guide';
-                });
-            }
-            return role === 'guide' || role === 'officier_guide';
+            if (role === 'guide' || role === 'officier_guide') return true;
+            // Même source de spécialité que le bouton OG principal de l'application.
+            var profileCheck = typeof auth().specialite === 'function'
+                ? auth().specialite().then(function (value) {
+                    return String(value || '').trim().toUpperCase() === 'OG';
+                }).catch(function () { return false; })
+                : Promise.resolve(false);
+            return profileCheck.then(function (isOg) {
+                if (isOg) return true;
+                return fetch(auth().url.replace(/\\/$/, '') + '/rest/v1/rpc/get_current_user_specialty', {
+                    method: 'POST',
+                    headers: {
+                        apikey: auth().key,
+                        Authorization: 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: '{}'
+                }).then(function (response) {
+                    if (!response.ok) return false;
+                    return response.json().then(function (data) {
+                        var specialty = data && typeof data === 'object' ? data.specialty : data;
+                        return String(specialty || '').trim().toUpperCase() === 'OG';
+                    });
+                }).catch(function () { return false; });
+            });
         }).catch(function () { return false; });
     }
-
     function guideAccess() {
         return currentGuideStatus();
     }
 
     function applyGuideModuleVisibility() {
-        setGuideModulesHidden(false);
+        // Masquage immédiat pendant la vérification du profil : aucun flash des modules réservés.
+        setGuideModulesHidden(true);
         currentGuideStatus().then(function (isGuide) {
             setGuideModulesHidden(isGuide);
             if (isGuide) renderGuideCorpus();
@@ -67,24 +83,25 @@
         var ids = ['1', '2', '5', '6', '7'];
         ids.forEach(function (id) {
             var button = document.getElementById('btn-mod' + id);
-            var item = button && button.closest('li');
-            if (item) {
-                item.hidden = hidden;
-                if (hidden) item.style.setProperty('display', 'none', 'important');
-                else item.style.removeProperty('display');
-            }
+            if (!button) return;
+            var item = button.closest('li') || button;
+            item.hidden = hidden;
+            if (hidden) item.style.setProperty('display', 'none', 'important');
+            else item.style.removeProperty('display');
+            button.setAttribute('aria-hidden', String(hidden));
+            button.tabIndex = hidden ? -1 : 0;
         });
-        // Empêche aussi d'atteindre ces modules par les flèches précédent/suivant.
+        // Bloque également la navigation précédent/suivant vers les modules masqués.
         document.querySelectorAll('.module-nav-button[onclick]').forEach(function (button) {
             var match = button.getAttribute('onclick').match(/navigateModule\(['"]module(1|2|5|6|7)['"]\)/);
-            if (match) {
-                button.hidden = hidden;
-                if (hidden) button.style.setProperty('display', 'none', 'important');
-                else button.style.removeProperty('display');
-            }
+            if (!match) return;
+            button.hidden = hidden;
+            if (hidden) button.style.setProperty('display', 'none', 'important');
+            else button.style.removeProperty('display');
+            button.setAttribute('aria-hidden', String(hidden));
+            button.tabIndex = hidden ? -1 : 0;
         });
     }
-
     function renderGuideCorpus() {
         var section = document.getElementById('corpusPreface');
         var box = section && section.querySelector('.preface-box');
