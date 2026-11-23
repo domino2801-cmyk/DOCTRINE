@@ -76,7 +76,7 @@
         });
         // Empêche aussi d'atteindre ces modules par les flèches précédent/suivant.
         document.querySelectorAll('.module-nav-button[onclick]').forEach(function (button) {
-            var match = button.getAttribute('onclick').match(/navigateModule\\(['"]module(1|2|5|6|7)['"]\\)/);
+            var match = button.getAttribute('onclick').match(/navigateModule\(['"]module(1|2|5|6|7)['"]\)/);
             if (match) {
                 button.hidden = hidden;
                 if (hidden) button.style.setProperty('display', 'none', 'important');
