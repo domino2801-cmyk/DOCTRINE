@@ -290,6 +290,10 @@
         return node;
     }
 
+    function candidatePseudo(candidate) {
+        return candidate.name || candidate.email || 'Candidat';
+    }
+
     function candidateName(candidate) {
         return [candidate.grade, candidate.name].filter(Boolean).join(' ') || candidate.email || 'Candidat';
     }
@@ -983,7 +987,7 @@
         const review = (submission.reviews || [])[0] || {};
         const rubric = rubricFor(submission);
         if (kicker) kicker.textContent = 'ÉVALUATION BM4 · DOSSIER ' + String(submission.dossier || '—');
-        if (title) title.textContent = rubric.label + ' — ' + candidateName(candidate.candidate);
+        if (title) title.textContent = rubric.label + ' — ' + candidatePseudo(candidate.candidate);
         document.getElementById('guideReviewSubmissionId').value = submission.id;
         renderReviewCriteria(submission, review);
         renderJuryChecklist(submission, review);
