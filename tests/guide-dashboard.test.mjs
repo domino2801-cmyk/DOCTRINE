@@ -196,8 +196,23 @@ test('les deux bibliothèques utilisent des cartes de largeur identique, titres 
     assert.match(css, /\.og-dashboard-accordion-title, \.og-dashboard-library-level-heading \{[^}]*width:100%[^}]*color:#f2f5ee/s);
     assert.match(css, /\.og-dashboard-count, \.og-dashboard-library-level-count \{[^}]*min-height:32px[^}]*border:1px solid rgba\(216,184,91/);
     assert.match(css, /\.og-dashboard-count, \.og-dashboard-library-level-count \{[^}]*border-radius:7px[^}]*color:#ffdc75[^}]*background:rgba\(216,184,91/);
-    assert.match(css, /\.og-dashboard-accordion-title, \.og-dashboard-library-level-heading \{[^}]*min-height:48px[^}]*width:100%/);
+    assert.match(css, /\.og-dashboard-accordion-title, \.og-dashboard-library-level-heading \{[^}]*width:100%[^}]*min-height:48px/);
     assert.match(css, /\.og-dashboard-library-level-group\[open\] \{ border-color:rgba\(183,207,185/);
-    assert.match(css, /\.og-dashboard-library-level-count \{[^}]*padding:0[^}]*border:0[^}]*background:transparent/s);
-    assert.doesNotMatch(css, /\.og-dashboard-library-level-count \{[^}]*border:1px solid/s);
+    assert.match(css, /\.og-dashboard-library-level-count \{ cursor:pointer; \}/);
+    assert.doesNotMatch(css, /\.og-dashboard-library-level-count \{[^}]*padding:0[^}]*border:0[^}]*background:transparent/s);
+});
+
+
+test('le dossier candidat Officier Guide propose les deux exports PDF BM4 avec les mêmes règles de validation', () => {
+    assert.match(script, /function buildDossierBm4Report\(candidate, dossierItems\)/);
+    assert.match(script, /function reviewGradeForExport\(submission, review\)/);
+    assert.match(script, /createOfficialBm4Pdf\(report\)/);
+    assert.match(script, /Télécharger la grille BM4 officielle/);
+    assert.match(script, /Exporter l’évaluation finale pour le candidat/);
+    assert.match(script, /proposition\.grade \* 0\.7 \+ oral\.grade \* 0\.3/);
+    assert.match(script, /if \(hasProposition && hasOral && dossierReport\.weightedGrade !== null\)/);
+    assert.match(script, /Evaluation_finale_BM4_/);
+    assert.match(script, /Grille_BM4_Dossier_/);
+    assert.match(css, /\.og-dashboard-dossier-exports \{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+    assert.match(css, /@media\(max-width:600px\) \{ \.og-dashboard-dossier-exports \{ grid-template-columns:minmax\(0,1fr\); \} \}/);
 });

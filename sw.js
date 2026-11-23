@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'bm4-shell-v126';
+const CACHE_NAME = 'bm4-shell-v127';
 
 const APP_SHELL_URL = new URL('./index.html', self.location.href).toString();
 const LEGACY_APP_URL = new URL('./INDEX%20BM4V2.HTML', self.location.href).toString();

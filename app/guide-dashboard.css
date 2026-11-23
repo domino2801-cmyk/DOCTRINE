@@ -137,6 +137,9 @@
 .og-dashboard-cv-download:disabled { opacity:.6; cursor:wait; }
 
 /* Correction IA par dossier — réutilise la grille interactive du Module 8. */
+.og-dashboard-dossier-exports { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin:0 0 12px; }
+.og-dashboard-dossier-exports .og-dashboard-ai-action { width:100%; min-height:46px; justify-content:center; text-align:center; line-height:1.35; }
+@media(max-width:600px) { .og-dashboard-dossier-exports { grid-template-columns:minmax(0,1fr); } }
 .og-dashboard-ai-dossier { margin-top:12px; padding:12px; border:1px solid rgba(183,207,185,.16); border-radius:8px; background:rgba(0,0,0,.1); }
 .og-dashboard-ai-dossier h4 { margin:0 0 10px; color:#d8b85b; font-size:14px; }
 .og-dashboard-ai-card { display:grid; gap:7px; margin-top:9px; padding:12px; border:1px solid rgba(183,207,185,.16); border-radius:7px; background:rgba(255,255,255,.025); }
@@ -281,7 +284,7 @@
 .og-dashboard-library-level-heading:hover { background:rgba(83,111,86,.3); }
 .og-dashboard-library-level-heading:focus-visible { outline:2px solid #e6c96f; outline-offset:-2px; }
 .og-dashboard-library-level-title { min-width:0; color:inherit; overflow-wrap:anywhere; }
-.og-dashboard-library-level-count { flex-shrink:0; margin-left:auto; padding:0; border:0; border-radius:0; color:#ffdc75; background:transparent; font:inherit; font-size:12px; font-weight:850; white-space:nowrap; cursor:pointer; }
+.og-dashboard-library-level-count { cursor:pointer; }
 .og-dashboard-library-level-count:hover { color:#fff0b5; text-decoration:underline; text-underline-offset:3px; }
 .og-dashboard-library-level-count:focus-visible { outline:2px solid #e6c96f; outline-offset:4px; border-radius:3px; }
 .og-dashboard-library-level-heading:hover .og-dashboard-library-level-count { background:transparent; }
