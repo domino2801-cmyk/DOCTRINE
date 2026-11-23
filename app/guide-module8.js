@@ -1189,7 +1189,7 @@
             if (generation !== aiCorrectionGeneration || !dialog.open) return;
             if (panel) panel.hidden = true;
             setStatus(status, error.status === 502 || error.status === 503
-                ? 'Service IA temporairement indisponible. Votre fiche n'a pas été corrigée. Vous pouvez réessayer ultérieurement.'
+                ? "Service IA temporairement indisponible. Votre fiche n'a pas été corrigée. Vous pouvez réessayer ultérieurement."
                 : (error.message || 'Correction IA impossible.'), 'error');
         } finally {
             if (button) button.disabled = false;
