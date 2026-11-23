@@ -757,7 +757,7 @@
             }).filter(Boolean);
             if (submissionIds.length) {
                 try {
-                    const structuredReviews = await api('/rest/v1/fiche_reviews?select=submission_id,guide_id,form_observations,form_evidence&submission_id=in.(' +
+                    const structuredReviews = await api('/rest/v1/fiche_reviews?select=submission_id,guide_id,form_observations,form_evidence,rubric_observations,rubric_evidence&submission_id=in.(' +
                         submissionIds.map(encodeURIComponent).join(',') + ')');
                     const reviewByKey = new Map((Array.isArray(structuredReviews) ? structuredReviews : []).map(function (review) {
                         return [String(review.submission_id) + ':' + String(review.guide_id), review];
@@ -768,7 +768,7 @@
                                 const structured = reviewByKey.get(String(submission.id) + ':' + String(review.guide_id));
                                 if (structured) {
                                     review.form_observations = structured.form_observations || '';
-                                    review.form_evidence = structured.form_evidence || '';
+                                    review.form_evidence = structured.form_evidence || '';\n                                    review.rubric_observations = structured.rubric_observations || {};\n                                    review.rubric_evidence = structured.rubric_evidence || {};
                                 }
                             });
                         });
