@@ -421,9 +421,9 @@ test("l’observation et l’indice du critère Forme sont persistés séparéme
     assert.doesNotMatch(script, /ensureAiFormObservationInComment/);
 
     const helper = await read("app/bm4-official-pdf.mjs");
-    assert.match(helper, /structuredFormObservation/);
-    assert.match(helper, /structuredFormEvidence/);
-    assert.match(helper, /Les champs structurés sont prioritaires/);
+    assert.match(helper, /rubricObservations/);
+    assert.match(helper, /rubricEvidence/);
+    assert.match(helper, /Chaque critère utilise ses champs structurés/);
     assert.match(helper, /observation obligatoire du critère/);
     assert.match(sql, /add column if not exists form_observations text/);
     assert.match(sql, /add column if not exists form_evidence text/);
