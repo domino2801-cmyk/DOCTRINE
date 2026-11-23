@@ -28,6 +28,8 @@ const SHELL_ASSETS = [
   new URL('./auth/auth.js', self.location.href).toString(),
   new URL('./admin/admin.css', self.location.href).toString(),
   new URL('./admin/admin.js', self.location.href).toString(),
+  new URL('./admin/guide-library.css', self.location.href).toString(),
+  new URL('./admin/guide-library.js', self.location.href).toString(),
   new URL('./admin/fiches-admin.js', self.location.href).toString(),
   new URL('./viewer/viewer.css', self.location.href).toString(),
   new URL('./viewer/viewer.js', self.location.href).toString(),
