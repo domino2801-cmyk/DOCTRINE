@@ -118,7 +118,7 @@
         author.textContent = 'Major Dominique';
         signature.append(author, document.createElement('br'));
         var distinction = document.createElement('em');
-        distinction.textContent = 'Lauréat du BM4 2025 — Spécialité « RHL »';
+        distinction.textContent = 'Officier guide BM2 et BM4';
         signature.append(distinction);
         box.append(signature);
     }
