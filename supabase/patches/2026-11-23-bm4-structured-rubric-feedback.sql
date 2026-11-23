@@ -1,10 +1,12 @@
 -- BM4 — Stockage structuré des observations et indices des neuf critères.
--- À appliquer après 2026-11-23-bm4-structured-form-observation.sql.
+-- Migration autonome et idempotente : fonctionne même si l'ancienne migration Forme n'a pas été appliquée.
 -- Migration rétrocompatible : conserve les anciennes colonnes Forme et les commentaires historiques.
 
 begin;
 
 alter table public.fiche_reviews
+    add column if not exists form_observations text,
+    add column if not exists form_evidence text,
     add column if not exists rubric_observations jsonb not null default '{}'::jsonb,
     add column if not exists rubric_evidence jsonb not null default '{}'::jsonb;
 
