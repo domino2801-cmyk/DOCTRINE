@@ -645,6 +645,10 @@
         }
     }
     function openDashboardReview(candidate, submission, runCorrection) {
+        if (submission.rubricFeedbackLoaded !== true) {
+            setStatus('Évaluation non modifiable : les observations BM4 n’ont pas été relues intégralement. Actualisez le tableau avant de réessayer.', true);
+            return;
+        }
         var dialog = document.getElementById('ogDashboardReviewDialog');
         if (!dialog) {
             dialog = node('dialog', 'og-dashboard-review-dialog');
@@ -876,6 +880,10 @@
         }
         form.addEventListener('submit', function (event) {
             event.preventDefault();
+            if (submission.rubricFeedbackLoaded !== true) {
+                status.textContent = 'Enregistrement bloqué : les observations structurées BM4 n’ont pas été relues avec succès. Actualisez le tableau avant de réessayer.';
+                return;
+            }
             var totals = collectScores();
             if (!totals.complete) {
                 status.textContent = 'Renseignez une note valide pour chaque critère de la grille.';
@@ -1491,7 +1499,12 @@
                 }));
                 candidates.forEach(function (candidate) {
                     (candidate.doctrine && candidate.doctrine.submissions || []).forEach(function (submission) {
-                        (submission.reviews || []).forEach(function (review) {
+                        var reviews = submission.reviews || [];
+                        var missingStructuredReview = reviews.some(function (review) {
+                            return !structuredReviews.has(String(submission.id) + ':' + String(review.guide_id));
+                        });
+                        submission.rubricFeedbackLoaded = !missingStructuredReview;
+                        reviews.forEach(function (review) {
                             var structured = structuredReviews.get(String(submission.id) + ':' + String(review.guide_id));
                             if (structured) {
                                 review.form_observations = structured.form_observations || '';
@@ -1502,8 +1515,22 @@
                         });
                     });
                 });
+                var incompleteReviews = candidates.some(function (candidate) {
+                    return (candidate.doctrine && candidate.doctrine.submissions || []).some(function (submission) {
+                        return submission.rubricFeedbackLoaded !== true;
+                    });
+                });
+                if (incompleteReviews) {
+                    setStatus('Certaines évaluations BM4 n’ont pas pu être relues intégralement. Leur modification est bloquée pour protéger les observations existantes.', true);
+                }
             } else {
+                candidates.forEach(function (candidate) {
+                    (candidate.doctrine && candidate.doctrine.submissions || []).forEach(function (submission) {
+                        submission.rubricFeedbackLoaded = false;
+                    });
+                });
                 console.warn('Chargement des observations structurées BM4 indisponible.', results[4].reason);
+                setStatus('Impossible de relire les observations BM4. Les évaluations sont temporairement verrouillées pour éviter tout écrasement.', true);
             }
             if (results[1].status === 'fulfilled') {
                 courses = Array.isArray(results[1].value) ? results[1].value : [];
