@@ -231,14 +231,14 @@
 .og-dashboard-library-card { min-width:0; display:grid; align-content:start; gap:9px; padding:15px; border:1px solid rgba(183,207,185,.2); border-left:3px solid #d8b85b; border-radius:9px; background:rgba(255,255,255,.035); }
 .og-dashboard-library-card h4 { margin:0; color:#f2f5ee; font-size:15px; overflow-wrap:anywhere; }
 .og-dashboard-library-card > p { margin:0; color:#bdcdbf; font-size:13px; line-height:1.5; }
-.og-dashboard-library-stars { display:inline-flex; align-items:center; width:fit-content; padding:6px 10px; border:1px solid rgba(230,201,111,.42); border-radius:8px; background:rgba(230,201,111,.1); color:#ffdc75; font-size:23px; line-height:1.2; letter-spacing:3px; font-weight:900; text-shadow:0 0 9px rgba(230,201,111,.25); }
+.og-dashboard-library-stars { display:inline-flex; align-items:center; width:fit-content; padding:5px 9px; border:1px solid rgba(230,201,111,.42); border-radius:8px; background:rgba(230,201,111,.1); color:#ffdc75; font-size:20px; line-height:1.2; letter-spacing:2.5px; font-weight:900; text-shadow:0 0 9px rgba(230,201,111,.25); }
 .og-dashboard-library-category { color:#aebfb1; font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
 .og-dashboard-library-actions { display:flex; flex-wrap:wrap; gap:8px; }
 .og-dashboard-library-corrections { padding-top:9px; border-top:1px solid rgba(183,207,185,.16); }
 .og-dashboard-library-corrections summary { color:#d8b85b; cursor:pointer; font-size:12px; font-weight:800; }
 .og-dashboard-library-correction { display:grid; gap:7px; padding:9px 0; border-bottom:1px solid rgba(183,207,185,.12); }
 .og-dashboard-library-correction strong { color:#e6eee7; font-size:12px; }
-.og-dashboard-library-correction-stars { display:inline-flex; align-items:center; width:fit-content; padding:3px 7px; border-radius:6px; background:rgba(230,201,111,.08); color:#ffdc75; font-size:16px; line-height:1.25; letter-spacing:2px; font-weight:900; }
+.og-dashboard-library-correction-stars { display:inline-flex; align-items:center; width:fit-content; padding:3px 6px; border-radius:6px; background:rgba(230,201,111,.08); color:#ffdc75; font-size:14px; line-height:1.25; letter-spacing:1.6px; font-weight:900; }
 .og-dashboard-library-correction p { margin:0; color:#aebfb1; font-size:12px; }
 @media(max-width:800px) { .og-dashboard-library-grid { grid-template-columns:1fr; } }
 
