@@ -157,9 +157,9 @@ function formatGrade(value) {
 function normalizeObservationLabel(value) {
     return String(value || '')
         .trim()
-        .replace(/^\\d+\\s*[.)-]\\s*/, '')
+        .replace(/^\d+\s*[.)-]\s*/, '')
         .normalize('NFD')
-        .replace(/[\\u0300-\\u036f]/g, '')
+        .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, ' ')
         .trim();
@@ -170,7 +170,7 @@ function observationFor(comment, label, fallback = '') {
     const fallbackText = String(fallback || '').trim();
     if (!expectedLabel) return fallbackText;
 
-    const lines = String(comment || '').split(/\\r?\\n/);
+    const lines = String(comment || '').split(/\r?\n/);
     for (const rawLine of lines) {
         const line = rawLine.trim();
         const colon = line.indexOf(':');
@@ -182,9 +182,9 @@ function observationFor(comment, label, fallback = '') {
         let observation = line.slice(colon + 1).trim();
         // Accepte les formats issus des commentaires du guide et de la synthèse IA :
         // « : observation », « : — observation » ou « : note / 6 — observation ».
-        observation = observation.replace(/^(?:—|–|-)\\s*/, '');
-        observation = observation.replace(/^\\d+(?:[,.]\\d+)?\\s*\\/\\s*\\d+(?:[,.]\\d+)?\\s*(?:—|–|-)\\s*/, '');
-        observation = observation.replace(/\\s+(?:—|–|-)\\s*Indice\\s*:.*/i, '').trim();
+        observation = observation.replace(/^(?:—|–|-)\s*/, '');
+        observation = observation.replace(/^\d+(?:[,.]\d+)?\s*\/\s*\d+(?:[,.]\d+)?\s*(?:—|–|-)\s*/, '');
+        observation = observation.replace(/\s+(?:—|–|-)\s*Indice\s*:.*/i, '').trim();
         if (observation) return observation;
     }
 
