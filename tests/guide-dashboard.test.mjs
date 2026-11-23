@@ -16,7 +16,9 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(html, /app\/guide-dashboard\.js/);
     assert.match(script, /guideDashboardNav/);
     assert.match(script, /applyGuideModuleVisibility\(\)/);
-    assert.match(script, /setGuideModulesHidden\(isGuide\)/);
+    assert.match(script, /currentGuideStatus\(\)\.then\(function \(isGuide\)/);
+    assert.match(script, /auth\(\)\.specialite\(\)/);
+    assert.match(script, /style\.setProperty\('display', 'none', 'important'\)/);
     assert.match(script, /getElementById\('btn-mod' \+ id\)/);
     assert.match(script, /module-nav-button\[onclick\]/);
     assert.match(script, /setGuideModulesHidden\(false\)/);
