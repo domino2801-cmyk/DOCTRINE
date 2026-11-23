@@ -29,40 +29,38 @@
             return JSON.parse(decodeURIComponent(escape(atob(part))));
         } catch (_) { return null; }
     }
-    function guideAccess() {
+    function currentGuideStatus() {
         if (!auth() || typeof auth().jeton !== 'function') return Promise.resolve(false);
         return auth().jeton().then(function (token) {
             var claims = token && decodeClaims(token);
             var meta = claims && claims.app_metadata || {};
             var role = String(meta.role || '').trim().toLowerCase();
-            var specialty = String(meta.specialty || '').trim().toUpperCase();
             var admin = role === 'admin' || meta.bm4_admin === true ||
                 meta.bm4_admin === 'true' || meta.bm4_admin === 1 || meta.bm4_admin === '1' ||
                 (typeof auth().estAdmin === 'function' && auth().estAdmin());
-            return !!(claims && claims.sub &&
-                (admin || role === 'guide' || role === 'officier_guide' || specialty === 'OG'));
+            if (!claims || !claims.sub || admin) return false;
+            // La spécialité est enregistrée dans le profil Supabase, pas nécessairement
+            // dans app_metadata du JWT : utiliser l'accesseur officiel de DoctrineAuth.
+            if (typeof auth().specialite === 'function') {
+                return auth().specialite().then(function (value) {
+                    return String(value || '').trim().toUpperCase() === 'OG' ||
+                        role === 'guide' || role === 'officier_guide';
+                });
+            }
+            return role === 'guide' || role === 'officier_guide';
         }).catch(function () { return false; });
     }
 
+    function guideAccess() {
+        return currentGuideStatus();
+    }
+
     function applyGuideModuleVisibility() {
-        var moduleIds = ['1', '2', '5', '6', '7'];
-        if (!auth() || typeof auth().jeton !== 'function') {
-            setGuideModulesHidden(false);
-            return;
-        }
-        auth().jeton().then(function (token) {
-            var claims = token && decodeClaims(token);
-            var meta = claims && claims.app_metadata || {};
-            var role = String(meta.role || '').trim().toLowerCase();
-            var specialty = String(meta.specialty || '').trim().toUpperCase();
-            var admin = role === 'admin' || meta.bm4_admin === true ||
-                meta.bm4_admin === 'true' || meta.bm4_admin === 1 || meta.bm4_admin === '1' ||
-                (typeof auth().estAdmin === 'function' && auth().estAdmin());
-            var isGuide = !!(claims && claims.sub && !admin &&
-                (role === 'guide' || role === 'officier_guide' || specialty === 'OG'));
+        setGuideModulesHidden(false);
+        currentGuideStatus().then(function (isGuide) {
             setGuideModulesHidden(isGuide);
             if (isGuide) renderGuideCorpus();
-        }).catch(function () { setGuideModulesHidden(false); });
+        });
     }
 
     function setGuideModulesHidden(hidden) {
@@ -70,12 +68,20 @@
         ids.forEach(function (id) {
             var button = document.getElementById('btn-mod' + id);
             var item = button && button.closest('li');
-            if (item) item.hidden = hidden;
+            if (item) {
+                item.hidden = hidden;
+                if (hidden) item.style.setProperty('display', 'none', 'important');
+                else item.style.removeProperty('display');
+            }
         });
         // Empêche aussi d'atteindre ces modules par les flèches précédent/suivant.
         document.querySelectorAll('.module-nav-button[onclick]').forEach(function (button) {
             var match = button.getAttribute('onclick').match(/navigateModule\\(['"]module(1|2|5|6|7)['"]\\)/);
-            if (match) button.hidden = hidden;
+            if (match) {
+                button.hidden = hidden;
+                if (hidden) button.style.setProperty('display', 'none', 'important');
+                else button.style.removeProperty('display');
+            }
         });
     }
 
