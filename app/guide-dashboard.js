@@ -1419,12 +1419,39 @@
             if (!ids.length) return [];
             return api('doctrine_candidate_cvs?select=candidate_id,storage_path,original_filename,uploaded_at&candidate_id=in.(' + ids.join(',') + ')');
         });
-        Promise.allSettled([candidateRequest, courseRequest, progressRequest, cvRequest]).then(function (results) {
+        var reviewRequest = candidateRequest.then(function (payload) {
+            var submissionIds = (payload.candidates || []).reduce(function (all, candidate) {
+                return all.concat((candidate.doctrine && candidate.doctrine.submissions || [])
+                    .map(function (submission) { return submission.id; }).filter(Boolean));
+            }, []);
+            if (!submissionIds.length) return [];
+            return api('fiche_reviews?select=submission_id,guide_id,form_observations,form_evidence&submission_id=in.(' +
+                submissionIds.map(encodeURIComponent).join(',') + ')');
+        });
+        Promise.allSettled([candidateRequest, courseRequest, progressRequest, cvRequest, reviewRequest]).then(function (results) {
             if (results[0].status === 'fulfilled') {
                 candidates = Array.isArray(results[0].value.candidates) ? results[0].value.candidates : [];
             } else {
                 candidates = [];
                 setStatus('Suivi candidats indisponible : ' + results[0].reason.message, true);
+            }
+            if (results[4].status === 'fulfilled') {
+                var structuredReviews = new Map((Array.isArray(results[4].value) ? results[4].value : []).map(function (review) {
+                    return [String(review.submission_id) + ':' + String(review.guide_id), review];
+                }));
+                candidates.forEach(function (candidate) {
+                    (candidate.doctrine && candidate.doctrine.submissions || []).forEach(function (submission) {
+                        (submission.reviews || []).forEach(function (review) {
+                            var structured = structuredReviews.get(String(submission.id) + ':' + String(review.guide_id));
+                            if (structured) {
+                                review.form_observations = structured.form_observations || '';
+                                review.form_evidence = structured.form_evidence || '';
+                            }
+                        });
+                    });
+                });
+            } else {
+                console.warn('Chargement des observations structurées BM4 indisponible.', results[4].reason);
             }
             if (results[1].status === 'fulfilled') {
                 courses = Array.isArray(results[1].value) ? results[1].value : [];
