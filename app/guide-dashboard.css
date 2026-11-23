@@ -189,3 +189,37 @@
 .og-dashboard-ai-grid-link:hover,.og-dashboard-ai-grid-link:focus-visible { border-color:#f0d47c; outline:2px solid rgba(216,184,91,.35); outline-offset:2px; }
 .og-dashboard-ai-grid-link.is-primary { background:#d8b85b; color:#17251e; }
 @media(max-width:600px) { .og-dashboard-ai-grid-card { padding:14px; } .og-dashboard-ai-grid-actions { flex-direction:column; } .og-dashboard-ai-grid-link { width:100%; box-sizing:border-box; } }
+
+
+/* Contraste renforcé des évaluations proposition et support oral : aucun champ clair. */
+.og-dashboard-review-dialog,
+.og-dashboard-review-dialog .og-dashboard-review-form,
+.og-dashboard-review-dialog .og-dashboard-review-ai,
+.og-dashboard-review-dialog .og-dashboard-review-ai-criterion {
+    color-scheme: dark;
+}
+.og-dashboard-review-dialog input,
+.og-dashboard-review-dialog select,
+.og-dashboard-review-dialog textarea {
+    background-color: #26392f !important;
+    color: #f2f5ee !important;
+    border-color: #607667;
+    color-scheme: dark;
+}
+.og-dashboard-review-dialog input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+.og-dashboard-review-dialog input[type="number"]::-webkit-inner-spin-button,
+.og-dashboard-review-dialog input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+}
+.og-dashboard-review-dialog select option {
+    background-color: #26392f !important;
+    color: #f2f5ee !important;
+}
+.og-dashboard-review-dialog input:focus,
+.og-dashboard-review-dialog select:focus,
+.og-dashboard-review-dialog textarea:focus {
+    background-color: #30483a !important;
+}
