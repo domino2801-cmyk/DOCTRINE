@@ -98,6 +98,40 @@ async function dossierRequis(id: string, parents: string[], jeton: string): Prom
   return null;
 }
 
+// Les dossiers de la nouvelle bibliothèque suivent la publication Supabase,
+// y compris lorsque l'utilisateur demande directement un sous-dossier ou un fichier.
+async function accesBibliothequePubliee(ids: string[], admin: boolean): Promise<boolean> {
+  if (admin) return true;
+  const url = Deno.env.get('SUPABASE_URL');
+  const cle = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !cle) throw new Error('Configuration Supabase manquante');
+  const headers = { apikey: cle, Authorization: `Bearer ${cle}` };
+  for (const id of ids) {
+    const driveUrl = encodeURIComponent(`https://drive.google.com/drive/folders/${id}`);
+    const ex = await fetch(`${url}/rest/v1/guide_exercise_library?drive_url=eq.${driveUrl}&select=id,is_published`, { headers });
+    if (!ex.ok) throw new Error('Vérification de publication des exercices impossible');
+    const exercices: { id: string; is_published: boolean }[] = await ex.json();
+    if (exercices.length) return exercices.some((e) => e.is_published);
+
+    const co = await fetch(`${url}/rest/v1/guide_correction_library?drive_url=eq.${driveUrl}&select=id,exercise_id,is_published`, { headers });
+    if (!co.ok) throw new Error('Vérification de publication des corrections impossible');
+    const corrections: { id: string; exercise_id: string; is_published: boolean }[] = await co.json();
+    if (corrections.length) {
+      if (!corrections.some((c) => c.is_published)) return false;
+      const exerciseIds = [...new Set(corrections.map((c) => c.exercise_id))];
+      for (const exerciseId of exerciseIds) {
+        const parent = await fetch(`${url}/rest/v1/guide_exercise_library?id=eq.${encodeURIComponent(exerciseId)}&select=is_published`, { headers });
+        if (!parent.ok) throw new Error('Vérification de publication de l’exercice associé impossible');
+        const parents: { is_published: boolean }[] = await parent.json();
+        if (!parents.length || !parents.every((e) => e.is_published)) return false;
+      }
+      return true;
+    }
+  }
+  // Les bibliothèques historiques restent soumises à leurs contrôles habituels.
+  return true;
+}
+
 async function jetonDrive() {
   if (jetonGoogle && jetonGoogle.expire > Date.now() + 60_000) return jetonGoogle.valeur;
   const sa = JSON.parse(Deno.env.get('GOOGLE_SERVICE_ACCOUNT_JSON') || '{}');
@@ -151,6 +185,11 @@ Deno.serve(async (req) => {
     if (meta.status === 404 || meta.status === 403) return erreur(404, 'Document introuvable');
     if (!meta.ok) return erreur(502, 'Erreur Google Drive');
     const fichier = await meta.json();
+
+    if (!candidat.admin) {
+      const autorise = await accesBibliothequePubliee([id, ...(fichier.parents || [])], false);
+      if (!autorise) return erreur(403, 'Ce dossier ou document n’est pas publié pour les Officiers Guides');
+    }
 
         if (!candidat.admin) {
           const requis = await dossierRequis(id, fichier.parents || [], jeton);
