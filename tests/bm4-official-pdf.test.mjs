@@ -217,6 +217,24 @@ test("utilise l'observation de forme de secours si le commentaire ne la contient
     );
 });
 
+test("utilise prioritairement l’observation et l’indice structurés sans dépendre du commentaire", async () => {
+    const structuredReport = structuredClone(report);
+    structuredReport.evaluations[0].comment = "Introduction : — Contexte bien posé.";
+    structuredReport.evaluations[0].formObservations = "Observation structurée prioritaire.";
+    structuredReport.evaluations[0].formEvidence = "Page 2, en-tête et références.";
+
+    const blob = await createOfficialBm4Pdf(structuredReport, {
+        PDFLib,
+        templateBytes,
+        flatten: false
+    });
+    const pdf = await PDFDocument.load(new Uint8Array(await blob.arrayBuffer()));
+    assert.equal(
+        pdf.getForm().getTextField("obs_em_1").getText(),
+        "Observation structurée prioritaire. · Indice : Page 2, en-tête et références."
+    );
+});
+
 test("signale explicitement une bibliothèque PDF absente", async () => {
     await assert.rejects(
         () => createOfficialBm4Pdf(report, { PDFLib: null, templateBytes }),
