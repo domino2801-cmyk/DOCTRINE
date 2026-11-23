@@ -88,13 +88,14 @@
         if (progressionCard) progressionCard.hidden = true;
         currentGuideStatus().then(function (isGuide) {
             setGuideModulesHidden(isGuide);
+            document.body.classList.toggle('og-guide-entry-only', isGuide);
             if (progressionCard) progressionCard.hidden = isGuide;
             if (isGuide) renderGuideCorpus();
         });
     }
 
     function setGuideModulesHidden(hidden) {
-        var ids = ['1', '2', '5', '6', '7'];
+        var ids = ['1', '2', '3', '4', '5', '6', '7', '8'];
         ids.forEach(function (id) {
             var button = document.getElementById('btn-mod' + id);
             if (!button) return;
@@ -106,8 +107,17 @@
             button.tabIndex = hidden ? -1 : 0;
         });
         // Bloque également la navigation précédent/suivant vers les modules masqués.
+        var ogCoursesButton = document.getElementById('btn-mod-og');
+        if (ogCoursesButton) {
+            var ogCoursesItem = ogCoursesButton.closest('li') || ogCoursesButton;
+            ogCoursesItem.hidden = hidden;
+            if (hidden) ogCoursesItem.style.setProperty('display', 'none', 'important');
+            else ogCoursesItem.style.removeProperty('display');
+            ogCoursesButton.setAttribute('aria-hidden', String(hidden));
+            ogCoursesButton.tabIndex = hidden ? -1 : 0;
+        }
         document.querySelectorAll('.module-nav-button[onclick]').forEach(function (button) {
-            var match = button.getAttribute('onclick').match(/navigateModule\(['"]module(1|2|5|6|7)['"]\)/);
+            var match = button.getAttribute('onclick').match(/navigateModule\(['"]module([1-8])['"]\)/);
             if (!match) return;
             button.hidden = hidden;
             if (hidden) button.style.setProperty('display', 'none', 'important');
@@ -1523,6 +1533,7 @@
             var item = document.getElementById('guideDashboardNav');
             if (item) item.hidden = true;
             setGuideModulesHidden(false);
+            document.body.classList.remove('og-guide-entry-only');
             var progressionCard = document.querySelector('.study-dashboard');
             if (progressionCard) progressionCard.hidden = false;
         });

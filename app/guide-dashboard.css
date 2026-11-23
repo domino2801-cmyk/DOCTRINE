@@ -291,3 +291,9 @@
 .og-dashboard-library-level-group > .og-dashboard-library-grid { padding:12px; }
 .og-dashboard-library-level-empty { margin:0 12px 12px; }
 @media(max-width:600px) { .og-dashboard-library-level-heading { min-height:48px; padding:11px 12px; font-size:14px; } }
+
+
+/* Pour un Officier Guide connecté, le seul accès de navigation est centré. */
+body.og-guide-entry-only nav ul { justify-content:center; }
+body.og-guide-entry-only #guideDashboardNav { margin-inline:auto; }
+body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw); text-align:center; }
