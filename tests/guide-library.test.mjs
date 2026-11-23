@@ -24,7 +24,13 @@ test('les deux bibliothèques sont isolées des 30 supports et des progressions 
 
 test('les niveaux de difficulté sont limités aux quatre étoiles attendues', () => {
     assert.match(migration, /difficulty_level BETWEEN 1 AND 4/);
-    for (const label of ['Fondamentaux', 'Application', 'Maîtrise', 'Expertise']) {
+    assert.match(admin, /★ — Initiation/);
+    assert.match(admin, /★★ — Bases/);
+    assert.match(admin, /★★★ — Approfondissement/);
+    assert.match(admin, /★★★★ — Défi/);
+    assert.doesNotMatch(admin, /Fondamentaux|Application|Maîtrise|Expertise/);
+    assert.match(admin, /return '★'\.repeat\(value\)/);
+    for (const label of ['Initiation', 'Bases', 'Approfondissement', 'Défi']) {
         assert.ok(admin.includes(label), 'niveau manquant : ' + label);
     }
 });
@@ -50,6 +56,11 @@ test('l’espace Officier Guide affiche uniquement les contenus publiés et leur
     assert.match(guide, /is_published=eq\.true/);
     assert.match(guide, /Bibliothèque des dossiers d’exercices et corrections/);
     assert.match(guide, /correction\.exercise_id === exercise\.id/);
+    assert.match(guide, /★ — Initiation/);
+    assert.match(guide, /★★ — Bases/);
+    assert.match(guide, /★★★ — Approfondissement/);
+    assert.match(guide, /★★★★ — Défi/);
+    assert.match(guide, /og-dashboard-library-correction-stars/);
     assert.match(guideCss, /\.og-dashboard-library-grid/);
 });
 
