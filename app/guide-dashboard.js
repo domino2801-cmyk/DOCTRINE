@@ -689,6 +689,18 @@
         });
         decision.value = review.status === 'a_reprendre' ? 'a_reprendre' : 'valide';
         decisionLabel.append(decision);
+        var formObservationLabel = node('label', 'og-dashboard-review-field', 'Observation du critère Forme — obligatoire');
+        var formObservation = node('textarea'); formObservation.rows = 3; formObservation.maxLength = 3000;
+        formObservation.value = review.form_observations || '';
+        formObservationLabel.append(formObservation);
+        var formEvidenceLabel = node('label', 'og-dashboard-review-field', 'Indice documentaire du critère Forme');
+        var formEvidence = node('textarea'); formEvidence.rows = 2; formEvidence.maxLength = 1500;
+        formEvidence.value = review.form_evidence || '';
+        formEvidenceLabel.append(formEvidence);
+        if (isOral) {
+            formObservationLabel.hidden = true;
+            formEvidenceLabel.hidden = true;
+        }
         var commentLabel = node('label', 'og-dashboard-review-field', 'Commentaires de l’Officier Guide');
         var comment = node('textarea'); comment.rows = 6; comment.maxLength = 4000;
         comment.value = review.comment || '';
@@ -702,7 +714,8 @@
         correction.type = 'button';
         correction.addEventListener('click', runAi);
         actions.append(correction, save);
-        form.append(intro, aiPanel, criteria, total, decisionLabel, commentLabel, status, actions);
+        form.append(intro, aiPanel, criteria, total, decisionLabel,
+            formObservationLabel, formEvidenceLabel, commentLabel, status, actions);
         dialog.append(heading, form);
         function collectScores() {
             var scores = {};
@@ -796,6 +809,10 @@
                         if (input && proposed) input.value = String(proposed.grade);
                     });
                     updateTotal();
+                    if (!isOral) {
+                        formObservation.value = String(suggestion.form_observations || '').trim();
+                        formEvidence.value = String(suggestion.form_evidence || '').trim();
+                    }
                 }
                 renderAiSuggestion(suggestion);
                 status.textContent = suggestion.readable
@@ -829,6 +846,8 @@
                     content_grade: totals.contentGrade,
                     grade: totals.grade,
                     rubric_scores: totals.scores,
+                    form_observations: isOral ? null : formObservation.value.trim(),
+                    form_evidence: isOral ? null : formEvidence.value.trim(),
                     jury_checklist: (function () {
                         var allowed = isOral
                             ? ['oral_operatoire', 'oral_introduction', 'oral_argumentaire', 'oral_conclusion']
@@ -911,6 +930,8 @@
                     return { key: key, label: key, checked: Boolean(review.jury_checklist && review.jury_checklist[key]) };
                 }),
                 comment: review.comment || '',
+                formObservations: review.form_observations || '',
+                formEvidence: review.form_evidence || '',
                 reviewedAt: review.reviewed_at || new Date().toISOString()
             });
         });
