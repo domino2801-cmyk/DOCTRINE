@@ -71,6 +71,10 @@ test('les exercices et corrections réutilisent la visionneuse intégrée et le 
     assert.match(viewer, /if \(bilan\.echecs\) throw new Error/);
     assert.match(driveProxy, /pageSize=1000/);
     assert.match(driveProxy, /nextPageToken/);
+    assert.match(driveProxy, /accesBibliothequePubliee/);
+    assert.match(driveProxy, /accesBibliotheque === false/);
+    assert.match(driveProxy, /accesBibliotheque === null/);
+    assert.match(driveProxy, /chaineParentsDrive/);
     assert.match(admin, /openDriveInViewer\(item\.drive_url, item\.title\)/);
     assert.doesNotMatch(admin, /open\.target = '_blank'/);
 });
