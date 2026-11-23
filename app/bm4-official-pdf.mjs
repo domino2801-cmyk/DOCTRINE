@@ -280,9 +280,18 @@ export async function createOfficialBm4Pdf(report, options = {}) {
         proposition.criteria.forEach((criterion, index) => {
             const number = index + 1;
             setFieldText('note_em_' + number, formatGrade(proposition.rubricScores?.[criterion.key]));
-            const observation = observationFor(proposition.comment, criterion.label, criterion.key === 'form'
-                ? proposition.formObservations
-                : '');
+            const structuredFormObservation = criterion.key === 'form'
+                ? String(proposition.formObservations || '').trim()
+                : '';
+            const structuredFormEvidence = criterion.key === 'form'
+                ? String(proposition.formEvidence || '').trim()
+                : '';
+            // Les champs structurés sont prioritaires ; l'ancien commentaire reste
+            // un recours de compatibilité pour les évaluations déjà enregistrées.
+            const observation = criterion.key === 'form' && structuredFormObservation
+                ? [structuredFormObservation, structuredFormEvidence ? 'Indice : ' + structuredFormEvidence : '']
+                    .filter(Boolean).join(' · ')
+                : observationFor(proposition.comment, criterion.label);
             if (criterion.key === 'form' && !observation) {
                 throw new Error('Export PDF impossible : l’observation obligatoire du critère « Forme, Présentation & Langue » (/6) est absente. Relancez la correction IA ou renseignez cette observation dans les commentaires, puis enregistrez.');
             }
