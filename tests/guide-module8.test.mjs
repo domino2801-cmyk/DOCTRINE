@@ -173,6 +173,16 @@ test("la correction Gemini est disponible pour les deux types de fiches avec val
     assert.match(aiFunction, /Annotation ou justification du critère Forme absente/);
     assert.match(aiFunction, /Annotation ou justification du premier critère oral absente/);
     assert.match(aiFunction, /const isOral = submission\.submission_type === "support_oral"/);
+    assert.match(aiFunction, /Deno\.env\.get\("OPENAI_API_KEY"\)/);
+    assert.match(aiFunction, /Deno\.env\.get\("OPENAI_MODEL"\)/);
+    assert.match(aiFunction, /api\.openai\.com\/v1\/responses/);
+    assert.match(aiFunction, /requestOpenAiFallback/);
+    assert.match(aiFunction, /Using OpenAI as correction fallback/);
+    assert.match(aiFunction, /ai_provider: correctionProvider/);
+    assert.match(aiFunction, /Configurez OPENAI_API_KEY pour activer le modèle de secours/);
+    assert.match(aiFunction, /type: "input_file"/);
+    assert.match(aiFunction, /strictJsonSchema/);
+
     assert.match(aiFunction, /ORAL_RUBRIC_PROMPT/);
     assert.match(aiFunction, /SUBJECT_DRIVE_FOLDER_IDS/);
     assert.match(aiFunction, /getSubjectReferenceDocuments\(dossier: number\)/);
