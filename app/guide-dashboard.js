@@ -923,6 +923,8 @@
                 label: type === 'support_oral' ? 'Fichette orale' : 'Fiche de proposition',
                 grade: grade,
                 rubricScores: review.rubric_scores || {},
+                rubricObservations: review.rubric_observations || {},
+                rubricEvidence: review.rubric_evidence || {},
                 criteria: rubric.map(function (criterion) {
                     return { key: criterion.key, label: criterion.label, max_grade: criterion.max };
                 }),
@@ -930,8 +932,8 @@
                     return { key: key, label: key, checked: Boolean(review.jury_checklist && review.jury_checklist[key]) };
                 }),
                 comment: review.comment || '',
-                formObservations: review.form_observations || '',
-                formEvidence: review.form_evidence || '',
+                formObservations: review.form_observations || review.rubric_observations?.form || review.rubric_observations?.operatoire_forme || '',
+                formEvidence: review.form_evidence || review.rubric_evidence?.form || review.rubric_evidence?.operatoire_forme || '',
                 reviewedAt: review.reviewed_at || new Date().toISOString()
             });
         });
