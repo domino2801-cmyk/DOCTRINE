@@ -1447,7 +1447,9 @@
                             var structured = structuredReviews.get(String(submission.id) + ':' + String(review.guide_id));
                             if (structured) {
                                 review.form_observations = structured.form_observations || '';
-                                review.form_evidence = structured.form_evidence || '';\n                                review.rubric_observations = structured.rubric_observations || {};\n                                review.rubric_evidence = structured.rubric_evidence || {};
+                                review.form_evidence = structured.form_evidence || '';
+                                review.rubric_observations = structured.rubric_observations || {};
+                                review.rubric_evidence = structured.rubric_evidence || {};
                             }
                         });
                     });
