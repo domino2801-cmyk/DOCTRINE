@@ -652,3 +652,12 @@ test("le module 8 affiche le message explicite lorsque le service IA renvoie HTT
     assert.match(script, /error\.status === 502 \|\| error\.status === 503/);
     assert.ok(script.includes(unavailable));
 });
+
+
+test("une évaluation BM4 reste verrouillée si le rechargement structuré échoue ou ne retrouve pas un avis", () => {
+    assert.match(script, /submission\\.rubricFeedbackLoaded = !missingStructuredReview/);
+    assert.match(script, /submission\\.rubricFeedbackLoaded = false/);
+    assert.match(script, /submission\\.rubricFeedbackLoaded !== true/);
+    assert.match(script, /modification des évaluations bloquée/);
+    assert.match(script, /Enregistrement bloqué : les observations structurées BM4/);
+});
