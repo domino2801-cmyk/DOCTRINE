@@ -173,3 +173,11 @@ test('chaque accordéon affiche difficulté et nombre d’exercices sur une seul
     assert.match(css, /\.og-dashboard-library-level-heading::after \{ flex-shrink:0; margin-left:auto; \}/);
     assert.match(css, /@media\(max-width:600px\)/);
 });
+
+
+test('le nombre d’exercices est le déclencheur à droite de l’accordéon, sans bouton plus', () => {
+    assert.match(script, /og-dashboard-library-level-count/);
+    assert.match(script, /levelRows\.length \+ \(levelRows\.length > 1 \? ' exercices' : ' exercice'\)/);
+    assert.doesNotMatch(css, /content:'[＋+−-]'/);
+    assert.match(css, /\.og-dashboard-library-level-count \{[^}]*margin-left:auto/s);
+});
