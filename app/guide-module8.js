@@ -752,6 +752,31 @@
             });
             if (generation !== requestGeneration) return;
             candidates = Array.isArray(result.candidates) ? result.candidates : [];
+            const submissionIds = candidates.flatMap(function (candidate) {
+                return (candidate.doctrine?.submissions || []).map(function (submission) { return submission.id; });
+            }).filter(Boolean);
+            if (submissionIds.length) {
+                try {
+                    const structuredReviews = await api('/rest/v1/fiche_reviews?select=submission_id,guide_id,form_observations,form_evidence&submission_id=in.(' +
+                        submissionIds.map(encodeURIComponent).join(',') + ')');
+                    const reviewByKey = new Map((Array.isArray(structuredReviews) ? structuredReviews : []).map(function (review) {
+                        return [String(review.submission_id) + ':' + String(review.guide_id), review];
+                    }));
+                    candidates.forEach(function (candidate) {
+                        (candidate.doctrine?.submissions || []).forEach(function (submission) {
+                            (submission.reviews || []).forEach(function (review) {
+                                const structured = reviewByKey.get(String(submission.id) + ':' + String(review.guide_id));
+                                if (structured) {
+                                    review.form_observations = structured.form_observations || '';
+                                    review.form_evidence = structured.form_evidence || '';
+                                }
+                            });
+                        });
+                    });
+                } catch (reviewError) {
+                    console.warn('Chargement des observations structurées BM4 indisponible ; compatibilité commentaire conservée.', reviewError);
+                }
+            }
             await Promise.all(candidates.map(enrichCandidateProgress));
             if (generation !== requestGeneration) return;
             if (!candidates.some(function (candidate) { return candidate.candidate.id === selectedCandidateId; })) {
