@@ -1119,8 +1119,12 @@
                 levelRows.forEach(function (exercise) {
                     var card = node('article', 'og-dashboard-library-card');
                     var difficulty = Number(exercise.difficulty_level) || 1;
-                    card.append(node('span', 'og-dashboard-library-stars', '★'.repeat(difficulty) +
-                        ' · ' + EXERCISE_LEVELS[difficulty - 1].name));
+                    var starsBadge = node('span', 'og-dashboard-library-stars');
+                    starsBadge.append(
+                        node('span', 'og-dashboard-library-stars-icons', '★'.repeat(difficulty)),
+                        node('span', 'og-dashboard-library-stars-label', EXERCISE_LEVELS[difficulty - 1].name)
+                    );
+                    card.append(starsBadge);
                     card.append(node('h4', '', exercise.title));
                     if (exercise.category) card.append(node('span', 'og-dashboard-library-category', exercise.category));
                     if (exercise.description) card.append(node('p', '', exercise.description));
