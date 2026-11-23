@@ -431,6 +431,17 @@ test("l’observation et l’indice du critère Forme sont persistés séparéme
     assert.match(sql, /add column if not exists rubric_evidence jsonb/);
 });
 
+test("la migration dédiée crée les deux dictionnaires et reprend les anciennes observations Forme", async () => {
+    const migration = await read("supabase/patches/2026-11-23-bm4-structured-rubric-feedback.sql");
+    assert.match(migration, /add column if not exists rubric_observations jsonb not null default '\{\}'::jsonb/);
+    assert.match(migration, /add column if not exists rubric_evidence jsonb not null default '\{\}'::jsonb/);
+    assert.match(migration, /add column if not exists form_observations text/);
+    assert.match(migration, /add column if not exists form_evidence text/);
+    assert.match(migration, /update public\.fiche_reviews[\s\S]*rubric_observations[\s\S]*review\.form_observations/);
+    assert.match(migration, /when 'support_oral' then 'operatoire_forme' else 'form' end/);
+    assert.match(migration, /notify pgrst, 'reload schema'/);
+});
+
 test("la grille AcroForm officielle remplace le compte rendu et exige une validation de l’Officier Guide", async () => {
     const helper = await read("app/bm4-official-pdf.mjs");
     const serviceWorker = await read("sw.js");
