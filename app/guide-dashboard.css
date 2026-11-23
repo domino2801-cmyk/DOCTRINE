@@ -231,7 +231,9 @@
 .og-dashboard-library-card { min-width:0; display:grid; align-content:start; gap:9px; padding:15px; border:1px solid rgba(183,207,185,.2); border-left:3px solid #d8b85b; border-radius:9px; background:rgba(255,255,255,.035); }
 .og-dashboard-library-card h4 { margin:0; color:#f2f5ee; font-size:15px; overflow-wrap:anywhere; }
 .og-dashboard-library-card > p { margin:0; color:#bdcdbf; font-size:13px; line-height:1.5; }
-.og-dashboard-library-stars { display:inline-flex; align-items:center; width:fit-content; padding:5px 9px; border:1px solid rgba(230,201,111,.42); border-radius:8px; background:rgba(230,201,111,.1); color:#ffdc75; font-size:20px; line-height:1.2; letter-spacing:2.5px; font-weight:900; text-shadow:0 0 9px rgba(230,201,111,.25); }
+.og-dashboard-library-stars { display:inline-flex; align-items:center; gap:7px; width:fit-content; min-height:28px; padding:4px 8px; border:1px solid rgba(230,201,111,.42); border-radius:8px; background:rgba(230,201,111,.1); color:#ffdc75; line-height:1.2; }
+.og-dashboard-library-stars-icons { display:inline-block; flex:0 0 3.6em; font-size:15px; line-height:1; letter-spacing:1px; font-weight:900; white-space:nowrap; text-shadow:0 0 7px rgba(230,201,111,.22); }
+.og-dashboard-library-stars-label { font-size:13px; font-weight:850; letter-spacing:.02em; }
 .og-dashboard-library-category { color:#aebfb1; font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
 .og-dashboard-library-actions { display:flex; flex-wrap:wrap; gap:8px; }
 .og-dashboard-library-corrections { padding-top:9px; border-top:1px solid rgba(183,207,185,.16); }
