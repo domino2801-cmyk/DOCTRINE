@@ -195,5 +195,7 @@ test('les deux bibliothèques utilisent des cartes de largeur identique, titres 
     assert.match(css, /\.og-dashboard-course-group, \.og-dashboard-library-level-group \{[^}]*width:100%[^}]*box-sizing:border-box/s);
     assert.match(css, /\.og-dashboard-accordion-title, \.og-dashboard-library-level-heading \{[^}]*width:100%[^}]*color:#f2f5ee/s);
     assert.match(css, /\.og-dashboard-count, \.og-dashboard-library-level-count \{ color:#ffdc75; \}/);
+    assert.match(css, /\.og-dashboard-count, \.og-dashboard-library-level-count \{[^}]*border:1px solid[^}]*border-radius:6px[^}]*background:rgba\(216,184,91,.12\)/s);
+    assert.match(css, /\.og-dashboard-candidates, \.og-dashboard-courses, \.og-dashboard-library-levels \{[^}]*grid-template-columns:minmax\(0,1fr\)/);
     assert.match(css, /\.og-dashboard-library-level-group\[open\] \{ border-color:rgba\(183,207,185/);
 });
