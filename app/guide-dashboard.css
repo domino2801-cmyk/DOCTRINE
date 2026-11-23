@@ -238,6 +238,7 @@
 .og-dashboard-library-corrections summary { color:#d8b85b; cursor:pointer; font-size:12px; font-weight:800; }
 .og-dashboard-library-correction { display:grid; gap:7px; padding:9px 0; border-bottom:1px solid rgba(183,207,185,.12); }
 .og-dashboard-library-correction strong { color:#e6eee7; font-size:12px; }
+.og-dashboard-library-correction-stars { color:#e6c96f; font-size:11px; font-weight:800; }
 .og-dashboard-library-correction p { margin:0; color:#aebfb1; font-size:12px; }
 @media(max-width:800px) { .og-dashboard-library-grid { grid-template-columns:1fr; } }
 
