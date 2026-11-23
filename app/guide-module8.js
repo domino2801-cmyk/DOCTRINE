@@ -995,6 +995,12 @@
         }
         document.getElementById('guideReviewDecision').value = review.status === 'a_reprendre' ? 'a_reprendre' : 'valide';
         document.getElementById('guideReviewComment').value = review.comment || '';
+        const formObservationFields = document.getElementById('guideFormObservationFields');
+        const formObservation = document.getElementById('guideFormObservation');
+        const formEvidence = document.getElementById('guideFormEvidence');
+        if (formObservationFields) formObservationFields.hidden = submission.submission_type !== 'proposition';
+        if (formObservation) formObservation.value = review.form_observations || '';
+        if (formEvidence) formEvidence.value = review.form_evidence || '';
         savedReviewReport = review.status === 'valide' && review.reviewed_at
             ? createReviewReport(candidate, submission, review, review.reviewed_at)
             : null;
@@ -1050,41 +1056,6 @@
         return lines.join('\n');
     }
 
-    function ensureAiFormObservationInComment(suggestion) {
-        if (suggestion.submission_type !== 'proposition') return false;
-        const observation = String(suggestion.form_observations || '').trim();
-        if (!observation) return false;
-
-        const comment = document.getElementById('guideReviewComment');
-        if (!comment) return false;
-        const label = REVIEW_RUBRICS.proposition.formLabel;
-        const prefix = label.toLowerCase() + ' :';
-        const lines = comment.value.split(/\r?\n/);
-        if (lines.some(function (line) { return line.trim().toLowerCase().startsWith(prefix); })) {
-            return true;
-        }
-
-        let line = label + ' : ' + suggestion.form_grade + ' / 6 — ' + observation +
-            ' — Indice : ' + (suggestion.form_evidence || 'non repéré');
-        const existing = comment.value.split(/\r?\n/).filter(function (entry) {
-            return !entry.trim().toLowerCase().startsWith(prefix);
-        }).join('\n').trim();
-        const maxLength = Number(comment.maxLength) > 0 ? Number(comment.maxLength) : Infinity;
-
-        // L'observation obligatoire doit rester prioritaire, même si les anciens
-        // commentaires occupent déjà presque toute la capacité du champ.
-        if (line.length > maxLength) {
-            line = label + ' : ' + suggestion.form_grade + ' / 6 — ' + observation;
-        }
-        if (line.length > maxLength) return false;
-
-        const separator = existing ? '\n\n' : '';
-        const available = maxLength - line.length - separator.length;
-        const retainedComment = existing.slice(0, Math.max(0, available)).trimEnd();
-        comment.value = retainedComment ? retainedComment + '\n\n' + line : line;
-        markReviewDirty();
-        return true;
-    }
 
     function markReviewDirty() {
         reviewEditGeneration += 1;
@@ -1222,10 +1193,10 @@
                 markReviewDirty();
                 updateFinalGrade();
                 if (submission.submission_type === 'proposition') {
-                    const observationAdded = ensureAiFormObservationInComment(suggestion);
-                    if (!observationAdded) {
-                        setStatus(status, 'Observation du critère Forme non ajoutée automatiquement. Renseignez-la dans les commentaires avant l’export PDF.', 'error');
-                    }
+                    const formObservation = document.getElementById('guideFormObservation');
+                    const formEvidence = document.getElementById('guideFormEvidence');
+                    if (formObservation) formObservation.value = String(suggestion.form_observations || '').trim();
+                    if (formEvidence) formEvidence.value = String(suggestion.form_evidence || '').trim();
                 }
             }
             renderAiCorrection(suggestion);
@@ -1303,6 +1274,8 @@
                     };
                 }),
                 comment: saved.comment || '',
+                formObservations: saved.form_observations || '',
+                formEvidence: saved.form_evidence || '',
                 reviewedAt: saved.reviewed_at || reviewedAt || new Date().toISOString()
             };
         }).filter(Boolean);
@@ -1438,6 +1411,10 @@
         const contextGeneration = reviewContextGeneration;
         const editGeneration = reviewEditGeneration;
         const comment = document.getElementById('guideReviewComment').value.trim();
+        const formObservations = activeReviewSubmission.submission_type === 'proposition'
+            ? String(document.getElementById('guideFormObservation')?.value || '').trim() : '';
+        const formEvidence = activeReviewSubmission.submission_type === 'proposition'
+            ? String(document.getElementById('guideFormEvidence')?.value || '').trim() : '';
         const decision = document.getElementById('guideReviewDecision').value;
         const juryChecklist = collectJuryChecklist(activeReviewSubmission);
         if (button) button.disabled = true;
@@ -1453,6 +1430,8 @@
                     grade: totals.grade,
                     rubric_scores: totals.rubricScores,
                     jury_checklist: juryChecklist,
+                    form_observations: formObservations,
+                    form_evidence: formEvidence,
                     status: decision,
                     comment: comment
                 }
@@ -1466,6 +1445,8 @@
                     grade: savedRow?.grade ?? totals.grade,
                     rubric_scores: savedRow?.rubric_scores ?? totals.rubricScores,
                     jury_checklist: savedRow?.jury_checklist ?? juryChecklist,
+                    form_observations: savedRow?.form_observations ?? formObservations,
+                    form_evidence: savedRow?.form_evidence ?? formEvidence,
                     status: savedRow?.status ?? decision,
                     comment: savedRow?.comment ?? comment,
                     reviewed_at: savedRow?.reviewed_at || new Date().toISOString()
