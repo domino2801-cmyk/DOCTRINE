@@ -124,13 +124,13 @@ async function accesBibliothequePubliee(ids: string[], admin: boolean): Promise<
   if (!url || !cle) throw new Error('Configuration Supabase manquante');
   const headers = { apikey: cle, Authorization: `Bearer ${cle}` };
   for (const id of ids) {
-    const driveUrl = encodeURIComponent(`https://drive.google.com/drive/folders/${id}`);
-    const ex = await fetch(`${url}/rest/v1/guide_exercise_library?drive_url=eq.${driveUrl}&select=id,is_published`, { headers });
+    const driveIdFilter = encodeURIComponent(`*${id}*`);
+    const ex = await fetch(`${url}/rest/v1/guide_exercise_library?drive_url=like.${driveIdFilter}&select=id,is_published`, { headers });
     if (!ex.ok) throw new Error('Vérification de publication des exercices impossible');
     const exercices: { id: string; is_published: boolean }[] = await ex.json();
     if (exercices.length) return exercices.some((e) => e.is_published);
 
-    const co = await fetch(`${url}/rest/v1/guide_correction_library?drive_url=eq.${driveUrl}&select=id,exercise_id,is_published`, { headers });
+    const co = await fetch(`${url}/rest/v1/guide_correction_library?drive_url=like.${driveIdFilter}&select=id,exercise_id,is_published`, { headers });
     if (!co.ok) throw new Error('Vérification de publication des corrections impossible');
     const corrections: { id: string; exercise_id: string; is_published: boolean }[] = await co.json();
     if (corrections.length) {
