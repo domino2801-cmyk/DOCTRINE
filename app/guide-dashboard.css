@@ -141,7 +141,7 @@
 .og-dashboard-dossier-exports .og-dashboard-ai-action { width:100%; min-height:46px; justify-content:center; text-align:center; line-height:1.35; }
 @media(max-width:600px) { .og-dashboard-dossier-exports { grid-template-columns:minmax(0,1fr); } }
 .og-dashboard-ai-dossier { margin-top:12px; padding:12px; border:1px solid rgba(183,207,185,.16); border-radius:8px; background:rgba(0,0,0,.1); }
-.og-dashboard-ai-dossier h4 { margin:0 0 10px; color:#d8b85b; font-size:14px; }
+.og-dashboard-ai-dossier h4 { margin:0 0 10px; color:#fff; font-size:14px; font-weight:850; letter-spacing:.08em; text-shadow:0 1px 5px rgba(0,0,0,.3); }
 .og-dashboard-ai-card { display:grid; gap:7px; margin-top:9px; padding:12px; border:1px solid rgba(183,207,185,.16); border-radius:7px; background:rgba(255,255,255,.025); }
 .og-dashboard-ai-card > strong { color:#f2f5ee; }
 .og-dashboard-ai-state { margin:0; color:#9ed4a6; font-size:12px; font-weight:800; }
