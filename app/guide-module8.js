@@ -977,12 +977,13 @@
         activeReviewSubmission = submission;
         const dialog = document.getElementById('guideReviewDialog');
         const title = document.getElementById('guideReviewTitle');
+        const kicker = document.getElementById('guideReviewKicker');
         const reviewStatus = document.getElementById('guideReviewStatus');
         const aiResult = document.getElementById('guideAiCorrectionResult');
         const review = (submission.reviews || [])[0] || {};
         const rubric = rubricFor(submission);
-        if (title) title.textContent = candidateName(candidate.candidate) + ' — ' +
-            rubric.label + ' — Dossier ' + submission.dossier;
+        if (kicker) kicker.textContent = 'ÉVALUATION BM4 · DOSSIER ' + String(submission.dossier || '—');
+        if (title) title.textContent = rubric.label + ' — ' + candidateName(candidate.candidate);
         document.getElementById('guideReviewSubmissionId').value = submission.id;
         renderReviewCriteria(submission, review);
         renderJuryChecklist(submission, review);
