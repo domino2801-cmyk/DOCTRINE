@@ -137,6 +137,9 @@
 .og-dashboard-cv-download:disabled { opacity:.6; cursor:wait; }
 
 /* Correction IA par dossier — réutilise la grille interactive du Module 8. */
+.og-dashboard-dossier-exports { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin:0 0 12px; }
+.og-dashboard-dossier-exports .og-dashboard-ai-action { width:100%; min-height:46px; justify-content:center; text-align:center; line-height:1.35; }
+@media(max-width:600px) { .og-dashboard-dossier-exports { grid-template-columns:minmax(0,1fr); } }
 .og-dashboard-ai-dossier { margin-top:12px; padding:12px; border:1px solid rgba(183,207,185,.16); border-radius:8px; background:rgba(0,0,0,.1); }
 .og-dashboard-ai-dossier h4 { margin:0 0 10px; color:#d8b85b; font-size:14px; }
 .og-dashboard-ai-card { display:grid; gap:7px; margin-top:9px; padding:12px; border:1px solid rgba(183,207,185,.16); border-radius:7px; background:rgba(255,255,255,.025); }
