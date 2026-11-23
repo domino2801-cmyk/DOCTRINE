@@ -161,13 +161,20 @@ Deno.serve(async (req) => {
     if (action === 'list') {
       if (fichier.mimeType !== FOLDER) return erreur(400, 'Ce n\'est pas un dossier');
       const q = encodeURIComponent(`'${id}' in parents and trashed = false`);
-      const liste = await drive(
-        `/files?q=${q}&fields=files(id,name,mimeType)&orderBy=folder,name&pageSize=200&supportsAllDrives=true&includeItemsFromAllDrives=true`,
-        jeton,
-      );
-      if (!liste.ok) return erreur(502, 'Erreur Google Drive');
-      const d = await liste.json();
-      return reponse(JSON.stringify({ name: fichier.name, files: d.files || [] }), 200, { 'Content-Type': 'application/json' });
+      const fichiers: { id: string; name: string; mimeType: string }[] = [];
+      let pageToken = '';
+      do {
+        const pagination = pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '';
+        const liste = await drive(
+          `/files?q=${q}&fields=nextPageToken,files(id,name,mimeType)&orderBy=folder,name&pageSize=1000&supportsAllDrives=true&includeItemsFromAllDrives=true${pagination}`,
+          jeton,
+        );
+        if (!liste.ok) return erreur(502, 'Erreur Google Drive');
+        const page = await liste.json();
+        fichiers.push(...(page.files || []));
+        pageToken = page.nextPageToken || '';
+      } while (pageToken);
+      return reponse(JSON.stringify({ name: fichier.name, files: fichiers }), 200, { 'Content-Type': 'application/json' });
     }
 
     if (fichier.mimeType === FOLDER) return erreur(400, 'Ce document est un dossier');
