@@ -2176,3 +2176,79 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
 @media (max-width: 560px) {
     #modal-module6 .modal-list > #module6CvCard { padding: 14px 12px !important; }
 }
+
+
+/* Informations légales : panneaux repliables accessibles depuis le pied de page */
+.anc-legal-footer {
+    margin: 34px auto 0;
+    padding: 18px 20px max(18px, env(safe-area-inset-bottom));
+    width: min(100% - 32px, 1180px);
+    color: #e9ecdf;
+    border-top: 1px solid rgba(214, 222, 194, .24);
+    font-size: 13px;
+}
+.anc-legal-disclosures {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 22px;
+}
+.anc-legal-disclosure {
+    min-width: min(100%, 230px);
+    max-width: 760px;
+}
+.anc-legal-disclosure summary {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    color: #f4f6ed;
+    font-weight: 700;
+    border: 1px solid rgba(214, 222, 194, .35);
+    border-radius: 7px;
+    background: rgba(25, 39, 29, .62);
+    transition: background .18s ease, border-color .18s ease;
+}
+.anc-legal-disclosure summary:hover,
+.anc-legal-disclosure[open] summary {
+    background: rgba(71, 91, 65, .85);
+    border-color: rgba(214, 222, 194, .7);
+}
+.anc-legal-disclosure summary:focus-visible {
+    outline: 2px solid #d9e7b7;
+    outline-offset: 3px;
+}
+.anc-legal-content {
+    margin: 12px auto 0;
+    padding: 16px 18px;
+    color: #263326;
+    background: #f3f4ec;
+    border: 1px solid #cbd2bd;
+    border-radius: 9px;
+    line-height: 1.6;
+}
+.anc-legal-content h2 {
+    margin: 0 0 10px;
+    color: #263b2a;
+    font-size: 16px;
+}
+.anc-legal-content p { margin: 8px 0; }
+.anc-legal-content .anc-legal-note {
+    padding-top: 8px;
+    border-top: 1px solid #d5dacb;
+    color: #59644f;
+    font-size: 12px;
+}
+.anc-legal-copyright {
+    margin: 14px 0 0;
+    color: rgba(233, 236, 223, .72);
+    text-align: center;
+    font-size: 11px;
+}
+@media (max-width: 600px) {
+    .anc-legal-footer { width: calc(100% - 20px); padding-inline: 8px; }
+    .anc-legal-disclosures { flex-direction: column; align-items: center; }
+    .anc-legal-disclosure { width: 100%; }
+    .anc-legal-disclosure summary { width: 100%; justify-content: center; box-sizing: border-box; }
+}
