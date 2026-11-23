@@ -48,7 +48,7 @@
                 : Promise.resolve(false);
             return profileCheck.then(function (isOg) {
                 if (isOg) return true;
-                return fetch(auth().url.replace(/\\/$/, '') + '/rest/v1/rpc/get_current_user_specialty', {
+                return fetch(auth().url.replace(/\/$/, '') + '/rest/v1/rpc/get_current_user_specialty', {
                     method: 'POST',
                     headers: {
                         apikey: auth().key,
