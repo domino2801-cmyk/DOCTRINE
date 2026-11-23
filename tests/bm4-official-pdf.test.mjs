@@ -156,6 +156,47 @@ test("génère réellement la grille BM4 et vérifie les champs, notes et observ
     assert.equal(productionPdf.getForm().getFields().length, 0, "les champs doivent être aplatis dans le PDF final");
 });
 
+test("récupère l'observation de forme malgré les variantes de format des commentaires", async () => {
+    const variants = [
+        "Forme, Présentation & Langue : 5,5 / 6 — Observation issue de la synthèse IA — Indice : document relu",
+        "1. Forme, Présentation & Langue : Observation saisie par le guide",
+        "forme présentation langue: — Observation avec tiret"
+    ];
+
+    for (const comment of variants) {
+        const variantReport = structuredClone(report);
+        variantReport.evaluations[0].comment = comment;
+        const blob = await createOfficialBm4Pdf(variantReport, {
+            PDFLib,
+            templateBytes,
+            flatten: false
+        });
+        const pdf = await PDFDocument.load(new Uint8Array(await blob.arrayBuffer()));
+        assert.match(
+            pdf.getForm().getTextField("obs_em_1").getText(),
+            /Observation/,
+            "l'observation doit être extraite même si sa présentation varie"
+        );
+    }
+});
+
+test("utilise l'observation de forme de secours si le commentaire ne la contient pas", async () => {
+    const fallbackReport = structuredClone(report);
+    fallbackReport.evaluations[0].comment = "Introduction : — Contexte bien posé.";
+    fallbackReport.evaluations[0].formObservations = "Observation de forme enregistrée séparément.";
+
+    const blob = await createOfficialBm4Pdf(fallbackReport, {
+        PDFLib,
+        templateBytes,
+        flatten: false
+    });
+    const pdf = await PDFDocument.load(new Uint8Array(await blob.arrayBuffer()));
+    assert.equal(
+        pdf.getForm().getTextField("obs_em_1").getText(),
+        "Observation de forme enregistrée séparément."
+    );
+});
+
 test("signale explicitement une bibliothèque PDF absente", async () => {
     await assert.rejects(
         () => createOfficialBm4Pdf(report, { PDFLib: null, templateBytes }),
