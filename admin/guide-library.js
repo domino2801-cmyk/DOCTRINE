@@ -4,10 +4,10 @@
     var EXERCISES = 'guide_exercise_library';
     var CORRECTIONS = 'guide_correction_library';
     var LEVELS = [
-        { value: '1', label: '★☆☆☆ — Fondamentaux' },
-        { value: '2', label: '★★☆☆ — Application' },
-        { value: '3', label: '★★★☆ — Maîtrise' },
-        { value: '4', label: '★★★★ — Expertise' }
+        { value: '1', label: '★ — Initiation' },
+        { value: '2', label: '★★ — Bases' },
+        { value: '3', label: '★★★ — Approfondissement' },
+        { value: '4', label: '★★★★ — Défi' }
     ];
     var root, exerciseList, correctionList, status, formPanel, formTitle, form;
     var exercises = [], corrections = [], activeType = '', activeId = '';
@@ -57,7 +57,7 @@
     }
     function stars(level) {
         var value = Math.max(1, Math.min(4, Number(level) || 1));
-        return '★'.repeat(value) + '☆'.repeat(4 - value);
+        return '★'.repeat(value);
     }
     function setStatus(message, error) {
         status.textContent = message || '';
