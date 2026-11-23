@@ -868,6 +868,23 @@
                 input.value = String(savedScore);
             }
             label.appendChild(input);
+            const feedback = element('div', 'guide-review-criterion-feedback');
+            const observation = document.createElement('textarea');
+            observation.rows = 2;
+            observation.maxLength = 500;
+            observation.placeholder = 'Observation du critère';
+            observation.dataset.rubricObservation = criterion.key;
+            observation.setAttribute('aria-label', 'Observation — ' + criterion.label);
+            observation.value = String(review?.rubric_observations?.[criterion.key] || '');
+            const evidence = document.createElement('textarea');
+            evidence.rows = 2;
+            evidence.maxLength = 300;
+            evidence.placeholder = 'Indice documentaire vérifiable (page, passage, référence)';
+            evidence.dataset.rubricEvidence = criterion.key;
+            evidence.setAttribute('aria-label', 'Indice — ' + criterion.label);
+            evidence.value = String(review?.rubric_evidence?.[criterion.key] || '');
+            feedback.append(observation, evidence);
+            label.appendChild(feedback);
             container.appendChild(label);
         });
         if (notice) {
@@ -966,6 +983,8 @@
     function collectReviewScores() {
         const rubric = rubricFor(activeReviewSubmission);
         const rubricScores = {};
+        const rubricObservations = {};
+        const rubricEvidence = {};
         let formGrade = 0;
         let contentGrade = 0;
         let complete = true;
@@ -982,11 +1001,17 @@
                 return;
             }
             rubricScores[criterion.key] = score;
+            const observation = document.querySelector('[data-rubric-observation="' + criterion.key + '"]');
+            const evidence = document.querySelector('[data-rubric-evidence="' + criterion.key + '"]');
+            rubricObservations[criterion.key] = String(observation?.value || '').trim();
+            rubricEvidence[criterion.key] = String(evidence?.value || '').trim();
             if (criterion.group === 'form') formGrade += score;
             else contentGrade += score;
         });
         return {
             rubricScores: rubricScores,
+            rubricObservations: rubricObservations,
+            rubricEvidence: rubricEvidence,
             formGrade: Math.round(formGrade * 100) / 100,
             contentGrade: Math.round(contentGrade * 100) / 100,
             grade: Math.round((formGrade + contentGrade) * 100) / 100,
@@ -1023,7 +1048,7 @@
         const formObservationFields = document.getElementById('guideFormObservationFields');
         const formObservation = document.getElementById('guideFormObservation');
         const formEvidence = document.getElementById('guideFormEvidence');
-        if (formObservationFields) formObservationFields.hidden = submission.submission_type !== 'proposition';
+        if (formObservationFields) formObservationFields.hidden = true;
         if (formObservation) formObservation.value = review.form_observations || '';
         if (formEvidence) formEvidence.value = review.form_evidence || '';
         savedReviewReport = review.status === 'valide' && review.reviewed_at
@@ -1039,6 +1064,37 @@
         setStatus(reviewStatus, '');
         if (dialog && !dialog.open) dialog.showModal();
         return generation;
+    }
+
+    function suggestionRubricDetails(suggestion) {
+        const observations = {};
+        const evidence = {};
+        if (suggestion.submission_type === 'support_oral') {
+            const first = suggestion.oral_operatoire || {
+                observation: suggestion.form_observations,
+                evidence: suggestion.form_evidence
+            };
+            observations.operatoire_forme = String(first.observation || '').trim();
+            evidence.operatoire_forme = String(first.evidence || '').trim();
+            const oralKeys = ['introduction', 'argumentaire', 'conclusion'];
+            const oralItems = [suggestion.oral_introduction, suggestion.oral_argumentaire, suggestion.oral_conclusion];
+            oralKeys.forEach(function (key, index) {
+                const item = oralItems[index] || suggestion.criteria?.[index] || {};
+                observations[key] = String(item.observation || '').trim();
+                evidence[key] = String(item.evidence || '').trim();
+            });
+        } else {
+            observations.form = String(suggestion.form_observations || '').trim();
+            evidence.form = String(suggestion.form_evidence || '').trim();
+            rubricFor({ submission_type: 'proposition' }).criteria
+                .filter(function (criterion) { return criterion.key !== 'form'; })
+                .forEach(function (criterion, index) {
+                    const item = suggestion.criteria?.[index] || {};
+                    observations[criterion.key] = String(item.observation || '').trim();
+                    evidence[criterion.key] = String(item.evidence || '').trim();
+                });
+        }
+        return { observations: observations, evidence: evidence };
     }
 
     function aiCriteriaForDisplay(suggestion) {
@@ -1215,6 +1271,13 @@
                     const suggestedCriterion = suggestion.criteria[index];
                     if (input && suggestedCriterion) input.value = String(suggestedCriterion.grade);
                 });
+                const structured = suggestionRubricDetails(suggestion);
+                Object.keys(structured.observations).forEach(function (key) {
+                    const observation = document.querySelector('[data-rubric-observation="' + key + '"]');
+                    const evidence = document.querySelector('[data-rubric-evidence="' + key + '"]');
+                    if (observation) observation.value = structured.observations[key];
+                    if (evidence) evidence.value = structured.evidence[key];
+                });
                 markReviewDirty();
                 updateFinalGrade();
                 if (submission.submission_type === 'proposition') {
@@ -1290,6 +1353,8 @@
                 label: rubric.label,
                 grade: reviewGrade(saved),
                 rubricScores: saved.rubric_scores || {},
+                rubricObservations: saved.rubric_observations || {},
+                rubricEvidence: saved.rubric_evidence || {},
                 criteria: rubric.criteria,
                 juryChecklist: (JURY_CHECKLISTS[item.submission_type] || []).map(function (checklistItem) {
                     return {
@@ -1299,8 +1364,8 @@
                     };
                 }),
                 comment: saved.comment || '',
-                formObservations: saved.form_observations || '',
-                formEvidence: saved.form_evidence || '',
+                formObservations: saved.form_observations || saved.rubric_observations?.form || saved.rubric_observations?.operatoire_forme || '',
+                formEvidence: saved.form_evidence || saved.rubric_evidence?.form || saved.rubric_evidence?.operatoire_forme || '',
                 reviewedAt: saved.reviewed_at || reviewedAt || new Date().toISOString()
             };
         }).filter(Boolean);
@@ -1454,6 +1519,8 @@
                     content_grade: totals.contentGrade,
                     grade: totals.grade,
                     rubric_scores: totals.rubricScores,
+                    rubric_observations: totals.rubricObservations,
+                    rubric_evidence: totals.rubricEvidence,
                     jury_checklist: juryChecklist,
                     form_observations: formObservations,
                     form_evidence: formEvidence,
@@ -1469,6 +1536,8 @@
                     content_grade: savedRow?.content_grade ?? totals.contentGrade,
                     grade: savedRow?.grade ?? totals.grade,
                     rubric_scores: savedRow?.rubric_scores ?? totals.rubricScores,
+                    rubric_observations: savedRow?.rubric_observations ?? totals.rubricObservations,
+                    rubric_evidence: savedRow?.rubric_evidence ?? totals.rubricEvidence,
                     jury_checklist: savedRow?.jury_checklist ?? juryChecklist,
                     form_observations: savedRow?.form_observations ?? formObservations,
                     form_evidence: savedRow?.form_evidence ?? formEvidence,
