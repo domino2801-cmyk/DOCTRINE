@@ -153,6 +153,9 @@
 /* Fenêtre native de consultation et d'évaluation dans l'espace Officier Guide. */
 .og-dashboard-review-dialog { width:min(920px,calc(100vw - 28px)); max-width:920px; max-height:90vh; padding:0; border:1px solid rgba(183,207,185,.3); border-radius:12px; background:#17251e; color:#f2f5ee; box-shadow:0 24px 80px rgba(0,0,0,.55); }
 .og-dashboard-review-dialog::backdrop { background:rgba(3,10,7,.78); backdrop-filter:blur(3px); }
+.og-dashboard-review-dialog select option { background:#26392f; color:#f2f5ee; }
+.og-dashboard-review-dialog input::placeholder,.og-dashboard-review-dialog textarea::placeholder { color:#aebdb1; }
+.og-dashboard-review-dialog input:focus,.og-dashboard-review-dialog select:focus,.og-dashboard-review-dialog textarea:focus { outline:2px solid #d8b85b; outline-offset:2px; }
 .og-dashboard-review-heading { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; align-items:flex-start; gap:18px; padding:20px 22px; border-bottom:1px solid rgba(183,207,185,.2); background:#1c2d24; }
 .og-dashboard-review-kicker { margin:0 0 5px; color:#d8b85b; font-size:11px; font-weight:800; letter-spacing:.1em; }
 .og-dashboard-review-heading h2 { margin:0; font-size:19px; }
@@ -162,7 +165,7 @@
 .og-dashboard-review-criteria { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
 .og-dashboard-review-criterion,.og-dashboard-review-field { display:grid; gap:7px; color:#e6eee7; font-size:13px; font-weight:700; }
 .og-dashboard-review-criterion { padding:12px; border:1px solid rgba(183,207,185,.2); border-radius:7px; background:rgba(255,255,255,.035); }
-.og-dashboard-review-criterion input,.og-dashboard-review-field select,.og-dashboard-review-field textarea { width:100%; min-height:40px; padding:9px 10px; border:1px solid #607667; border-radius:6px; background:#f4f7f3; color:#18251e; font:inherit; }
+.og-dashboard-review-criterion input,.og-dashboard-review-field select,.og-dashboard-review-field textarea { width:100%; min-height:40px; padding:9px 10px; border:1px solid #607667; border-radius:6px; background:#26392f; color:#f2f5ee; caret-color:#e6c96f; color-scheme:dark; font:inherit; }
 .og-dashboard-review-total { margin:0; color:#e6c96f; font-size:17px; font-weight:850; }
 .og-dashboard-review-actions { display:flex; flex-wrap:wrap; gap:9px; }
 .og-dashboard-review-ai { padding:14px; border:1px solid rgba(216,184,91,.35); border-radius:8px; background:rgba(216,184,91,.07); }
