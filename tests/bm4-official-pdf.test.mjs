@@ -160,7 +160,9 @@ test("récupère l'observation de forme malgré les variantes de format des comm
     const variants = [
         "Forme, Présentation & Langue : 5,5 / 6 — Observation issue de la synthèse IA — Indice : document relu",
         "1. Forme, Présentation & Langue : Observation saisie par le guide",
-        "forme présentation langue: — Observation avec tiret"
+        "forme présentation langue: — Observation avec tiret",
+        "Forme, présentation et langue (/6) : 5,5/6 – Observation avec libellé complet",
+        "1. Forme, Présentation & Langue (/6) : Observation saisie sans note"
     ];
 
     for (const comment of variants) {
