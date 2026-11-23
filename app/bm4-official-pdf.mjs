@@ -154,13 +154,17 @@ function formatGrade(value) {
         : Number(value).toLocaleString('fr-FR', { maximumFractionDigits: 2 });
 }
 
-function observationFor(comment, label) {
-    const line = String(comment || '').split(/\r?\n/).find((item) =>
-        item.trim().toLowerCase().startsWith(String(label || '').trim().toLowerCase() + ' :')
-    );
-    if (!line) return '';
+function observationFor(comment, label, fallback = '') {
+    const normalizedLabel = String(label || '').trim().toLowerCase();
+    const line = String(comment || '').split(/\r?\n/).find((item) => {
+        const normalizedLine = item.trim().toLowerCase();
+        return normalizedLine.startsWith(normalizedLabel + ' :') ||
+            normalizedLine.startsWith(normalizedLabel + ':');
+    });
+    if (!line) return String(fallback || '').trim();
     const separator = line.indexOf(' — ');
-    return separator >= 0 ? line.slice(separator + 3).trim() : '';
+    if (separator < 0) return String(fallback || '').trim();
+    return line.slice(separator + 3).replace(/\s+—\s+Indice\s*:.*/i, '').trim() || String(fallback || '').trim();
 }
 
 function formatDebriefSection(value) {
@@ -242,7 +246,13 @@ export async function createOfficialBm4Pdf(report, options = {}) {
         proposition.criteria.forEach((criterion, index) => {
             const number = index + 1;
             setFieldText('note_em_' + number, formatGrade(proposition.rubricScores?.[criterion.key]));
-            setFieldText('obs_em_' + number, observationFor(proposition.comment, criterion.label));
+            const observation = observationFor(proposition.comment, criterion.label, criterion.key === 'form'
+                ? proposition.formObservations
+                : '');
+            if (criterion.key === 'form' && !observation) {
+                throw new Error('Export PDF impossible : l’observation obligatoire du critère « Forme, Présentation & Langue » (/6) est absente. Relancez la correction IA ou renseignez cette observation dans les commentaires, puis enregistrez.');
+            }
+            setFieldText('obs_em_' + number, observation);
         });
         setFieldText('total_em', formatGrade(proposition.grade));
         // Dans le débriefing, bilan_em est la case de note (70 %), pas le commentaire.
