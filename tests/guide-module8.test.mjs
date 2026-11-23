@@ -21,6 +21,7 @@ const [sql, edgeFunction, index, page, styles, script, appScript, adminScript, v
     read("app/styles.css")
 ]);
 const progressSyncSql = await read("supabase/guide-progress-harmonization.sql");
+const correctionAiFunction = await read("supabase/functions/correct-fiche-ai/index.ts");
 
 test("les fonctions de cohorte autorisent les admins et limitent les guides aux rattachements", () => {
     assert.match(sql, /raw_app_meta_data[\s\S]*'role', p_role/);
@@ -432,10 +433,10 @@ test("l’observation et l’indice du critère Forme sont persistés séparéme
 });
 
 test("la correction IA exige observation et indice pour chacun des neuf critères BM4", () => {
-    assert.match(edgeFunction, /criteria\.some\(\(criterion\) =>[\s\S]*!criterion\.observation\.trim\(\) \|\| !criterion\.evidence\.trim\(\)/);
+    assert.match(correctionAiFunction, /criteria\.some\(\(criterion\) =>[\s\S]*!criterion\.observation\.trim\(\) \|\| !criterion\.evidence\.trim\(\)/);
     assert.match(edgeFunction, /\[operatoire, introduction, argumentaire, conclusion\]\.some\(\(criterion\) =>[\s\S]*!criterion\.observation\.trim\(\) \|\| !criterion\.evidence\.trim\(\)/);
-    assert.match(edgeFunction, /Observation ou indice documentaire absent pour un critère de la fiche de proposition/);
-    assert.match(edgeFunction, /Observation ou indice documentaire absent pour un critère de la fichette orale/);
+    assert.match(correctionAiFunction, /Observation ou indice documentaire absent pour un critère de la fiche de proposition/);
+    assert.match(correctionAiFunction, /Observation ou indice documentaire absent pour un critère de la fichette orale/);
 });
 
 test("la migration dédiée crée les deux dictionnaires et reprend les anciennes observations Forme", async () => {
