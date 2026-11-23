@@ -41,6 +41,11 @@ CREATE INDEX IF NOT EXISTS guide_correction_library_exercise_idx
 ALTER TABLE public.guide_exercise_library ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.guide_correction_library ENABLE ROW LEVEL SECURITY;
 
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE
+    public.guide_exercise_library,
+    public.guide_correction_library
+TO authenticated;
+
 DROP POLICY IF EXISTS guide_exercise_library_read ON public.guide_exercise_library;
 CREATE POLICY guide_exercise_library_read
     ON public.guide_exercise_library
