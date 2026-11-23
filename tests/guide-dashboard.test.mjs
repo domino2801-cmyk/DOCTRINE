@@ -137,4 +137,6 @@ test('l’interface possède des cartes, accordéons et styles responsive isolé
     assert.match(css, /\.og-dashboard-oral-fields/);
     assert.match(css, /\.og-dashboard-review-dialog/);
     assert.match(css, /\.og-dashboard-review-criteria/);
+    assert.match(css, /background:#26392f; color:#f2f5ee; caret-color:#e6c96f; color-scheme:dark/);
+    assert.match(css, /\.og-dashboard-review-dialog select option \{ background:#26392f; color:#f2f5ee; \}/);
 });
