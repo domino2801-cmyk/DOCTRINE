@@ -20,6 +20,14 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(script, /getElementById\('btn-mod' \+ id\)/);
     assert.match(script, /module-nav-button\[onclick\]/);
     assert.match(script, /setGuideModulesHidden\(false\)/);
+    assert.match(html, /id="corpusPreface"/);
+    assert.match(script, /function renderGuideCorpus\(\)/);
+    assert.match(script, /Encadrer un candidat au Brevet Militaire de 4e niveau/);
+    assert.match(script, /Structurer la durée/);
+    assert.match(script, /Affûter la méthode/);
+    assert.match(script, /Forger la posture/);
+    assert.match(script, /Lauréat du BM4 2025 — Spécialité « RHL »/);
+    assert.match(script, /if \(isGuide\) renderGuideCorpus\(\)/);
     assert.match(script, /RATTACHER UN CANDIDAT/);
     assert.match(script, /openAssignCandidateDialog/);
     assert.match(script, /FICHE RETEX DOCTRINE/);
