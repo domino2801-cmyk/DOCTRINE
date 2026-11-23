@@ -330,6 +330,14 @@ function strictJsonSchema(schema: Record<string, unknown>): Record<string, unkno
     return clone;
 }
 
+const GEMINI_FALLBACK_MAX_ATTEMPTS = 3;
+const GEMINI_FALLBACK_RETRY_DELAYS_MS = [1200, 3000];
+const GEMINI_RETRYABLE_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
+
+function wait(milliseconds: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
 async function requestGeminiFallback(
     apiKey: string,
     model: string,
@@ -349,29 +357,57 @@ async function requestGeminiFallback(
         })),
         { text: analysisPrompt }
     ];
-    const response = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent",
-        {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-            body: JSON.stringify({
-                systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
-                contents: [{ role: "user", parts }],
-                generationConfig: { responseMimeType: "application/json", responseSchema: schema }
-            }),
-            signal: AbortSignal.timeout(60000)
+    const url = "https://generativelanguage.googleapis.com/v1beta/models/" +
+        encodeURIComponent(model) + ":generateContent";
+    const requestBody = JSON.stringify({
+        systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+        contents: [{ role: "user", parts }],
+        generationConfig: { responseMimeType: "application/json", responseSchema: schema }
+    });
+
+    for (let attempt = 1; attempt <= GEMINI_FALLBACK_MAX_ATTEMPTS; attempt++) {
+        let response: Response;
+        try {
+            response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+                body: requestBody,
+                signal: AbortSignal.timeout(60000)
+            });
+        } catch (error) {
+            if (attempt >= GEMINI_FALLBACK_MAX_ATTEMPTS) throw error;
+            const delay = GEMINI_FALLBACK_RETRY_DELAYS_MS[attempt - 1];
+            console.warn("Gemini secondary model request failed; retrying:", model,
+                "attempt:", attempt, "of", GEMINI_FALLBACK_MAX_ATTEMPTS,
+                "delay_ms:", delay, "error:", error);
+            await wait(delay);
+            continue;
         }
-    );
-    if (!response.ok) {
+
+        if (response.ok) {
+            const payload: unknown = await response.json();
+            return extractGenerateContentText(payload);
+        }
+
         const detail = await response.text().catch(() => "");
         console.error("Gemini secondary model returned HTTP", response.status, "model:", model,
+            "attempt:", attempt, "of", GEMINI_FALLBACK_MAX_ATTEMPTS,
             "detail:", detail.slice(0, 2000));
-        throw new Error("Gemini de secours indisponible (HTTP " + response.status + ").");
-    }
-    const payload: unknown = await response.json();
-    return extractGenerateContentText(payload);
-}
 
+        if (!GEMINI_RETRYABLE_STATUSES.has(response.status) ||
+            attempt >= GEMINI_FALLBACK_MAX_ATTEMPTS) {
+            throw new Error("Gemini de secours indisponible (HTTP " + response.status + ").");
+        }
+
+        const delay = GEMINI_FALLBACK_RETRY_DELAYS_MS[attempt - 1];
+        console.warn("Retrying Gemini secondary model after transient HTTP error:",
+            response.status, "model:", model, "next_attempt:", attempt + 1,
+            "delay_ms:", delay);
+        await wait(delay);
+    }
+
+    throw new Error("Gemini de secours indisponible après plusieurs tentatives.");
+}
 
 // Identifiants des 16 dossiers Google Drive de référence, un par sujet.
 const SUBJECT_DRIVE_FOLDER_IDS: Record<number, string> = {
