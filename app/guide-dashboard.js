@@ -43,6 +43,40 @@
                 (admin || role === 'guide' || role === 'officier_guide' || specialty === 'OG'));
         }).catch(function () { return false; });
     }
+
+    function applyGuideModuleVisibility() {
+        var moduleIds = ['1', '2', '5', '6', '7'];
+        if (!auth() || typeof auth().jeton !== 'function') {
+            setGuideModulesHidden(false);
+            return;
+        }
+        auth().jeton().then(function (token) {
+            var claims = token && decodeClaims(token);
+            var meta = claims && claims.app_metadata || {};
+            var role = String(meta.role || '').trim().toLowerCase();
+            var specialty = String(meta.specialty || '').trim().toUpperCase();
+            var admin = role === 'admin' || meta.bm4_admin === true ||
+                meta.bm4_admin === 'true' || meta.bm4_admin === 1 || meta.bm4_admin === '1' ||
+                (typeof auth().estAdmin === 'function' && auth().estAdmin());
+            var isGuide = !!(claims && claims.sub && !admin &&
+                (role === 'guide' || role === 'officier_guide' || specialty === 'OG'));
+            setGuideModulesHidden(isGuide);
+        }).catch(function () { setGuideModulesHidden(false); });
+    }
+
+    function setGuideModulesHidden(hidden) {
+        var ids = ['1', '2', '5', '6', '7'];
+        ids.forEach(function (id) {
+            var button = document.getElementById('btn-mod' + id);
+            var item = button && button.closest('li');
+            if (item) item.hidden = hidden;
+        });
+        // Empêche aussi d'atteindre ces modules par les flèches précédent/suivant.
+        document.querySelectorAll('.module-nav-button[onclick]').forEach(function (button) {
+            var match = button.getAttribute('onclick').match(/navigateModule\\(['"]module(1|2|5|6|7)['"]\\)/);
+            if (match) button.hidden = hidden;
+        });
+    }
     function api(path, options) {
         options = options || {};
         return auth().jeton().then(function (token) {
@@ -1096,11 +1130,16 @@
     }
     function init() {
         updateTrigger();
-        document.addEventListener('doctrine:login', updateTrigger);
+        applyGuideModuleVisibility();
+        document.addEventListener('doctrine:login', function () {
+            updateTrigger();
+            applyGuideModuleVisibility();
+        });
         document.addEventListener('doctrine:logout', function () {
             if (root) root.hidden = true;
             var item = document.getElementById('guideDashboardNav');
             if (item) item.hidden = true;
+            setGuideModulesHidden(false);
         });
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
