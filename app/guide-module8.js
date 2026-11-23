@@ -1064,12 +1064,24 @@
             return true;
         }
 
-        const line = label + ' : ' + suggestion.form_grade + ' / 6 — ' + observation +
+        let line = label + ' : ' + suggestion.form_grade + ' / 6 — ' + observation +
             ' — Indice : ' + (suggestion.form_evidence || 'non repéré');
-        const existing = comment.value.trim();
-        const next = existing ? existing + '\n\n' + line : line;
-        if (next.length > comment.maxLength) return false;
-        comment.value = next;
+        const existing = comment.value.split(/\r?\n/).filter(function (entry) {
+            return !entry.trim().toLowerCase().startsWith(prefix);
+        }).join('\n').trim();
+        const maxLength = Number(comment.maxLength) > 0 ? Number(comment.maxLength) : Infinity;
+
+        // L'observation obligatoire doit rester prioritaire, même si les anciens
+        // commentaires occupent déjà presque toute la capacité du champ.
+        if (line.length > maxLength) {
+            line = label + ' : ' + suggestion.form_grade + ' / 6 — ' + observation;
+        }
+        if (line.length > maxLength) return false;
+
+        const separator = existing ? '\n\n' : '';
+        const available = maxLength - line.length - separator.length;
+        const retainedComment = existing.slice(0, Math.max(0, available)).trimEnd();
+        comment.value = retainedComment ? retainedComment + '\n\n' + line : line;
         markReviewDirty();
         return true;
     }
