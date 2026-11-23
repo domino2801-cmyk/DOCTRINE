@@ -8,6 +8,9 @@
     var metricsNode = null;
     var candidatesNode = null;
     var coursesNode = null;
+    var exerciseLibraryNode = null;
+    var exerciseLibraryItems = [];
+    var correctionLibraryItems = [];
     var searchNode = null;
     var candidates = [];
     var courses = [];
@@ -1023,6 +1026,89 @@
             candidatesNode.append(card);
         });
     }
+    function renderExerciseLibraries() {
+        if (!exerciseLibraryNode) return;
+        exerciseLibraryNode.replaceChildren();
+        var filter = node('select', 'og-dashboard-library-filter');
+        filter.setAttribute('aria-label', 'Filtrer les exercices par difficulté');
+        [
+            ['', 'Toutes les difficultés'],
+            ['1', '★☆☆☆ — Fondamentaux'],
+            ['2', '★★☆☆ — Application'],
+            ['3', '★★★☆ — Maîtrise'],
+            ['4', '★★★★ — Expertise']
+        ].forEach(function (entry) {
+            var option = node('option', '', entry[1]);
+            option.value = entry[0];
+            filter.append(option);
+        });
+        var list = node('div', 'og-dashboard-library-grid');
+        function render() {
+            list.replaceChildren();
+            var selected = filter.value;
+            var rows = exerciseLibraryItems.filter(function (exercise) {
+                return !selected || String(exercise.difficulty_level) === selected;
+            });
+            if (!rows.length) {
+                list.append(node('p', 'og-dashboard-empty', 'Aucun exercice publié pour ce filtre.'));
+                return;
+            }
+            rows.forEach(function (exercise) {
+                var card = node('article', 'og-dashboard-library-card');
+                var level = Number(exercise.difficulty_level) || 1;
+                card.append(node('span', 'og-dashboard-library-stars', '★'.repeat(level) + '☆'.repeat(4 - level) +
+                    ' · ' + ['Fondamentaux', 'Application', 'Maîtrise', 'Expertise'][level - 1]));
+                card.append(node('h4', '', exercise.title));
+                if (exercise.category) card.append(node('span', 'og-dashboard-library-category', exercise.category));
+                if (exercise.description) card.append(node('p', '', exercise.description));
+                var actions = node('div', 'og-dashboard-library-actions');
+                var open = node('a', 'og-dashboard-download', 'Ouvrir l’exercice');
+                open.href = exercise.drive_url;
+                open.target = '_blank';
+                open.rel = 'noopener noreferrer';
+                actions.append(open);
+                var related = correctionLibraryItems.filter(function (correction) {
+                    return correction.exercise_id === exercise.id;
+                });
+                if (related.length) {
+                    var details = node('details', 'og-dashboard-library-corrections');
+                    var summary = node('summary', '', 'Corrections disponibles (' + related.length + ')');
+                    details.append(summary);
+                    related.forEach(function (correction) {
+                        var line = node('div', 'og-dashboard-library-correction');
+                        var title = node('strong', '', correction.title);
+                        var link = node('a', 'og-dashboard-download', 'Ouvrir la correction');
+                        link.href = correction.drive_url;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        line.append(title, link);
+                        if (correction.description) line.append(node('p', '', correction.description));
+                        details.append(line);
+                    });
+                    card.append(details);
+                }
+                card.append(actions);
+                list.append(card);
+            });
+        }
+        filter.addEventListener('change', render);
+        exerciseLibraryNode.append(filter, list);
+        render();
+    }
+    function loadExerciseLibraries() {
+        if (!exerciseLibraryNode) return Promise.resolve();
+        return Promise.allSettled([
+            api('guide_exercise_library?select=id,title,category,description,drive_url,difficulty_level,sort_order&is_published=eq.true&order=difficulty_level.asc,sort_order.asc,title.asc'),
+            api('guide_correction_library?select=id,exercise_id,title,description,drive_url,difficulty_level,sort_order&is_published=eq.true&order=difficulty_level.asc,sort_order.asc,title.asc')
+        ]).then(function (results) {
+            exerciseLibraryItems = results[0].status === 'fulfilled' && Array.isArray(results[0].value) ? results[0].value : [];
+            correctionLibraryItems = results[1].status === 'fulfilled' && Array.isArray(results[1].value) ? results[1].value : [];
+            renderExerciseLibraries();
+            if (results.some(function (result) { return result.status === 'rejected'; })) {
+                exerciseLibraryNode.append(node('p', 'og-dashboard-muted', 'La bibliothèque des exercices et corrections est momentanément indisponible.'));
+            }
+        });
+    }
     function renderCourses() {
         coursesNode.replaceChildren();
         var groups = Object.create(null);
@@ -1113,6 +1199,7 @@
             renderMetrics();
             renderCandidates();
             renderCourses();
+            loadExerciseLibraries();
             if (results.every(function (result) { return result.status === 'fulfilled'; })) {
                 setStatus(candidates.length + ' candidat(s) suivi(s) · ' + courses.length + ' support(s) pédagogique(s) disponibles.');
             } else if (results[2].status === 'rejected') {
@@ -1164,6 +1251,12 @@
         coursesNode = node('div', 'og-dashboard-courses');
         courseSection.append(coursesNode);
         panel.append(courseSection);
+        var exerciseSection = node('section', 'og-dashboard-section');
+        exerciseSection.append(node('h3', '', 'Bibliothèque des dossiers d’exercices et corrections'));
+        exerciseSection.append(node('p', 'og-dashboard-muted', 'Exercices classés par difficulté et corrections associées. Seuls les contenus publiés sont affichés.'));
+        exerciseLibraryNode = node('div', 'og-dashboard-library');
+        exerciseSection.append(exerciseLibraryNode);
+        panel.append(exerciseSection);
         statusNode = node('p', 'og-dashboard-status');
         statusNode.setAttribute('role', 'status');
         statusNode.setAttribute('aria-live', 'polite');
@@ -1190,6 +1283,7 @@
                 root.hidden = false;
                 document.body.classList.add('og-dashboard-open');
                 load();
+                loadExerciseLibraries();
             });
             item.append(button);
             nav.append(item);

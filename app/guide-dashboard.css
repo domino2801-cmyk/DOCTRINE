@@ -223,3 +223,20 @@
 .og-dashboard-review-dialog textarea:focus {
     background-color: #30483a !important;
 }
+
+/* Bibliothèques d’exercices et corrections — cartes et filtres isolés. */
+.og-dashboard-library { display:grid; gap:12px; }
+.og-dashboard-library-filter { width:min(100%,360px); padding:10px 12px; border:1px solid rgba(183,207,185,.3); border-radius:7px; background:#26392f; color:#f2f5ee; color-scheme:dark; font:inherit; }
+.og-dashboard-library-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.og-dashboard-library-card { min-width:0; display:grid; align-content:start; gap:9px; padding:15px; border:1px solid rgba(183,207,185,.2); border-left:3px solid #d8b85b; border-radius:9px; background:rgba(255,255,255,.035); }
+.og-dashboard-library-card h4 { margin:0; color:#f2f5ee; font-size:15px; overflow-wrap:anywhere; }
+.og-dashboard-library-card > p { margin:0; color:#bdcdbf; font-size:13px; line-height:1.5; }
+.og-dashboard-library-stars { color:#e6c96f; font-size:12px; font-weight:850; }
+.og-dashboard-library-category { color:#aebfb1; font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
+.og-dashboard-library-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.og-dashboard-library-corrections { padding-top:9px; border-top:1px solid rgba(183,207,185,.16); }
+.og-dashboard-library-corrections summary { color:#d8b85b; cursor:pointer; font-size:12px; font-weight:800; }
+.og-dashboard-library-correction { display:grid; gap:7px; padding:9px 0; border-bottom:1px solid rgba(183,207,185,.12); }
+.og-dashboard-library-correction strong { color:#e6eee7; font-size:12px; }
+.og-dashboard-library-correction p { margin:0; color:#aebfb1; font-size:12px; }
+@media(max-width:800px) { .og-dashboard-library-grid { grid-template-columns:1fr; } }

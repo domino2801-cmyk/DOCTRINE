@@ -1,0 +1,37 @@
+/* Bibliothèques d’exercices et de corrections — interface Admin isolée. */
+.adm-guide-library-overlay { position:fixed; inset:0; z-index:9300; display:flex; align-items:center; justify-content:center; padding:14px; background:rgba(3,10,7,.82); color:#f2f5ee; }
+.adm-guide-library-overlay[hidden] { display:none; }
+.adm-guide-library-card { width:min(1180px,100%); max-height:94vh; overflow:auto; padding:22px; border:1px solid rgba(183,207,185,.25); border-radius:14px; background:#101c17; box-shadow:0 24px 80px rgba(0,0,0,.55); }
+.adm-guide-library-header { display:flex; justify-content:space-between; align-items:flex-start; gap:18px; padding-bottom:16px; border-bottom:1px solid rgba(183,207,185,.18); }
+.adm-guide-library-kicker { margin:0 0 6px; color:#d8b85b; font-size:11px; font-weight:850; letter-spacing:.12em; }
+.adm-guide-library-header h2 { margin:0; color:#f2f5ee; font-size:22px; }
+.adm-guide-library-header p:last-child { margin:7px 0 0; color:#b8c8bb; }
+.adm-guide-library-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:18px; }
+.adm-guide-library-section { min-width:0; padding:14px; border:1px solid rgba(183,207,185,.18); border-radius:9px; background:rgba(255,255,255,.025); }
+.adm-guide-library-section-heading { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; }
+.adm-guide-library-section-heading h3 { margin:0; color:#e6c96f; font-size:16px; }
+.adm-guide-library-list { display:grid; gap:9px; }
+.adm-guide-library-item { display:grid; gap:10px; padding:12px; border:1px solid rgba(183,207,185,.16); border-radius:8px; background:rgba(0,0,0,.13); }
+.adm-guide-library-copy h4 { margin:0; color:#f2f5ee; font-size:14px; overflow-wrap:anywhere; }
+.adm-guide-library-copy p { margin:5px 0 0; color:#bdcdbf; font-size:12px; line-height:1.45; overflow-wrap:anywhere; }
+.adm-guide-library-copy .adm-guide-library-stars { color:#e6c96f; font-weight:800; }
+.adm-guide-library-publication { display:inline-block; margin-top:8px; padding:3px 8px; border:1px solid rgba(183,207,185,.3); border-radius:999px; color:#e6c96f; font-size:11px; font-weight:800; }
+.adm-guide-library-publication.is-published { color:#9ed4a6; border-color:rgba(158,212,166,.45); }
+.adm-guide-library-item-actions,.adm-guide-library-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.adm-guide-library-secondary,.adm-guide-library-primary,.adm-guide-library-danger { display:inline-flex; align-items:center; justify-content:center; min-height:36px; padding:8px 11px; border:1px solid rgba(183,207,185,.35); border-radius:6px; background:#26392f; color:#f2f5ee; font:inherit; font-size:12px; font-weight:750; text-decoration:none; cursor:pointer; }
+.adm-guide-library-primary { border-color:#d8b85b; background:#d8b85b; color:#17251e; }
+.adm-guide-library-danger { border-color:rgba(255,138,128,.5); color:#ffaaa0; }
+.adm-guide-library-form-panel { margin-top:18px; padding:16px; border:1px solid rgba(216,184,91,.35); border-radius:9px; background:rgba(216,184,91,.045); }
+.adm-guide-library-form-panel[hidden] { display:none; }
+.adm-guide-library-form-panel h3 { margin:0 0 12px; color:#e6c96f; }
+.adm-guide-library-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.adm-guide-library-field { display:grid; gap:6px; color:#e3ebe4; font-size:12px; font-weight:750; }
+.adm-guide-library-field input,.adm-guide-library-field select,.adm-guide-library-field textarea { width:100%; min-width:0; box-sizing:border-box; padding:10px; border:1px solid #607667; border-radius:6px; background:#26392f; color:#f2f5ee; color-scheme:dark; font:inherit; }
+.adm-guide-library-publish { display:flex; align-items:center; gap:9px; color:#e6c96f; font-size:13px; font-weight:800; }
+.adm-guide-library-publish input { width:18px; height:18px; accent-color:#d8b85b; }
+.adm-guide-library-actions { grid-column:1/-1; }
+.adm-guide-library-status { margin:14px 0 0; color:#b8c8bb; font-size:13px; }
+.adm-guide-library-status.is-error { color:#ffaaa0; }
+.adm-guide-library-empty { margin:0; padding:12px; color:#aebfb1; font-size:13px; }
+@media(max-width:760px) { .adm-guide-library-grid { grid-template-columns:1fr; } }
+@media(max-width:560px) { .adm-guide-library-overlay { padding:6px; } .adm-guide-library-card { max-height:97vh; padding:13px; } .adm-guide-library-header { flex-direction:column; } .adm-guide-library-form { grid-template-columns:1fr; } .adm-guide-library-actions { grid-column:auto; } .adm-guide-library-item-actions > * { flex:1; } }
