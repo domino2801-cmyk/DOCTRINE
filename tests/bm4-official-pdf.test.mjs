@@ -235,6 +235,58 @@ test("utilise prioritairement l’observation et l’indice structurés sans dé
     );
 });
 
+
+test("exporte les neuf observations et indices structurés sans lire le commentaire libre", async () => {
+    const structuredReport = structuredClone(report);
+    structuredReport.evaluations[0].comment = "Commentaire général sans observation de critère.";
+    structuredReport.evaluations[0].rubricObservations = {
+        form: "Observation forme écrite.",
+        introduction: "Observation introduction écrite.",
+        problematique_donnees: "Observation problématique écrite.",
+        solutions: "Observation solutions écrite.",
+        avis_conclusion: "Observation conclusion écrite."
+    };
+    structuredReport.evaluations[0].rubricEvidence = {
+        form: "Preuve page 1.",
+        introduction: "Preuve page 2.",
+        problematique_donnees: "Preuve page 3.",
+        solutions: "Preuve page 4.",
+        avis_conclusion: "Preuve page 5."
+    };
+    structuredReport.evaluations[1].comment = "Autre commentaire général.";
+    structuredReport.evaluations[1].rubricObservations = {
+        operatoire_forme: "Observation opératoire orale.",
+        introduction: "Observation introduction orale.",
+        argumentaire: "Observation argumentaire oral.",
+        conclusion: "Observation conclusion orale."
+    };
+    structuredReport.evaluations[1].rubricEvidence = {
+        operatoire_forme: "Preuve oral page 1.",
+        introduction: "Preuve oral page 2.",
+        argumentaire: "Preuve oral page 3.",
+        conclusion: "Preuve oral page 4."
+    };
+
+    const blob = await createOfficialBm4Pdf(structuredReport, { PDFLib, templateBytes, flatten: false });
+    const pdf = await PDFDocument.load(new Uint8Array(await blob.arrayBuffer()));
+    const form = pdf.getForm();
+    const expectedWritten = [
+        "Observation forme écrite. · Indice : Preuve page 1.",
+        "Observation introduction écrite. · Indice : Preuve page 2.",
+        "Observation problématique écrite. · Indice : Preuve page 3.",
+        "Observation solutions écrite. · Indice : Preuve page 4.",
+        "Observation conclusion écrite. · Indice : Preuve page 5."
+    ];
+    const expectedOral = [
+        "Observation opératoire orale. · Indice : Preuve oral page 1.",
+        "Observation introduction orale. · Indice : Preuve oral page 2.",
+        "Observation argumentaire oral. · Indice : Preuve oral page 3.",
+        "Observation conclusion orale. · Indice : Preuve oral page 4."
+    ];
+    expectedWritten.forEach((value, index) => assert.equal(form.getTextField("obs_em_" + (index + 1)).getText(), value));
+    expectedOral.forEach((value, index) => assert.equal(form.getTextField("obs_oral_" + (index + 1)).getText(), value));
+});
+
 test("signale explicitement une bibliothèque PDF absente", async () => {
     await assert.rejects(
         () => createOfficialBm4Pdf(report, { PDFLib: null, templateBytes }),

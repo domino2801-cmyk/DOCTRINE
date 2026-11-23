@@ -174,6 +174,9 @@
 .og-dashboard-review-criterion,.og-dashboard-review-field { display:grid; gap:7px; color:#e6eee7; font-size:13px; font-weight:700; }
 .og-dashboard-review-criterion { padding:12px; border:1px solid rgba(183,207,185,.2); border-radius:7px; background:rgba(255,255,255,.035); }
 .og-dashboard-review-criterion input,.og-dashboard-review-field select,.og-dashboard-review-field textarea { width:100%; min-height:40px; padding:9px 10px; border:1px solid #607667; border-radius:6px; background:#26392f; color:#f2f5ee; caret-color:#e6c96f; color-scheme:dark; font:inherit; }
+.og-dashboard-review-criterion-feedback { grid-column:1 / -1; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.og-dashboard-review-criterion-feedback textarea { width:100%; min-height:58px; padding:9px 10px; border:1px solid #607667; border-radius:6px; background:#26392f; color:#f2f5ee; color-scheme:dark; font:inherit; resize:vertical; box-sizing:border-box; }
+@media(max-width:600px) { .og-dashboard-review-criterion-feedback { grid-template-columns:1fr; } }
 .og-dashboard-review-total { margin:0; color:#e6c96f; font-size:17px; font-weight:850; }
 .og-dashboard-review-actions { display:flex; flex-wrap:wrap; gap:9px; }
 .og-dashboard-review-ai { padding:14px; border:1px solid rgba(216,184,91,.35); border-radius:8px; background:rgba(216,184,91,.07); }

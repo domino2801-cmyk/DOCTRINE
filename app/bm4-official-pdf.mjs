@@ -280,20 +280,17 @@ export async function createOfficialBm4Pdf(report, options = {}) {
         proposition.criteria.forEach((criterion, index) => {
             const number = index + 1;
             setFieldText('note_em_' + number, formatGrade(proposition.rubricScores?.[criterion.key]));
-            const structuredFormObservation = criterion.key === 'form'
-                ? String(proposition.formObservations || '').trim()
-                : '';
-            const structuredFormEvidence = criterion.key === 'form'
-                ? String(proposition.formEvidence || '').trim()
-                : '';
-            // Les champs structurés sont prioritaires ; l'ancien commentaire reste
-            // un recours de compatibilité pour les évaluations déjà enregistrées.
-            const observation = criterion.key === 'form' && structuredFormObservation
-                ? [structuredFormObservation, structuredFormEvidence ? 'Indice : ' + structuredFormEvidence : '']
-                    .filter(Boolean).join(' · ')
+            const structuredObservation = String(proposition.rubricObservations?.[criterion.key] ||
+                (criterion.key === 'form' ? proposition.formObservations : '') || '').trim();
+            const structuredEvidence = String(proposition.rubricEvidence?.[criterion.key] ||
+                (criterion.key === 'form' ? proposition.formEvidence : '') || '').trim();
+            // Chaque critère utilise ses champs structurés ; le commentaire ne sert
+            // qu'à relire les évaluations historiques antérieures à cette migration.
+            const observation = structuredObservation
+                ? [structuredObservation, structuredEvidence ? 'Indice : ' + structuredEvidence : ''].filter(Boolean).join(' · ')
                 : observationFor(proposition.comment, criterion.label);
             if (criterion.key === 'form' && !observation) {
-                throw new Error('Export PDF impossible : l’observation obligatoire du critère « Forme, Présentation & Langue » (/6) est absente. Relancez la correction IA ou renseignez cette observation dans les commentaires, puis enregistrez.');
+                throw new Error('Export PDF impossible : l’observation obligatoire du critère Forme (/6) est absente. Renseignez-la puis enregistrez l’évaluation.');
             }
             setFieldText('obs_em_' + number, observation);
         });
@@ -308,7 +305,17 @@ export async function createOfficialBm4Pdf(report, options = {}) {
         oral.criteria.forEach((criterion, index) => {
             const number = index + 1;
             setFieldText('note_oral_' + number, formatGrade(oral.rubricScores?.[criterion.key]));
-            setFieldText('obs_oral_' + number, observationFor(oral.comment, criterion.label));
+            const structuredObservation = String(oral.rubricObservations?.[criterion.key] ||
+                (criterion.key === 'operatoire_forme' ? oral.formObservations : '') || '').trim();
+            const structuredEvidence = String(oral.rubricEvidence?.[criterion.key] ||
+                (criterion.key === 'operatoire_forme' ? oral.formEvidence : '') || '').trim();
+            const observation = structuredObservation
+                ? [structuredObservation, structuredEvidence ? 'Indice : ' + structuredEvidence : ''].filter(Boolean).join(' · ')
+                : observationFor(oral.comment, criterion.label);
+            if (criterion.key === 'operatoire_forme' && !observation) {
+                throw new Error('Export PDF impossible : l’observation obligatoire du critère opératoire oral (/6) est absente. Renseignez-la puis enregistrez l’évaluation.');
+            }
+            setFieldText('obs_oral_' + number, observation);
         });
         setFieldText('total_oral', formatGrade(oral.grade));
         // Dans le débriefing, bilan_oral est la case de note (30 %), pas le commentaire.

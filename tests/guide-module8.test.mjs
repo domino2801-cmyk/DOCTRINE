@@ -21,6 +21,7 @@ const [sql, edgeFunction, index, page, styles, script, appScript, adminScript, v
     read("app/styles.css")
 ]);
 const progressSyncSql = await read("supabase/guide-progress-harmonization.sql");
+const correctionAiFunction = await read("supabase/functions/correct-fiche-ai/index.ts");
 
 test("les fonctions de cohorte autorisent les admins et limitent les guides aux rattachements", () => {
     assert.match(sql, /raw_app_meta_data[\s\S]*'role', p_role/);
@@ -412,15 +413,41 @@ test("l’observation et l’indice du critère Forme sont persistés séparéme
     assert.match(script, /reviewByKey\.get\(String\(submission\.id\)/);
     assert.match(script, /formObservations: saved\.form_observations/);
     assert.match(script, /formEvidence: saved\.form_evidence/);
+    assert.match(script, /rubric_observations: totals\.rubricObservations/);
+    assert.match(script, /rubric_evidence: totals\.rubricEvidence/);
+    assert.match(script, /data-rubric-observation/);
+    assert.match(script, /data-rubric-evidence/);
+    assert.match(script, /rubricObservations: saved\.rubric_observations/);
+    assert.match(script, /rubricEvidence: saved\.rubric_evidence/);
     assert.doesNotMatch(script, /ensureAiFormObservationInComment/);
 
     const helper = await read("app/bm4-official-pdf.mjs");
-    assert.match(helper, /structuredFormObservation/);
-    assert.match(helper, /structuredFormEvidence/);
-    assert.match(helper, /Les champs structurés sont prioritaires/);
+    assert.match(helper, /rubricObservations/);
+    assert.match(helper, /rubricEvidence/);
+    assert.match(helper, /Chaque critère utilise ses champs structurés/);
     assert.match(helper, /observation obligatoire du critère/);
     assert.match(sql, /add column if not exists form_observations text/);
     assert.match(sql, /add column if not exists form_evidence text/);
+    assert.match(sql, /add column if not exists rubric_observations jsonb/);
+    assert.match(sql, /add column if not exists rubric_evidence jsonb/);
+});
+
+test("la correction IA exige observation et indice pour chacun des neuf critères BM4", () => {
+    assert.match(correctionAiFunction, /criteria\.some\(\(criterion\) =>[\s\S]*!criterion\.observation\.trim\(\) \|\| !criterion\.evidence\.trim\(\)/);
+    assert.match(correctionAiFunction, /\[operatoire, introduction, argumentaire, conclusion\]\.some\(\(criterion\) =>[\s\S]*!criterion\.observation\.trim\(\) \|\| !criterion\.evidence\.trim\(\)/);
+    assert.match(correctionAiFunction, /Observation ou indice documentaire absent pour un critère de la fiche de proposition/);
+    assert.match(correctionAiFunction, /Observation ou indice documentaire absent pour un critère de la fichette orale/);
+});
+
+test("la migration dédiée crée les deux dictionnaires et reprend les anciennes observations Forme", async () => {
+    const migration = await read("supabase/patches/2026-11-23-bm4-structured-rubric-feedback.sql");
+    assert.match(migration, /add column if not exists rubric_observations jsonb not null default '\{\}'::jsonb/);
+    assert.match(migration, /add column if not exists rubric_evidence jsonb not null default '\{\}'::jsonb/);
+    assert.match(migration, /add column if not exists form_observations text/);
+    assert.match(migration, /add column if not exists form_evidence text/);
+    assert.match(migration, /update public\.fiche_reviews[\s\S]*rubric_observations[\s\S]*review\.form_observations/);
+    assert.match(migration, /when 'support_oral' then 'operatoire_forme' else 'form' end/);
+    assert.match(migration, /notify pgrst, 'reload schema'/);
 });
 
 test("la grille AcroForm officielle remplace le compte rendu et exige une validation de l’Officier Guide", async () => {

@@ -781,6 +781,33 @@
     line-height: 1.4;
 }
 
+.guide-review-criterion-feedback {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+}
+
+.guide-review-criterion-feedback textarea {
+    width: 100%;
+    min-height: 58px;
+    padding: 9px 10px;
+    color: #f2f5ee;
+    background: #26392f;
+    border: 1px solid #607667;
+    border-radius: 6px;
+    font: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+    .guide-review-criterion-feedback {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
 .guide-review-criterion input {
     width: 100%;
 }

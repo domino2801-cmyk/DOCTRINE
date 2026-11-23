@@ -679,6 +679,19 @@
             var saved = review.rubric_scores && review.rubric_scores[criterion.key];
             if (saved !== undefined && saved !== null && saved !== '') input.value = String(saved);
             label.append(input);
+            var feedback = node('div', 'og-dashboard-review-criterion-feedback');
+            var observation = node('textarea');
+            observation.rows = 2; observation.maxLength = 500;
+            observation.placeholder = 'Observation du critère';
+            observation.dataset.rubricObservation = criterion.key;
+            observation.value = String(review.rubric_observations && review.rubric_observations[criterion.key] || '');
+            var evidence = node('textarea');
+            evidence.rows = 2; evidence.maxLength = 300;
+            evidence.placeholder = 'Indice documentaire vérifiable';
+            evidence.dataset.rubricEvidence = criterion.key;
+            evidence.value = String(review.rubric_evidence && review.rubric_evidence[criterion.key] || '');
+            feedback.append(observation, evidence);
+            label.append(feedback);
             criteria.append(label);
         });
         var total = node('p', 'og-dashboard-review-total', 'Note calculée : à compléter / 20');
@@ -697,10 +710,10 @@
         var formEvidence = node('textarea'); formEvidence.rows = 2; formEvidence.maxLength = 1500;
         formEvidence.value = review.form_evidence || '';
         formEvidenceLabel.append(formEvidence);
-        if (isOral) {
-            formObservationLabel.hidden = true;
-            formEvidenceLabel.hidden = true;
-        }
+        // Les anciens champs Forme restent masqués pour compatibilité ;
+        // l'observation et l'indice sont saisis dans la ligne du premier critère.
+        formObservationLabel.hidden = true;
+        formEvidenceLabel.hidden = true;
         var commentLabel = node('label', 'og-dashboard-review-field', 'Commentaires de l’Officier Guide');
         var comment = node('textarea'); comment.rows = 6; comment.maxLength = 4000;
         comment.value = review.comment || '';
@@ -730,7 +743,15 @@
                     else contentGrade += value;
                 }
             });
-            return { scores: scores, formGrade: formGrade, contentGrade: contentGrade,
+            var observations = {}, evidence = {};
+            rubric.forEach(function (criterion) {
+                var observation = criteria.querySelector('[data-rubric-observation="' + criterion.key + '"]');
+                var proof = criteria.querySelector('[data-rubric-evidence="' + criterion.key + '"]');
+                observations[criterion.key] = String(observation && observation.value || '').trim();
+                evidence[criterion.key] = String(proof && proof.value || '').trim();
+            });
+            return { scores: scores, observations: observations, evidence: evidence,
+                formGrade: formGrade, contentGrade: contentGrade,
                 grade: Math.round((formGrade + contentGrade) * 100) / 100, complete: complete };
         }
         function updateTotal() {
@@ -757,7 +778,12 @@
             aiPanel.append(node('p', '', (isOral ? 'Note du premier critère : ' : 'Note de forme : ') +
                 suggestion.form_grade + ' / 6 · Autres critères : ' + suggestion.content_grade +
                 ' / ' + (suggestion.content_max_grade || 14) + ' · Fiabilité estimée : ' + (suggestion.confidence || 'non précisée')));
-            (Array.isArray(suggestion.criteria) ? suggestion.criteria : []).forEach(function (criterion) {
+            var displayCriteria = isOral
+                ? [suggestion.oral_operatoire].concat(Array.isArray(suggestion.criteria) ? suggestion.criteria : [])
+                : [{ label: 'Forme, présentation et langue', grade: suggestion.form_grade, max_grade: 6,
+                    observation: suggestion.form_observations, evidence: suggestion.form_evidence }]
+                    .concat(Array.isArray(suggestion.criteria) ? suggestion.criteria : []);
+            displayCriteria.forEach(function (criterion) {
                 var item = node('article', 'og-dashboard-review-ai-criterion');
                 item.append(node('strong', '', criterion.label + ' — ' + criterion.grade + ' / ' + criterion.max_grade));
                 item.append(node('p', '', criterion.observation || 'Observation non renseignée.'));
@@ -809,6 +835,26 @@
                         if (input && proposed) input.value = String(proposed.grade);
                     });
                     updateTotal();
+                    var structured = isOral
+                        ? [
+                            { key: 'operatoire_forme', item: suggestion.oral_operatoire },
+                            { key: 'introduction', item: suggestion.oral_introduction || suggestion.criteria?.[0] },
+                            { key: 'argumentaire', item: suggestion.oral_argumentaire || suggestion.criteria?.[1] },
+                            { key: 'conclusion', item: suggestion.oral_conclusion || suggestion.criteria?.[2] }
+                        ]
+                        : [
+                            { key: 'form', item: { observation: suggestion.form_observations, evidence: suggestion.form_evidence } },
+                            { key: 'introduction', item: suggestion.criteria?.[0] },
+                            { key: 'problematique_donnees', item: suggestion.criteria?.[1] },
+                            { key: 'solutions', item: suggestion.criteria?.[2] },
+                            { key: 'avis_conclusion', item: suggestion.criteria?.[3] }
+                        ];
+                    structured.forEach(function (entry) {
+                        var observation = criteria.querySelector('[data-rubric-observation="' + entry.key + '"]');
+                        var proof = criteria.querySelector('[data-rubric-evidence="' + entry.key + '"]');
+                        if (observation) observation.value = String(entry.item?.observation || '').trim();
+                        if (proof) proof.value = String(entry.item?.evidence || '').trim();
+                    });
                     if (!isOral) {
                         formObservation.value = String(suggestion.form_observations || '').trim();
                         formEvidence.value = String(suggestion.form_evidence || '').trim();
@@ -846,8 +892,10 @@
                     content_grade: totals.contentGrade,
                     grade: totals.grade,
                     rubric_scores: totals.scores,
-                    form_observations: isOral ? null : formObservation.value.trim(),
-                    form_evidence: isOral ? null : formEvidence.value.trim(),
+                    rubric_observations: totals.observations,
+                    rubric_evidence: totals.evidence,
+                    form_observations: isOral ? null : totals.observations.form,
+                    form_evidence: isOral ? null : totals.evidence.form,
                     jury_checklist: (function () {
                         var allowed = isOral
                             ? ['oral_operatoire', 'oral_introduction', 'oral_argumentaire', 'oral_conclusion']
@@ -923,6 +971,8 @@
                 label: type === 'support_oral' ? 'Fichette orale' : 'Fiche de proposition',
                 grade: grade,
                 rubricScores: review.rubric_scores || {},
+                rubricObservations: review.rubric_observations || {},
+                rubricEvidence: review.rubric_evidence || {},
                 criteria: rubric.map(function (criterion) {
                     return { key: criterion.key, label: criterion.label, max_grade: criterion.max };
                 }),
@@ -930,8 +980,8 @@
                     return { key: key, label: key, checked: Boolean(review.jury_checklist && review.jury_checklist[key]) };
                 }),
                 comment: review.comment || '',
-                formObservations: review.form_observations || '',
-                formEvidence: review.form_evidence || '',
+                formObservations: review.form_observations || review.rubric_observations?.form || review.rubric_observations?.operatoire_forme || '',
+                formEvidence: review.form_evidence || review.rubric_evidence?.form || review.rubric_evidence?.operatoire_forme || '',
                 reviewedAt: review.reviewed_at || new Date().toISOString()
             });
         });
@@ -1425,7 +1475,7 @@
                     .map(function (submission) { return submission.id; }).filter(Boolean));
             }, []);
             if (!submissionIds.length) return [];
-            return api('fiche_reviews?select=submission_id,guide_id,form_observations,form_evidence&submission_id=in.(' +
+            return api('fiche_reviews?select=submission_id,guide_id,form_observations,form_evidence,rubric_observations,rubric_evidence&submission_id=in.(' +
                 submissionIds.map(encodeURIComponent).join(',') + ')');
         });
         Promise.allSettled([candidateRequest, courseRequest, progressRequest, cvRequest, reviewRequest]).then(function (results) {
@@ -1446,6 +1496,8 @@
                             if (structured) {
                                 review.form_observations = structured.form_observations || '';
                                 review.form_evidence = structured.form_evidence || '';
+                                review.rubric_observations = structured.rubric_observations || {};
+                                review.rubric_evidence = structured.rubric_evidence || {};
                             }
                         });
                     });
