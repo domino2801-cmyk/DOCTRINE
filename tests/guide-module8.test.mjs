@@ -408,6 +408,8 @@ test("l’observation et l’indice du critère Forme sont persistés séparéme
     assert.match(page, /id="guideFormEvidence"/);
     assert.match(script, /form_observations: formObservations/);
     assert.match(script, /form_evidence: formEvidence/);
+    assert.match(script, /fiche_reviews\?select=submission_id,guide_id,form_observations,form_evidence/);
+    assert.match(script, /reviewByKey\.get\(String\(submission\.id\)/);
     assert.match(script, /formObservations: saved\.form_observations/);
     assert.match(script, /formEvidence: saved\.form_evidence/);
     assert.doesNotMatch(script, /ensureAiFormObservationInComment/);
