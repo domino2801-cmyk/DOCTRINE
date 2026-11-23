@@ -158,8 +158,9 @@ test("génère réellement la grille BM4 et vérifie les champs, notes et observ
 
 test("récupère l'observation de forme malgré les variantes de format des commentaires", async () => {
     const variants = [
-        "Forme, Présentation & Langue : 5,5 / 6 — Observation issue de la synthèse IA — Indice : document relu",
-        "1. Forme, Présentation & Langue : Observation saisie par le guide",
+        "Forme : 5,5 / 6 — Observation issue de la synthèse IA · Indice : document relu",
+        "Forme, Présentation & Langue : Observation saisie par le guide",
+        "Forme / Présentation / Langue : Observation avec séparateurs obliques",
         "forme présentation langue: — Observation avec tiret",
         "Forme, présentation et langue (/6) : 5,5/6 – Observation avec libellé complet",
         "1. Forme, Présentation & Langue (/6) : Observation saisie sans note"
@@ -180,6 +181,23 @@ test("récupère l'observation de forme malgré les variantes de format des comm
             "l'observation doit être extraite même si sa présentation varie"
         );
     }
+});
+
+test("conserve l'indice documentaire de la correction IA dans l'observation PDF", async () => {
+    const indexedReport = structuredClone(report);
+    indexedReport.evaluations[0].comment =
+        "Forme : La fiche de proposition écrite respecte les codes militaires. · Indice : Fiche de proposition écrite, page 2, lignes 14 à 26 : CIAZDS-NORD.";
+
+    const blob = await createOfficialBm4Pdf(indexedReport, {
+        PDFLib,
+        templateBytes,
+        flatten: false
+    });
+    const pdf = await PDFDocument.load(new Uint8Array(await blob.arrayBuffer()));
+    assert.equal(
+        pdf.getForm().getTextField("obs_em_1").getText(),
+        "La fiche de proposition écrite respecte les codes militaires. · Indice : Fiche de proposition écrite, page 2, lignes 14 à 26 : CIAZDS-NORD."
+    );
 });
 
 test("utilise l'observation de forme de secours si le commentaire ne la contient pas", async () => {
