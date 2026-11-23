@@ -411,7 +411,13 @@ test("l’observation et l’indice du critère Forme sont persistés séparéme
     assert.match(script, /fiche_reviews\?select=submission_id,guide_id,form_observations,form_evidence/);
     assert.match(script, /reviewByKey\.get\(String\(submission\.id\)/);
     assert.match(script, /formObservations: saved\.form_observations/);
-    assert.match(script, /formEvidence: saved\.form_evidence/);\n    assert.match(script, /rubric_observations: totals\.rubricObservations/);\n    assert.match(script, /rubric_evidence: totals\.rubricEvidence/);\n    assert.match(script, /data-rubric-observation/);\n    assert.match(script, /data-rubric-evidence/);\n    assert.match(script, /rubricObservations: saved\.rubric_observations/);\n    assert.match(script, /rubricEvidence: saved\.rubric_evidence/);
+    assert.match(script, /formEvidence: saved\.form_evidence/);
+    assert.match(script, /rubric_observations: totals\.rubricObservations/);
+    assert.match(script, /rubric_evidence: totals\.rubricEvidence/);
+    assert.match(script, /data-rubric-observation/);
+    assert.match(script, /data-rubric-evidence/);
+    assert.match(script, /rubricObservations: saved\.rubric_observations/);
+    assert.match(script, /rubricEvidence: saved\.rubric_evidence/);
     assert.doesNotMatch(script, /ensureAiFormObservationInComment/);
 
     const helper = await read("app/bm4-official-pdf.mjs");
@@ -420,7 +426,9 @@ test("l’observation et l’indice du critère Forme sont persistés séparéme
     assert.match(helper, /Les champs structurés sont prioritaires/);
     assert.match(helper, /observation obligatoire du critère/);
     assert.match(sql, /add column if not exists form_observations text/);
-    assert.match(sql, /add column if not exists form_evidence text/);\n    assert.match(sql, /add column if not exists rubric_observations jsonb/);\n    assert.match(sql, /add column if not exists rubric_evidence jsonb/);
+    assert.match(sql, /add column if not exists form_evidence text/);
+    assert.match(sql, /add column if not exists rubric_observations jsonb/);
+    assert.match(sql, /add column if not exists rubric_evidence jsonb/);
 });
 
 test("la grille AcroForm officielle remplace le compte rendu et exige une validation de l’Officier Guide", async () => {
