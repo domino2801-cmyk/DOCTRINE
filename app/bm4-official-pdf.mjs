@@ -158,13 +158,17 @@ function normalizeObservationLabel(value) {
     return String(value || '')
         .trim()
         .replace(/^\d+\s*[.)-]\s*/, '')
+        .replace(/\s*\(\s*\/\s*6\s*\)\s*$/, '')
+        .replace(/\s+sur\s+6\s*$/i, '')
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
+        .replace(/&/g, ' ')
+        .replace(/\bet\b/g, ' ')
         .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
         .trim();
 }
-
 function observationFor(comment, label, fallback = '') {
     const expectedLabel = normalizeObservationLabel(label);
     const fallbackText = String(fallback || '').trim();
@@ -180,10 +184,10 @@ function observationFor(comment, label, fallback = '') {
         if (actualLabel !== expectedLabel) continue;
 
         let observation = line.slice(colon + 1).trim();
-        // Accepte les formats issus des commentaires du guide et de la synthèse IA :
-        // « : observation », « : — observation » ou « : note / 6 — observation ».
-        observation = observation.replace(/^(?:—|–|-)\s*/, '');
+        // Tolère les notes (/6), tirets typographiques et préfixes "Observation :".
+        observation = observation.replace(/^\s*(?:—|–|-)\s*/, '');
         observation = observation.replace(/^\d+(?:[,.]\d+)?\s*\/\s*\d+(?:[,.]\d+)?\s*(?:—|–|-)\s*/, '');
+        observation = observation.replace(/^Observation\s*:\s*/i, '');
         observation = observation.replace(/\s+(?:—|–|-)\s*Indice\s*:.*/i, '').trim();
         if (observation) return observation;
     }
