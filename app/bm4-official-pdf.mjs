@@ -154,17 +154,41 @@ function formatGrade(value) {
         : Number(value).toLocaleString('fr-FR', { maximumFractionDigits: 2 });
 }
 
+function normalizeObservationLabel(value) {
+    return String(value || '')
+        .trim()
+        .replace(/^\\d+\\s*[.)-]\\s*/, '')
+        .normalize('NFD')
+        .replace(/[\\u0300-\\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+}
+
 function observationFor(comment, label, fallback = '') {
-    const normalizedLabel = String(label || '').trim().toLowerCase();
-    const line = String(comment || '').split(/\r?\n/).find((item) => {
-        const normalizedLine = item.trim().toLowerCase();
-        return normalizedLine.startsWith(normalizedLabel + ' :') ||
-            normalizedLine.startsWith(normalizedLabel + ':');
-    });
-    if (!line) return String(fallback || '').trim();
-    const separator = line.indexOf(' — ');
-    if (separator < 0) return String(fallback || '').trim();
-    return line.slice(separator + 3).replace(/\s+—\s+Indice\s*:.*/i, '').trim() || String(fallback || '').trim();
+    const expectedLabel = normalizeObservationLabel(label);
+    const fallbackText = String(fallback || '').trim();
+    if (!expectedLabel) return fallbackText;
+
+    const lines = String(comment || '').split(/\\r?\\n/);
+    for (const rawLine of lines) {
+        const line = rawLine.trim();
+        const colon = line.indexOf(':');
+        if (colon < 0) continue;
+
+        const actualLabel = normalizeObservationLabel(line.slice(0, colon));
+        if (actualLabel !== expectedLabel) continue;
+
+        let observation = line.slice(colon + 1).trim();
+        // Accepte les formats issus des commentaires du guide et de la synthèse IA :
+        // « : observation », « : — observation » ou « : note / 6 — observation ».
+        observation = observation.replace(/^(?:—|–|-)\\s*/, '');
+        observation = observation.replace(/^\\d+(?:[,.]\\d+)?\\s*\\/\\s*\\d+(?:[,.]\\d+)?\\s*(?:—|–|-)\\s*/, '');
+        observation = observation.replace(/\\s+(?:—|–|-)\\s*Indice\\s*:.*/i, '').trim();
+        if (observation) return observation;
+    }
+
+    return fallbackText;
 }
 
 function formatDebriefSection(value) {
