@@ -845,6 +845,124 @@
         else dialog.setAttribute('open', '');
         if (runCorrection) runAi();
     }
+    function reviewGradeForExport(submission, review) {
+        if (!review || review.status !== 'valide') return null;
+        var rubric = reviewRubric(submission);
+        var scores = review.rubric_scores || {};
+        var total = 0;
+        var complete = true;
+        rubric.forEach(function (criterion) {
+            var value = Number(scores[criterion.key]);
+            if (!Number.isFinite(value) || value < 0 || value > criterion.max) complete = false;
+            else total += value;
+        });
+        return complete ? Math.round(total * 100) / 100 : null;
+    }
+    function exportFeedbackSection(comment, label, stopLabels) {
+        var source = String(comment || '').replace(/\\r\\n|\\n|\\r/g, '\\n');
+        var match = new RegExp('(?:^|\\n)' + label + '\\s*:\\s*', 'i').exec(source);
+        if (!match) return '';
+        var tail = source.slice(match.index + match[0].length);
+        var stop = new RegExp('\\n(?:' + stopLabels.join('|') + ')\\s*:', 'i').exec(tail);
+        return (stop ? tail.slice(0, stop.index) : tail).trim();
+    }
+    function buildDossierBm4Report(candidate, dossierItems) {
+        var evaluations = [];
+        var checklistKeys = {
+            proposition: ['p_form_pages', 'p_form_header', 'p_form_references', 'p_form_style',
+                'p_intro_context', 'p_intro_solution', 'p_intro_plan',
+                'p_problem_facts', 'p_problem_level', 'p_problem_criteria',
+                'p_solutions_three', 'p_solutions_details', 'p_solutions_risks',
+                'p_opinion', 'p_risk_mitigation', 'p_conclusion'],
+            support_oral: ['oral_operatoire', 'oral_introduction', 'oral_argumentaire', 'oral_conclusion']
+        };
+        dossierItems.forEach(function (submission) {
+            var review = (submission.reviews || []).find(function (item) { return item.status === 'valide'; });
+            var grade = reviewGradeForExport(submission, review);
+            if (grade === null) return;
+            var type = submission.submission_type;
+            var rubric = reviewRubric(submission);
+            evaluations.push({
+                type: type,
+                label: type === 'support_oral' ? 'Fichette orale' : 'Fiche de proposition',
+                grade: grade,
+                rubricScores: review.rubric_scores || {},
+                criteria: rubric.map(function (criterion) {
+                    return { key: criterion.key, label: criterion.label, max_grade: criterion.max };
+                }),
+                juryChecklist: (checklistKeys[type] || []).map(function (key) {
+                    return { key: key, label: key, checked: Boolean(review.jury_checklist && review.jury_checklist[key]) };
+                }),
+                comment: review.comment || '',
+                reviewedAt: review.reviewed_at || new Date().toISOString()
+            });
+        });
+        var proposition = evaluations.find(function (item) { return item.type === 'proposition'; });
+        var oral = evaluations.find(function (item) { return item.type === 'support_oral'; });
+        var weightedGrade = proposition && oral
+            ? Math.round((proposition.grade * 0.7 + oral.grade * 0.3) * 100) / 100
+            : null;
+        var strengths = [
+            proposition && exportFeedbackSection(proposition.comment, 'Points forts', ['Axes de progrès', 'Axes d’amélioration', 'Synthèse']),
+            oral && exportFeedbackSection(oral.comment, 'Points forts', ['Axes de progrès', 'Axes d’amélioration', 'Synthèse'])
+        ].filter(Boolean);
+        var improvements = [
+            proposition && exportFeedbackSection(proposition.comment, 'Axes de progrès', ['Synthèse', 'Comparaison avec la fiche écrite']),
+            proposition && exportFeedbackSection(proposition.comment, 'Axes d’amélioration', ['Synthèse', 'Comparaison avec la fiche écrite']),
+            oral && exportFeedbackSection(oral.comment, 'Axes de progrès', ['Synthèse', 'Comparaison avec la fiche écrite']),
+            oral && exportFeedbackSection(oral.comment, 'Axes d’amélioration', ['Synthèse', 'Comparaison avec la fiche écrite'])
+        ].filter(Boolean);
+        var identity = candidate.candidate || {};
+        var subjectItem = dossierItems.find(function (item) { return item.subject || item.title; }) || {};
+        return {
+            candidateName: candidateName(candidate),
+            specialty: identity.specialty || '',
+            dossier: String(dossierItems[0] && dossierItems[0].dossier || ''),
+            subject: subjectItem.subject || subjectItem.title || 'Évaluation BM4',
+            guideName: 'Officier Guide',
+            evaluations: evaluations,
+            weightedGrade: weightedGrade,
+            strengths: strengths,
+            improvements: improvements,
+            exportedAt: new Date().toLocaleDateString('fr-FR')
+        };
+    }
+    async function exportDossierBm4(candidate, dossierItems, button, finalOnly) {
+        var originalLabel = button.textContent;
+        button.disabled = true;
+        button.textContent = 'Génération du PDF…';
+        try {
+            var report = buildDossierBm4Report(candidate, dossierItems);
+            var hasProposition = report.evaluations.some(function (item) { return item.type === 'proposition'; });
+            var hasOral = report.evaluations.some(function (item) { return item.type === 'support_oral'; });
+            if (!report.evaluations.length) throw new Error('Aucune évaluation validée à exporter.');
+            if (finalOnly && (!hasProposition || !hasOral || report.weightedGrade === null)) {
+                throw new Error('L’évaluation finale nécessite la validation des deux fiches par l’Officier Guide.');
+            }
+            var pdfModule = await import('./bm4-official-pdf.mjs');
+            var pdf = await pdfModule.createOfficialBm4Pdf(report);
+            var url = URL.createObjectURL(pdf);
+            var link = node('a');
+            var filename = report.candidateName.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+                .replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '') || 'candidat';
+            link.href = url;
+            link.download = finalOnly
+                ? 'Evaluation_finale_BM4_' + filename + '_Dossier_' + report.dossier + '.pdf'
+                : 'Grille_BM4_Dossier_' + filename + '_' + report.dossier +
+                    (report.weightedGrade === null ? '_Partielle' : '_Complet_70_30') + '.pdf';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+            setStatus((finalOnly ? 'Évaluation finale BM4 exportée pour ' : 'Grille BM4 officielle téléchargée pour ') +
+                report.candidateName + '.', false);
+        } catch (error) {
+            setStatus('Export PDF impossible : ' + (error.message || error), true);
+        } finally {
+            button.disabled = false;
+            button.textContent = originalLabel;
+        }
+    }
     function renderAiCorrection(candidate) {
         var section = node('details', 'og-dashboard-subaccordion og-dashboard-ai-correction');
         section.append(node('summary', '', 'Correction assistée par IA'));
@@ -885,7 +1003,29 @@
         }).forEach(function (dossier) {
             var group = node('section', 'og-dashboard-ai-dossier');
             group.append(node('h4', '', 'DOSSIER ' + dossier));
-            groups[dossier].slice().sort(function (a, b) {
+            var dossierItems = groups[dossier].slice();
+            var dossierReport = buildDossierBm4Report(candidate, dossierItems);
+            var hasProposition = dossierReport.evaluations.some(function (item) { return item.type === 'proposition'; });
+            var hasOral = dossierReport.evaluations.some(function (item) { return item.type === 'support_oral'; });
+            if (dossierReport.evaluations.length) {
+                var dossierExports = node('div', 'og-dashboard-ai-actions og-dashboard-dossier-exports');
+                var officialGridButton = node('button', 'og-dashboard-ai-action', 'Télécharger la grille BM4 officielle');
+                officialGridButton.type = 'button';
+                officialGridButton.addEventListener('click', function () {
+                    exportDossierBm4(candidate, dossierItems, officialGridButton, false);
+                });
+                dossierExports.append(officialGridButton);
+                if (hasProposition && hasOral && dossierReport.weightedGrade !== null) {
+                    var finalExportButton = node('button', 'og-dashboard-ai-action is-primary', 'Exporter l’évaluation finale pour le candidat');
+                    finalExportButton.type = 'button';
+                    finalExportButton.addEventListener('click', function () {
+                        exportDossierBm4(candidate, dossierItems, finalExportButton, true);
+                    });
+                    dossierExports.append(finalExportButton);
+                }
+                group.append(dossierExports);
+            }
+            dossierItems.sort(function (a, b) {
                 return (a.submission_type === 'proposition' ? 0 : 1) -
                     (b.submission_type === 'proposition' ? 0 : 1);
             }).forEach(function (submission) {
