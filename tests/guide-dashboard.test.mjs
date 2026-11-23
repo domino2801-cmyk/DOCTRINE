@@ -226,3 +226,14 @@ test('le dossier candidat Officier Guide propose les deux exports PDF BM4 avec l
     assert.match(css, /\.og-dashboard-dossier-exports \{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
     assert.match(css, /@media\(max-width:600px\) \{ \.og-dashboard-dossier-exports \{ grid-template-columns:minmax\(0,1fr\); \} \}/);
 });
+
+
+test('les deux interfaces affichent un message explicite si le service IA est temporairement indisponible', () => {
+    const unavailable = 'Service IA temporairement indisponible. Votre fiche n\'a pas été corrigée. Vous pouvez réessayer ultérieurement.';
+    assert.match(script, /error\.status = response\.status/);
+    assert.match(script, /error\.status === 502 \|\| error\.status === 503/);
+    assert.ok(script.includes(unavailable));
+    assert.match(guideModule8Script, /error\.status = response\.status/);
+    assert.match(guideModule8Script, /error\.status === 502 \|\| error\.status === 503/);
+    assert.ok(guideModule8Script.includes(unavailable));
+});
