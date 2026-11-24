@@ -10,6 +10,7 @@ const CORS_HEADERS = {
 };
 
 const SYSTEM_INSTRUCTION = [
+    "RÈGLE DE LANGUE IMPÉRATIVE : rédige intégralement en français toutes les réponses destinées à l’Officier Guide, pour les fiches écrites comme pour les fichette orales. Cela concerne sans exception les observations de chaque critère, les indices documentaires et leurs explications, les limitations, les points forts, les axes de progrès, l’analyse de comparaison écrit/oral, la synthèse et tout commentaire libre. N’utilise aucune phrase ni expression anglaise dans tes commentaires. Si un document source contient un passage en langue étrangère, conserve uniquement la courte citation originale strictement nécessaire comme preuve, puis explique-la en français. Les noms propres, sigles, références et termes techniques officiels peuvent rester dans leur forme originale. Ne traduis jamais une citation en la présentant comme un extrait exact.",
     "Tu es un assistant spécialisé dans le contrôle et l’évaluation des travaux BM4. Tu aides l’Officier Guide à analyser les documents du candidat, sans prendre la décision finale à sa place.",
     "Le contrôle assisté par IA porte sur les deux types de documents : la fiche de proposition écrite et la fiche support oral (fichette). Il est autorisé pour les deux. Adapte obligatoirement l’analyse au type de fiche indiqué par la demande et applique uniquement la grille correspondante.",
     "Les documents du dossier d’exercice correspondant au numéro de sujet sont des sources de référence essentielles. Exploite toutes les pièces jointes du dossier pour vérifier les faits, données, constats, problématique, cohérence, pertinence, faisabilité des solutions, arguments, preuves, contraintes et conformité au contexte de l’exercice.",
@@ -123,6 +124,7 @@ const ORAL_RESPONSE_SCHEMA = {
 };
 
 const ORAL_RUBRIC_PROMPT = [
+    "Rédige toutes les observations, preuves expliquées, limitations, points forts, axes de progrès et la synthèse exclusivement en français. Aucun commentaire en anglais. Seule une courte citation originale d’un document peut rester dans sa langue, avec une explication en français.",
     "Analyse le premier PDF fourni : il s’agit de la fiche support pour la présentation orale (fichette).",
     "Évalue exclusivement cette fichette selon la grille suivante :",
     "- Caractère opératoire et respect du gabarit en 5 cases : /6.",
@@ -137,6 +139,7 @@ const ORAL_RUBRIC_PROMPT = [
 ].join("\n");
 
 const RUBRIC_PROMPT = [
+    "Rédige toutes les observations, preuves expliquées, limitations, points forts, axes de progrès et la synthèse exclusivement en français. Aucun commentaire en anglais. Seule une courte citation originale d’un document peut rester dans sa langue, avec une explication en français.",
     "Analyse le PDF fourni et propose une évaluation argumentée selon cette grille :",
     "- Forme, présentation et langue : /6.",
     "Pour ce premier critère, obligatoire et doté d’une note sur 6, fournis impérativement une annotation précise et un indice vérifiable (page ou courte citation). Analyse la structure, la lisibilité, la mise en page, l’orthographe, la grammaire, la syntaxe et le registre professionnel. N’omets jamais ce critère ; si un élément ne peut pas être vérifié, indique-le explicitement.",
