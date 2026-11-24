@@ -2119,26 +2119,92 @@
         var proposalTitle = proposalField('Titre du document', 'input', true, 160);
         var proposalCategory = proposalField('Catégorie', 'input', true, 100);
         var proposalDescription = proposalField('Description (facultatif)', 'textarea', false, 1200);
+        var proposalFileLabel = node('label', '', 'Joindre un document (PDF, TXT ou PPT — 20 Mo maximum)');
+        var proposalFile = node('input');
+        proposalFile.type = 'file';
+        proposalFile.accept = '.pdf,.txt,.ppt,application/pdf,text/plain,application/vnd.ms-powerpoint';
+        proposalFileLabel.append(proposalFile);
+        proposalForm.append(proposalFileLabel);
         var proposalSubmit = node('button', 'og-dashboard-download', 'Envoyer la proposition');
         proposalSubmit.type = 'submit';
         var proposalFormStatus = node('p', 'module2-og-status');
         proposalFormStatus.setAttribute('role', 'status');
         proposalForm.append(proposalSubmit, proposalFormStatus);
+
+        function uploadProposalAttachment(file) {
+            var extension = file.name.split('.').pop().toLowerCase();
+            var mimeTypes = {
+                pdf: 'application/pdf',
+                txt: 'text/plain',
+                ppt: 'application/vnd.ms-powerpoint'
+            };
+            if (!Object.prototype.hasOwnProperty.call(mimeTypes, extension)) {
+                return Promise.reject(new Error('Format refusé. Choisissez un fichier .pdf, .txt ou .ppt.'));
+            }
+            if (!file.size || file.size > 20 * 1024 * 1024) {
+                return Promise.reject(new Error('Le fichier doit peser moins de 20 Mo.'));
+            }
+            return auth().jeton().then(function (token) {
+                var claims = token && decodeClaims(token);
+                if (!claims || !claims.sub) throw new Error('Identifiant Officier Guide indisponible.');
+                var safeName = file.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(-120);
+                var path = claims.sub + '/' + Date.now() + '-' + safeName;
+                return fetch(auth().url.replace(/\/$/, '') + '/storage/v1/object/guide-document-proposals/' +
+                    path.split('/').map(encodeURIComponent).join('/'), {
+                    method: 'POST',
+                    headers: {
+                        apikey: auth().key,
+                        Authorization: 'Bearer ' + token,
+                        'Content-Type': mimeTypes[extension],
+                        'x-upsert': 'false',
+                        'cache-control': '3600'
+                    },
+                    body: file
+                }).then(function (response) {
+                    return response.json().catch(function () { return {}; }).then(function (payload) {
+                        if (!response.ok) throw new Error(payload.message || payload.error || 'Téléversement impossible.');
+                        return { path: path, mime: mimeTypes[extension] };
+                    });
+                });
+            });
+        }
+
         proposalForm.addEventListener('submit', function (event) {
             event.preventDefault();
             if (!proposalForm.reportValidity()) return;
+            var file = proposalFile.files && proposalFile.files[0];
             proposalSubmit.disabled = true;
-            proposalFormStatus.textContent = 'Envoi de la proposition…';
-            api('guide_document_proposals', { method: 'POST', prefer: 'return=minimal', body: {
-                title: proposalTitle.value.trim(),
-                category: proposalCategory.value.trim(),
-                description: proposalDescription.value.trim()
-            }}).then(function () {
+            proposalFormStatus.textContent = file ? 'Téléversement du document puis envoi de la proposition…' : 'Envoi de la proposition…';
+            var uploadedPath = null;
+            var upload = file ? uploadProposalAttachment(file).then(function (result) {
+                uploadedPath = result.path;
+                return result;
+            }) : Promise.resolve(null);
+            upload.then(function (attachment) {
+                return api('guide_document_proposals', { method: 'POST', prefer: 'return=minimal', body: {
+                    title: proposalTitle.value.trim(),
+                    category: proposalCategory.value.trim(),
+                    description: proposalDescription.value.trim(),
+                    uploaded_file_path: attachment ? attachment.path : null,
+                    original_filename: attachment ? file.name.slice(0, 255) : null,
+                    file_size: attachment ? file.size : null,
+                    mime_type: attachment ? attachment.mime : null
+                }});
+            }).then(function () {
                 proposalForm.reset();
                 proposalFormStatus.textContent = 'Proposition transmise à l’administrateur.';
                 loadModule2OwnProposals();
             }).catch(function (error) {
                 proposalFormStatus.textContent = error.message || 'Envoi impossible.';
+                if (uploadedPath) {
+                    auth().jeton().then(function (token) {
+                        return fetch(auth().url.replace(/\/$/, '') + '/storage/v1/object/guide-document-proposals/' +
+                            uploadedPath.split('/').map(encodeURIComponent).join('/'), {
+                            method: 'DELETE',
+                            headers: { apikey: auth().key, Authorization: 'Bearer ' + token }
+                        });
+                    }).catch(function () {});
+                }
             }).finally(function () { proposalSubmit.disabled = false; });
         });
         var ownProposals = node('ul', 'module2-og-own-list');
