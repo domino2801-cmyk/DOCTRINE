@@ -38,7 +38,7 @@ as $$
 begin
     if public.doctrine_is_admin() then
         new.admin_id := auth.uid();
-        if new.status = 'approved' then
+        if new.status in ('approved', 'rejected') then
             new.reviewed_at := now();
         end if;
     elsif public.doctrine_is_guide() then
