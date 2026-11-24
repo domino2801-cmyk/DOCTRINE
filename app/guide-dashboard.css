@@ -435,3 +435,17 @@ body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw)
 /* Cohorte Officier Guide : liste ouverte immédiatement, sans accordéon intermédiaire. */
 .og-dashboard-candidate-group-heading { display:flex; align-items:center; min-height:48px; padding:12px 15px; color:#e6c96f; font-size:13px; font-weight:850; }
 .og-dashboard-candidate-group-open > .og-dashboard-candidate-group-items { display:grid; gap:9px; padding:0 12px 12px; }
+
+
+/* Vue CANDIDATS : liste à gauche et fiche de suivi à droite. */
+.og-candidate-list-dialog .og-qcm-tracking-panel { width:min(1500px,96vw); max-width:none; }
+.og-candidate-workspace { display:grid; grid-template-columns:minmax(230px,.72fr) minmax(0,2fr); align-items:start; gap:16px; padding-top:18px; }
+.og-candidate-workspace > .og-dashboard-candidate-group { margin-top:0; min-width:0; }
+.og-candidate-workspace > .og-candidate-profile-detail { min-width:0; display:grid; gap:12px; }
+.og-candidate-workspace .og-candidate-profile-hero { display:flex; flex-direction:column; gap:10px; margin:0; }
+.og-candidate-workspace .og-candidate-profile-summary-card { order:0; grid-template-columns:repeat(2,minmax(0,1fr)); }
+.og-candidate-workspace .og-candidate-profile-identity { order:1; }
+.og-candidate-workspace .og-candidate-profile-progress-card { margin:0; }
+.og-candidate-workspace .og-candidate-profile-module-row { grid-template-columns: minmax(34px,48px) minmax(0,1fr) auto; }
+@media(max-width:850px) { .og-candidate-workspace { grid-template-columns:minmax(0,1fr); } .og-candidate-workspace > .og-dashboard-candidate-group { order:0; } .og-candidate-workspace > .og-candidate-profile-detail { order:1; } }
+@media(max-width:520px) { .og-candidate-workspace .og-candidate-profile-summary-card { grid-template-columns:repeat(2,minmax(0,1fr)); } }
