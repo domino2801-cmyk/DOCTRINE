@@ -328,19 +328,9 @@ const module1Key = 'module1_validated';
         status.setAttribute('role', 'status');
         status.setAttribute('aria-live', 'polite');
         status.style.cssText = 'margin:10px 0 0;color:#334155;font-size:.9rem;';
-        let alreadyCompleted = false;
-        try {
-            alreadyCompleted = localStorage.getItem('doctrine-module-completed-' + number) === 'true';
-        } catch (error) {
-            // La validation serveur reste prioritaire si le stockage local est indisponible.
-        }
-        if (alreadyCompleted) {
-            button.disabled = true;
-            button.textContent = 'Module ' + number + ' déjà validé sur cet appareil';
-            status.textContent = 'Validation enregistrée localement. La progression synchronisée est conservée dans votre compte.';
-        } else {
-            status.textContent = 'Après avoir terminé les contenus de ce module, cliquez pour enregistrer votre validation.';
-        }
+        // Le stockage local ne constitue jamais une preuve de validation :
+        // seul l'événement module_completed enregistré dans Supabase est visible par l'Officier Guide.
+        status.textContent = 'Après avoir terminé les contenus de ce module, cliquez pour enregistrer la validation dans votre compte. Si une ancienne validation locale n’a pas été synchronisée, vous pouvez la renvoyer ici.';
         button.addEventListener('click', async function() {
             if (button.disabled) return;
             button.disabled = true;
@@ -352,11 +342,6 @@ const module1Key = 'module1_validated';
                 button.textContent = 'Réessayer la validation du module ' + number;
                 status.textContent = 'La validation n’a pas été synchronisée. Vérifiez votre connexion puis réessayez.';
                 return;
-            }
-            try {
-                localStorage.setItem('doctrine-module-completed-' + number, 'true');
-            } catch (error) {
-                // L'événement serveur est déjà enregistré.
             }
             button.textContent = 'Module ' + number + ' validé';
             status.textContent = 'Validation enregistrée dans votre compte.';
