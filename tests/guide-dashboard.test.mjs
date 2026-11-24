@@ -136,10 +136,11 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /PRÊT/);
     assert.doesNotMatch(script, /SUIVI NORMAL/);
     assert.match(script, /var guideRole = role === 'guide' \|\| role === 'officier_guide'/);
-    assert.match(script, /La spécialité OG prime sur le rôle administratif/);
-    assert.match(script, /function isGuideSpecialty\(value\)/);
-    assert.match(script, /OFFICIER GUIDE/);
-    assert.match(script, /get_current_user_specialty/);
+    assert.match(script, /role guide\\/officier_guide ET champ profiles\\.speciality exactement égal à OG/);
+    assert.match(script, /select=speciality/);
+    assert.match(script, /profile\\.speciality/);
+    assert.match(script, /=== 'OG'/);
+    assert.doesNotMatch(script, /get_current_user_specialty|isGuideSpecialty/);
     assert.ok(script.includes('setGuideModulesHidden(true)'));
     assert.match(script, /querySelector\('\.study-dashboard'\)/);
     assert.match(script, /progressionCard\.hidden = isGuide/);
