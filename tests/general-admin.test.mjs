@@ -42,11 +42,13 @@ test('les outils transversaux disposent d’une ouverture directe protégée par
   assert.match(script, /doctrine:open-document-views/);
   assert.match(script, /doctrine:open-course-catalog/);
   assert.match(script, /doctrine:open-module2-documents-admin/);
+  assert.match(script, /doctrine:open-module-editor/);
   assert.match(cohort, /doctrine:open-cohort-dashboard/);
   assert.match(cohort, /if \(!isAdmin\(\)\) return/);
   assert.match(course, /doctrine:open-course-catalog/);
   assert.match(course, /function openPanel\(\)[\s\S]*?if \(!isAdmin\(\)\) return/);
   assert.match(admin, /doctrine:open-document-views/);
+  assert.match(admin, /doctrine:open-module-editor/);
   assert.match(admin, /if \(!auth\(\) \|\| !auth\(\)\.estAdmin\(\)\) return/);
   assert.match(module2, /doctrine:open-module2-documents-admin/);
   assert.match(module2, /if \(!isAdmin\(\)\) return/);
