@@ -94,6 +94,12 @@ test('la carte CANDIDATS ouvre la cohorte puis une fiche individuelle limitée a
     assert.match(script, /identity\.name \|\| 'Pseudo non renseigné'/);
     assert.match(script, /identity\.specialty, identity\.email/);
     assert.match(script, /FICHE CANDIDAT/);
+    assert.match(script, /og-candidate-profile-hero/);
+    assert.match(script, /og-candidate-profile-progress-card/);
+    assert.match(script, /og-candidate-profile-module-track/);
+    assert.match(script, /Suivi d’admission/);
+    assert.match(script, /Dossier et documents demandés/);
+    assert.match(script, /renderAiCorrection\(candidate\)/);
     assert.match(script, /SUIVI QCM-MAJOR/);
     assert.match(script, /Historique complet des résultats enregistrés/);
     assert.match(script, /historyContent\.hidden = true/);
