@@ -183,10 +183,10 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /À SURVEILLER/);
     assert.match(script, /PRÊT/);
     assert.match(script, /og-candidate-follow-up-status/);
-    assert.match(script, /candidateFollowUpStatus\\(candidate\\)/);
-    assert.match(css, /\\.og-candidate-follow-up-status\\.is-ok/);
-    assert.match(css, /\\.og-candidate-follow-up-status\\.is-danger/);
-    assert.match(css, /\\.og-candidate-follow-up-status\\.is-warning/);
+    assert.match(script, /candidateFollowUpStatus\(candidate\)/);
+    assert.match(css, /\.og-candidate-follow-up-status\.is-ok/);
+    assert.match(css, /\.og-candidate-follow-up-status\.is-danger/);
+    assert.match(css, /\.og-candidate-follow-up-status\.is-warning/);
     assert.match(css, /\.og-dashboard-status-filters \\{ display:flex; flex-wrap:wrap/);
     assert.match(css, /\.og-dashboard-status-filter\\.is-ok \\{ color:#9ed4a6/);
     assert.match(css, /\.og-dashboard-status-filter\\.is-danger \\{ color:#ffaaa0/);
