@@ -8,28 +8,21 @@ alter table public.guide_document_proposals
     add column if not exists file_size bigint,
     add column if not exists mime_type text;
 
-do $$
-begin
-    if not exists (
-        select 1 from pg_constraint
-        where conname = 'guide_document_proposals_attachment_metadata_check'
-          and conrelid = 'public.guide_document_proposals'::regclass
-    ) then
-        alter table public.guide_document_proposals
-            add constraint guide_document_proposals_attachment_metadata_check check (
-                (uploaded_file_path is null and original_filename is null and file_size is null and mime_type is null)
-                or
-                (uploaded_file_path is not null
-                 and original_filename is not null
-                 and char_length(original_filename) between 1 and 255
-                 and file_size between 1 and 20971520
-                 and mime_type in ('application/pdf', 'text/plain', 'application/vnd.ms-powerpoint')
-                 and uploaded_file_path ~ '^[0-9a-fA-F-]{36}/[A-Za-z0-9._-]{1,140}$'
-                 and lower(original_filename) ~ '\\.(pdf|txt|ppt)$')
-            );
-    end if;
-end;
-$$;
+alter table public.guide_document_proposals
+    drop constraint if exists guide_document_proposals_attachment_metadata_check;
+
+alter table public.guide_document_proposals
+    add constraint guide_document_proposals_attachment_metadata_check check (
+        (uploaded_file_path is null and original_filename is null and file_size is null and mime_type is null)
+        or
+        (uploaded_file_path is not null
+         and original_filename is not null
+         and char_length(original_filename) between 1 and 255
+         and file_size between 1 and 20971520
+         and mime_type in ('application/pdf', 'text/plain', 'application/vnd.ms-powerpoint')
+         and uploaded_file_path ~ '^[0-9a-fA-F-]{36}/[A-Za-z0-9._-]{1,140}$'
+         and lower(original_filename) ~ '\.(pdf|txt|ppt)$')
+    );
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('guide-document-proposals', 'guide-document-proposals', false, 20971520,
