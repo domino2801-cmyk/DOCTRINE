@@ -6,7 +6,7 @@ import vm from "node:vm";
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 
-const [sql, edgeFunction, index, page, styles, script, appScript, adminScript, viewerScript, ogAccessPatch, shortCodePatch, appStyles] = await Promise.all([
+const [sql, edgeFunction, index, page, styles, script, appScript, adminScript, viewerScript, ogAccessPatch, shortCodePatch, appStyles, dashboardScript] = await Promise.all([
     read("supabase/guide_module8.sql"),
     read("supabase/functions/doctrine-submit-fiche/index.ts"),
     read("index.html"),
