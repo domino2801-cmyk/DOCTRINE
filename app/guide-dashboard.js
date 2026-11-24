@@ -2234,50 +2234,6 @@
         }
         libraryGrid.append(proposalEntry);
 
-        function loadModule2GuideContent() {
-            api('guide_document_proposals?select=id,title,category,description,drive_url,created_at&status=eq.approved&order=created_at.asc')
-                .then(function (rows) {
-                    proposalResources.replaceChildren();
-                    if (!rows.length) {
-                        proposalResourceStatus.textContent = 'Aucune ressource complémentaire validée pour le moment.';
-                        return;
-                    }
-                    rows.forEach(function (row) {
-                        var item = node('li', 'module2-og-resource');
-                        var copy = node('div', 'module2-og-resource-copy');
-                        copy.append(node('strong', '', row.title), node('span', '', row.category || 'Document complémentaire'));
-                        if (row.description) copy.append(node('p', '', row.description));
-                        var link = node('button', 'og-dashboard-download', 'Ouvrir');
-                        link.type = 'button';
-                        link.addEventListener('click', function () { openDriveInViewer(row.drive_url, row.title); });
-                        item.append(copy, link);
-                        proposalResources.append(item);
-                    });
-                    proposalResourceStatus.textContent = rows.length + ' ressource(s) disponible(s).';
-                }).catch(function (error) {
-                    proposalResourceStatus.textContent = error.message || 'Chargement des ressources impossible.';
-                });
-            loadModule2OwnProposals();
-        }
-        function loadModule2OwnProposals() {
-            api('guide_document_proposals?select=id,title,category,status,admin_note,created_at&order=created_at.desc')
-                .then(function (rows) {
-                    ownProposals.replaceChildren();
-                    if (!rows.length) {
-                        ownStatus.textContent = 'Aucune proposition enregistrée.';
-                        return;
-                    }
-                    rows.forEach(function (row) {
-                        var item = node('li', '', row.title + ' — ' + row.category + ' — ' +
-                            (row.status === 'approved' ? 'Validée' : row.status === 'rejected' ? 'Refusée' : 'En attente'));
-                        if (row.admin_note) item.append(node('p', '', row.admin_note));
-                        ownProposals.append(item);
-                    });
-                    ownStatus.textContent = '';
-                }).catch(function (error) {
-                    ownStatus.textContent = error.message || 'Chargement du suivi impossible.';
-                });
-        }
         panel.append(libraryGrid);
         statusNode = node('p', 'og-dashboard-status');
         statusNode.setAttribute('role', 'status');
