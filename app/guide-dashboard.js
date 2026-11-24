@@ -1983,7 +1983,7 @@
             // Mettre à jour les indicateurs déjà affichés sans reconstruire les fiches
             // (les accordéons ouverts, formulaires et évaluations restent intacts).
             if (root && !root.hidden) {
-                root.querySelectorAll('.og-dashboard-module-progress').forEach(function (section) {
+                document.querySelectorAll('.og-dashboard-module-progress').forEach(function (section) {
                     var candidate = candidates.find(function (item) {
                         return String(item.candidate && item.candidate.id) === section.dataset.candidateId;
                     });
