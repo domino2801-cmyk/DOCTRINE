@@ -42,4 +42,7 @@ test('les deux tables ont des règles RLS guide et admin distinctes', () => {
   }
   assert.match(migration, /public\.doctrine_is_guide\(\)/);
   assert.match(migration, /public\.doctrine_is_admin\(\)/);
+  assert.match(migration, /guide_email text not null/);
+  assert.match(migration, /priority text not null default 'normal'/);
+  assert.match(migration, /guide_feedback_set_identity/);
 });
