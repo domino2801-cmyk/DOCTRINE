@@ -335,3 +335,20 @@ test('les cartes proposition et support oral affichent les commentaires complets
     assert.match(css, /\.og-dashboard-ai-result \{[^}]*white-space:pre-wrap/s);
     assert.match(css, /\.og-dashboard-ai-result \{[^}]*overflow-wrap:anywhere/s);
 });
+
+
+test('la fiche candidat utilise des accordéons repliés et ne duplique pas les statistiques QCM', () => {
+    const start = script.indexOf('function renderCandidateProfileDetail(target, candidate)');
+    const end = script.indexOf('function openGuideCandidates()', start);
+    const profile = script.slice(start, end);
+    assert.match(profile, /og-candidate-profile-accordion/);
+    assert.match(profile, /Progression des modules 1 à 7/);
+    assert.match(profile, /Suivi d’admission/);
+    assert.match(profile, /Dossier et documents demandés/);
+    assert.match(profile, /Correction assistée par IA/);
+    assert.match(profile, /renderOralTracking\(candidate\)/);
+    assert.match(profile, /renderCcpmTracking\(candidate\)/);
+    assert.match(profile, /renderAiCorrection\(candidate\)/);
+    assert.doesNotMatch(profile, /renderQcmCandidateDetail|Moyenne générale|QCM enregistrés|Tentatives QCM/);
+    assert.match(profile, /moduleNumber <= 7/);
+});
