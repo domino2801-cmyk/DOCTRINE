@@ -40,18 +40,8 @@
             return JSON.parse(decodeURIComponent(escape(atob(part))));
         } catch (_) { return null; }
     }
-    // Accepte le code court OG et les libellés complets du profil Officier Guide.
-    function isGuideSpecialty(value) {
-        if (Array.isArray(value)) value = value[0];
-        if (value && typeof value === 'object') {
-            value = value.specialty || value.speciality || value.get_current_user_specialty || value.role;
-        }
-        var specialty = String(value || '').trim().toUpperCase()
-            .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
-        return specialty === 'OG' || specialty === 'OFFICIER GUIDE' ||
-            specialty === 'OFFICIER_GUIDE' || specialty === 'OFFICIER-GUIDE';
-    }
-
+    // L'accès Officier Guide exige les deux conditions du compte :
+    // rôle guide/officier_guide ET champ profiles.speciality exactement égal à OG.
     function currentGuideStatus() {
         if (!auth() || typeof auth().jeton !== 'function') return Promise.resolve(null);
         return auth().jeton().then(function (token) {
@@ -61,32 +51,22 @@
             var userMeta = claims.user_metadata || {};
             var role = String(meta.role || userMeta.role || '').trim().toLowerCase();
             var guideRole = role === 'guide' || role === 'officier_guide';
-            var admin = role === 'admin' || meta.bm4_admin === true ||
-                meta.bm4_admin === 'true' || meta.bm4_admin === 1 || meta.bm4_admin === '1' ||
-                (typeof auth().estAdmin === 'function' && auth().estAdmin());
+            if (!guideRole) return false;
 
-            // La spécialité OG prime sur le rôle administratif : un Officier Guide
-            // disposant aussi de droits d'administration conserve son espace dédié.
-            if (guideRole) return true;
-            var profileCheck = typeof auth().specialite === 'function'
-                ? auth().specialite().then(isGuideSpecialty).catch(function () { return false; })
-                : Promise.resolve(false);
-            return profileCheck.then(function (isOg) {
-                if (isOg) return true;
-                if (admin) return false;
-                return fetch(auth().url.replace(/\/$/, '') + '/rest/v1/rpc/get_current_user_specialty', {
-                    method: 'POST',
-                    headers: {
-                        apikey: auth().key,
-                        Authorization: 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    },
-                    body: '{}'
-                }).then(function (response) {
-                    if (!response.ok) return false;
-                    return response.json().then(isGuideSpecialty);
-                }).catch(function () { return false; });
-            });
+            return fetch(auth().url.replace(/\\/$/, '') + '/rest/v1/profiles?id=eq.' +
+                encodeURIComponent(claims.sub) + '&select=speciality', {
+                method: 'GET',
+                headers: {
+                    apikey: auth().key,
+                    Authorization: 'Bearer ' + token
+                }
+            }).then(function (response) {
+                if (!response.ok) return false;
+                return response.json().then(function (profiles) {
+                    var profile = Array.isArray(profiles) ? profiles[0] : null;
+                    return !!profile && String(profile.speciality || '').trim().toUpperCase() === 'OG';
+                });
+            }).catch(function () { return false; });
         }).catch(function () { return null; });
     }
     function guideAccess() {
