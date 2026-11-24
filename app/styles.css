@@ -2261,6 +2261,7 @@ body.og-guide-entry-only #corpusPreface {
     box-sizing: border-box;
     width: 100%;
     max-width: none;
+    margin-top: 0 !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
     text-align: center;
