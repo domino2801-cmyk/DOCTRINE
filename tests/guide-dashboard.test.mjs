@@ -21,7 +21,7 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(script, /if \(!claims \|\| !claims\.sub\) return null/);
     assert.match(script, /if \(isGuide === null\) return/);
     assert.match(script, /Une session absente ou encore en cours de restauration ne doit jamais/);
-    assert.match(script, /select=speciality/);
+    assert.ok(script.includes('&select=speciality'));
     assert.match(script, /style\.setProperty\('display', 'none', 'important'\)/);
     assert.match(script, /getElementById\('btn-mod' \+ id\)/);
     assert.match(script, /module-nav-button\[onclick\]/);
@@ -136,10 +136,10 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /PRÊT/);
     assert.doesNotMatch(script, /SUIVI NORMAL/);
     assert.match(script, /var guideRole = role === 'guide' \|\| role === 'officier_guide'/);
-    assert.match(script, /role guide\\/officier_guide ET champ profiles\\.speciality exactement égal à OG/);
+    assert.ok(script.includes('rôle guide/officier_guide ET champ profiles.speciality exactement égal à OG'));
     assert.match(script, /select=speciality/);
-    assert.match(script, /profile\\.speciality/);
-    assert.match(script, /=== 'OG'/);
+    assert.ok(script.includes('profile.speciality'));
+    assert.ok(script.includes("=== 'OG'"));
     assert.doesNotMatch(script, /get_current_user_specialty|isGuideSpecialty/);
     assert.ok(script.includes('setGuideModulesHidden(true)'));
     assert.match(script, /querySelector\('\.study-dashboard'\)/);
