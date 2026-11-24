@@ -61,6 +61,12 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.ok(script.includes('result.theme'));
     assert.ok(script.includes('og-qcm-bar-track'));
     assert.ok(script.includes('Historique complet des résultats enregistrés'));
+    assert.ok(script.includes("for (var number = 1; number <= 6; number += 1)"));
+    assert.ok(script.includes("Aucune note"));
+    assert.ok(script.includes("historyContent.hidden = true"));
+    assert.ok(script.includes("historyToggle.setAttribute('aria-expanded', 'false')"));
+    assert.ok(script.includes("historyContent.hidden = expanded"));
+    assert.ok(css.includes('.og-qcm-history-toggle.is-expanded'));
     assert.ok(css.includes('.og-qcm-theme-chart'));
     assert.ok(css.includes('.og-qcm-candidate-button'));
     assert.doesNotMatch(script, /guide_action|og-dashboard-ai-frame/);
