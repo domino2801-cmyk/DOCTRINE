@@ -6,7 +6,7 @@ import vm from "node:vm";
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 
-const [sql, edgeFunction, index, page, styles, script, appScript, adminScript, viewerScript, ogAccessPatch, shortCodePatch, appStyles] = await Promise.all([
+const [sql, edgeFunction, index, page, styles, script, appScript, adminScript, viewerScript, ogAccessPatch, shortCodePatch, appStyles, dashboardScript] = await Promise.all([
     read("supabase/guide_module8.sql"),
     read("supabase/functions/doctrine-submit-fiche/index.ts"),
     read("index.html"),
@@ -18,7 +18,8 @@ const [sql, edgeFunction, index, page, styles, script, appScript, adminScript, v
     read("viewer/viewer.js"),
     read("supabase/guide_module8-og-access.sql"),
     read("supabase/guide_module8-short-code.sql"),
-    read("app/styles.css")
+    read("app/styles.css"),
+    read("app/guide-dashboard.js")
 ]);
 const progressSyncSql = await read("supabase/guide-progress-harmonization.sql");
 const correctionAiFunction = await read("supabase/functions/correct-fiche-ai/index.ts");
@@ -430,6 +431,18 @@ test("l’observation et l’indice du critère Forme sont persistés séparéme
     assert.match(sql, /add column if not exists form_evidence text/);
     assert.match(sql, /add column if not exists rubric_observations jsonb/);
     assert.match(sql, /add column if not exists rubric_evidence jsonb/);
+});
+
+test("l’observation et l’indice du critère Forme sont visibles et obligatoires dans les deux interfaces", () => {
+    assert.match(script, /criterion\.key === 'form'[\s\S]*observation\.required = criterion\.key === 'form'[\s\S]*evidence\.required = criterion\.key === 'form'/);
+    assert.match(script, /formFeedbackComplete[\s\S]*rubricObservations\.form[\s\S]*rubricEvidence\.form/);
+    assert.match(script, /Pour le critère Forme, renseignez obligatoirement une observation et un indice documentaire vérifiable/);
+    assert.match(script, /suggestionRubricDetails\(suggestion\)[\s\S]*observations\.form = String\(suggestion\.form_observations[\s\S]*evidence\.form = String\(suggestion\.form_evidence/);
+    assert.match(dashboardScript, /criterion\.key === 'form'[\s\S]*observation\.required = criterion\.key === 'form'[\s\S]*evidence\.required = criterion\.key === 'form'/);
+    assert.match(dashboardScript, /formFeedbackComplete[\s\S]*observations\.form[\s\S]*evidence\.form/);
+    assert.match(dashboardScript, /Pour le critère Forme, renseignez obligatoirement une observation et un indice documentaire vérifiable/);
+    assert.match(dashboardScript, /form_observations: isOral \? null : totals\.observations\.form/);
+    assert.match(dashboardScript, /form_evidence: isOral \? null : totals\.evidence\.form/);
 });
 
 test("la correction IA exige observation et indice pour chacun des neuf critères BM4", () => {

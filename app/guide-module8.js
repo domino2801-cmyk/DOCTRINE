@@ -893,16 +893,26 @@
             const observation = document.createElement('textarea');
             observation.rows = 2;
             observation.maxLength = 500;
-            observation.placeholder = 'Observation du critère';
+            observation.placeholder = criterion.key === 'form'
+                ? 'Observation du critère Forme — obligatoire'
+                : 'Observation du critère';
             observation.dataset.rubricObservation = criterion.key;
-            observation.setAttribute('aria-label', 'Observation — ' + criterion.label);
+            observation.setAttribute('aria-label', criterion.key === 'form'
+                ? 'Observation du critère Forme — obligatoire'
+                : 'Observation — ' + criterion.label);
+            observation.required = criterion.key === 'form';
             observation.value = String(review?.rubric_observations?.[criterion.key] || '');
             const evidence = document.createElement('textarea');
             evidence.rows = 2;
             evidence.maxLength = 300;
-            evidence.placeholder = 'Indice documentaire vérifiable (page, passage, référence)';
+            evidence.placeholder = criterion.key === 'form'
+                ? 'Indice documentaire du critère Forme — obligatoire (page, passage, référence)'
+                : 'Indice documentaire vérifiable (page, passage, référence)';
             evidence.dataset.rubricEvidence = criterion.key;
-            evidence.setAttribute('aria-label', 'Indice — ' + criterion.label);
+            evidence.setAttribute('aria-label', criterion.key === 'form'
+                ? 'Indice documentaire du critère Forme — obligatoire'
+                : 'Indice — ' + criterion.label);
+            evidence.required = criterion.key === 'form';
             evidence.value = String(review?.rubric_evidence?.[criterion.key] || '');
             feedback.append(observation, evidence);
             label.appendChild(feedback);
@@ -1029,6 +1039,8 @@
             if (criterion.group === 'form') formGrade += score;
             else contentGrade += score;
         });
+        const formFeedbackComplete = activeReviewSubmission?.submission_type !== 'proposition' ||
+            (Boolean(rubricObservations.form) && Boolean(rubricEvidence.form));
         return {
             rubricScores: rubricScores,
             rubricObservations: rubricObservations,
@@ -1036,7 +1048,8 @@
             formGrade: Math.round(formGrade * 100) / 100,
             contentGrade: Math.round(contentGrade * 100) / 100,
             grade: Math.round((formGrade + contentGrade) * 100) / 100,
-            complete: complete && Object.keys(rubricScores).length === rubric.criteria.length
+            complete: complete && Object.keys(rubricScores).length === rubric.criteria.length &&
+                formFeedbackComplete
         };
     }
 
@@ -1523,6 +1536,17 @@
             return;
         }
         const totals = collectReviewScores();
+        if (activeReviewSubmission.submission_type === 'proposition' &&
+            (!totals.rubricObservations.form || !totals.rubricEvidence.form)) {
+            setStatus(status,
+                'Pour le critère Forme, renseignez obligatoirement une observation et un indice documentaire vérifiable (page, passage ou référence).',
+                'error');
+            const observation = document.querySelector('[data-rubric-observation="form"]');
+            const evidence = document.querySelector('[data-rubric-evidence="form"]');
+            if (observation && !observation.value.trim()) observation.focus();
+            else if (evidence) evidence.focus();
+            return;
+        }
         if (!totals.complete) {
             setStatus(status, 'Renseignez une note valide pour chaque critère de la grille.', 'error');
             return;
