@@ -257,23 +257,15 @@
 
 
 /* Filtres rapides de l'état d'accompagnement des candidats. */
-/* Cartes de synthèse et filtres par état des candidats. */
-.og-dashboard-status-filters { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:12px 0 16px; }
-.og-dashboard-status-filter { display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:0; min-height:62px; padding:12px 14px; border:1px solid rgba(183,207,185,.24); border-radius:12px; background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018)); color:#dce7dd; font:inherit; font-size:11px; font-weight:850; letter-spacing:.025em; text-align:left; cursor:pointer; transition:background .15s ease,border-color .15s ease,transform .15s ease,box-shadow .15s ease; }
-.og-dashboard-status-filter:hover { transform:translateY(-2px); border-color:rgba(216,184,91,.7); }
+.og-dashboard-status-filters { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 14px; }
+.og-dashboard-status-filter { min-height:38px; padding:8px 12px; border:1px solid rgba(183,207,185,.28); border-radius:999px; background:rgba(255,255,255,.035); color:#dce7dd; font:inherit; font-size:11px; font-weight:850; letter-spacing:.025em; cursor:pointer; transition:background .15s ease,border-color .15s ease,transform .15s ease; }
+.og-dashboard-status-filter:hover { transform:translateY(-1px); border-color:#d8b85b; }
 .og-dashboard-status-filter:focus-visible { outline:2px solid #e6c96f; outline-offset:2px; }
-.og-dashboard-status-filter::after { content:''; flex:0 0 28px; width:28px; height:28px; display:grid; place-items:center; border-radius:8px; background:rgba(255,255,255,.08); font-size:14px; font-weight:900; }
-.og-dashboard-status-filter.is-active { box-shadow:inset 0 0 0 1px currentColor,0 5px 16px rgba(0,0,0,.12); }
-.og-dashboard-status-filter.is-active::after { background:rgba(255,255,255,.15); }
-.og-dashboard-status-filter.is-ok { color:#9ed4a6; border-color:rgba(89,177,105,.48); background:linear-gradient(145deg,rgba(49,133,69,.2),rgba(255,255,255,.025)); }
-.og-dashboard-status-filter.is-ok::after { content:'✓'; background:rgba(89,177,105,.2); }
-.og-dashboard-status-filter.is-danger { color:#ffaaa0; border-color:rgba(221,91,79,.48); background:linear-gradient(145deg,rgba(160,54,48,.22),rgba(255,255,255,.025)); }
-.og-dashboard-status-filter.is-danger::after { content:'!'; background:rgba(221,91,79,.2); }
-.og-dashboard-status-filter.is-warning { color:#f0ce79; border-color:rgba(216,169,62,.48); background:linear-gradient(145deg,rgba(161,117,32,.22),rgba(255,255,255,.025)); }
-.og-dashboard-status-filter.is-warning::after { content:'⌁'; background:rgba(216,169,62,.2); }
-@media(max-width:760px) { .og-dashboard-status-filters { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-@media(max-width:390px) { .og-dashboard-status-filters { grid-template-columns:1fr; } .og-dashboard-status-filter { min-height:54px; } }
-
+.og-dashboard-status-filter.is-active { background:rgba(216,184,91,.16); border-color:#d8b85b; color:#fff2c4; box-shadow:inset 0 0 0 1px rgba(216,184,91,.12); }
+.og-dashboard-status-filter.is-ok:not(.is-active) { color:#9ed4a6; }
+.og-dashboard-status-filter.is-danger:not(.is-active) { color:#ffaaa0; }
+.og-dashboard-status-filter.is-warning:not(.is-active) { color:#f0ce79; }
+@media(max-width:480px) { .og-dashboard-status-filters { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); } .og-dashboard-status-filter { width:100%; padding-inline:7px; } }
 
 /* Accordéon de groupe des candidats filtrés — fermé par défaut. */
 .og-dashboard-candidate-group { margin-top:12px; border:1px solid rgba(216,184,91,.32); border-radius:9px; background:rgba(255,255,255,.025); overflow:hidden; }
@@ -341,6 +333,13 @@ body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw)
 .og-qcm-tracking-header p:last-child { margin:7px 0 0; }
 .og-qcm-tracking-layout { display:grid; grid-template-columns:minmax(220px,.75fr) minmax(0,2fr); gap:16px; padding-top:18px; }
 .og-qcm-candidate-list { display:grid; align-content:start; gap:8px; }
+.og-qcm-candidate-identity { display:flex; align-items:center; justify-content:space-between; gap:10px; min-width:0; }
+.og-qcm-candidate-identity > strong { min-width:0; overflow-wrap:anywhere; }
+.og-candidate-follow-up-status { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; padding:4px 8px; border:1px solid currentColor; border-radius:999px; font-size:10px; line-height:1.2; font-weight:900; letter-spacing:.035em; white-space:nowrap; }
+.og-candidate-follow-up-status.is-ok { color:#9ed4a6; background:rgba(49,133,69,.18); border-color:rgba(89,177,105,.55); }
+.og-candidate-follow-up-status.is-danger { color:#ffaaa0; background:rgba(160,54,48,.2); border-color:rgba(221,91,79,.55); }
+.og-candidate-follow-up-status.is-warning { color:#f0ce79; background:rgba(161,117,32,.2); border-color:rgba(216,169,62,.55); }
+@media(max-width:420px) { .og-qcm-candidate-identity { align-items:flex-start; flex-wrap:wrap; } }
 .og-qcm-candidate-button { display:grid; gap:6px; width:100%; padding:12px; border:1px solid rgba(183,207,185,.22); border-radius:7px; background:rgba(255,255,255,.035); color:#f2f5ee; text-align:left; cursor:pointer; font:inherit; }
 .og-qcm-candidate-button span,.og-qcm-history-copy small { color:#b8c8bb; font-size:12px; }
 .og-qcm-candidate-button:hover,.og-qcm-candidate-button.is-selected { border-color:#d8b85b; background:rgba(216,184,91,.12); }
