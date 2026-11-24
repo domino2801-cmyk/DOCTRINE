@@ -443,11 +443,14 @@
             });
         }).length;
         var lastActivity = doctrine.last_activity;
-        target.append(node('h3', 'og-candidate-profile-title', 'FICHE CANDIDAT'));
-        var identityCard = node('section', 'og-candidate-profile-identity');
-        identityCard.append(node('strong', 'og-candidate-profile-pseudo', pseudo));
-        if (identity.specialty) identityCard.append(node('p', '', 'Spécialité : ' + identity.specialty));
-        if (identity.email) identityCard.append(node('p', '', 'E-mail : ' + identity.email));
+        var profileHero = node('section', 'og-candidate-profile-hero');
+        var identityCard = node('div', 'og-candidate-profile-identity');
+        var identityCopy = node('div', 'og-candidate-profile-identity-copy');
+        identityCopy.append(node('p', 'og-dashboard-kicker', 'FICHE CANDIDAT'));
+        identityCopy.append(node('strong', 'og-candidate-profile-pseudo', pseudo));
+        if (identity.specialty) identityCopy.append(node('p', '', 'Spécialité : ' + identity.specialty));
+        if (identity.email) identityCopy.append(node('p', '', 'E-mail : ' + identity.email));
+        identityCard.append(identityCopy);
         var summary = node('div', 'og-candidate-profile-summary-card');
         [
             ['Fiches soumises', String(dossierItems.length)],
@@ -459,8 +462,8 @@
             metric.append(node('span', '', entry[0]), node('strong', '', entry[1]));
             summary.append(metric);
         });
-        identityCard.append(summary);
-        target.append(identityCard);
+        profileHero.append(identityCard, summary);
+        target.append(profileHero);
 
         function accordion(title, className, contentBuilder) {
             var details = node('details', 'og-candidate-profile-accordion' + (className ? ' ' + className : ''));
@@ -472,34 +475,39 @@
             return details;
         }
 
-        accordion('Progression des modules 1 à 7', 'og-candidate-profile-progress', function (content) {
-            for (var moduleNumber = 1; moduleNumber <= 7; moduleNumber += 1) {
-                var moduleEvents = (Array.isArray(doctrine.progress_events) ? doctrine.progress_events : [])
-                    .filter(function (event) {
-                        return Number(String(event.module_id || '').match(/\\d+/)?.[0]) === moduleNumber;
-                    });
-                var status = moduleState(candidate, String(moduleNumber));
-                var row = node('article', 'og-candidate-profile-module-row');
-                var copy = node('div', 'og-candidate-profile-module-copy');
-                copy.append(node('strong', '', 'Module ' + moduleNumber));
-                copy.append(node('span', '', status.label));
-                if (moduleEvents.length) {
-                    copy.append(node('small', '', moduleEvents.length + ' activité(s) enregistrée(s)'));
-                    var latest = moduleEvents.slice().sort(function (a, b) {
-                        return Date.parse(b.created_at || '') - Date.parse(a.created_at || '');
-                    })[0];
-                    if (latest.created_at && Number.isFinite(Date.parse(latest.created_at))) {
-                        copy.append(node('small', '', 'Dernière activité : ' +
-                            new Date(latest.created_at).toLocaleString('fr-FR')));
-                    }
-                }
-                row.append(copy);
-                content.append(row);
+        var progressSection = node('section', 'og-candidate-profile-progress-card');
+        progressSection.append(node('h4', '', 'Progression des modules 1 à 7'));
+        var progressGrid = node('div', 'og-candidate-profile-progress-grid');
+        for (var moduleNumber = 1; moduleNumber <= 7; moduleNumber += 1) {
+            var moduleEvents = (Array.isArray(doctrine.progress_events) ? doctrine.progress_events : [])
+                .filter(function (event) {
+                    return Number(String(event.module_id || '').match(/\\d+/)?.[0]) === moduleNumber;
+                });
+            var status = moduleState(candidate, String(moduleNumber));
+            var progressRow = node('article', 'og-candidate-profile-module-row ' + status.className);
+            var copy = node('div', 'og-candidate-profile-module-copy');
+            copy.append(node('strong', '', String(moduleNumber)));
+            copy.append(node('span', '', status.label));
+            var track = node('div', 'og-candidate-profile-module-track');
+            track.setAttribute('role', 'img');
+            track.setAttribute('aria-label', 'Module ' + moduleNumber + ' : ' + status.label);
+            var fill = node('span', 'og-candidate-profile-module-fill');
+            fill.style.width = status.className === 'is-ok' ? '100%' :
+                status.className === 'is-warning' ? '50%' : '0%';
+            track.append(fill);
+            progressRow.append(copy, track);
+            if (moduleEvents.length) {
+                var meta = node('small', 'og-candidate-profile-module-meta',
+                    moduleEvents.length + ' activité(s) enregistrée(s)');
+                progressRow.append(meta);
             }
-            if (!moduleEventsAvailable) {
-                content.prepend(node('p', 'og-qcm-empty', 'Les données de progression sont momentanément indisponibles.'));
-            }
-        });
+            progressGrid.append(progressRow);
+        }
+        if (!moduleEventsAvailable) {
+            progressGrid.prepend(node('p', 'og-qcm-empty', 'Les données de progression sont momentanément indisponibles.'));
+        }
+        progressSection.append(progressGrid);
+        target.append(progressSection);
 
         accordion('Suivi d’admission', 'og-candidate-profile-admission', function (content) {
             content.append(renderOralTracking(candidate));
