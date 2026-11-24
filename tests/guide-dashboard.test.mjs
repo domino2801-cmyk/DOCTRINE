@@ -56,13 +56,16 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.doesNotMatch(script, /app\/guide-module8\.html|guide_action|og-dashboard-ai-frame/);
 });
 
-test('le clic RETEX ou signalement masque la fiche opposée et le Module 7 réinitialise les deux cartes', () => {
-    assert.ok(script.includes("var otherCard = document.getElementById(cardId === 'retexCard' ? 'signalementCard' : 'retexCard');"));
-    assert.ok(script.includes('if (otherCard) otherCard.hidden = true;'));
-    assert.ok(script.includes('if (card) card.hidden = false;'));
-    assert.ok(appScript.includes("if (id === 'module7') {"));
-    assert.ok(appScript.includes("['retexCard', 'signalementCard'].forEach"));
-    assert.ok(appScript.includes('if (card) card.hidden = false;'));
+test('le clic RETEX ou signalement masque l’autre carte dans le tableau de bord Officier Guide', () => {
+    assert.match(script, /var selectedGuideModule7Card = null/);
+    assert.match(script, /selectedGuideModule7Card === 'retex'/);
+    assert.match(script, /selectedGuideModule7Card === 'signalement'/);
+    assert.match(script, /selectedGuideModule7Card = 'retex'/);
+    assert.match(script, /selectedGuideModule7Card = 'signalement'/);
+    assert.match(script, /renderMetrics\(\)/);
+    assert.match(script, /data\.guideModule7Card = 'retex'/);
+    assert.match(script, /data\.guideModule7Card = 'signalement'/);
+    assert.doesNotMatch(script, /var otherCard = document\.getElementById\(cardId === 'retexCard'/);
 });
 
 test('le tableau de bord utilise les données filtrées par le RPC guide', () => {
