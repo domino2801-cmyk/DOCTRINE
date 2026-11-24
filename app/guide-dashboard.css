@@ -362,8 +362,11 @@ body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw)
 .og-dashboard-candidates-tracking { min-width:0; }
 .og-candidate-profile-detail { min-width:0; }
 .og-candidate-profile-title { margin:0 0 12px; color:#f2f5ee; }
-.og-candidate-profile-identity { margin-bottom:16px; padding:14px; border:1px solid rgba(216,184,91,.35); border-radius:8px; background:rgba(216,184,91,.07); }
-.og-candidate-profile-pseudo { display:block; margin-bottom:7px; color:#f5f7ef; font-size:19px; }
+.og-candidate-profile-hero { display:grid; grid-template-columns:minmax(0,1fr) minmax(280px,1.15fr); align-items:stretch; gap:12px; margin-bottom:16px; }
+.og-candidate-profile-identity { display:flex; align-items:center; min-width:0; margin:0; padding:16px; border:1px solid rgba(216,184,91,.35); border-radius:9px; background:linear-gradient(135deg,rgba(216,184,91,.11),rgba(255,255,255,.025)); }
+.og-candidate-profile-identity-copy { min-width:0; }
+.og-candidate-profile-identity-copy .og-dashboard-kicker { margin:0 0 7px; color:#d8b85b; font-size:10px; letter-spacing:.12em; }
+.og-candidate-profile-pseudo { display:block; margin-bottom:7px; color:#f5f7ef; font-size:23px; }
 .og-candidate-profile-identity p { margin:4px 0 0; color:#c8d5c9; overflow-wrap:anywhere; }
 .og-candidate-profile-section { margin-top:16px; padding-top:13px; border-top:1px solid rgba(183,207,185,.2); }
 .og-candidate-profile-section h4 { margin:0 0 10px; color:#d8b85b; font-size:13px; letter-spacing:.05em; }
@@ -388,10 +391,19 @@ body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw)
 .og-candidate-profile-accordion > summary:hover { background:rgba(216,184,91,.07); }
 .og-candidate-profile-accordion > summary:focus-visible { outline:2px solid #e6c96f; outline-offset:-2px; }
 .og-candidate-profile-accordion-content { display:grid; gap:12px; padding:12px; border-top:1px solid rgba(183,207,185,.16); }
-.og-candidate-profile-module-row { display:flex; justify-content:space-between; gap:12px; padding:10px; border:1px solid rgba(183,207,185,.13); border-radius:7px; background:rgba(0,0,0,.12); }
-.og-candidate-profile-module-copy { display:grid; gap:4px; }
-.og-candidate-profile-module-copy strong { color:#f2f5ee; }
-.og-candidate-profile-module-copy span,.og-candidate-profile-module-copy small { color:#b9c9bb; font-size:12px; }
+.og-candidate-profile-progress-card { margin:0 0 16px; padding:16px; border:1px solid rgba(183,207,185,.22); border-radius:9px; background:rgba(255,255,255,.025); }
+.og-candidate-profile-progress-card > h4 { margin:0 0 14px; color:#d8b85b; font-size:16px; }
+.og-candidate-profile-progress-grid { display:grid; gap:12px; }
+.og-candidate-profile-module-row { display:grid; grid-template-columns:48px minmax(0,1fr) auto; align-items:center; gap:12px; min-width:0; }
+.og-candidate-profile-module-copy { display:grid; gap:3px; }
+.og-candidate-profile-module-copy strong { color:#f2f5ee; font-size:14px; }
+.og-candidate-profile-module-copy span { color:#b9c9bb; font-size:11px; }
+.og-candidate-profile-module-track { height:13px; overflow:hidden; border-radius:20px; background:#26392f; box-shadow:inset 0 0 0 1px rgba(183,207,185,.16); }
+.og-candidate-profile-module-fill { display:block; height:100%; border-radius:20px; background:linear-gradient(90deg,#526b4e,#d8b85b); transition:width .2s ease; }
+.og-candidate-profile-module-row.is-ok .og-candidate-profile-module-fill { background:linear-gradient(90deg,#526b4e,#9ed4a6); }
+.og-candidate-profile-module-row.is-warning .og-candidate-profile-module-fill { background:linear-gradient(90deg,#806b36,#e6c96f); }
+.og-candidate-profile-module-meta { color:#b9c9bb; font-size:10px; white-space:nowrap; }
+@media(max-width:520px) { .og-candidate-profile-module-row { grid-template-columns:38px minmax(0,1fr); gap:8px; } .og-candidate-profile-module-meta { grid-column:2; } }
 .og-candidate-profile-documents { padding-top:10px; border-top:1px solid rgba(183,207,185,.15); }
 .og-candidate-profile-documents h4 { margin:0 0 8px; color:#d8b85b; font-size:13px; }
 .og-candidate-profile-admission .og-dashboard-oral-tracking { margin:0; }
@@ -401,12 +413,16 @@ body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw)
 /* Carte identité candidat et indicateurs : grille adaptative. */
 .og-candidate-profile-identity { display:grid; grid-template-columns:minmax(0,1fr); gap:8px; min-width:0; }
 .og-candidate-profile-identity > p { min-width:0; overflow-wrap:anywhere; }
-.og-candidate-profile-summary-card { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px; min-width:0; }
+.og-candidate-profile-summary-card { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-content:stretch; gap:8px; margin:0; min-width:0; }
 .og-candidate-profile-summary-item { display:flex; flex-direction:column; justify-content:space-between; gap:7px; min-width:0; min-height:70px; padding:10px 11px; border:1px solid rgba(183,207,185,.2); border-radius:8px; background:rgba(10,22,16,.34); }
 .og-candidate-profile-summary-item span { color:#b9c9bb; font-size:11px; line-height:1.35; }
 .og-candidate-profile-summary-item strong { color:#f5f7ef; font-size:16px; line-height:1.35; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
 .og-candidate-profile-summary-item:last-child strong { font-size:13px; }
-@media(max-width:640px) {
+@media(max-width:760px) {
+  .og-candidate-profile-hero { grid-template-columns:1fr; }
+  .og-candidate-profile-summary-card { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+@media(max-width:520px) {
   .og-candidate-profile-summary-card { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .og-candidate-profile-summary-item:last-child { grid-column:1 / -1; }
 }
