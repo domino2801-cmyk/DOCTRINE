@@ -24,12 +24,32 @@ test('les six rubriques de pilotage sont présentes et repliables', () => {
   assert.match(script, /<details class="ag-card"/);
 });
 
-test('les commandes signalements, RETEX et suivi réutilisent les vues admin existantes', () => {
-  for (const action of ['candidate-signals', 'guide-signals', 'candidate-retex', 'guide-retex', 'global-tracking']) {
+test('les signalements, RETEX et alertes réutilisent le gestionnaire existant', () => {
+  for (const action of ['candidate-signals', 'guide-signals', 'candidate-retex', 'guide-retex', 'notifications']) {
     assert.ok(script.includes(action), 'Action manquante : ' + action);
   }
   assert.match(script, /doctrine:admin-fiches/);
-  assert.match(script, /adm-cohort-toolbar/);
+});
+
+test('les outils transversaux disposent d’une ouverture directe protégée par le rôle admin', async () => {
+  const [cohort, course, admin, module2] = await Promise.all([
+    readFile(new URL('../admin/cohort-dashboard.js', import.meta.url), 'utf8'),
+    readFile(new URL('../admin/course-catalog.js', import.meta.url), 'utf8'),
+    readFile(new URL('../admin/admin.js', import.meta.url), 'utf8'),
+    readFile(new URL('../app/module2-documents.js', import.meta.url), 'utf8')
+  ]);
+  assert.match(script, /doctrine:open-cohort-dashboard/);
+  assert.match(script, /doctrine:open-document-views/);
+  assert.match(script, /doctrine:open-course-catalog/);
+  assert.match(script, /doctrine:open-module2-documents-admin/);
+  assert.match(cohort, /doctrine:open-cohort-dashboard/);
+  assert.match(cohort, /if \(!isAdmin\(\)\) return/);
+  assert.match(course, /doctrine:open-course-catalog/);
+  assert.match(course, /function openPanel\(\)[\s\S]*?if \(!isAdmin\(\)\) return/);
+  assert.match(admin, /doctrine:open-document-views/);
+  assert.match(admin, /if \(!auth\(\) \|\| !auth\(\)\.estAdmin\(\)\) return/);
+  assert.match(module2, /doctrine:open-module2-documents-admin/);
+  assert.match(module2, /if \(!isAdmin\(\)\) return/);
 });
 
 test('le bouton reste caché sans rôle administrateur et visible avec ce rôle', () => {
