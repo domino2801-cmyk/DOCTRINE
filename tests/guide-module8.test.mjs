@@ -322,7 +322,7 @@ test("l’entrée Module 8 est conditionnelle et la page propose les parcours de
     assert.match(styles, /\.guide-module8-page\.is-embedded \.guide-header\s*\{\s*display:\s*none;/);
     assert.match(script, /GUIDE_ROLES = new Set\(\['guide', 'officier_guide'\]\)/);
     assert.match(script, /specialty === 'OG'/);
-    assert.match(script, /admin \|\| GUIDE_ROLES\.has\(role\)/);
+    assert.match(script, /admin \|\| \(GUIDE_ROLES\.has\(role\) && specialty === 'OG'\)/);
     assert.match(page, /Code candidat de 8 caractères \(communiqué par le candidat\)/);
     assert.match(page, /pattern="\[A-HJ-NP-Za-hj-np-z2-9\]\{8\}"/);
     assert.match(script, /assign_guide_candidate_by_code/);
