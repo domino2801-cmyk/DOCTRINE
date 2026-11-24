@@ -52,7 +52,10 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(script, /Suivi individuel par candidat de ma cohorte/);
     assert.match(script, /dataset\.guideAction = 'qcm-major-tracking'/);
     assert.match(script, /function openGuideQcmTracking\(\)/);
-    assert.match(script, /window\.location\.href = 'app\/guide-module8\.html\?embedded=1'/);
+    assert.match(script, /og-qcm-tracking-overlay/);
+    assert.match(script, /frame\.src = 'app\/guide-module8\.html\?embedded=1'/);
+    assert.match(script, /og-qcm-tracking-frame/);
+    assert.match(css, /\.og-qcm-tracking-overlay/);
     assert.doesNotMatch(script, /guide_action|og-dashboard-ai-frame/);
 });
 
