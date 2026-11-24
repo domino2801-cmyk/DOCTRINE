@@ -1,0 +1,105 @@
+/* Module 2.1 — cartes documentaires ajoutées et formulaires de proposition */
+.module2-approved-documents {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0 0 22px;
+    padding: 0;
+    list-style: none;
+}
+.module2-approved-document {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px 14px;
+    padding: 14px;
+    border: 1px solid rgba(120, 130, 110, .28);
+    border-radius: 9px;
+    background: rgba(120, 130, 110, .08);
+}
+.module2-approved-document .dossier-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.module2-document-category {
+    grid-column: 1;
+    color: #687568;
+    font-size: .82rem;
+}
+.module2-approved-document .doc-link {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+}
+.module2-document-admin {
+    margin: 18px 0;
+    padding: 18px;
+    border: 1px solid rgba(120, 130, 110, .35);
+    border-radius: 10px;
+    background: rgba(120, 130, 110, .08);
+}
+.module2-document-admin h3,
+.module2-admin-proposal strong {
+    display: block;
+    margin: 0 0 12px;
+}
+.module2-admin-form,
+.module2-proposal-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+.module2-admin-form label,
+.module2-proposal-form label,
+.module2-admin-proposal label {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    font-weight: 600;
+}
+.module2-admin-form input,
+.module2-admin-form textarea,
+.module2-proposal-form input,
+.module2-proposal-form textarea,
+.module2-admin-proposal input,
+.module2-admin-proposal textarea {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid #9ba69a;
+    border-radius: 7px;
+    font: inherit;
+}
+.module2-admin-form label:nth-child(3),
+.module2-admin-form label:nth-child(4),
+.module2-admin-form button,
+.module2-admin-form .adm-state,
+.module2-proposal-form label:nth-child(3),
+.module2-proposal-form button,
+.module2-proposal-form .guide-form-status {
+    grid-column: 1 / -1;
+}
+.module2-admin-proposal {
+    display: grid;
+    gap: 10px;
+    margin: 12px 0;
+    padding: 14px;
+    border: 1px solid rgba(120, 130, 110, .3);
+    border-radius: 8px;
+    background: rgba(120, 130, 110, .06);
+}
+.module2-admin-proposal p { margin: 0; }
+.module2-admin-proposal button { margin: 4px 8px 0 0; }
+.module2-proposal-list { padding-left: 20px; }
+.module2-proposal-list li { margin: 8px 0; }
+.module2-document-admin .is-error,
+#guideModule2ProposalPanel .is-error { color: #b42318; }
+@media (max-width: 640px) {
+    .module2-approved-documents,
+    .module2-admin-form,
+    .module2-proposal-form { grid-template-columns: minmax(0, 1fr); }
+    .module2-approved-document { grid-template-columns: minmax(0, 1fr) auto; }
+    .module2-admin-form > *,
+    .module2-proposal-form > * { grid-column: 1 / -1; }
+}
