@@ -85,9 +85,12 @@ test('la carte CANDIDATS ouvre la cohorte puis une fiche individuelle limitée a
     assert.match(script, /function renderCandidateProfileDetail\(target, candidate\)/);
     assert.match(script, /CANDIDATS — COHORTE RATTACHÉE/);
     assert.match(script, /'TOUS — ' \+ candidates\.length \+ ' candidat\(s\)'/);
-    assert.match(script, /og-dashboard-candidate-group/);
+    assert.match(script, /og-dashboard-candidate-group-open/);
+    assert.match(script, /og-dashboard-candidate-group-heading/);
     assert.match(script, /og-dashboard-candidate-group-items/);
     assert.match(script, /renderCandidateProfileDetail\(detail, candidate\)/);
+    assert.match(script, /firstCandidateButton\.click\(\)/);
+    assert.doesNotMatch(script.slice(script.indexOf('function openGuideCandidates'), script.indexOf('function renderMetrics')), /node\('details', 'og-dashboard-candidate-group'/);
     assert.match(script, /identity\.name \|\| 'Pseudo non renseigné'/);
     assert.match(script, /identity\.specialty, identity\.email/);
     assert.match(script, /FICHE CANDIDAT/);
