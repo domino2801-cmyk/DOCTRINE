@@ -449,3 +449,78 @@ body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw)
 .og-candidate-workspace .og-candidate-profile-module-row { grid-template-columns: minmax(34px,48px) minmax(0,1fr) auto; }
 @media(max-width:850px) { .og-candidate-workspace { grid-template-columns:minmax(0,1fr); } .og-candidate-workspace > .og-dashboard-candidate-group { order:0; } .og-candidate-workspace > .og-candidate-profile-detail { order:1; } }
 @media(max-width:520px) { .og-candidate-workspace .og-candidate-profile-summary-card { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+
+
+/* Responsive renforcé de la vue CANDIDATS — cohorte Officier Guide. */
+.og-candidate-list-dialog .og-qcm-tracking-panel {
+  box-sizing:border-box;
+  width:min(1500px,calc(100vw - 32px));
+  max-width:calc(100vw - 32px);
+  max-height:calc(100dvh - 32px);
+  overflow:auto;
+}
+.og-candidate-workspace,
+.og-candidate-workspace > *,
+.og-candidate-workspace .og-candidate-profile-detail,
+.og-candidate-workspace .og-candidate-profile-hero,
+.og-candidate-workspace .og-candidate-profile-summary-card,
+.og-candidate-workspace .og-candidate-profile-accordion-content {
+  box-sizing:border-box;
+  min-width:0;
+  max-width:100%;
+}
+.og-candidate-workspace > .og-dashboard-candidate-group,
+.og-candidate-workspace > .og-candidate-profile-detail {
+  width:100%;
+}
+.og-candidate-workspace .og-dashboard-candidate,
+.og-candidate-workspace .og-dashboard-candidate-group-heading,
+.og-candidate-workspace .og-candidate-profile-accordion > summary {
+  overflow-wrap:anywhere;
+}
+.og-candidate-workspace .og-candidate-profile-module-row {
+  min-width:0;
+}
+.og-candidate-workspace .og-candidate-profile-module-meta {
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+@media(max-width:850px) {
+  .og-candidate-list-dialog .og-qcm-tracking-panel {
+    width:calc(100vw - 24px);
+    max-width:calc(100vw - 24px);
+    max-height:calc(100dvh - 24px);
+  }
+  .og-candidate-workspace {
+    grid-template-columns:minmax(0,1fr);
+    gap:12px;
+    padding-top:12px;
+  }
+  .og-candidate-workspace > .og-dashboard-candidate-group { order:0; }
+  .og-candidate-workspace > .og-candidate-profile-detail { order:1; }
+}
+@media(max-width:520px) {
+  .og-candidate-list-dialog .og-qcm-tracking-panel {
+    width:calc(100vw - 16px);
+    max-width:calc(100vw - 16px);
+    max-height:calc(100dvh - 16px);
+    padding:12px;
+  }
+  .og-candidate-workspace { gap:10px; padding-top:10px; }
+  .og-candidate-workspace .og-dashboard-candidate-group-items { padding:0 8px 8px; }
+  .og-candidate-workspace .og-dashboard-candidate { padding:10px; }
+  .og-candidate-workspace .og-candidate-profile-summary-card { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .og-candidate-workspace .og-candidate-profile-summary-item { min-height:62px; padding:9px; }
+  .og-candidate-workspace .og-candidate-profile-accordion > summary { min-height:44px; padding:10px 11px; font-size:12px; }
+  .og-candidate-workspace .og-candidate-profile-accordion-content { padding:10px; }
+  .og-candidate-workspace .og-candidate-profile-progress-card { padding:11px; }
+  .og-candidate-workspace .og-candidate-profile-module-row { grid-template-columns:34px minmax(0,1fr); gap:7px; }
+  .og-candidate-workspace .og-candidate-profile-module-meta { grid-column:2; }
+}
+@media(max-width:360px) {
+  .og-candidate-list-dialog .og-qcm-tracking-panel { padding:9px; }
+  .og-candidate-workspace .og-candidate-profile-summary-card { grid-template-columns:minmax(0,1fr); }
+  .og-candidate-workspace .og-candidate-profile-summary-item { min-height:0; }
+  .og-candidate-workspace .og-candidate-profile-identity { padding:12px; }
+  .og-candidate-workspace .og-candidate-profile-pseudo { font-size:20px; }
+}
