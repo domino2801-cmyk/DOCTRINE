@@ -614,6 +614,59 @@
         setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
     }
 
+    function chargerFichesGuide(type) {
+        var isRetex = type === 'guide-retex';
+        var tableName = isRetex ? 'guide_retex_reports' : 'guide_signalements';
+        titre.textContent = isRetex ? 'RETEX des Officiers Guides' : 'Signalements des Officiers Guides';
+        sousTitre.textContent = 'Fiches autonomes transmises depuis l’espace Officier Guide.';
+        actions.replaceChildren(bouton('Actualiser', function () { chargerFichesGuide(type); }), bouton('Fermer', fermer));
+        corps.replaceChildren(); etat.textContent = 'Chargement…';
+        api(tableName + '?select=id,user_id,payload,priority,status,admin_response,created_at,updated_at&order=created_at.desc&limit=' + TAILLE_PAGE)
+            .then(function (rows) {
+                if (mode !== type) return;
+                corps.replaceChildren();
+                etat.textContent = rows.length + ' fiche(s) — ' + rows.filter(function (row) { return !['resolved','closed'].includes(row.status); }).length + ' à suivre.';
+                if (!rows.length) { corps.appendChild(el('p','adm-fiches-discret','Aucune fiche transmise.')); return; }
+                rows.forEach(function (row) {
+                    var card = el('article','adm-fiches-guide-entry');
+                    var head = el('header','adm-fiches-guide-entry-head');
+                    head.append(el('strong','', (isRetex ? 'RETEX' : 'Signalement') + ' n°' + row.id));
+                    head.append(el('span','',formaterDate(row.created_at)));
+                    card.append(head);
+                    var details = el('dl','adm-fiches-guide-payload');
+                    Object.keys(row.payload || {}).forEach(function (key) {
+                        var value = row.payload[key]; if (!value) return;
+                        details.append(el('dt','',key.replace(/_/g,' ')),el('dd','',String(value)));
+                    });
+                    card.append(details);
+                    var controls = el('div','adm-fiches-guide-controls');
+                    var statusSelect = document.createElement('select');
+                    [['submitted','Transmis'],['in_review','En cours d’examen'],['action_required','Action demandée'],['resolved','Résolu'],['closed','Clôturé']].forEach(function (entry) {
+                        var option = el('option','',entry[1]); option.value = entry[0]; statusSelect.append(option);
+                    });
+                    statusSelect.value = row.status;
+                    var response = document.createElement('textarea');
+                    response.rows = 2; response.maxLength = 3000; response.placeholder = 'Réponse / décision de l’administration';
+                    response.value = row.admin_response || '';
+                    var save = bouton('Enregistrer le traitement', function () {
+                        save.disabled = true;
+                        auth().jeton().then(function (jwt) {
+                            var claims = decodeClaims(jwt);
+                            return api(tableName + '?id=eq.' + encodeURIComponent(row.id), {
+                                methode:'PATCH',
+                                corps:{status:statusSelect.value,admin_response:response.value.trim() || null,processed_by:claims && claims.sub || null,processed_at:new Date().toISOString()}
+                            });
+                        }).then(function () {
+                            row.status = statusSelect.value; row.admin_response = response.value.trim();
+                            etat.textContent = 'Traitement enregistré pour la fiche n°' + row.id + '.';
+                            save.disabled = false;
+                        }).catch(function (err) { save.disabled = false; etat.textContent = messageErreur(err); });
+                    });
+                    controls.append(statusSelect,response,save); card.append(controls); corps.append(card);
+                });
+            }).catch(function (err) { etat.textContent = messageErreur(err); });
+    }
+
     var ouvrirSignalementsApresConnexion = false;
 
     function ouvrirSignalementsDepuisNotification() {
@@ -627,7 +680,14 @@
         ouvrir('signalements');
     }
 
-    document.addEventListener('doctrine:admin-fiches', function (event) { ouvrir(event.detail); });
+    document.addEventListener('doctrine:admin-fiches', function (event) {
+        if (event.detail === 'guide-retex' || event.detail === 'guide-signalements') {
+            if (!auth() || !auth().estAdmin()) return;
+            construire(); mode = event.detail; dialogue.hidden = false; chargerFichesGuide(event.detail);
+            return;
+        }
+        ouvrir(event.detail);
+    });
     document.addEventListener('doctrine:login', ouvrirSignalementsDepuisNotification);
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.addEventListener('message', function (event) {
