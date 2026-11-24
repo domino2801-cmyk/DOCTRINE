@@ -2254,24 +2254,35 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
 }
 
 
-/* Espace Officier Guide : centrer réellement la carte « À propos du corpus »
-   sur grand écran comme sur mobile, indépendamment de la mise en page du parent. */
+/* Espace Officier Guide : carte « À propos du corpus » sur toute la largeur,
+   avec le texte et le titre centrés sur ordinateur comme sur mobile. */
 body.og-guide-entry-only #corpusPreface {
     display: block;
     box-sizing: border-box;
-    width: min(1125px, calc(100% - 32px));
-    max-width: 1125px;
-    margin-left: auto !important;
-    margin-right: auto !important;
+    width: 100%;
+    max-width: none;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    text-align: center;
+}
+body.og-guide-entry-only #corpusPreface .preface-title {
+    text-align: center;
 }
 body.og-guide-entry-only #corpusPreface .preface-box {
     box-sizing: border-box;
     width: 100%;
     min-width: 0;
+    text-align: center;
+}
+body.og-guide-entry-only #corpusPreface .preface-box ul {
+    display: inline-block;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
 }
 @media (max-width: 600px) {
     body.og-guide-entry-only #corpusPreface {
-        width: calc(100% - 24px);
         padding: 12px;
     }
     body.og-guide-entry-only #corpusPreface .preface-box {
