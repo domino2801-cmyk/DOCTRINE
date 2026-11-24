@@ -293,6 +293,7 @@
     function init() {
         buildInterface();
         addToolbarButtons();
+        document.addEventListener('doctrine:open-course-catalog', openPanel);
         document.addEventListener('doctrine:login', addToolbarButtons);
         document.addEventListener('doctrine:logout', addToolbarButtons);
         document.addEventListener('click', function (event) {
