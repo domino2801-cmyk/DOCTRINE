@@ -35,7 +35,11 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(script, /var hidden = !!isGuide \|\| \(!isGuide && match\[1\] === '8'\)/);
     assert.match(script, /navigateModule.*module\(\[1-8\]\)/);
     assert.match(script, /og-guide-entry-only/);
-    assert.match(css, /body\.og-guide-entry-only \.main-wrapper > nav ul \{[\s\S]*?justify-content:center !important;/);
+    assert.match(script, /moduleNav\.hidden = !!isGuide/);
+    assert.match(script, /insertBefore\(item, section\)/);
+    assert.match(css, /\.og-guide-entry-card \{[\s\S]*?width:100%/);
+    assert.match(css, /\.og-guide-entry-button \{[\s\S]*?text-align:center/);
+    assert.match(css, /\.main-wrapper > nav\[hidden\] \{ display:none !important; \}/);
     assert.match(script, /setGuideModulesHidden\(false\)/);
     assert.match(html, /id="corpusPreface"/);
     assert.match(script, /function renderGuideCorpus\(\)/);
