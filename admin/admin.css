@@ -236,3 +236,14 @@ body.adm-on .adm-row-tools, body.adm-on .adm-row-tools * { pointer-events: auto;
     .anc-cohort-list { grid-template-columns: 1fr; padding: 10px; }
 }
 
+
+
+/* File de traitement des fiches autonomes Officier Guide. */
+.adm-fiches-guide-entry { margin:12px 0; padding:14px; border:1px solid #d8dfd8; border-left:4px solid #536f56; border-radius:8px; background:#fff; }
+.adm-fiches-guide-entry-head { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; color:#263d2f; }
+.adm-fiches-guide-payload { display:grid; grid-template-columns:minmax(130px,.7fr) minmax(0,2fr); gap:5px 12px; margin:12px 0; }
+.adm-fiches-guide-payload dt { color:#59675d; font-weight:700; text-transform:capitalize; }
+.adm-fiches-guide-payload dd { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; }
+.adm-fiches-guide-controls { display:grid; grid-template-columns:minmax(170px,.7fr) minmax(220px,2fr) auto; align-items:center; gap:9px; }
+.adm-fiches-guide-controls select,.adm-fiches-guide-controls textarea { width:100%; box-sizing:border-box; padding:9px; border:1px solid #aab7ac; border-radius:5px; font:inherit; }
+@media(max-width:700px) { .adm-fiches-guide-payload,.adm-fiches-guide-controls { grid-template-columns:1fr; } }
