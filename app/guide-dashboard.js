@@ -572,17 +572,15 @@
         header.append(heading, closeButton);
         panel.append(header);
 
-        // Même accordéon de regroupement que la liste des candidats du tableau de bord.
-        var group = node('details', 'og-dashboard-candidate-group');
-        var groupSummary = node('summary', 'og-dashboard-candidate-group-title',
-            'TOUS — ' + candidates.length + ' candidat(s)');
-        group.append(groupSummary);
+        // La liste est affichée immédiatement, sans écran d’accordéon intermédiaire.
+        var group = node('section', 'og-dashboard-candidate-group og-dashboard-candidate-group-open');
+        group.append(node('div', 'og-dashboard-candidate-group-heading',
+            'TOUS — ' + candidates.length + ' candidat(s)'));
         var groupItems = node('div', 'og-dashboard-candidate-group-items');
         var list = node('nav', 'og-qcm-candidate-list');
         list.setAttribute('aria-label', 'Tous les candidats de ma cohorte');
         var detail = node('section', 'og-qcm-candidate-detail og-candidate-profile-detail');
         detail.setAttribute('aria-live', 'polite');
-        detail.append(node('p', 'og-qcm-empty', 'Ouvrez le groupe TOUS, puis sélectionnez un candidat pour consulter sa fiche.'));
         candidates.forEach(function (candidate, index) {
             var identity = candidate.candidate || {};
             var button = node('button', 'og-qcm-candidate-button');
@@ -609,6 +607,9 @@
         groupItems.append(list);
         group.append(groupItems);
         panel.append(group, detail);
+        // Ouvrir directement la fiche du premier candidat à l’arrivée.
+        var firstCandidateButton = list.querySelector('.og-qcm-candidate-button');
+        if (firstCandidateButton) firstCandidateButton.click();
         dialog.append(panel);
         dialog.addEventListener('click', function (event) {
             if (event.target === dialog) { dialog.close(); dialog.remove(); }
