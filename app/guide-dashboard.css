@@ -734,19 +734,21 @@ body.og-guide-entry-only #guideDashboardNav > button {
   align-items:center;
   justify-content:center;
   width:100%;
-  min-height:48px;
+  min-height:0;
+  height:auto;
+  margin:0;
   box-sizing:border-box;
-  padding:10px 18px;
-  border:1px solid #9baa8d;
-  border-left:5px solid #d8b85b;
-  border-radius:10px;
-  background:linear-gradient(110deg,#17271e,#304735);
+  padding:14px 18px;
+  border:1px solid rgba(183,207,185,.28);
+  border-left:4px solid #d8b85b;
+  border-radius:8px;
+  background:#17271e;
   color:#f5f7ef;
   text-align:center;
-  font:800 clamp(15px,1.5vw,18px)/1.25 'Helvetica Neue',Arial,sans-serif;
-  letter-spacing:.035em;
+  font:700 16px/1.35 'Helvetica Neue',Arial,sans-serif;
+  letter-spacing:0;
   cursor:pointer;
-  box-shadow:0 8px 22px rgba(10,24,15,.16);
+  box-shadow:none;
 }
 .og-guide-entry-button:hover,
 .og-guide-entry-button:focus-visible {
@@ -758,5 +760,5 @@ body.og-guide-entry-only #guideDashboardNav > button {
 .main-wrapper > nav[hidden] { display:none !important; }
 @media(max-width:600px) {
   .og-guide-entry-card { margin-bottom:13px; }
-  .og-guide-entry-button { min-height:64px; padding:14px; }
+  .og-guide-entry-button { padding:13px 14px; }
 }
