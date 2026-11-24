@@ -587,7 +587,11 @@
             var identity = candidate.candidate || {};
             var button = node('button', 'og-qcm-candidate-button');
             button.type = 'button';
-            button.append(node('strong', '', identity.name || 'Pseudo non renseigné'));
+            var identityRow = node('span', 'og-qcm-candidate-identity');
+            identityRow.append(node('strong', '', identity.name || 'Pseudo non renseigné'));
+            var followUp = candidateFollowUpStatus(candidate);
+            identityRow.append(node('span', 'og-candidate-follow-up-status ' + followUp.className, followUp.label));
+            button.append(identityRow);
             button.append(node('span', '', [identity.specialty, identity.email].filter(Boolean).join(' · ') || 'Profil à compléter'));
             button.setAttribute('aria-pressed', 'false');
             button.addEventListener('click', function () {
