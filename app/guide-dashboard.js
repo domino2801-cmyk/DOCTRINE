@@ -46,8 +46,8 @@
             var claims = token && decodeClaims(token);
             if (!claims || !claims.sub) return null;
             var meta = claims.app_metadata || {};
-            var userMeta = claims.user_metadata || {};
-            var role = String(meta.role || userMeta.role || '').trim().toLowerCase();
+            // Les rôles d'accès sont exclusivement issus des métadonnées sécurisées.
+            var role = String(meta.role || '').trim().toLowerCase();
             var guideRole = role === 'guide' || role === 'officier_guide';
             if (!guideRole) return false;
 
