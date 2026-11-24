@@ -507,7 +507,9 @@
             progressGrid.prepend(node('p', 'og-qcm-empty', 'Les données de progression sont momentanément indisponibles.'));
         }
         progressSection.append(progressGrid);
-        target.append(progressSection);
+        accordion('Progression des modules 1 à 7', 'og-candidate-profile-progress', function (content) {
+            content.append(progressSection);
+        });
 
         accordion('Suivi d’admission', 'og-candidate-profile-admission', function (content) {
             content.append(renderOralTracking(candidate));
