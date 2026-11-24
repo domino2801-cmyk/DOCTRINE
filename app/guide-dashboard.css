@@ -323,3 +323,9 @@ body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw)
 .og-dashboard-feedback-history-item p { white-space:pre-wrap; overflow-wrap:anywhere; }
 .og-dashboard-feedback-response { color:#bfe1c3; }
 @media(max-width:600px) { .og-dashboard-feedback-shell { padding:13px; } .og-dashboard-feedback-form { grid-template-columns:1fr; } .og-dashboard-feedback-field:has(textarea) { grid-column:auto; } .og-dashboard-feedback-header { flex-direction:column; } }
+
+/* Suivi QCM-MAJOR intégré : conserve la session authentifiée de l'espace guide. */
+.og-qcm-tracking-overlay { position:fixed; inset:0; z-index:10050; display:flex; flex-direction:column; background:#101b17; }
+.og-qcm-tracking-header { display:flex; align-items:center; justify-content:space-between; gap:14px; min-height:54px; padding:8px 16px; color:#f4f6ef; background:#203b30; border-bottom:1px solid rgba(255,255,255,.18); }
+.og-qcm-tracking-close { padding:8px 16px; border:1px solid rgba(255,255,255,.35); border-radius:6px; color:#fff; background:#344f42; font:inherit; cursor:pointer; }
+.og-qcm-tracking-frame { display:block; flex:1 1 auto; width:100%; min-height:0; border:0; background:#fff; }
