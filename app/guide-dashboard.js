@@ -1516,8 +1516,9 @@
         }
     }
     function renderAiCorrection(candidate) {
-        var section = node('details', 'og-dashboard-subaccordion og-dashboard-ai-correction');
+        var section = node('details', 'og-candidate-profile-accordion og-candidate-profile-ai og-dashboard-ai-correction');
         section.append(node('summary', '', 'Correction assistée par IA'));
+        var content = node('div', 'og-candidate-profile-accordion-content');
         var gridCard = node('article', 'og-dashboard-ai-grid-card');
         var gridContent = node('div', 'og-dashboard-ai-grid-content');
         gridContent.append(node('p', 'og-dashboard-ai-grid-kicker', 'RÉFÉRENTIEL OFFICIEL · BM4'));
@@ -1536,13 +1537,14 @@
         gridDownload.rel = 'noopener noreferrer';
         gridActions.append(gridOpen, gridDownload);
         gridCard.append(gridContent, gridActions);
-        section.append(gridCard);
+        content.append(gridCard);
         var items = (candidate.doctrine && Array.isArray(candidate.doctrine.submissions)
             ? candidate.doctrine.submissions : []).filter(function (submission) {
             return submission.submission_type === 'proposition' || submission.submission_type === 'support_oral';
         });
         if (!items.length) {
-            section.append(node('p', 'og-dashboard-muted', 'Aucune fiche de proposition ou fiche support oral transmise.'));
+            content.append(node('p', 'og-dashboard-muted', 'Aucune fiche de proposition ou fiche support oral transmise.'));
+            section.append(content);
             return section;
         }
         var groups = Object.create(null);
@@ -1628,8 +1630,9 @@
                 card.append(actions);
                 group.append(card);
             });
-            section.append(group);
+            content.append(group);
         });
+        section.append(content);
         return section;
     }
     function renderCandidates() {
