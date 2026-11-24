@@ -26,8 +26,6 @@
     var moduleEventsAvailable = true;
     var candidateCvs = Object.create(null);
     var cvStatusAvailable = true;
-    // Mémorise le choix de fiche depuis le tableau de bord Officier Guide.
-    var selectedGuideModule7Card = null;
 
     function auth() { return window.DoctrineAuth; }
     function node(tag, className, text) {
@@ -309,52 +307,137 @@
         assignCard.addEventListener('click', openAssignCandidateDialog);
         metricsNode.append(assignCard);
 
-        if (!selectedGuideModule7Card || selectedGuideModule7Card === 'retex') {
-            var retexCard = node('button', 'og-dashboard-metric og-dashboard-metric-action');
-            retexCard.type = 'button';
-            retexCard.dataset.guideModule7Card = 'retex';
-            retexCard.append(node('span', 'og-dashboard-metric-label', 'FICHE RETEX DOCTRINE'));
-            retexCard.append(node('strong', 'og-dashboard-metric-value', '↗'));
-            retexCard.append(node('small', '', 'RETEX déjà envoyé · accéder au formulaire'));
-            retexCard.addEventListener('click', function () {
-                selectedGuideModule7Card = 'retex';
-                renderMetrics();
-                openModule7Form('retexCard', 'retexForm');
-            });
-            metricsNode.append(retexCard);
-        }
-
-        if (!selectedGuideModule7Card || selectedGuideModule7Card === 'signalement') {
-            var reportCard = node('button', 'og-dashboard-metric og-dashboard-metric-action');
-            reportCard.type = 'button';
-            reportCard.dataset.guideModule7Card = 'signalement';
-            reportCard.append(node('span', 'og-dashboard-metric-label', 'FICHE DE SIGNALEMENT'));
-            reportCard.append(node('strong', 'og-dashboard-metric-value', '+'));
-            reportCard.append(node('small', '', 'Rédiger et transmettre un signalement'));
-            reportCard.addEventListener('click', function () {
-                selectedGuideModule7Card = 'signalement';
-                renderMetrics();
-                openModule7Form('signalementCard', 'signalementForm');
-            });
-            metricsNode.append(reportCard);
-        }
+        [
+            { kind: 'retex', title: 'RETOUR D’EXPÉRIENCE OFFICIER GUIDE', subtitle: 'Analyser une situation et partager les enseignements', symbol: '↗' },
+            { kind: 'signalement', title: 'SIGNALEMENT OFFICIER GUIDE', subtitle: 'Déclarer une difficulté et demander une intervention', symbol: '!' }
+        ].forEach(function (definition) {
+            var card = node('button', 'og-dashboard-metric og-dashboard-metric-action');
+            card.type = 'button';
+            card.dataset.guideFeedback = definition.kind;
+            card.append(node('span', 'og-dashboard-metric-label', definition.title));
+            card.append(node('strong', 'og-dashboard-metric-value', definition.symbol));
+            card.append(node('small', '', definition.subtitle));
+            card.addEventListener('click', function () { openGuideFeedback(definition.kind); });
+            metricsNode.append(card);
+        });
     }
-    function openModule7Form(cardId, formId) {
-        if (typeof window.openModal !== 'function') {
-            setStatus('Le Module 7 est momentanément indisponible.', true);
-            return;
+    function guideFeedbackDialog(kind) {
+        var isRetex = kind === 'retex';
+        var table = isRetex ? 'guide_retex_reports' : 'guide_signalements';
+        var title = isRetex ? 'Fiche RETEX — Officier Guide' : 'Fiche de signalement — Officier Guide';
+        var dialog = node('dialog', 'og-dashboard-feedback-dialog');
+        var shell = node('section', 'og-dashboard-feedback-shell');
+        var header = node('header', 'og-dashboard-feedback-header');
+        var heading = node('div');
+        heading.append(node('p', 'og-dashboard-kicker', 'ESPACE OFFICIER GUIDE'));
+        heading.append(node('h2', '', title));
+        var closeButton = node('button', 'og-dashboard-close', 'Fermer');
+        closeButton.type = 'button';
+        closeButton.addEventListener('click', function () { dialog.close(); dialog.remove(); });
+        header.append(heading, closeButton);
+        var intro = node('p', 'og-dashboard-feedback-help', isRetex
+            ? 'Décrivez une situation rencontrée dans votre mission de guide, les faits observés, les enseignements tirés et les améliorations proposées.'
+            : 'Décrivez factuellement une difficulté nécessitant une attention, une décision ou une intervention. En cas d’urgence, utilisez également les voies hiérarchiques adaptées.');
+        var form = node('form', 'og-dashboard-feedback-form');
+        function field(labelText, name, type, options) {
+            var label = node('label', 'og-dashboard-feedback-field', labelText);
+            var input;
+            if (type === 'select') {
+                input = document.createElement('select');
+                (options || []).forEach(function (option) {
+                    var item = node('option', '', option[1]); item.value = option[0]; input.append(item);
+                });
+            } else if (type === 'textarea') {
+                input = document.createElement('textarea'); input.rows = 3;
+            } else {
+                input = document.createElement('input'); input.type = type || 'text';
+            }
+            input.name = name; input.required = false;
+            label.append(input); form.append(label);
+            return input;
         }
-        // Le tableau de bord est une surcouche : le fermer avant d'ouvrir le module évite
-        // qu'il reste au-dessus du Module 7 et intercepte visuellement les interactions.
-        close();
-        window.openModal('module7');
-        var card = document.getElementById(cardId);
-        var form = document.getElementById(formId);
-        var heading = card && card.querySelector(':scope > p');
-        if (!form || !heading) return;
-        if (form.hidden) heading.click();
-        var firstField = form.querySelector('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])');
-        if (firstField) firstField.focus({ preventScroll: true });
+        if (isRetex) {
+            field('Situation ou contexte', 'situation', 'textarea');
+            field('Problématique rencontrée', 'problem', 'select', [
+                ['', '— Choisir —'], ['accompagnement','Accompagnement du candidat'], ['echeances','Échéances et disponibilité'],
+                ['bm4','Attendus et préparation BM4'], ['communication','Communication / relationnel'],
+                ['outils','Outils numériques et suivi'], ['documentation','Documentation et consignes'],
+                ['coordination','Coordination des intervenants'], ['autre','Autre']
+            ]);
+            field('Faits constatés et conséquences', 'facts', 'textarea');
+            field('Mesures déjà prises', 'actions', 'textarea');
+            field('Enseignements et bonnes pratiques', 'lessons', 'textarea');
+            field('Améliorations proposées', 'improvements', 'textarea');
+            field('Priorité', 'priority', 'select', [['low','Faible'],['normal','Normale'],['high','Élevée']]);
+        } else {
+            field('Catégorie du signalement', 'category', 'select', [
+                ['', '— Choisir —'], ['accompagnement','Accompagnement'], ['comportement','Comportement / discipline'],
+                ['travail_bm4','Travail BM4'], ['organisation','Organisation / moyens'], ['informatique','Outil informatique'],
+                ['administration','Administration / dossier'], ['relationnel','Relationnel'], ['confidentialite','Sécurité / confidentialité'],
+                ['sensible','Situation sensible'], ['autre','Autre']
+            ]);
+            field('Date ou période des faits', 'occurred_at', 'text');
+            field('Description factuelle et chronologique', 'facts', 'textarea');
+            field('Personnes ou services concernés (sans données sensibles inutiles)', 'stakeholders', 'textarea');
+            field('Mesures déjà prises', 'actions', 'textarea');
+            field('Intervention ou décision attendue', 'request', 'textarea');
+            field('Priorité', 'priority', 'select', [['low','Niveau 1 — Information'],['normal','Niveau 2 — Suivi'],['high','Niveau 3 — Intervention'],['urgent','Niveau 4 — Urgent']]);
+        }
+        var status = node('p', 'og-dashboard-feedback-status');
+        status.setAttribute('role','status'); status.setAttribute('aria-live','polite');
+        var submit = node('button', 'og-dashboard-close og-dashboard-assign-primary', 'Enregistrer et transmettre');
+        submit.type = 'submit';
+        form.append(status, submit);
+        var history = node('section', 'og-dashboard-feedback-history');
+        history.append(node('h3', '', 'Mon historique'));
+        history.append(node('p', 'og-dashboard-muted', 'Chargement de votre historique…'));
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            var payload = {};
+            new FormData(form).forEach(function (value, key) { payload[key] = String(value).trim(); });
+            var requiredKeys = isRetex ? ['situation','problem','facts'] : ['category','facts','request'];
+            if (requiredKeys.some(function (key) { return !payload[key]; })) {
+                status.textContent = 'Renseignez au minimum le contexte, la catégorie et les faits ; pour un signalement, précisez aussi l’intervention attendue.';
+                return;
+            }
+            var token;
+            submit.disabled = true; status.textContent = 'Transmission en cours…';
+            auth().jeton().then(function (jwt) {
+                token = decodeClaims(jwt);
+                if (!token || !token.sub) throw new Error('Session expirée.');
+                return api(table, { method: 'POST', body: { user_id: token.sub, payload: payload, priority: payload.priority || 'normal' }, prefer: 'return=minimal' });
+            }).then(function () {
+                status.textContent = 'Fiche transmise. Elle figure maintenant dans votre historique.';
+                form.reset(); chargerHistorique();
+            }).catch(function (error) {
+                status.textContent = error.message || 'Transmission impossible. Réessayez.';
+            }).finally(function () { submit.disabled = false; });
+        });
+        function chargerHistorique() {
+            api(table + '?select=id,payload,priority,status,admin_response,created_at,updated_at&order=created_at.desc&limit=100')
+                .then(function (rows) {
+                    history.replaceChildren(node('h3', '', 'Mon historique'));
+                    if (!rows.length) { history.append(node('p','og-dashboard-muted','Aucune fiche transmise pour le moment.')); return; }
+                    rows.forEach(function (row) {
+                        var item = node('article','og-dashboard-feedback-history-item');
+                        var labels = {submitted:'Transmis',in_review:'En cours d’examen',action_required:'Action demandée',resolved:'Résolu',closed:'Clôturé'};
+                        item.append(node('div','og-dashboard-feedback-history-meta',new Date(row.created_at).toLocaleString('fr-FR')+' · '+(labels[row.status]||row.status)));
+                        item.append(node('p','',Object.values(row.payload||{}).filter(Boolean).slice(0,3).join(' — ')));
+                        if (row.admin_response) item.append(node('p','og-dashboard-feedback-response','Réponse administration : '+row.admin_response));
+                        history.append(item);
+                    });
+                }).catch(function () {
+                    history.replaceChildren(node('p','og-dashboard-feedback-status','Historique indisponible. Vérifiez que la migration Supabase a été appliquée.'));
+                });
+        }
+        shell.append(header,intro,form,history); dialog.append(shell); root.append(dialog);
+        dialog.addEventListener('click',function(event){if(event.target===dialog){dialog.close();dialog.remove();}});
+        dialog.addEventListener('close',function(){dialog.remove();});
+        dialog.showModal(); chargerHistorique();
+    }
+    function openGuideFeedback(kind) {
+        if (kind !== 'retex' && kind !== 'signalement') return;
+        guideFeedbackDialog(kind);
     }
     function openAssignCandidateDialog() {
         var dialog = node('dialog', 'og-dashboard-assign-dialog');

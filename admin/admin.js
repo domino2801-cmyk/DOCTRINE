@@ -1242,7 +1242,7 @@
                 suivi.addEventListener('click', ouvrirSuivi);
                 zone.appendChild(suivi);
             }
-            [['signalements', '🚩 Signal'], ['retex', '📝 RETEX'], ['notifications', '🔔 Alertes']].forEach(function (def) {
+            [['signalements', '🚩 Signal'], ['retex', '📝 RETEX'], ['guide-signalements', '🚩 Signal OG'], ['guide-retex', '📝 RETEX OG'], ['notifications', '🔔 Alertes']].forEach(function (def) {
                 var classe = 'adm-fiches-toolbar-' + def[0];
                 var bouton = zone.querySelector('.' + classe);
                 if (!bouton && visible) {
@@ -1250,7 +1250,9 @@
                     bouton.type = 'button';
                     bouton.className = 'module-nav-button ' + classe;
                     bouton.textContent = def[1];
-                    bouton.title = def[0] === 'retex' ? 'Synthèse des RETEX' :
+                    bouton.title = def[0] === 'retex' ? 'Synthèse des RETEX candidats' :
+                        def[0] === 'guide-retex' ? 'RETEX autonomes des Officiers Guides' :
+                        def[0] === 'guide-signalements' ? 'Signalements autonomes des Officiers Guides' :
                         def[0] === 'notifications' ? 'Paramètres des notifications de signalements' :
                         'Signalements des candidats';
                     bouton.addEventListener('click', function () {
