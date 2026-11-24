@@ -389,7 +389,8 @@ test('la fiche candidat utilise des accordéons repliés et ne duplique pas les 
     const end = script.indexOf('function openGuideCandidates()', start);
     const profile = script.slice(start, end);
     assert.match(profile, /og-candidate-profile-accordion/);
-    assert.match(profile, /Progression des modules 1 à 7/);
+    assert.match(profile, /accordion\('Progression des modules 1 à 7'/);
+    assert.match(profile, /progressSection/);
     assert.match(profile, /Suivi d’admission/);
     assert.match(profile, /Dossier et documents demandés/);
     assert.doesNotMatch(profile, /Activité documentaire|og-candidate-profile-activity|doctrine\.documents/);
