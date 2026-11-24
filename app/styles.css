@@ -2337,3 +2337,79 @@ body.og-guide-entry-only .content-container > #guideDashboardNav + #corpusPrefac
 body.og-guide-entry-only .content-container > .app-utility-bar {
     margin-bottom: 0 !important;
 }
+
+
+/* Animation discrète de la carte d'accès Officier Guide. */
+body.og-guide-entry-only #guideDashboardNav.og-guide-entry-card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: 14px;
+    animation: og-entry-glow 5s ease-in-out infinite;
+}
+body.og-guide-entry-only #guideDashboardNav .og-guide-entry-button {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    background: linear-gradient(110deg, #142b43 0%, #1d4262 48%, #142b43 100%);
+    border: 1px solid rgba(164, 205, 231, .58);
+    color: #fff;
+    text-align: center;
+    transition: border-color .25s ease, filter .25s ease;
+}
+body.og-guide-entry-only #guideDashboardNav .og-guide-entry-button::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(105deg, transparent 25%, rgba(255,255,255,.04) 40%, rgba(170,220,255,.25) 50%, rgba(255,255,255,.04) 60%, transparent 75%);
+    background-size: 220% 100%;
+    animation: og-entry-light-sweep 6s ease-in-out infinite;
+}
+body.og-guide-entry-only #guideDashboardNav .og-guide-entry-button::before {
+    content: "";
+    position: absolute;
+    left: 18%;
+    right: 18%;
+    bottom: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #183f8c 0 33.33%, #fff 33.33% 66.66%, #ed2939 66.66% 100%);
+    box-shadow: 0 0 10px rgba(130, 190, 255, .8);
+    transform-origin: center;
+    animation: og-entry-tricolor 3.8s ease-in-out infinite;
+}
+body.og-guide-entry-only #guideDashboardNav .og-guide-entry-button:hover {
+    border-color: rgba(205, 232, 255, .95);
+    filter: brightness(1.12);
+}
+body.og-guide-entry-only #guideDashboardNav .og-guide-entry-button:focus-visible {
+    outline: 3px solid #f5d76e;
+    outline-offset: 3px;
+}
+@keyframes og-entry-light-sweep {
+    0%, 18% { background-position: 120% 0; }
+    65%, 100% { background-position: -120% 0; }
+}
+@keyframes og-entry-tricolor {
+    0%, 100% { opacity: .72; transform: scaleX(.82); }
+    50% { opacity: 1; transform: scaleX(1); }
+}
+@keyframes og-entry-glow {
+    0%, 100% { box-shadow: 0 0 0 rgba(73, 151, 220, 0); }
+    50% { box-shadow: 0 0 16px rgba(73, 151, 220, .2); }
+}
+@media (prefers-reduced-motion: reduce) {
+    body.og-guide-entry-only #guideDashboardNav.og-guide-entry-card,
+    body.og-guide-entry-only #guideDashboardNav .og-guide-entry-button::before,
+    body.og-guide-entry-only #guideDashboardNav .og-guide-entry-button::after {
+        animation: none !important;
+    }
+}
