@@ -356,3 +356,25 @@ test('la fiche candidat utilise des accordéons repliés et ne duplique pas les 
     assert.doesNotMatch(profile, /renderQcmCandidateDetail|Moyenne générale|QCM enregistrés|Tentatives QCM/);
     assert.match(profile, /moduleNumber <= 7/);
 });
+
+
+test('la fiche candidat est alimentée par les sources réelles et expose les états de disponibilité', () => {
+    const start = script.indexOf('function renderCandidateProfileDetail(target, candidate)');
+    const end = script.indexOf('function openGuideCandidates()', start);
+    const profile = script.slice(start, end);
+    assert.match(profile, /candidate\.doctrine/);
+    assert.match(profile, /doctrine\.progress_events/);
+    assert.match(profile, /moduleState\(candidate, String\(moduleNumber\)\)/);
+    assert.match(profile, /Fiches soumises/);
+    assert.match(profile, /Fiches validées/);
+    assert.match(profile, /doctrine\.last_activity/);
+    assert.match(profile, /renderOralTracking\(candidate\)/);
+    assert.match(profile, /renderCcpmTracking\(candidate\)/);
+    assert.match(profile, /candidateCvs\[candidate\.candidate && candidate\.candidate\.id\]/);
+    assert.match(profile, /doctrine\.documents/);
+    assert.match(profile, /renderAiCorrection\(candidate\)/);
+    assert.match(script, /api\('doctrine_progress_events\?select=user_id,module_id,event_type,created_at/);
+    assert.match(script, /api\('doctrine_candidate_cvs\?select=candidate_id,storage_path,original_filename,uploaded_at/);
+    assert.match(script, /api\('candidate_admission_tracking\?on_conflict=candidate_id/);
+    assert.doesNotMatch(profile, /Moyenne QCM|Tentatives QCM|qcmAverage\(/);
+});
