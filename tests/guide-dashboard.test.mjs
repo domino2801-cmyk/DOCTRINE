@@ -135,7 +135,7 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /À SURVEILLER/);
     assert.match(script, /PRÊT/);
     assert.doesNotMatch(script, /SUIVI NORMAL/);
-    assert.match(script, /role === 'guide' \\|\\| role === 'officier_guide'/);
+    assert.match(script, /var guideRole = role === 'guide' \\|\\| role === 'officier_guide'/);\n    assert.match(script, /La spécialité OG prime sur le rôle administratif/);\n    assert.match(script, /function isGuideSpecialty\\(value\\)/);\n    assert.match(script, /OFFICIER GUIDE/);
     assert.match(script, /get_current_user_specialty/);
     assert.ok(script.includes('setGuideModulesHidden(true)'));
     assert.match(script, /querySelector\('\.study-dashboard'\)/);
