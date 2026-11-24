@@ -6,7 +6,6 @@
     var trigger = null;
     var statusNode = null;
     var metricsNode = null;
-    var candidatesNode = null;
     var coursesNode = null;
     var exerciseLibraryNode = null;
     var exerciseLibraryItems = [];
@@ -17,9 +16,6 @@
         { value: '3', label: '★★★ — Approfondissement', name: 'Approfondissement' },
         { value: '4', label: '★★★★ — Défi', name: 'Défi' }
     ];
-    var searchNode = null;
-    var statusFilterNode = null;
-    var selectedStatusFilter = 'all';
     var candidates = [];
     var courses = [];
     var loading = false;
@@ -1680,151 +1676,6 @@
         section.append(content);
         return section;
     }
-    function renderCandidates() {
-        candidatesNode.replaceChildren();
-        var statuses = [
-            { key: 'all', label: 'TOUS' },
-            { key: 'ready', label: 'PRÊT', className: 'is-ok' },
-            { key: 'danger', label: 'EN DIFFICULTÉ', className: 'is-danger' },
-            { key: 'watch', label: 'À SURVEILLER', className: 'is-warning' }
-        ];
-        var counts = { all: candidates.length, ready: 0, danger: 0, watch: 0 };
-        candidates.forEach(function (candidate) {
-            var status = candidateFollowUpStatus(candidate);
-            if (status.label === 'PRÊT') counts.ready += 1;
-            else if (status.label === 'EN DIFFICULTÉ') counts.danger += 1;
-            else counts.watch += 1;
-        });
-        statusFilterNode.replaceChildren();
-        statuses.forEach(function (status) {
-            var button = node('button', 'og-dashboard-status-filter' +
-                (status.className ? ' ' + status.className : '') +
-                (selectedStatusFilter === status.key ? ' is-active' : ''),
-                status.label + ' · ' + counts[status.key]);
-            button.type = 'button';
-            button.setAttribute('aria-pressed', String(selectedStatusFilter === status.key));
-            button.addEventListener('click', function () {
-                selectedStatusFilter = status.key;
-                renderCandidates();
-            });
-            statusFilterNode.append(button);
-        });
-        var term = String(searchNode.value || '').trim().toLocaleLowerCase('fr');
-        var filtered = candidates.filter(function (candidate) {
-            var identity = candidate.candidate || {};
-            var status = candidateFollowUpStatus(candidate);
-            var statusKey = status.label === 'PRÊT' ? 'ready' :
-                status.label === 'EN DIFFICULTÉ' ? 'danger' : 'watch';
-            return (selectedStatusFilter === 'all' || selectedStatusFilter === statusKey) &&
-                [candidateName(candidate), identity.email, identity.unit, identity.specialty]
-                    .join(' ').toLocaleLowerCase('fr').indexOf(term) !== -1;
-        });
-        if (!filtered.length) {
-            candidatesNode.append(node('p', 'og-dashboard-empty',
-                candidates.length ? 'Aucun candidat ne correspond à cette recherche.' : 'Aucun candidat rattaché à votre cohorte.'));
-            return;
-        }
-        var group = node('details', 'og-dashboard-candidate-group');
-        var groupSummary = node('summary', 'og-dashboard-candidate-group-title',
-            (statuses.find(function (status) { return status.key === selectedStatusFilter; }) || statuses[0]).label +
-            ' — ' + filtered.length + ' candidat(s)');
-        group.append(groupSummary);
-        var groupItems = node('div', 'og-dashboard-candidate-group-items');
-        filtered.forEach(function (candidate) {
-            var identity = candidate.candidate || {};
-            var card = node('details', 'og-dashboard-candidate');
-            var summary = node('summary', 'og-dashboard-accordion-title');
-            var title = node('span', 'og-dashboard-candidate-title', candidateName(candidate));
-            var score = qcmAverage(candidate);
-            var followUp = candidateFollowUpStatus(candidate);
-            var pill = node('span', 'og-dashboard-pill ' + followUp.className, followUp.label);
-            summary.append(title, pill);
-            card.append(summary);
-            var body = node('div', 'og-dashboard-candidate-body');
-            var meta = [identity.unit, identity.specialty, identity.email].filter(Boolean).join(' · ');
-            body.append(node('p', 'og-dashboard-muted', meta || 'Profil candidat à compléter'));
-            var facts = node('div', 'og-dashboard-facts');
-            [
-                ['Moyenne QCM', score === null ? 'Pas encore de résultat' : score.toFixed(2) + ' / 20'],
-                ['Tentatives QCM', String(qcmResults(candidate).length)],
-                ['Fiches soumises', String(submissions(candidate).length)],
-                ['Fiches validées', String(validSubmissions(candidate))],
-                ['Dernière activité', candidate.doctrine && candidate.doctrine.last_activity
-                    ? new Date(candidate.doctrine.last_activity).toLocaleDateString('fr-FR') : 'Non renseignée']
-            ].forEach(function (fact) {
-                var item = node('div', 'og-dashboard-fact');
-                item.append(node('span', '', fact[0]), node('strong', '', fact[1]));
-                facts.append(item);
-            });
-            body.append(facts);
-            body.append(renderModuleProgress(candidate));
-            var eligibility = node('details', 'og-dashboard-subaccordion og-dashboard-eligibility');
-            eligibility.append(node('summary', '', 'Suivi admissibilité'));
-            eligibility.append(renderOralTracking(candidate));
-            eligibility.append(renderCcpmTracking(candidate));
-            body.append(eligibility);
-            var admission = candidate.admission || {};
-            var docs = node('details', 'og-dashboard-subaccordion');
-            docs.append(node('summary', '', 'Dossier et documents demandés'));
-            var list = node('dl', 'og-dashboard-document-list');
-            var cv = candidateCvs[candidate.candidate.id];
-            list.append(node('dt', '', 'CV du candidat'));
-            var cvValue = node('dd', 'og-dashboard-cv-value');
-            if (!cvStatusAvailable) {
-                cvValue.append(node('span', 'og-dashboard-pill is-unknown', 'Statut indisponible'));
-            } else if (!cv) {
-                cvValue.append(node('span', 'og-dashboard-pill is-pending', 'Non fourni'));
-            } else {
-                cvValue.append(node('span', 'og-dashboard-pill is-ok', 'Fourni'));
-                cvValue.append(node('span', 'og-dashboard-cv-filename', cv.original_filename || 'CV.pdf'));
-                if (cv.uploaded_at) cvValue.append(node('small', 'og-dashboard-muted',
-                    'Déposé le ' + new Date(cv.uploaded_at).toLocaleDateString('fr-FR')));
-                var download = node('button', 'og-dashboard-download og-dashboard-cv-download', 'Préparer le téléchargement');
-                download.type = 'button';
-                download.addEventListener('click', function () {
-                    download.disabled = true;
-                    download.textContent = 'Préparation…';
-                    storageApi('object/sign/doctrine-candidate-cv/' + encodeURIComponent(candidate.candidate.id) + '/cv.pdf', {
-                        method: 'POST', body: { expiresIn: 300 }
-                    }).then(function (signed) {
-                        var signedPath = signed.signedURL || signed.signedUrl;
-                        if (!signedPath) throw new Error('Lien de téléchargement non retourné.');
-                        var absoluteUrl = /^https?:\/\//i.test(signedPath)
-                            ? signedPath : auth().url.replace(/\/$/, '') + '/storage/v1' + (signedPath.charAt(0) === '/' ? signedPath : '/' + signedPath);
-                        var link = node('a', 'og-dashboard-download og-dashboard-cv-download', 'Télécharger le CV');
-                        link.href = absoluteUrl;
-                        link.target = '_blank';
-                        link.rel = 'noopener noreferrer';
-                        link.download = cv.original_filename || 'CV.pdf';
-                        download.replaceWith(link);
-                    }).catch(function (error) {
-                        download.disabled = false;
-                        download.textContent = 'Réessayer le téléchargement';
-                        cvValue.append(node('small', 'og-dashboard-oral-feedback is-error', error.message));
-                    });
-                });
-                cvValue.append(download);
-            }
-            list.append(cvValue);
-            Object.keys(admission).filter(function (key) {
-                return !['candidate_id', 'created_at', 'updated_at', 'id', 'ccpm_date', 'ccpm_score', 'guide_notes', 'ccpm_validated', 'mock_orals_done', 'mock_orals_target', 'next_oral_date'].includes(key);
-            }).forEach(function (key) {
-                var value = admission[key];
-                if (value === null || value === undefined || typeof value === 'object') return;
-                list.append(node('dt', '', key.replace(/_/g, ' ')), node('dd', '', String(value)));
-            });
-            if (list.children.length <= 2 && !Object.keys(admission).length) {
-                list.append(node('p', 'og-dashboard-muted', 'Aucun autre état de document renseigné.'));
-            }
-            docs.append(list);
-            body.append(docs);
-            body.append(renderAiCorrection(candidate));
-            card.append(body);
-            groupItems.append(card);
-        });
-        group.append(groupItems);
-        candidatesNode.append(group);
-    }
     function renderExerciseLibraries() {
         if (!exerciseLibraryNode) return;
         exerciseLibraryNode.replaceChildren();
@@ -2061,7 +1912,6 @@
                 });
             });
             renderMetrics();
-            renderCandidates();
             renderCourses();
             loadExerciseLibraries();
             if (results.every(function (result) { return result.status === 'fulfilled'; })) {
@@ -2098,21 +1948,6 @@
         panel.append(header);
         metricsNode = node('div', 'og-dashboard-metrics');
         panel.append(metricsNode);
-        var candidateSection = node('section', 'og-dashboard-section');
-        candidateSection.append(node('h3', '', 'Suivi de mes candidats'));
-        searchNode = node('input', 'og-dashboard-search');
-        searchNode.type = 'search';
-        searchNode.placeholder = 'Rechercher un candidat, une unité ou une spécialité…';
-        searchNode.setAttribute('aria-label', 'Rechercher un candidat');
-        searchNode.addEventListener('input', renderCandidates);
-        candidateSection.append(searchNode);
-        statusFilterNode = node('div', 'og-dashboard-status-filters');
-        statusFilterNode.setAttribute('role', 'group');
-        statusFilterNode.setAttribute('aria-label', 'Filtrer les candidats par état de suivi');
-        candidateSection.append(statusFilterNode);
-        candidatesNode = node('div', 'og-dashboard-candidates');
-        candidateSection.append(candidatesNode);
-        panel.append(candidateSection);
         var courseSection = node('section', 'og-dashboard-section');
         courseSection.append(node('h3', '', 'Bibliothèque des 30 supports Officier Guide'));
         courseSection.append(node('p', 'og-dashboard-muted', 'Catalogue commun classé en six catégories. Les supports sont consultables et téléchargeables.'));
