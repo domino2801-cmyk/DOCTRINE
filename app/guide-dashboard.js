@@ -686,13 +686,25 @@
             var feedback = node('div', 'og-dashboard-review-criterion-feedback');
             var observation = node('textarea');
             observation.rows = 2; observation.maxLength = 500;
-            observation.placeholder = 'Observation du critère';
+            observation.placeholder = criterion.key === 'form'
+                ? 'Observation du critère Forme — obligatoire'
+                : 'Observation du critère';
             observation.dataset.rubricObservation = criterion.key;
+            observation.setAttribute('aria-label', criterion.key === 'form'
+                ? 'Observation du critère Forme — obligatoire'
+                : 'Observation — ' + criterion.label);
+            observation.required = criterion.key === 'form';
             observation.value = String(review.rubric_observations && review.rubric_observations[criterion.key] || '');
             var evidence = node('textarea');
             evidence.rows = 2; evidence.maxLength = 300;
-            evidence.placeholder = 'Indice documentaire vérifiable';
+            evidence.placeholder = criterion.key === 'form'
+                ? 'Indice documentaire du critère Forme — obligatoire (page, passage, référence)'
+                : 'Indice documentaire vérifiable';
             evidence.dataset.rubricEvidence = criterion.key;
+            evidence.setAttribute('aria-label', criterion.key === 'form'
+                ? 'Indice documentaire du critère Forme — obligatoire'
+                : 'Indice documentaire — ' + criterion.label);
+            evidence.required = criterion.key === 'form';
             evidence.value = String(review.rubric_evidence && review.rubric_evidence[criterion.key] || '');
             feedback.append(observation, evidence);
             label.append(feedback);
@@ -754,9 +766,12 @@
                 observations[criterion.key] = String(observation && observation.value || '').trim();
                 evidence[criterion.key] = String(proof && proof.value || '').trim();
             });
+            var formFeedbackComplete = isOral ||
+                (Boolean(observations.form) && Boolean(evidence.form));
             return { scores: scores, observations: observations, evidence: evidence,
                 formGrade: formGrade, contentGrade: contentGrade,
-                grade: Math.round((formGrade + contentGrade) * 100) / 100, complete: complete };
+                grade: Math.round((formGrade + contentGrade) * 100) / 100,
+                complete: complete && formFeedbackComplete };
         }
         function updateTotal() {
             var totals = collectScores();
@@ -885,6 +900,14 @@
                 return;
             }
             var totals = collectScores();
+            if (!isOral && (!totals.observations.form || !totals.evidence.form)) {
+                status.textContent = 'Pour le critère Forme, renseignez obligatoirement une observation et un indice documentaire vérifiable (page, passage ou référence).';
+                var formObservationInput = criteria.querySelector('[data-rubric-observation="form"]');
+                var formEvidenceInput = criteria.querySelector('[data-rubric-evidence="form"]');
+                if (formObservationInput && !formObservationInput.value.trim()) formObservationInput.focus();
+                else if (formEvidenceInput) formEvidenceInput.focus();
+                return;
+            }
             if (!totals.complete) {
                 status.textContent = 'Renseignez une note valide pour chaque critère de la grille.';
                 return;
