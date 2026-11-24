@@ -540,6 +540,12 @@
                 documents.append(node('p', 'og-candidate-profile-line',
                     (cv.original_filename || 'CV candidat') + (cv.uploaded_at && Number.isFinite(Date.parse(cv.uploaded_at))
                         ? ' · Transmis le ' + new Date(cv.uploaded_at).toLocaleDateString('fr-FR') : '')));
+                var downloadCvButton = node('button', 'og-dashboard-ai-action', 'Télécharger le document');
+                downloadCvButton.type = 'button';
+                downloadCvButton.addEventListener('click', function () {
+                    downloadCandidateCv(candidate, cv, downloadCvButton);
+                });
+                documents.append(downloadCvButton);
             } else {
                 documents.append(node('p', 'og-qcm-empty', cvStatusAvailable
                     ? 'Aucun document transmis dans le suivi des CV.'
@@ -1037,6 +1043,40 @@
         if (signedUrl.startsWith('object/')) return new URL('/storage/v1/' + signedUrl, auth().url).href;
         return new URL(signedUrl, auth().url).href;
     }
+    async function downloadCandidateCv(candidate, cv, button) {
+        if (!cv || !cv.storage_path) {
+            setStatus('Aucun fichier n’est associé à ce document.', true);
+            return;
+        }
+        var filename = String(cv.original_filename || 'document-candidat.pdf').replace(/[\\/\\\\]/g, '_');
+        var originalLabel = button.textContent;
+        button.disabled = true;
+        button.textContent = 'Préparation…';
+        try {
+            var path = cv.storage_path.split('/').map(encodeURIComponent).join('/');
+            var signed = await storageApi('object/sign/candidate-cvs/' + path, {
+                method: 'POST',
+                body: { expiresIn: 300, download: filename }
+            });
+            var signedUrl = signed.signedURL || signed.signedUrl;
+            if (!signedUrl) throw new Error('Lien de téléchargement sécurisé indisponible.');
+            var link = node('a');
+            link.href = relativeStorageUrl(signedUrl);
+            link.download = filename;
+            link.rel = 'noopener noreferrer';
+            link.style.display = 'none';
+            document.body.append(link);
+            link.click();
+            link.remove();
+            setStatus('Téléchargement lancé : ' + filename, false);
+        } catch (error) {
+            setStatus('Téléchargement du document impossible : ' + (error.message || error), true);
+        } finally {
+            button.disabled = false;
+            button.textContent = originalLabel;
+        }
+    }
+
     async function openCandidatePdf(candidate, submission, button) {
         if (!submission.storage_path) {
             setStatus('Aucun PDF n’est associé à cette fiche.', true);
