@@ -13,17 +13,18 @@ test('le parcours documentaire Module 2 est chargé dans les deux interfaces', (
     assert.match(guide, /module2-documents\.css/);
 });
 
-test('la carte de proposition est placée sous les deux bibliothèques de l’espace Officier Guide', () => {
+test('la carte de proposition est placée sous les deux bibliothèques sans afficher les ressources validées', () => {
     const index = read('index.html');
     const guide = read('app/guide-dashboard.js');
     assert.match(index, /app\/guide-dashboard\.js/);
     assert.match(guide, /libraryGrid\.append\(courseSection, exerciseSection\)/);
     assert.match(guide, /libraryGrid\.append\(proposalEntry\)/);
     assert.match(guide, /PROPOSITION DE DOCUMENTS À AJOUTER POUR LES CANDIDATS/);
-    assert.match(guide, /2\.1\. Les Piliers de l’Armée de Terre de Combat/);
     assert.match(guide, /Titre du document/);
     assert.match(guide, /Catégorie/);
     assert.match(guide, /Suivi de mes propositions/);
+    assert.match(guide, /guide_document_proposals/);
+    assert.doesNotMatch(guide, /loadModule2GuideContent|Ressources disponibles pour les candidats|status=eq\.approved/);
     assert.doesNotMatch(guide, /drive_url\s*:/);
 });
 test('seuls les documents approuvés sont ajoutés à la rubrique 2.1', () => {
