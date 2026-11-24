@@ -55,7 +55,7 @@ test('les outils transversaux disposent d’une ouverture directe protégée par
 });
 
 test('le bouton reste caché sans rôle administrateur et visible avec ce rôle', () => {
-  assert.match(script, /button\.hidden=!estAutorise\(\)/);
+  assert.match(script, /button\.hidden\s*=\s*!estAutorise\(\)/);
   assert.match(css, /#adminGeneralButton\{display:flex/);
   assert.match(css, /#adminGeneralButton\[hidden\]\{display:none\}/);
 });
