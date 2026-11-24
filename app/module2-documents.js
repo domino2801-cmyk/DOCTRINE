@@ -263,7 +263,7 @@
     }
 
     function loadProposals(container, status) {
-        api(TABLE + '?select=id,title,category,description,guide_id,created_at&status=eq.pending&order=created_at.asc')
+        api(TABLE + '?select=id,title,category,description,guide_id,created_at,uploaded_file_path,original_filename,file_size,mime_type&status=eq.pending&order=created_at.asc')
             .then(function (rows) {
                 container.replaceChildren();
                 if (!rows.length) { setStatus(status, 'Aucune proposition en attente.'); return; }
@@ -271,6 +271,39 @@
                     var card = el('article', 'module2-admin-proposal');
                     card.append(el('strong', '', row.title), el('p', '', row.category),
                         el('p', '', row.description || 'Aucune description.'));
+                    if (row.uploaded_file_path && row.original_filename) {
+                        var attachmentLine = el('div', 'module2-admin-attachment');
+                        attachmentLine.append(el('span', '', 'Document joint : ' + row.original_filename +
+                            ' (' + (Math.max(1, Math.round(Number(row.file_size || 0) / 1024))) + ' Ko)'));
+                        var attachmentOpen = el('button', 'guide-button', 'Télécharger la pièce jointe');
+                        attachmentOpen.type = 'button';
+                        attachmentOpen.addEventListener('click', function () {
+                            var popup = window.open('about:blank', '_blank');
+                            if (popup) popup.opener = null;
+                            auth.jeton().then(function (token) {
+                                return fetch(auth.url.replace(/\\/$/, '') + '/storage/v1/object/sign/guide-document-proposals/' +
+                                    row.uploaded_file_path.split('/').map(encodeURIComponent).join('/'), {
+                                    method: 'POST',
+                                    headers: { apikey: auth.key, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ expiresIn: 300 })
+                                });
+                            }).then(function (response) {
+                                return response.json().then(function (payload) {
+                                    if (!response.ok) throw new Error(payload.message || 'Lien de téléchargement indisponible.');
+                                    var signed = payload.signedURL || payload.signedUrl;
+                                    if (!signed) throw new Error('Lien de téléchargement absent.');
+                                    var target = signed.indexOf('http') === 0 ? signed : auth.url.replace(/\\/$/, '') + '/storage/v1' + signed;
+                                    if (popup) popup.location = target;
+                                    else window.location.href = target;
+                                });
+                            }).catch(function (error) {
+                                if (popup) popup.close();
+                                setStatus(status, error.message || 'Téléchargement impossible.', true);
+                            });
+                        });
+                        attachmentLine.append(attachmentOpen);
+                        card.append(attachmentLine);
+                    }
                     var linkLabel = el('label', '', 'Lien Google Drive après insertion dans votre Drive');
                     var link = el('input'); link.type = 'url'; link.required = true; link.placeholder = 'https://drive.google.com/...';
                     linkLabel.appendChild(link);
