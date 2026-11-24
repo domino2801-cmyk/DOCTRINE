@@ -54,13 +54,13 @@ test('l’espace Officier Guide affiche uniquement les contenus publiés et leur
     assert.match(guide, /guide_exercise_library\?select=/);
     assert.match(guide, /guide_correction_library\?select=/);
     assert.match(guide, /is_published=eq\.true/);
-    assert.match(guide, /Bibliothèque des dossiers d’exercices et corrections/);
+    assert.match(guide, /BIBLIOTHÈQUE DES DOSSIERS D’EXERCICES ET CORRECTIONS/);
     assert.match(guide, /correction\.exercise_id === exercise\.id/);
     assert.match(guide, /★ — Initiation/);
     assert.match(guide, /★★ — Bases/);
     assert.match(guide, /★★★ — Approfondissement/);
     assert.match(guide, /★★★★ — Défi/);
-    assert.match(guide, /og-dashboard-library-correction-stars/);
+    assert.match(guide, /og-dashboard-library-correction-stars/);\n    assert.match(guide, /Visualiser la correction/);\n    assert.match(guide, /Télécharger la correction/);\n    assert.match(guide, /driveDownload\(correction\.drive_url\)/);\n    assert.match(guide, /currentGuideStatus\(\)/);
     assert.match(guideCss, /\.og-dashboard-library-grid/);
 });
 
