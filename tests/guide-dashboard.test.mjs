@@ -78,6 +78,24 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.doesNotMatch(script, /guide_action|og-dashboard-ai-frame/);
 });
 
+test('la carte CANDIDATS ouvre la cohorte puis une fiche individuelle limitée au pseudo, à la spécialité et à l’e-mail', () => {
+    assert.match(script, /function openGuideCandidates\(\)/);
+    assert.match(script, /dataset\.guideAction = 'candidates-tracking'/);
+    assert.match(script, /card\.addEventListener\('click', openGuideCandidates\)/);
+    assert.match(script, /function renderCandidateProfileDetail\(target, candidate\)/);
+    assert.match(script, /CANDIDATS DE MA COHORTE/);
+    assert.match(script, /identity\.name \|\| 'Pseudo non renseigné'/);
+    assert.match(script, /identity\.specialty, identity\.email/);
+    assert.match(script, /FICHE CANDIDAT/);
+    assert.match(script, /SUIVI QCM-MAJOR/);
+    assert.match(script, /ACTIVITÉ DOCTRINE/);
+    assert.match(script, /DOSSIERS ET ÉVALUATIONS/);
+    assert.match(script, /SUIVI D’ADMISSION/);
+    assert.match(css, /\.og-candidate-profile-identity/);
+    assert.match(css, /\.og-candidate-profile-section/);
+    assert.doesNotMatch(script.slice(script.indexOf('function renderCandidateProfileDetail'), script.indexOf('function openGuideCandidates')), /identity\.(?:grade|unit|matricule)/);
+});
+
 test('les fiches RETEX et Signalement Officier Guide sont autonomes et indépendantes du Module 7', () => {
     assert.match(script, /RETOUR D’EXPÉRIENCE OFFICIER GUIDE/);
     assert.match(script, /SIGNALEMENT OFFICIER GUIDE/);
