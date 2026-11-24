@@ -81,7 +81,12 @@
 
     function buildGuidePanel() {
         var app = document.getElementById('guideModule8App');
-        if (!app || document.getElementById('guideModule2ProposalPanel')) return;
+        if (!app || isAdmin()) return;
+        var existing = document.getElementById('guideModule2ProposalPanel');
+        if (existing) {
+            loadOwnProposals(existing.querySelector('.module2-proposal-list'), existing.querySelector('.module2-proposal-status'));
+            return;
+        }
         var panel = el('section', 'guide-panel');
         panel.id = 'guideModule2ProposalPanel';
         panel.appendChild(el('div', 'guide-panel-heading', 'Proposer un document pour le Module 2'));
@@ -118,7 +123,7 @@
         });
         var ownTitle = el('h3', '', 'Mes propositions');
         var ownList = el('ul', 'module2-proposal-list');
-        var ownStatus = el('p', 'guide-form-status');
+        var ownStatus = el('p', 'guide-form-status module2-proposal-status');
         panel.append(form, ownTitle, ownList, ownStatus);
         var target = document.getElementById('guideCourseCatalog');
         if (target) target.before(panel);
@@ -172,7 +177,9 @@
             if (!form.reportValidity()) return;
             var parsed;
             try { parsed = new URL(url.value.trim()); } catch (error) { parsed = null; }
-            if (!parsed || parsed.protocol !== 'https:') { setStatus(status, 'Le lien doit commencer par https://.', true); return; }
+            if (!parsed || parsed.protocol !== 'https:' || !['drive.google.com', 'docs.google.com'].includes(parsed.hostname.toLowerCase())) {
+                setStatus(status, 'Le lien doit être une adresse Google Drive ou Google Docs en HTTPS.', true); return;
+            }
             add.disabled = true;
             setStatus(status, 'Publication…');
             api(TABLE, { method: 'POST', prefer: 'return=minimal', body: {
@@ -214,7 +221,9 @@
                     approve.addEventListener('click', function () {
                         var parsed;
                         try { parsed = new URL(link.value.trim()); } catch (error) { parsed = null; }
-                        if (!parsed || parsed.protocol !== 'https:') { setStatus(status, 'Saisissez un lien HTTPS Google Drive valide.', true); return; }
+                        if (!parsed || parsed.protocol !== 'https:' || !['drive.google.com', 'docs.google.com'].includes(parsed.hostname.toLowerCase())) {
+                            setStatus(status, 'Saisissez un lien Google Drive ou Google Docs en HTTPS.', true); return;
+                        }
                         approve.disabled = true;
                         api(TABLE + '?id=eq.' + encodeURIComponent(row.id), { method: 'PATCH', prefer: 'return=minimal',
                             body: { drive_url: parsed.href, status: 'approved', admin_note: note.value.trim() }
