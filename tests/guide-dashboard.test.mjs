@@ -48,7 +48,12 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(css, /\.og-dashboard-assign-dialog/);
     assert.match(script, /id = 'guideDashboard'/);
     assert.doesNotMatch(script, /btn-mod8|modal-module8/i);
-    assert.doesNotMatch(script, /app\/guide-module8\.html|guide_action|og-dashboard-ai-frame/);
+    assert.match(script, /SUIVI QCM-MAJOR/);
+    assert.match(script, /Suivi individuel par candidat de ma cohorte/);
+    assert.match(script, /dataset\.guideAction = 'qcm-major-tracking'/);
+    assert.match(script, /function openGuideQcmTracking\(\)/);
+    assert.match(script, /window\.location\.href = 'app\/guide-module8\.html'/);
+    assert.doesNotMatch(script, /guide_action|og-dashboard-ai-frame/);
 });
 
 test('les fiches RETEX et Signalement Officier Guide sont autonomes et indépendantes du Module 7', () => {
