@@ -13,15 +13,19 @@ test('le parcours documentaire Module 2 est chargé dans les deux interfaces', (
     assert.match(guide, /module2-documents\.css/);
 });
 
-test('les guides proposent un document sans fournir de lien Drive', () => {
-    const source = read('app/module2-documents.js');
-    const guideForm = source.slice(source.indexOf('function buildGuidePanel'), source.indexOf('function loadOwnProposals'));
-    assert.match(guideForm, /Titre du document/);
-    assert.match(guideForm, /Catégorie/);
-    assert.match(guideForm, /Proposer un document pour le Module 2/);
-    assert.doesNotMatch(guideForm, /drive_url\s*:/);
+test('la carte de proposition est placée sous les deux bibliothèques de l’espace Officier Guide', () => {
+    const index = read('index.html');
+    const guide = read('app/guide-dashboard.js');
+    assert.match(index, /app\\/guide-dashboard\\.js/);
+    assert.match(guide, /libraryGrid\\.append\\(courseSection, exerciseSection\\)/);
+    assert.match(guide, /libraryGrid\\.append\\(proposalEntry\\)/);
+    assert.match(guide, /PROPOSITION DE DOCUMENTS À AJOUTER POUR LES CANDIDATS/);
+    assert.match(guide, /2\\.1\\. Les Piliers de l’Armée de Terre de Combat/);
+    assert.match(guide, /Titre du document/);
+    assert.match(guide, /Catégorie/);
+    assert.match(guide, /Suivi de mes propositions/);
+    assert.doesNotMatch(guide, /drive_url\\s*:/);
 });
-
 test('seuls les documents approuvés sont ajoutés à la rubrique 2.1', () => {
     const source = read('app/module2-documents.js');
     assert.match(source, /status=eq\.approved/);
