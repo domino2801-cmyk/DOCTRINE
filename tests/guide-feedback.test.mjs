@@ -34,7 +34,7 @@ test('l’administration peut consulter et traiter les deux files indépendantes
 
 test('les deux tables ont des règles RLS guide et admin distinctes', () => {
   for (const [table, policy] of [['guide_retex_reports', 'guide_retex'], ['guide_signalements', 'guide_signalements']]) {
-    assert.match(migration, new RegExp('create table if not exists public\\\\.' + table));
+    assert.ok(migration.includes('create table if not exists public.' + table));
     assert.match(migration, new RegExp(policy + '_insert_own'));
     assert.match(migration, new RegExp(policy + '_read_own'));
     assert.match(migration, new RegExp(policy + '_admin_read'));
