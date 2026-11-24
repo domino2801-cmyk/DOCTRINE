@@ -2085,6 +2085,119 @@
         exerciseContent.append(exerciseLibraryNode);
         exerciseSection.append(exerciseContent);
         libraryGrid.append(courseSection, exerciseSection);
+
+        // Accès aux ressources du Module 2.1 et proposition de documents
+        // placé immédiatement sous les deux cartes de bibliothèques.
+        var proposalEntry = node('section', 'og-dashboard-library-entry module2-og-entry');
+        var proposalToggle = node('button', 'og-dashboard-library-entry-toggle', 'PROPOSITION DE DOCUMENTS À AJOUTER POUR LES CANDIDATS');
+        proposalToggle.type = 'button';
+        proposalToggle.setAttribute('aria-expanded', 'false');
+        var proposalContent = node('div', 'og-dashboard-library-entry-content module2-og-content');
+        proposalContent.hidden = true;
+        proposalToggle.addEventListener('click', function () {
+            var expanded = proposalToggle.getAttribute('aria-expanded') !== 'true';
+            proposalToggle.setAttribute('aria-expanded', String(expanded));
+            proposalContent.hidden = !expanded;
+            if (expanded) loadModule2GuideContent();
+        });
+        proposalEntry.append(proposalToggle,
+            node('p', 'og-dashboard-muted', 'Ressources de la rubrique 2.1 · Propositions suivies par l’administrateur.'));
+        var proposalPanel = node('div', 'module2-og-panel');
+        proposalPanel.append(node('h3', '', '2.1. Les Piliers de l’Armée de Terre de Combat'));
+        proposalPanel.append(node('p', 'og-dashboard-muted', 'Consultez les ressources validées et proposez un document complémentaire. Le lien Google Drive sera ajouté par l’administrateur.'));
+        var proposalResources = node('ul', 'module2-og-resources');
+        var proposalResourceStatus = node('p', 'module2-og-status');
+        proposalResourceStatus.setAttribute('role', 'status');
+        proposalPanel.append(node('h4', '', 'Ressources disponibles pour les candidats'), proposalResources, proposalResourceStatus);
+        var proposalForm = node('form', 'module2-og-form');
+        function proposalField(labelText, tagName, required, maxLength) {
+            var label = node('label', '', labelText);
+            var control = node(tagName);
+            control.required = !!required;
+            if (maxLength) control.maxLength = maxLength;
+            if (tagName === 'textarea') control.rows = 3;
+            label.append(control);
+            proposalForm.append(label);
+            return control;
+        }
+        var proposalTitle = proposalField('Titre du document', 'input', true, 160);
+        var proposalCategory = proposalField('Catégorie', 'input', true, 100);
+        var proposalDescription = proposalField('Description (facultatif)', 'textarea', false, 1200);
+        var proposalSubmit = node('button', 'og-dashboard-download', 'Envoyer la proposition');
+        proposalSubmit.type = 'submit';
+        var proposalFormStatus = node('p', 'module2-og-status');
+        proposalFormStatus.setAttribute('role', 'status');
+        proposalForm.append(proposalSubmit, proposalFormStatus);
+        proposalForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            if (!proposalForm.reportValidity()) return;
+            proposalSubmit.disabled = true;
+            proposalFormStatus.textContent = 'Envoi de la proposition…';
+            api('guide_document_proposals', { method: 'POST', prefer: 'return=minimal', body: {
+                title: proposalTitle.value.trim(),
+                category: proposalCategory.value.trim(),
+                description: proposalDescription.value.trim()
+            }}).then(function () {
+                proposalForm.reset();
+                proposalFormStatus.textContent = 'Proposition transmise à l’administrateur.';
+                loadModule2OwnProposals();
+            }).catch(function (error) {
+                proposalFormStatus.textContent = error.message || 'Envoi impossible.';
+            }).finally(function () { proposalSubmit.disabled = false; });
+        });
+        var ownProposals = node('ul', 'module2-og-own-list');
+        var ownStatus = node('p', 'module2-og-status');
+        ownStatus.setAttribute('role', 'status');
+        proposalPanel.append(node('h4', '', 'Proposer un nouveau document'), proposalForm,
+            node('h4', '', 'Suivi de mes propositions'), ownProposals, ownStatus);
+        proposalContent.append(proposalPanel);
+        proposalEntry.append(proposalContent);
+        libraryGrid.append(proposalEntry);
+
+        function loadModule2GuideContent() {
+            api('guide_document_proposals?select=id,title,category,description,drive_url,created_at&status=eq.approved&order=created_at.asc')
+                .then(function (rows) {
+                    proposalResources.replaceChildren();
+                    if (!rows.length) {
+                        proposalResourceStatus.textContent = 'Aucune ressource complémentaire validée pour le moment.';
+                        return;
+                    }
+                    rows.forEach(function (row) {
+                        var item = node('li', 'module2-og-resource');
+                        var copy = node('div', 'module2-og-resource-copy');
+                        copy.append(node('strong', '', row.title), node('span', '', row.category || 'Document complémentaire'));
+                        if (row.description) copy.append(node('p', '', row.description));
+                        var link = node('button', 'og-dashboard-download', 'Ouvrir');
+                        link.type = 'button';
+                        link.addEventListener('click', function () { openDriveInViewer(row.drive_url, row.title); });
+                        item.append(copy, link);
+                        proposalResources.append(item);
+                    });
+                    proposalResourceStatus.textContent = rows.length + ' ressource(s) disponible(s).';
+                }).catch(function (error) {
+                    proposalResourceStatus.textContent = error.message || 'Chargement des ressources impossible.';
+                });
+            loadModule2OwnProposals();
+        }
+        function loadModule2OwnProposals() {
+            api('guide_document_proposals?select=id,title,category,status,admin_note,created_at&order=created_at.desc')
+                .then(function (rows) {
+                    ownProposals.replaceChildren();
+                    if (!rows.length) {
+                        ownStatus.textContent = 'Aucune proposition enregistrée.';
+                        return;
+                    }
+                    rows.forEach(function (row) {
+                        var item = node('li', '', row.title + ' — ' + row.category + ' — ' +
+                            (row.status === 'approved' ? 'Validée' : row.status === 'rejected' ? 'Refusée' : 'En attente'));
+                        if (row.admin_note) item.append(node('p', '', row.admin_note));
+                        ownProposals.append(item);
+                    });
+                    ownStatus.textContent = '';
+                }).catch(function (error) {
+                    ownStatus.textContent = error.message || 'Chargement du suivi impossible.';
+                });
+        }
         panel.append(libraryGrid);
         statusNode = node('p', 'og-dashboard-status');
         statusNode.setAttribute('role', 'status');
