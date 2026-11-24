@@ -284,6 +284,9 @@ body.og-guide-entry-only nav ul {
     align-items:center;
     width:100%;
 }
+body.og-guide-entry-only #guideDashboardNav[hidden] {
+    display:none !important;
+}
 body.og-guide-entry-only #guideDashboardNav {
     display:flex;
     flex:0 1 440px;
