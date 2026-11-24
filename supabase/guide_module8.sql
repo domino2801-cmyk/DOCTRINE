@@ -28,7 +28,7 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $$
     select coalesce(
         (auth.jwt() -> 'app_metadata' ->> 'role') in ('guide', 'officier_guide')
         and exists (
@@ -39,7 +39,7 @@ as $
         ),
         false
     );
-$;
+$$;
 
 revoke all on function public.doctrine_is_guide() from public, anon;
 grant execute on function public.doctrine_is_guide() to authenticated;
