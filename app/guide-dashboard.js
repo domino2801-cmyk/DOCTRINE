@@ -546,7 +546,6 @@
                     : 'État des documents momentanément indisponible.'));
             }
             content.append(documents);
-            // L’activité documentaire n’est pas affichée dans l’espace Officier Guide.
         });
 
         // Un seul accordéon : renderAiCorrection fournit déjà son propre panneau repliable.
