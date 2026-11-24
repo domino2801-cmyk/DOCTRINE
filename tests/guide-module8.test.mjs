@@ -674,3 +674,13 @@ test("une évaluation BM4 reste verrouillée si le rechargement structuré écho
     assert.match(script, /modification des évaluations bloquée/);
     assert.match(script, /Enregistrement bloqué : les observations structurées BM4/);
 });
+
+
+test("les champs Forme alimentés par Gemini restent visibles dans le tableau de bord Officier Guide", () => {
+    assert.match(dashboardScript, /Observation du critère Forme — obligatoire/);
+    assert.match(dashboardScript, /Indice documentaire du critère Forme/);
+    assert.match(dashboardScript, /formObservation\.value = String\(suggestion\.form_observations \|\| ''\)\.trim\(\)/);
+    assert.match(dashboardScript, /formEvidence\.value = String\(suggestion\.form_evidence \|\| ''\)\.trim\(\)/);
+    assert.doesNotMatch(dashboardScript, /formObservationLabel\.hidden\s*=\s*true/);
+    assert.doesNotMatch(dashboardScript, /formEvidenceLabel\.hidden\s*=\s*true/);
+});
