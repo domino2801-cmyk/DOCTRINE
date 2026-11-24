@@ -40,7 +40,7 @@
             return JSON.parse(decodeURIComponent(escape(atob(part))));
         } catch (_) { return null; }
     }
-    function isGuideSpecialty(value) {
+    // Accepte le code court OG et les libellés complets du profil Officier Guide.\n    function isGuideSpecialty(value) {
         if (Array.isArray(value)) value = value[0];
         if (value && typeof value === 'object') {
             value = value.specialty || value.speciality || value.get_current_user_specialty || value.role;
