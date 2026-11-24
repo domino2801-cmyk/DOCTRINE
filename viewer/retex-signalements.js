@@ -44,7 +44,6 @@
 
     function errorMessage(err) {
         if (err.message === 'session' || err.status === 401) return 'Session expirée : reconnectez-vous puis réessayez.';
-        if (err.code === '23505') return 'Ce RETEX a déjà été envoyé.';
         if (err.status === 404 || err.code === 'PGRST205') return 'Le service n’est pas encore configuré. Contactez l’administrateur.';
         if (err.status === 403) return 'Envoi refusé pour ce compte.';
         return 'Envoi impossible pour le moment. Réessayez plus tard.';
