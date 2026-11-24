@@ -175,7 +175,7 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /Documents transmis/);
     assert.match(script, /candidateCvs\[candidate\.candidate && candidate\.candidate\.id\]/);
     assert.match(script, /Télécharger le document/);
-    assert.match(script, /object\/sign\/doctrine-candidate-cv/);
+    assert.match(script, /object\/sign\/candidate-cvs/);
     assert.doesNotMatch(script, /ccpm_date\s*:/);
     assert.match(script, /Progression des modules 1 à 7/);
     assert.match(script, /candidateFollowUpStatus/);
