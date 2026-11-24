@@ -94,7 +94,8 @@
                 cliquer('.adm-guide-library-toggle', 'guide', 'La bibliothèque est indisponible : vérifiez le chargement de l’outil Exercices et corrections.');
             }
         } else if (name === 'admin-edit') {
-            cliquer('.adm-toolbar-toggle', 'application', 'Ouvrez un module pour accéder au mode édition existant.');
+            document.dispatchEvent(new CustomEvent('doctrine:open-module-editor'));
+            statut('application', 'Mode édition activé. Les commandes Enregistrer, Annuler, Valeurs d’origine et sauvegarde/restauration sont disponibles dans les barres des modules.');
         } else if (name === 'module2-documents') {
             document.dispatchEvent(new CustomEvent('doctrine:open-module2-documents-admin'));
             statut('application', '');
