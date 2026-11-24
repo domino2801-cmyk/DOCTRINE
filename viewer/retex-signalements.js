@@ -5,27 +5,6 @@
     var signalementForm = document.getElementById('signalementForm');
     if (!retexForm || !signalementForm) return;
 
-    function showModule7CompletionMessage(message) {
-        var content = document.querySelector('#modal-module7 .modal-content');
-        if (!content) return;
-        var notice = document.getElementById('module7CompletionMessage');
-        if (!notice) {
-            notice = document.createElement('section');
-            notice.id = 'module7CompletionMessage';
-            notice.className = 'module-completion-control';
-            notice.style.cssText = 'margin:28px 0 12px;padding:16px;border:2px solid #0b2240;border-radius:8px;background:#f8fafc;';
-            var text = document.createElement('p');
-            text.className = 'module-completion-status';
-            text.style.cssText = 'margin:0;color:#166534;font-size:.95rem;font-weight:700;';
-            text.setAttribute('role', 'status');
-            text.setAttribute('aria-live', 'polite');
-            notice.appendChild(text);
-            content.appendChild(notice);
-        }
-        notice.hidden = false;
-        notice.querySelector('p').textContent = message;
-    }
-
     function checked(form, name) {
         var el = form.querySelector('input[name="' + name + '"]:checked');
         return el ? el.value : null;
@@ -65,7 +44,6 @@
 
     function errorMessage(err) {
         if (err.message === 'session' || err.status === 401) return 'Session expirée : reconnectez-vous puis réessayez.';
-        if (err.code === '23505') return 'RETEX déjà transmis. Module 7 validé automatiquement. Merci pour ton retour !';
         if (err.status === 404 || err.code === 'PGRST205') return 'Le service n’est pas encore configuré. Contactez l’administrateur.';
         if (err.status === 403) return 'Envoi refusé pour ce compte.';
         return 'Envoi impossible pour le moment. Réessayez plus tard.';
@@ -104,12 +82,11 @@
     });
 
     // Replié par défaut et après l'envoi du RETEX.
-    function lockRetex(message) {
+    function lockRetex() {
         retexForm.querySelectorAll('input, textarea').forEach(function (el) { el.disabled = true; });
         retexSubmit.disabled = true;
-        // La confirmation est affichée uniquement dans le bloc de fin du module.
+        // Aucun message de confirmation n'est affiché : le badge indique l'état d'envoi.
         setStatus(retexStatus, '', true);
-        showModule7CompletionMessage('RETEX déjà transmis. Module 7 validé automatiquement. Merci pour ton retour !');
         retexCard.classList.add('is-sent');
         retexForm.hidden = true;
         retexBadge.hidden = false;
@@ -147,7 +124,7 @@
                 if (!response.ok) return [];
                 return response.json();
             }).then(function (rows) {
-                if (current === requestId && rows.length) lockRetex('RETEX déjà transmis. Module 7 validé automatiquement. Merci pour ton retour !');
+                if (current === requestId && rows.length) lockRetex();
             });
         }).catch(function () {});
     }
@@ -188,10 +165,10 @@
         retexSubmit.disabled = true;
         setStatus(retexStatus, 'Envoi en cours…', true);
         insertRow('doctrine_retex', row).then(function () {
-            lockRetex('RETEX déjà transmis. Module 7 validé automatiquement. Merci pour ton retour !');
+            lockRetex();
         }).catch(function (err) {
             retexSubmit.disabled = false;
-            if (err.code === '23505') lockRetex(errorMessage(err));
+            if (err.code === '23505') lockRetex();
             else setStatus(retexStatus, errorMessage(err), false);
         });
     });
@@ -255,8 +232,6 @@
     document.addEventListener('doctrine:login', refreshRetexProfile);
     document.addEventListener('doctrine:logout', function () {
         requestId++;
-        var completionNotice = document.getElementById('module7CompletionMessage');
-        if (completionNotice) completionNotice.hidden = true;
         retexForm.reset();
         signalementForm.reset();
         sigCount.textContent = '0';

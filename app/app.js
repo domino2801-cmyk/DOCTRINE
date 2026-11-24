@@ -833,6 +833,14 @@ const module1Key = 'module1_validated';
 
     function openModal(id) {
         if (!Object.prototype.hasOwnProperty.call(moduleButtonMap, id)) return;
+        // Réafficher les deux fiches à chaque ouverture normale du Module 7.
+        // Le parcours Officier Guide masque ensuite la fiche opposée à son choix.
+        if (id === 'module7') {
+            ['retexCard', 'signalementCard'].forEach(function (cardId) {
+                const card = document.getElementById(cardId);
+                if (card) card.hidden = false;
+            });
+        }
         if (id === 'module4' && isModule1Unlocked() && !canOpenModule(id)) {
             alert('Marquez au moins un dossier « Fait » dans le module 3 pour accéder au module 4.');
             return;
