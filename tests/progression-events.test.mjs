@@ -91,7 +91,10 @@ test("module 7 is completed automatically when a RETEX is inserted", async () =>
     const retexViewer = readFileSync(path.join(root, "viewer", "retex-signalements.js"), "utf8");
     assert.match(app, /if \(id !== 'module2'\) return/);
     assert.doesNotMatch(app, /if \(!\['module2', 'module6', 'module7'\]\.includes\(id\)\) return/);
-    assert.match(retexViewer, /insertRow\('doctrine_retex', row\)\.then\(function \(\) \{[\s\S]*Module 7 validé automatiquement/);
+    assert.match(retexViewer, /insertRow\('doctrine_retex', row\)\.then\(function \(\) \{\s*lockRetex\(\);/);
+    assert.doesNotMatch(retexViewer, /RETEX déjà transmis\. Module 7 validé automatiquement\. Merci pour ton retour !/);
+    assert.doesNotMatch(retexViewer, /showModule7CompletionMessage|module7CompletionMessage/);
+    assert.match(retexViewer, /function lockRetex\(\)/);
     const retexCardStart = html.indexOf('id="retexCard"');
     const retexCardEnd = html.indexOf('</section>', retexCardStart);
     assert.ok(retexCardStart >= 0 && retexCardEnd > retexCardStart, "Carte RETEX 7.1 introuvable ou non fermée");
