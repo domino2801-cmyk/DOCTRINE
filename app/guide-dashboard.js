@@ -284,17 +284,22 @@
     function qcmThemeSummary(results) {
         var groups = Object.create(null);
         for (var number = 1; number <= 6; number += 1) {
-            groups['theme-' + number] = { theme: 'Thème ' + number, scores: [], count: 0 };
+            groups['theme-' + number] = { number: number, theme: 'Thème ' + number, scores: [], count: 0 };
         }
         results.forEach(function (result) {
             var score = Number(result.score);
             if (!Number.isFinite(score)) return;
-            var label = String(result.theme || '').trim();
-            var numberMatch = label.match(/(?:th[eè]me|theme|module)?\\s*([1-6])(?:\\b|$)/i);
-            if (!numberMatch) return;
-            var key = 'theme-' + numberMatch[1];
+            var label = String(result.theme || result.theme_name || result.category || '').trim();
+            // Les résultats Supabase peuvent porter « Thème 1 », « Module 1 » ou « 1. ... ».
+            // Utiliser une expression régulière correctement échappée (\s et \b).
+            var numberMatch = label.match(/^\\s*(?:(?:th[eè]me|theme|module)\\s*)?([1-6])\\b/i);
+            var explicitNumber = Number(result.theme_number || result.module_number || result.theme_id || result.module_id);
+            var themeNumber = numberMatch ? Number(numberMatch[1]) :
+                (Number.isInteger(explicitNumber) && explicitNumber >= 1 && explicitNumber <= 6 ? explicitNumber : null);
+            if (!themeNumber) return;
+            var key = 'theme-' + themeNumber;
             // Conserver l'intitulé réel Supabase dès qu'un résultat existe pour ce thème.
-            if (groups[key].count === 0) groups[key].theme = label;
+            if (groups[key].count === 0 && label) groups[key].theme = label;
             groups[key].scores.push(score);
             groups[key].count += 1;
         });
@@ -305,9 +310,7 @@
                 : null;
             return item;
         }).sort(function (left, right) {
-            var leftNumber = Number((left.theme.match(/^Thème ([1-6])$/) || [])[1] || 99);
-            var rightNumber = Number((right.theme.match(/^Thème ([1-6])$/) || [])[1] || 99);
-            return leftNumber - rightNumber || left.theme.localeCompare(right.theme, 'fr');
+            return left.number - right.number;
         });
     }
     function renderQcmCandidateDetail(target, candidate) {
