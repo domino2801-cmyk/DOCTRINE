@@ -1755,12 +1755,26 @@
                             line.append(node('span', 'og-dashboard-library-correction-stars',
                                 '★'.repeat(correctionLevel) + ' · ' + EXERCISE_LEVELS[correctionLevel - 1].name));
                             var title = node('strong', '', correction.title);
-                            var link = node('button', 'og-dashboard-download', 'Ouvrir la correction');
+                            var correctionActions = node('div', 'og-dashboard-library-actions');
+                            var link = node('button', 'og-dashboard-download', 'Visualiser la correction');
                             link.type = 'button';
                             link.addEventListener('click', function () {
                                 openDriveInViewer(correction.drive_url, correction.title);
                             });
-                            line.append(title, link);
+                            correctionActions.append(link);
+                            var downloadUrl = driveDownload(correction.drive_url);
+                            var download = node('a', 'og-dashboard-download og-dashboard-library-download', 'Télécharger la correction');
+                            if (downloadUrl) {
+                                download.href = downloadUrl;
+                                download.target = '_blank';
+                                download.rel = 'noopener noreferrer';
+                                download.setAttribute('download', '');
+                            } else {
+                                download.setAttribute('aria-disabled', 'true');
+                                download.textContent = 'Téléchargement indisponible';
+                            }
+                            correctionActions.append(download);
+                            line.append(title, correctionActions);
                             if (correction.description) line.append(node('p', '', correction.description));
                             details.append(line);
                         });
@@ -1961,18 +1975,41 @@
         panel.append(header);
         metricsNode = node('div', 'og-dashboard-metrics');
         panel.append(metricsNode);
-        var courseSection = node('section', 'og-dashboard-section');
-        courseSection.append(node('h3', '', 'Bibliothèque des 30 supports Officier Guide'));
-        courseSection.append(node('p', 'og-dashboard-muted', 'Catalogue commun classé en six catégories. Les supports sont consultables et téléchargeables.'));
+        var libraryGrid = node('div', 'og-dashboard-pedagogical-libraries');
+        var courseSection = node('section', 'og-dashboard-library-entry');
+        var courseToggle = node('button', 'og-dashboard-library-entry-toggle', 'BIBLIOTHÈQUE DES 30 SUPPORTS OFFICIER GUIDE');
+        courseToggle.type = 'button';
+        courseToggle.setAttribute('aria-expanded', 'false');
+        var courseContent = node('div', 'og-dashboard-library-entry-content');
+        courseContent.hidden = true;
+        courseToggle.addEventListener('click', function () {
+            var expanded = courseToggle.getAttribute('aria-expanded') !== 'true';
+            courseToggle.setAttribute('aria-expanded', String(expanded));
+            courseContent.hidden = !expanded;
+        });
+        courseSection.append(courseToggle,
+            node('p', 'og-dashboard-muted', '6 catégories · Supports consultables et téléchargeables.'));
         coursesNode = node('div', 'og-dashboard-courses');
-        courseSection.append(coursesNode);
-        panel.append(courseSection);
-        var exerciseSection = node('section', 'og-dashboard-section');
-        exerciseSection.append(node('h3', '', 'Bibliothèque des dossiers d’exercices et corrections'));
-        exerciseSection.append(node('p', 'og-dashboard-muted', 'Exercices classés par difficulté et corrections associées. Seuls les contenus publiés sont affichés.'));
+        courseContent.append(coursesNode);
+        courseSection.append(courseContent);
+        var exerciseSection = node('section', 'og-dashboard-library-entry');
+        var exerciseToggle = node('button', 'og-dashboard-library-entry-toggle', 'BIBLIOTHÈQUE DES DOSSIERS D’EXERCICES ET CORRECTIONS');
+        exerciseToggle.type = 'button';
+        exerciseToggle.setAttribute('aria-expanded', 'false');
+        var exerciseContent = node('div', 'og-dashboard-library-entry-content');
+        exerciseContent.hidden = true;
+        exerciseToggle.addEventListener('click', function () {
+            var expanded = exerciseToggle.getAttribute('aria-expanded') !== 'true';
+            exerciseToggle.setAttribute('aria-expanded', String(expanded));
+            exerciseContent.hidden = !expanded;
+        });
+        exerciseSection.append(exerciseToggle,
+            node('p', 'og-dashboard-muted', '4 niveaux · Exercices et corrections publiés, consultables et téléchargeables.'));
         exerciseLibraryNode = node('div', 'og-dashboard-library');
-        exerciseSection.append(exerciseLibraryNode);
-        panel.append(exerciseSection);
+        exerciseContent.append(exerciseLibraryNode);
+        exerciseSection.append(exerciseContent);
+        libraryGrid.append(courseSection, exerciseSection);
+        panel.append(libraryGrid);
         statusNode = node('p', 'og-dashboard-status');
         statusNode.setAttribute('role', 'status');
         statusNode.setAttribute('aria-live', 'polite');
