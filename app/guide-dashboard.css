@@ -277,10 +277,43 @@
 @media(max-width:600px) { .og-dashboard-library-level-heading { min-height:48px; padding:11px 12px; font-size:14px; } }
 
 
-/* Pour un Officier Guide connecté, le seul accès de navigation est centré. */
-body.og-guide-entry-only nav ul { justify-content:center; }
-body.og-guide-entry-only #guideDashboardNav { margin-inline:auto; }
-body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw); text-align:center; }
+/* Pour un Officier Guide connecté, la carte d'accès est centrée et responsive. */
+body.og-guide-entry-only nav ul {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    width:100%;
+}
+body.og-guide-entry-only #guideDashboardNav {
+    display:flex;
+    flex:0 1 440px;
+    justify-content:center;
+    width:min(440px,100%);
+    margin-inline:auto;
+}
+body.og-guide-entry-only #guideDashboardNav > button {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+    min-width:0;
+    min-height:48px;
+    padding:12px 20px;
+    text-align:center;
+}
+@media(max-width:600px) {
+    body.og-guide-entry-only nav {
+        padding:10px 12px;
+    }
+    body.og-guide-entry-only #guideDashboardNav {
+        flex-basis:100%;
+        width:100%;
+    }
+    body.og-guide-entry-only #guideDashboardNav > button {
+        min-height:46px;
+        padding:11px 14px;
+    }
+}
 
 
 /* Fiches autonomes RETEX et signalement — espace Officier Guide. */
