@@ -293,6 +293,8 @@
             var numberMatch = label.match(/(?:th[eè]me|theme|module)?\\s*([1-6])(?:\\b|$)/i);
             if (!numberMatch) return;
             var key = 'theme-' + numberMatch[1];
+            // Conserver l'intitulé réel Supabase dès qu'un résultat existe pour ce thème.
+            if (groups[key].count === 0) groups[key].theme = label;
             groups[key].scores.push(score);
             groups[key].count += 1;
         });
