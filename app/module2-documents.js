@@ -82,15 +82,33 @@
     function buildGuidePanel() {
         var app = document.getElementById('guideModule8App');
         if (!app || isAdmin()) return;
-        var existing = document.getElementById('guideModule2ProposalPanel');
-        if (existing) {
-            loadOwnProposals(existing.querySelector('.module2-proposal-list'), existing.querySelector('.module2-proposal-status'));
-            return;
-        }
-        var panel = el('section', 'guide-panel');
-        panel.id = 'guideModule2ProposalPanel';
-        panel.appendChild(el('div', 'guide-panel-heading', 'Proposer un document pour le Module 2'));
-        panel.appendChild(el('p', 'guide-muted', 'Proposez une ressource pour la rubrique 2.1. Le lien Google Drive sera ajouté par l’administrateur après insertion du document dans son Drive.'));
+        var existing = document.getElementById('guideModule2ProposalCard');
+        if (existing) return;
+
+        // Carte d'accès placée après les bibliothèques pédagogiques de l'espace OG.
+        var card = el('section', 'guide-panel module2-proposal-entry');
+        card.id = 'guideModule2ProposalCard';
+        var heading = el('div', 'guide-panel-heading');
+        heading.appendChild(el('div', '', 'PROPOSITIONS DOCUMENTAIRES'));
+        var open = el('button', 'guide-button guide-button-primary', 'Proposition de documents à ajouter pour les candidats');
+        open.type = 'button';
+        open.setAttribute('aria-expanded', 'false');
+        open.setAttribute('aria-controls', 'guideModule2ProposalResources');
+        card.append(heading, open);
+
+        var panel = el('section', 'guide-panel module2-proposal-resources');
+        panel.id = 'guideModule2ProposalResources';
+        panel.hidden = true;
+        panel.setAttribute('aria-label', 'Ressources et propositions documentaires du Module 2.1');
+        panel.appendChild(el('div', 'guide-panel-heading', '2.1. Les Piliers de l’Armée de Terre de Combat'));
+        panel.appendChild(el('p', 'guide-muted', 'Consultez les documents déjà validés et proposez de nouvelles ressources. Les liens Google Drive sont ajoutés par l’administrateur après vérification.'));
+        var resourcesTitle = el('h3', '', 'Ressources disponibles pour les candidats');
+        var resources = el('ul', 'dossier-list module2-guide-resources');
+        var resourceStatus = el('p', 'guide-form-status');
+        resourceStatus.setAttribute('role', 'status');
+        panel.append(resourcesTitle, resources, resourceStatus);
+
+        var formTitle = el('h3', '', 'Proposer un nouveau document');
         var form = el('form', 'module2-proposal-form');
         var titleLabel = el('label', '', 'Titre du document');
         var title = el('input'); title.required = true; title.maxLength = 160;
@@ -121,14 +139,56 @@
                 setStatus(status, error.message || 'Envoi impossible.', true);
             }).finally(function () { submit.disabled = false; });
         });
-        var ownTitle = el('h3', '', 'Mes propositions');
+
+        var ownTitle = el('h3', '', 'Suivi de mes propositions');
         var ownList = el('ul', 'module2-proposal-list');
         var ownStatus = el('p', 'guide-form-status module2-proposal-status');
-        panel.append(form, ownTitle, ownList, ownStatus);
+        panel.append(formTitle, form, ownTitle, ownList, ownStatus);
+
+        open.addEventListener('click', function () {
+            var expanded = !panel.hidden;
+            panel.hidden = expanded;
+            open.setAttribute('aria-expanded', String(!expanded));
+            if (!expanded) {
+                loadGuideResources(resources, resourceStatus);
+                loadOwnProposals(ownList, ownStatus);
+                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+
         var target = document.getElementById('guideCourseCatalog');
-        if (target) target.before(panel);
-        else app.appendChild(panel);
-        loadOwnProposals(ownList, ownStatus);
+        if (target && target.parentNode) {
+            target.after(card, panel);
+        } else {
+            app.append(card, panel);
+        }
+    }
+
+    function loadGuideResources(list, status) {
+        api(TABLE + '?select=id,title,category,description,drive_url,created_at&status=eq.approved&order=created_at.asc')
+            .then(function (rows) {
+                list.replaceChildren();
+                if (!rows.length) {
+                    setStatus(status, 'Aucune ressource complémentaire validée pour le moment.');
+                    return;
+                }
+                rows.forEach(function (row) {
+                    var item = el('li', 'dossier-item module2-guide-resource');
+                    var copy = el('div', 'module2-guide-resource-copy');
+                    copy.appendChild(el('strong', 'dossier-text', row.title));
+                    copy.appendChild(el('span', 'module2-document-category', row.category || 'Document complémentaire'));
+                    if (row.description) copy.appendChild(el('p', 'guide-muted', row.description));
+                    var link = el('a', 'doc-link', 'Ouvrir');
+                    link.href = row.drive_url;
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    item.append(copy, link);
+                    list.appendChild(item);
+                });
+                setStatus(status, rows.length + ' ressource(s) disponible(s).');
+            }).catch(function (error) {
+                setStatus(status, error.message || 'Chargement des ressources impossible.', true);
+            });
     }
 
     function loadOwnProposals(list, status) {
