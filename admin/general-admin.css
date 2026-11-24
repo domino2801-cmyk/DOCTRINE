@@ -1,5 +1,5 @@
 /* Administrateur général DOCTRINE — espace indépendant de l'admin ANC */
-#adminGeneralButton{display:none;align-items:center;gap:8px;margin:8px 0;padding:10px 16px;border:1px solid #d4b45b;border-radius:8px;background:#102b49;color:#fff;font:700 14px Arial,sans-serif;cursor:pointer}
+#adminGeneralButton{display:flex;align-items:center;gap:8px;margin:8px 0;padding:10px 16px;border:1px solid #d4b45b;border-radius:8px;background:#102b49;color:#fff;font:700 14px Arial,sans-serif;cursor:pointer}
 #adminGeneralButton[hidden]{display:none}
 #adminGeneralButton:hover{background:#1b4268}
 #adminGeneral{position:fixed;inset:0;z-index:9800;overflow:auto;background:#eef2f6;color:#17283d;font:14px Arial,sans-serif;padding:clamp(10px,2vw,28px)}
