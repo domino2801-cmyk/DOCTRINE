@@ -25,6 +25,8 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(script, /style\.setProperty\('display', 'none', 'important'\)/);
     assert.match(script, /getElementById\('btn-mod' \+ id\)/);
     assert.match(script, /module-nav-button\[onclick\]/);
+    assert.match(script, /module8Item\\.hidden = true/);
+    assert.match(script, /module8Button\\.tabIndex = -1/);
     assert.match(script, /var ids = \['1', '2', '3', '4', '5', '6', '7'\]/);
     assert.match(script, /module8Item\.hidden = true/);
     assert.match(script, /module8Button\.tabIndex = -1/);
