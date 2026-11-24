@@ -31,6 +31,24 @@ test('la carte de proposition est placée sous les deux bibliothèques sans affi
     assert.doesNotMatch(card, /loadModule2GuideContent|Ressources disponibles pour les candidats|status=eq\.approved/);
     assert.doesNotMatch(card, /drive_url\s*:/);
 });
+test('les Officiers Guides peuvent joindre un PDF, TXT ou PPT à leur proposition', () => {
+    const guide = read('app/guide-dashboard.js');
+    const sql = read('supabase/patches/2026-11-24-guide-document-proposal-attachments.sql');
+    const admin = read('app/module2-documents.js');
+    assert.match(guide, /accept = '\.pdf,\.txt,\.ppt/);
+    assert.match(guide, /pdf: 'application\/pdf'/);
+    assert.match(guide, /txt: 'text\/plain'/);
+    assert.match(guide, /ppt: 'application\/vnd\.ms-powerpoint'/);
+    assert.match(guide, /20 \* 1024 \* 1024/);
+    assert.match(guide, /uploaded_file_path/);
+    assert.match(sql, /guide-document-proposals/);
+    assert.match(sql, /20971520/);
+    assert.match(sql, /doctrine_is_guide\(\)/);
+    assert.match(sql, /doctrine_is_admin\(\)/);
+    assert.match(admin, /Télécharger la pièce jointe/);
+    assert.match(admin, /storage\/v1\/object\/sign/);
+});
+
 test('seuls les documents approuvés sont ajoutés à la rubrique 2.1', () => {
     const source = read('app/module2-documents.js');
     assert.match(source, /status=eq\.approved/);
