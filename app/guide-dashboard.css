@@ -389,3 +389,22 @@ body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw)
 @media(max-width:800px) {
     .og-candidate-list-dialog .og-qcm-tracking-layout { grid-template-columns:1fr; }
 }
+
+
+/* Fiche candidat : accordéons repliés par défaut */
+.og-candidate-profile-accordion { margin-top:12px; border:1px solid rgba(183,207,185,.22); border-radius:9px; background:rgba(255,255,255,.025); overflow:hidden; }
+.og-candidate-profile-accordion > summary { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:46px; padding:12px 14px; color:#e6c96f; font-size:13px; font-weight:800; cursor:pointer; list-style:none; }
+.og-candidate-profile-accordion > summary::-webkit-details-marker { display:none; }
+.og-candidate-profile-accordion > summary::after { content:'＋'; color:#d8b85b; font-size:18px; line-height:1; }
+.og-candidate-profile-accordion[open] > summary::after { content:'−'; }
+.og-candidate-profile-accordion > summary:hover { background:rgba(216,184,91,.07); }
+.og-candidate-profile-accordion > summary:focus-visible { outline:2px solid #e6c96f; outline-offset:-2px; }
+.og-candidate-profile-accordion-content { display:grid; gap:12px; padding:12px; border-top:1px solid rgba(183,207,185,.16); }
+.og-candidate-profile-module-row { display:flex; justify-content:space-between; gap:12px; padding:10px; border:1px solid rgba(183,207,185,.13); border-radius:7px; background:rgba(0,0,0,.12); }
+.og-candidate-profile-module-copy { display:grid; gap:4px; }
+.og-candidate-profile-module-copy strong { color:#f2f5ee; }
+.og-candidate-profile-module-copy span,.og-candidate-profile-module-copy small { color:#b9c9bb; font-size:12px; }
+.og-candidate-profile-documents { padding-top:10px; border-top:1px solid rgba(183,207,185,.15); }
+.og-candidate-profile-documents h4 { margin:0 0 8px; color:#d8b85b; font-size:13px; }
+.og-candidate-profile-admission .og-dashboard-oral-tracking { margin:0; }
+.og-candidate-profile-ai > .og-candidate-profile-accordion-content { gap:10px; }
