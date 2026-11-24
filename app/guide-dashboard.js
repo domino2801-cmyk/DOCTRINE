@@ -101,20 +101,6 @@
             button.tabIndex = isGuide ? -1 : 0;
         });
 
-        // Le Module 8 n'est pas un espace autonome : les OG accèdent
-        // uniquement à leur tableau de bord Officier Guide.
-        var module8Button = document.getElementById('btn-mod8');
-        var module8Item = document.getElementById('guideModule8Nav') ||
-            (module8Button && (module8Button.closest('li') || module8Button));
-        if (module8Item) {
-            module8Item.hidden = true;
-            module8Item.style.setProperty('display', 'none', 'important');
-        }
-        if (module8Button) {
-            module8Button.setAttribute('aria-hidden', 'true');
-            module8Button.tabIndex = -1;
-        }
-
         // Empêche les navigations intermodules depuis l'espace Officier Guide ;
         // les candidats ne peuvent pas non plus accéder au Module 8.
         document.querySelectorAll('.module-nav-button[onclick]').forEach(function (button) {
