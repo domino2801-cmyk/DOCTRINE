@@ -563,9 +563,8 @@
             content.append(activity);
         });
 
-        accordion('Correction assistée par IA', 'og-candidate-profile-ai', function (content) {
-            content.append(renderAiCorrection(candidate));
-        });
+        // Un seul accordéon : renderAiCorrection fournit déjà son propre panneau repliable.
+        target.append(renderAiCorrection(candidate));
     }
 
     function openGuideCandidates() {
