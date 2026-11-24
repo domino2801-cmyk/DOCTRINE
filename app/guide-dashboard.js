@@ -452,9 +452,12 @@
         if (identity.email) identityCopy.append(node('p', '', 'E-mail : ' + identity.email));
         identityCard.append(identityCopy);
         var summary = node('div', 'og-candidate-profile-summary-card');
+        var lastActivityDate = lastActivity && Number.isFinite(Date.parse(lastActivity))
+            ? new Date(lastActivity).toLocaleDateString('fr-FR') : 'Non renseignée';
         [
             ['Fiches soumises', String(dossierItems.length)],
-            ['Fiches validées', String(validatedSubmissions)]
+            ['Fiches validées', String(validatedSubmissions)],
+            ['Dernière activité', lastActivityDate]
         ].forEach(function (entry) {
             var metric = node('div', 'og-candidate-profile-summary-item');
             metric.append(node('span', '', entry[0]), node('strong', '', entry[1]));
