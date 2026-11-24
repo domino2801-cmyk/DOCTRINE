@@ -726,7 +726,7 @@ body.og-guide-entry-only #guideDashboardNav > button {
   width:calc((100% - 8px) / 2);
   min-width:0;
   box-sizing:border-box;
-  margin:0 0 6px;
+  margin:0;
 }
 .og-guide-entry-card[hidden] { display:none !important; }
 .og-guide-entry-button {
@@ -759,7 +759,7 @@ body.og-guide-entry-only #guideDashboardNav > button {
 .og-guide-entry-button:disabled { opacity:.65; cursor:wait; }
 .main-wrapper > nav[hidden] { display:none !important; }
 @media(max-width:600px) {
-  .og-guide-entry-card { width:calc((100% - 8px) / 2); margin-bottom:13px; }
+  .og-guide-entry-card { width:calc((100% - 8px) / 2); margin-bottom:0; }
   .og-guide-entry-button { height:70px; min-height:70px; padding:10px 11px; font-size:14px; }
 }
 @media(max-width:390px) {
