@@ -292,7 +292,7 @@
             var label = String(result.theme || result.theme_name || result.category || '').trim();
             // Les résultats Supabase peuvent porter « Thème 1 », « Module 1 » ou « 1. ... ».
             // Utiliser une expression régulière correctement échappée (\s et \b).
-            var numberMatch = label.match(/^\\s*(?:(?:th[eè]me|theme|module)\\s*)?([1-6])\\b/i);
+            var numberMatch = label.match(/^\s*(?:(?:th[eè]me|theme|module)\s*)?([1-6])\b/i);
             var explicitNumber = Number(result.theme_number || result.module_number || result.theme_id || result.module_id);
             var themeNumber = numberMatch ? Number(numberMatch[1]) :
                 (Number.isInteger(explicitNumber) && explicitNumber >= 1 && explicitNumber <= 6 ? explicitNumber : null);
