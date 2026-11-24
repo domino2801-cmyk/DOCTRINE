@@ -2313,3 +2313,27 @@ body.og-guide-entry-only .content-container > #guideDashboardNav + #corpusPrefac
     margin: 0 !important;
     padding-top: 8px !important;
 }
+
+
+/* Espacement strict de l'entrée Officier Guide : carte puis corpus sans vide intermédiaire. */
+body.og-guide-entry-only .content-container {
+    display: flex !important;
+    flex-direction: column !important;
+    row-gap: 0 !important;
+}
+body.og-guide-entry-only .content-container > #guideDashboardNav {
+    display: block !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+body.og-guide-entry-only .content-container > #guideDashboardNav + #corpusPreface {
+    display: block !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    padding-top: 0 !important;
+    transform: none !important;
+}
+body.og-guide-entry-only .content-container > .app-utility-bar {
+    margin-bottom: 0 !important;
+}
