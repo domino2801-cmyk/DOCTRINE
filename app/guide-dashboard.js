@@ -433,16 +433,36 @@
         document.body.append(dialog);
         dialog.showModal();
     }
-    // Fiche individuelle : accordéons indépendants, sans recopier les statistiques QCM.
+    // Fiche individuelle : données issues des sources DOCTRINE, sans dupliquer les statistiques QCM.
     function renderCandidateProfileDetail(target, candidate) {
         target.replaceChildren();
         var identity = candidate.candidate || {};
-        var pseudo = String(identity.name || '').trim() || 'Pseudo non renseigné';
+        var pseudo = String(identity.pseudo || identity.name || '').trim() || 'Pseudo non renseigné';
+        var doctrine = candidate.doctrine || {};
+        var dossierItems = submissions(candidate);
+        var validatedSubmissions = dossierItems.filter(function (submission) {
+            return (Array.isArray(submission.reviews) ? submission.reviews : []).some(function (review) {
+                return review.status === 'valide';
+            });
+        }).length;
+        var lastActivity = doctrine.last_activity;
         target.append(node('h3', 'og-candidate-profile-title', 'FICHE CANDIDAT'));
         var identityCard = node('section', 'og-candidate-profile-identity');
         identityCard.append(node('strong', 'og-candidate-profile-pseudo', pseudo));
         if (identity.specialty) identityCard.append(node('p', '', 'Spécialité : ' + identity.specialty));
         if (identity.email) identityCard.append(node('p', '', 'E-mail : ' + identity.email));
+        var summary = node('div', 'og-candidate-profile-summary');
+        [
+            ['Fiches soumises', String(dossierItems.length)],
+            ['Fiches validées', String(validatedSubmissions)],
+            ['Dernière activité', lastActivity && Number.isFinite(Date.parse(lastActivity))
+                ? new Date(lastActivity).toLocaleString('fr-FR') : 'Non renseignée']
+        ].forEach(function (entry) {
+            var metric = node('div', 'og-candidate-profile-summary-item');
+            metric.append(node('span', '', entry[0]), node('strong', '', entry[1]));
+            summary.append(metric);
+        });
+        identityCard.append(summary);
         target.append(identityCard);
 
         function accordion(title, className, contentBuilder) {
@@ -456,19 +476,18 @@
         }
 
         accordion('Progression des modules 1 à 7', 'og-candidate-profile-progress', function (content) {
-            var events = Array.isArray(candidate.doctrine && candidate.doctrine.progress_events)
-                ? candidate.doctrine.progress_events : [];
             for (var moduleNumber = 1; moduleNumber <= 7; moduleNumber += 1) {
-                var moduleEvents = events.filter(function (event) {
-                    return Number(String(event.module_id || '').match(/\\d+/)?.[0]) === moduleNumber;
-                });
+                var moduleEvents = (Array.isArray(doctrine.progress_events) ? doctrine.progress_events : [])
+                    .filter(function (event) {
+                        return Number(String(event.module_id || '').match(/\\d+/)?.[0]) === moduleNumber;
+                    });
+                var status = moduleState(candidate, String(moduleNumber));
                 var row = node('article', 'og-candidate-profile-module-row');
                 var copy = node('div', 'og-candidate-profile-module-copy');
                 copy.append(node('strong', '', 'Module ' + moduleNumber));
-                copy.append(node('span', '', moduleEvents.length
-                    ? moduleEvents.length + ' activité(s) enregistrée(s)'
-                    : 'Aucune activité enregistrée'));
+                copy.append(node('span', '', status.label));
                 if (moduleEvents.length) {
+                    copy.append(node('small', '', moduleEvents.length + ' activité(s) enregistrée(s)'));
                     var latest = moduleEvents.slice().sort(function (a, b) {
                         return Date.parse(b.created_at || '') - Date.parse(a.created_at || '');
                     })[0];
@@ -480,6 +499,9 @@
                 row.append(copy);
                 content.append(row);
             }
+            if (!moduleEventsAvailable) {
+                content.prepend(node('p', 'og-qcm-empty', 'Les données de progression sont momentanément indisponibles.'));
+            }
         });
 
         accordion('Suivi d’admission', 'og-candidate-profile-admission', function (content) {
@@ -488,7 +510,6 @@
         });
 
         accordion('Dossier et documents demandés', 'og-candidate-profile-dossiers', function (content) {
-            var dossierItems = submissions(candidate);
             if (!dossierItems.length) content.append(node('p', 'og-qcm-empty', 'Aucun dossier déposé.'));
             dossierItems.forEach(function (submission) {
                 var item = node('article', 'og-candidate-profile-submission');
