@@ -368,3 +368,24 @@ body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw)
 .og-qcm-history-toggle:focus-visible { outline:2px solid #e6c96f; outline-offset:-3px; }
 .og-qcm-history-content { padding:10px; }
 .og-qcm-history-content[hidden] { display:none !important; }
+
+
+/* Liste de cohorte et fiche individuelle CANDIDATS — espace Officier Guide. */
+.og-dashboard-candidates-tracking { min-width:0; }
+.og-candidate-profile-detail { min-width:0; }
+.og-candidate-profile-title { margin:0 0 12px; color:#f2f5ee; }
+.og-candidate-profile-identity { margin-bottom:16px; padding:14px; border:1px solid rgba(216,184,91,.35); border-radius:8px; background:rgba(216,184,91,.07); }
+.og-candidate-profile-pseudo { display:block; margin-bottom:7px; color:#f5f7ef; font-size:19px; }
+.og-candidate-profile-identity p { margin:4px 0 0; color:#c8d5c9; overflow-wrap:anywhere; }
+.og-candidate-profile-section { margin-top:16px; padding-top:13px; border-top:1px solid rgba(183,207,185,.2); }
+.og-candidate-profile-section h4 { margin:0 0 10px; color:#d8b85b; font-size:13px; letter-spacing:.05em; }
+.og-candidate-profile-qcm { min-width:0; }
+.og-candidate-profile-line { margin:7px 0; color:#d6e0d7; line-height:1.45; overflow-wrap:anywhere; }
+.og-candidate-profile-submission { margin:9px 0; padding:10px; border:1px solid rgba(183,207,185,.15); border-radius:6px; background:rgba(0,0,0,.12); }
+.og-candidate-profile-submission strong { color:#f2f5ee; }
+.og-candidate-profile-submission small { display:block; margin-top:5px; color:#aebfb1; }
+.og-candidate-profile-submission p { margin:7px 0 0; color:#c8d5c9; overflow-wrap:anywhere; }
+.og-candidate-list-dialog .og-qcm-tracking-layout { grid-template-columns:minmax(220px,.75fr) minmax(0,2fr); }
+@media(max-width:800px) {
+    .og-candidate-list-dialog .og-qcm-tracking-layout { grid-template-columns:1fr; }
+}
