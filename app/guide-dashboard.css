@@ -593,3 +593,92 @@ body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw)
     grid-template-columns:minmax(0,1fr);
   }
 }
+
+
+/* Bibliothèques pédagogiques : deux cartes côte à côte, repliées par défaut. */
+.og-dashboard-pedagogical-libraries {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  width:100%;
+  min-width:0;
+  margin-top:18px;
+}
+.og-dashboard-library-entry {
+  min-width:0;
+  padding:15px;
+  border:1px solid rgba(183,207,185,.24);
+  border-left:3px solid #d8b85b;
+  border-radius:10px;
+  background:rgba(255,255,255,.035);
+}
+.og-dashboard-library-entry-toggle {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  width:100%;
+  min-height:54px;
+  padding:11px 12px;
+  border:1px solid rgba(183,207,185,.3);
+  border-radius:8px;
+  background:#293d32;
+  color:#f2f5ee;
+  text-align:left;
+  font:inherit;
+  font-size:13px;
+  font-weight:850;
+  line-height:1.4;
+  cursor:pointer;
+  overflow-wrap:anywhere;
+}
+.og-dashboard-library-entry-toggle::after {
+  content:"+";
+  flex:0 0 auto;
+  color:#e6c96f;
+  font-size:22px;
+}
+.og-dashboard-library-entry-toggle[aria-expanded="true"]::after { content:"−"; }
+.og-dashboard-library-entry-toggle:focus-visible {
+  outline:2px solid #e6c96f;
+  outline-offset:3px;
+}
+.og-dashboard-library-entry > .og-dashboard-muted {
+  margin:9px 2px 0;
+  font-size:12px;
+  line-height:1.45;
+}
+.og-dashboard-library-entry-content {
+  min-width:0;
+  margin-top:13px;
+}
+.og-dashboard-library-entry-content[hidden] { display:none !important; }
+.og-dashboard-library-download {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:36px;
+  padding:7px 10px;
+  border:1px solid rgba(183,207,185,.3);
+  border-radius:6px;
+  background:#354d3d;
+  color:#f2f5ee;
+  font-size:12px;
+  font-weight:800;
+  text-decoration:none;
+}
+.og-dashboard-library-download[aria-disabled="true"] {
+  opacity:.55;
+  pointer-events:none;
+}
+.og-dashboard-library-correction .og-dashboard-library-actions { margin-top:2px; }
+.og-dashboard-library-correction .og-dashboard-download { min-height:36px; }
+@media(max-width:760px) {
+  .og-dashboard-pedagogical-libraries { grid-template-columns:minmax(0,1fr); gap:11px; }
+}
+@media(max-width:480px) {
+  .og-dashboard-library-entry { padding:11px; }
+  .og-dashboard-library-entry-toggle { min-height:50px; padding:10px; font-size:12px; }
+  .og-dashboard-library-actions { align-items:stretch; }
+  .og-dashboard-library-actions > * { flex:1 1 100%; text-align:center; box-sizing:border-box; }
+}
