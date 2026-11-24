@@ -280,12 +280,118 @@
     function attention(candidate) {
         return !candidateFollowUpStatus(candidate).ready;
     }
-    function openGuideQcmTracking() {
-        // Réutilise le tableau de suivi sécurisé du Module 8 : une ligne par candidat
-        // rattaché au guide, avec les résultats QCM-MAJOR et le détail individuel.
-        window.location.href = 'app/guide-module8.html?embedded=1';
+    function qcmThemeSummary(results) {
+        var groups = Object.create(null);
+        results.forEach(function (result) {
+            var score = Number(result.score);
+            if (!Number.isFinite(score)) return;
+            var theme = String(result.theme || '').trim() || 'Thème non renseigné';
+            if (!groups[theme]) groups[theme] = { theme: theme, scores: [], count: 0 };
+            groups[theme].scores.push(score);
+            groups[theme].count += 1;
+        });
+        return Object.keys(groups).map(function (key) {
+            var item = groups[key];
+            item.average = item.scores.reduce(function (sum, value) { return sum + value; }, 0) / item.scores.length;
+            return item;
+        }).sort(function (left, right) { return left.theme.localeCompare(right.theme, 'fr'); });
     }
-
+    function renderQcmCandidateDetail(target, candidate) {
+        target.replaceChildren();
+        var results = qcmResults(candidate).filter(function (result) {
+            return result.score !== null && result.score !== undefined && result.score !== '' && Number.isFinite(Number(result.score));
+        }).slice().sort(function (left, right) { return Date.parse(right.created_at || '') - Date.parse(left.created_at || ''); });
+        var average = qcmAverage(candidate);
+        target.append(node('h3', 'og-qcm-detail-title', candidateName(candidate)));
+        var summary = node('div', 'og-qcm-detail-summary');
+        [['Moyenne générale', average === null ? 'Non disponible' : average.toFixed(2) + ' / 20'],
+            ['QCM enregistrés', String(results.length)], ['Thèmes évalués', String(qcmThemeSummary(results).length)]]
+            .forEach(function (entry) {
+                var item = node('article', 'og-qcm-summary-item');
+                item.append(node('span', '', entry[0]), node('strong', '', entry[1]));
+                summary.append(item);
+            });
+        target.append(summary, node('h4', 'og-qcm-section-title', 'Histogramme des notes par thème'));
+        var chart = node('div', 'og-qcm-theme-chart');
+        qcmThemeSummary(results).forEach(function (theme) {
+            var row = node('article', 'og-qcm-theme-row');
+            var heading = node('div', 'og-qcm-theme-heading');
+            heading.append(node('strong', '', theme.theme), node('span', '', theme.average.toFixed(2) + ' / 20'));
+            var track = node('div', 'og-qcm-bar-track');
+            track.setAttribute('role', 'img');
+            track.setAttribute('aria-label', theme.theme + ' : ' + theme.average.toFixed(2) + ' sur 20');
+            var bar = node('span', 'og-qcm-bar');
+            bar.style.width = Math.max(0, Math.min(100, theme.average / 20 * 100)) + '%';
+            track.append(bar);
+            row.append(heading, track, node('small', 'og-qcm-theme-meta', theme.count + ' QCM enregistré(s)'));
+            chart.append(row);
+        });
+        if (!chart.childNodes.length) chart.append(node('p', 'og-qcm-empty', 'Aucune note QCM exploitable n’est enregistrée pour ce candidat.'));
+        target.append(chart, node('h4', 'og-qcm-section-title', 'Historique complet des résultats enregistrés'));
+        var history = node('div', 'og-qcm-history');
+        results.forEach(function (result) {
+            var row = node('article', 'og-qcm-history-row');
+            var copy = node('div', 'og-qcm-history-copy');
+            copy.append(node('strong', '', result.theme || 'Thème non renseigné'));
+            var date = result.created_at && Number.isFinite(Date.parse(result.created_at))
+                ? new Date(result.created_at).toLocaleString('fr-FR') : 'Date non renseignée';
+            copy.append(node('small', '', date));
+            row.append(copy, node('strong', 'og-qcm-history-score', Number(result.score).toFixed(2) + ' / 20'));
+            history.append(row);
+        });
+        if (!results.length) history.append(node('p', 'og-qcm-empty', 'Aucun résultat enregistré dans Supabase.'));
+        target.append(history);
+    }
+    function openGuideQcmTracking() {
+        var dialog = node('dialog', 'og-qcm-tracking-dialog');
+        var panel = node('section', 'og-qcm-tracking-panel');
+        var header = node('header', 'og-qcm-tracking-header');
+        var heading = node('div');
+        heading.append(node('p', 'og-dashboard-kicker', 'ESPACE OFFICIER GUIDE / COHORTE'));
+        heading.append(node('h2', '', 'Suivi QCM-MAJOR'));
+        heading.append(node('p', 'og-dashboard-muted', candidates.length + ' candidat(s) rattaché(s) à votre cohorte'));
+        var closeButton = node('button', 'og-dashboard-close', 'Fermer');
+        closeButton.type = 'button';
+        closeButton.addEventListener('click', function () { dialog.close(); dialog.remove(); });
+        header.append(heading, closeButton);
+        panel.append(header);
+        var layout = node('div', 'og-qcm-tracking-layout');
+        var list = node('nav', 'og-qcm-candidate-list');
+        list.setAttribute('aria-label', 'Candidats de ma cohorte');
+        var detail = node('section', 'og-qcm-candidate-detail');
+        detail.setAttribute('aria-live', 'polite');
+        detail.append(node('p', 'og-qcm-empty', 'Sélectionnez le nom d’un candidat pour afficher ses notes par thème et son historique.'));
+        candidates.forEach(function (candidate, index) {
+            var average = qcmAverage(candidate);
+            var results = qcmResults(candidate);
+            var button = node('button', 'og-qcm-candidate-button');
+            button.type = 'button';
+            button.append(node('strong', '', candidateName(candidate)));
+            button.append(node('span', '', (average === null ? 'Aucune note' : average.toFixed(2) + ' / 20') + ' · ' + results.length + ' résultat(s)'));
+            button.setAttribute('aria-pressed', String(index === 0));
+            button.addEventListener('click', function () {
+                list.querySelectorAll('.og-qcm-candidate-button').forEach(function (item) {
+                    item.classList.remove('is-selected'); item.setAttribute('aria-pressed', 'false');
+                });
+                button.classList.add('is-selected'); button.setAttribute('aria-pressed', 'true');
+                renderQcmCandidateDetail(detail, candidate);
+            });
+            if (index === 0) {
+                button.classList.add('is-selected');
+                renderQcmCandidateDetail(detail, candidate);
+            }
+            list.append(button);
+        });
+        if (!candidates.length) list.append(node('p', 'og-qcm-empty', 'Aucun candidat n’est rattaché à votre cohorte.'));
+        layout.append(list, detail);
+        panel.append(layout);
+        dialog.append(panel);
+        dialog.addEventListener('click', function (event) {
+            if (event.target === dialog) { dialog.close(); dialog.remove(); }
+        });
+        document.body.append(dialog);
+        dialog.showModal();
+    }
     function renderMetrics() {
         metricsNode.replaceChildren();
         var ready = candidates.filter(function (candidate) { return !attention(candidate); }).length;
