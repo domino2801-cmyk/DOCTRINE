@@ -444,46 +444,51 @@
         if (identity.email) identityCard.append(node('p', '', 'E-mail : ' + identity.email));
         target.append(identityCard);
 
-        var qcmSection = node('section', 'og-candidate-profile-section');
-        qcmSection.append(node('h4', '', 'SUIVI QCM-MAJOR'));
-        var qcmDetail = node('div', 'og-candidate-profile-qcm');
-        renderQcmCandidateDetail(qcmDetail, candidate);
-        qcmSection.append(qcmDetail);
-        target.append(qcmSection);
-
-        var doctrine = candidate.doctrine || {};
-        var activity = node('section', 'og-candidate-profile-section');
-        activity.append(node('h4', '', 'ACTIVITÉ DOCTRINE'));
-        var events = Array.isArray(doctrine.progress_events) ? doctrine.progress_events : [];
-        var documents = Array.isArray(doctrine.documents) ? doctrine.documents : [];
-        if (!events.length && !documents.length) {
-            activity.append(node('p', 'og-qcm-empty', 'Aucune activité enregistrée.'));
-        } else {
-            events.forEach(function (event) {
-                var label = 'Module ' + (event.module_id || 'non renseigné') + ' · ' +
-                    (event.event_type || 'Événement');
-                if (event.dossier) label += ' · ' + event.dossier;
-                if (event.created_at && Number.isFinite(Date.parse(event.created_at))) {
-                    label += ' · ' + new Date(event.created_at).toLocaleString('fr-FR');
-                }
-                activity.append(node('p', 'og-candidate-profile-line', label));
-            });
-            documents.forEach(function (document) {
-                var label = document.document_title || 'Document consulté';
-                if (document.opened_at && Number.isFinite(Date.parse(document.opened_at))) {
-                    label += ' · ' + new Date(document.opened_at).toLocaleString('fr-FR');
-                }
-                activity.append(node('p', 'og-candidate-profile-line', label));
-            });
+        function accordion(title, className, contentBuilder) {
+            var details = node('details', 'og-candidate-profile-accordion' + (className ? ' ' + className : ''));
+            details.append(node('summary', '', title));
+            var content = node('div', 'og-candidate-profile-accordion-content');
+            contentBuilder(content);
+            details.append(content);
+            target.append(details);
+            return details;
         }
-        target.append(activity);
 
-        var dossierSection = node('section', 'og-candidate-profile-section');
-        dossierSection.append(node('h4', '', 'DOSSIERS ET ÉVALUATIONS'));
-        var dossierItems = submissions(candidate);
-        if (!dossierItems.length) {
-            dossierSection.append(node('p', 'og-qcm-empty', 'Aucun dossier déposé.'));
-        } else {
+        accordion('Progression des modules 1 à 7', 'og-candidate-profile-progress', function (content) {
+            var events = Array.isArray(candidate.doctrine && candidate.doctrine.progress_events)
+                ? candidate.doctrine.progress_events : [];
+            for (var moduleNumber = 1; moduleNumber <= 7; moduleNumber += 1) {
+                var moduleEvents = events.filter(function (event) {
+                    return Number(String(event.module_id || '').match(/\\d+/)?.[0]) === moduleNumber;
+                });
+                var row = node('article', 'og-candidate-profile-module-row');
+                var copy = node('div', 'og-candidate-profile-module-copy');
+                copy.append(node('strong', '', 'Module ' + moduleNumber));
+                copy.append(node('span', '', moduleEvents.length
+                    ? moduleEvents.length + ' activité(s) enregistrée(s)'
+                    : 'Aucune activité enregistrée'));
+                if (moduleEvents.length) {
+                    var latest = moduleEvents.slice().sort(function (a, b) {
+                        return Date.parse(b.created_at || '') - Date.parse(a.created_at || '');
+                    })[0];
+                    if (latest.created_at && Number.isFinite(Date.parse(latest.created_at))) {
+                        copy.append(node('small', '', 'Dernière activité : ' +
+                            new Date(latest.created_at).toLocaleString('fr-FR')));
+                    }
+                }
+                row.append(copy);
+                content.append(row);
+            }
+        });
+
+        accordion('Suivi d’admission', 'og-candidate-profile-admission', function (content) {
+            content.append(renderOralTracking(candidate));
+            content.append(renderCcpmTracking(candidate));
+        });
+
+        accordion('Dossier et documents demandés', 'og-candidate-profile-dossiers', function (content) {
+            var dossierItems = submissions(candidate);
+            if (!dossierItems.length) content.append(node('p', 'og-qcm-empty', 'Aucun dossier déposé.'));
             dossierItems.forEach(function (submission) {
                 var item = node('article', 'og-candidate-profile-submission');
                 var title = [submission.dossier, submission.submission_type].filter(Boolean).join(' · ') || 'Dossier';
@@ -503,28 +508,26 @@
                     }
                     if (reviewText.length) item.append(node('p', '', reviewText.join(' · ')));
                 });
-                dossierSection.append(item);
+                content.append(item);
             });
-        }
-        target.append(dossierSection);
-
-        var admissionSection = node('section', 'og-candidate-profile-section');
-        admissionSection.append(node('h4', '', 'SUIVI D’ADMISSION'));
-        var admission = candidate.admission && typeof candidate.admission === 'object' ? candidate.admission : {};
-        var excluded = ['id', 'candidate_id', 'created_at', 'updated_at'];
-        var admissionEntries = Object.keys(admission).filter(function (key) {
-            return excluded.indexOf(key) === -1 && admission[key] !== null &&
-                admission[key] !== undefined && typeof admission[key] !== 'object' && String(admission[key]).trim() !== '';
+            var cv = candidateCvs[candidate.candidate && candidate.candidate.id];
+            var documents = node('section', 'og-candidate-profile-documents');
+            documents.append(node('h4', '', 'Documents transmis'));
+            if (cv) {
+                documents.append(node('p', 'og-candidate-profile-line',
+                    (cv.original_filename || 'CV candidat') + (cv.uploaded_at && Number.isFinite(Date.parse(cv.uploaded_at))
+                        ? ' · Transmis le ' + new Date(cv.uploaded_at).toLocaleDateString('fr-FR') : '')));
+            } else {
+                documents.append(node('p', 'og-qcm-empty', cvStatusAvailable
+                    ? 'Aucun document transmis dans le suivi des CV.'
+                    : 'État des documents momentanément indisponible.'));
+            }
+            content.append(documents);
         });
-        if (!admissionEntries.length) {
-            admissionSection.append(node('p', 'og-qcm-empty', 'Aucune information de suivi d’admission enregistrée.'));
-        } else {
-            admissionEntries.forEach(function (key) {
-                var label = key.replace(/_/g, ' ').replace(/\b\w/g, function (letter) { return letter.toUpperCase(); });
-                admissionSection.append(node('p', 'og-candidate-profile-line', label + ' : ' + String(admission[key])));
-            });
-        }
-        target.append(admissionSection);
+
+        accordion('Correction assistée par IA', 'og-candidate-profile-ai', function (content) {
+            content.append(renderAiCorrection(candidate));
+        });
     }
 
     function openGuideCandidates() {
