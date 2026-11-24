@@ -457,7 +457,7 @@
             ['Fiches soumises', String(dossierItems.length)],
             ['Fiches validées', String(validatedSubmissions)],
             ['Dernière activité', lastActivity && Number.isFinite(Date.parse(lastActivity))
-                ? new Date(lastActivity).toLocaleString('fr-FR') : 'Non renseignée']
+                ? new Date(lastActivity).toLocaleDateString('fr-FR') : 'Non renseignée']
         ].forEach(function (entry) {
             var metric = node('div', 'og-candidate-profile-summary-item');
             metric.append(node('span', '', entry[0]), node('strong', '', entry[1]));
