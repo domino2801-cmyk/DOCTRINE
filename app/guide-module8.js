@@ -151,7 +151,7 @@
         return {
             token: token,
             userId: claims.sub || '',
-            allowed: admin || GUIDE_ROLES.has(role) || specialty === 'OG',
+            allowed: admin || (GUIDE_ROLES.has(role) && specialty === 'OG'),
             isAdmin: admin,
             profile: metadata
         };
