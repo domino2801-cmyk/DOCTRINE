@@ -351,7 +351,7 @@
             } else {
                 input = document.createElement('input'); input.type = type || 'text';
             }
-            input.name = name; input.required = true;
+            input.name = name; input.required = false;
             label.append(input); form.append(label);
             return input;
         }
@@ -394,6 +394,11 @@
             event.preventDefault();
             var payload = {};
             new FormData(form).forEach(function (value, key) { payload[key] = String(value).trim(); });
+            var requiredKeys = isRetex ? ['situation','problem','facts'] : ['category','facts','request'];
+            if (requiredKeys.some(function (key) { return !payload[key]; })) {
+                status.textContent = 'Renseignez au minimum le contexte, la catégorie et les faits ; pour un signalement, précisez aussi l’intervention attendue.';
+                return;
+            }
             var token;
             submit.disabled = true; status.textContent = 'Transmission en cours…';
             auth().jeton().then(function (jwt) {
