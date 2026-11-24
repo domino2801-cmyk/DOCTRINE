@@ -327,7 +327,7 @@
         var average = qcmAverage(candidate);
         var themes = qcmThemeSummary(results);
         var evaluatedThemes = themes.filter(function (theme) { return theme.count > 0; }).length;
-        target.append(node('h3', 'og-qcm-detail-title', candidateName(candidate)));
+        target.append(node('h3', 'og-qcm-detail-title', (candidate.candidate || {}).name || 'Candidat'));
         var summary = node('div', 'og-qcm-detail-summary');
         [['Moyenne générale', average === null ? 'Non disponible' : average.toFixed(2) + ' / 20'],
             ['QCM enregistrés', String(results.length)], ['Thèmes évalués', String(evaluatedThemes)]]
@@ -433,6 +433,152 @@
         document.body.append(dialog);
         dialog.showModal();
     }
+    function renderCandidateProfileDetail(target, candidate) {
+        target.replaceChildren();
+        var identity = candidate.candidate || {};
+        var pseudo = String(identity.name || '').trim() || 'Pseudo non renseigné';
+        target.append(node('h3', 'og-candidate-profile-title', 'FICHE CANDIDAT'));
+        var identityCard = node('section', 'og-candidate-profile-identity');
+        identityCard.append(node('strong', 'og-candidate-profile-pseudo', pseudo));
+        if (identity.specialty) identityCard.append(node('p', '', 'Spécialité : ' + identity.specialty));
+        if (identity.email) identityCard.append(node('p', '', 'E-mail : ' + identity.email));
+        target.append(identityCard);
+
+        var qcmSection = node('section', 'og-candidate-profile-section');
+        qcmSection.append(node('h4', '', 'SUIVI QCM-MAJOR'));
+        var qcmDetail = node('div', 'og-candidate-profile-qcm');
+        renderQcmCandidateDetail(qcmDetail, candidate);
+        qcmSection.append(qcmDetail);
+        target.append(qcmSection);
+
+        var doctrine = candidate.doctrine || {};
+        var activity = node('section', 'og-candidate-profile-section');
+        activity.append(node('h4', '', 'ACTIVITÉ DOCTRINE'));
+        var events = Array.isArray(doctrine.progress_events) ? doctrine.progress_events : [];
+        var documents = Array.isArray(doctrine.documents) ? doctrine.documents : [];
+        if (!events.length && !documents.length) {
+            activity.append(node('p', 'og-qcm-empty', 'Aucune activité enregistrée.'));
+        } else {
+            events.forEach(function (event) {
+                var label = 'Module ' + (event.module_id || 'non renseigné') + ' · ' +
+                    (event.event_type || 'Événement');
+                if (event.dossier) label += ' · ' + event.dossier;
+                if (event.created_at && Number.isFinite(Date.parse(event.created_at))) {
+                    label += ' · ' + new Date(event.created_at).toLocaleString('fr-FR');
+                }
+                activity.append(node('p', 'og-candidate-profile-line', label));
+            });
+            documents.forEach(function (document) {
+                var label = document.document_title || 'Document consulté';
+                if (document.opened_at && Number.isFinite(Date.parse(document.opened_at))) {
+                    label += ' · ' + new Date(document.opened_at).toLocaleString('fr-FR');
+                }
+                activity.append(node('p', 'og-candidate-profile-line', label));
+            });
+        }
+        target.append(activity);
+
+        var dossierSection = node('section', 'og-candidate-profile-section');
+        dossierSection.append(node('h4', '', 'DOSSIERS ET ÉVALUATIONS'));
+        var dossierItems = submissions(candidate);
+        if (!dossierItems.length) {
+            dossierSection.append(node('p', 'og-qcm-empty', 'Aucun dossier déposé.'));
+        } else {
+            dossierItems.forEach(function (submission) {
+                var item = node('article', 'og-candidate-profile-submission');
+                var title = [submission.dossier, submission.submission_type].filter(Boolean).join(' · ') || 'Dossier';
+                item.append(node('strong', '', title));
+                if (submission.created_at && Number.isFinite(Date.parse(submission.created_at))) {
+                    item.append(node('small', '', 'Déposé le ' + new Date(submission.created_at).toLocaleString('fr-FR')));
+                }
+                var reviews = Array.isArray(submission.reviews) ? submission.reviews : [];
+                if (!reviews.length) item.append(node('p', '', 'Aucune évaluation enregistrée.'));
+                reviews.forEach(function (review) {
+                    var reviewText = [];
+                    if (review.grade !== null && review.grade !== undefined) reviewText.push('Note : ' + review.grade + ' / 20');
+                    if (review.status) reviewText.push('Statut : ' + review.status);
+                    if (review.comment) reviewText.push('Observation : ' + review.comment);
+                    if (review.reviewed_at && Number.isFinite(Date.parse(review.reviewed_at))) {
+                        reviewText.push('Évalué le ' + new Date(review.reviewed_at).toLocaleDateString('fr-FR'));
+                    }
+                    if (reviewText.length) item.append(node('p', '', reviewText.join(' · ')));
+                });
+                dossierSection.append(item);
+            });
+        }
+        target.append(dossierSection);
+
+        var admissionSection = node('section', 'og-candidate-profile-section');
+        admissionSection.append(node('h4', '', 'SUIVI D’ADMISSION'));
+        var admission = candidate.admission && typeof candidate.admission === 'object' ? candidate.admission : {};
+        var excluded = ['id', 'candidate_id', 'created_at', 'updated_at'];
+        var admissionEntries = Object.keys(admission).filter(function (key) {
+            return excluded.indexOf(key) === -1 && admission[key] !== null &&
+                admission[key] !== undefined && typeof admission[key] !== 'object' && String(admission[key]).trim() !== '';
+        });
+        if (!admissionEntries.length) {
+            admissionSection.append(node('p', 'og-qcm-empty', 'Aucune information de suivi d’admission enregistrée.'));
+        } else {
+            admissionEntries.forEach(function (key) {
+                var label = key.replace(/_/g, ' ').replace(/\b\w/g, function (letter) { return letter.toUpperCase(); });
+                admissionSection.append(node('p', 'og-candidate-profile-line', label + ' : ' + String(admission[key])));
+            });
+        }
+        target.append(admissionSection);
+    }
+
+    function openGuideCandidates() {
+        var dialog = node('dialog', 'og-qcm-tracking-dialog og-candidate-list-dialog');
+        var panel = node('section', 'og-qcm-tracking-panel');
+        var header = node('header', 'og-qcm-tracking-header');
+        var heading = node('div');
+        heading.append(node('p', 'og-dashboard-kicker', 'ESPACE OFFICIER GUIDE / COHORTE'));
+        heading.append(node('h2', '', 'CANDIDATS DE MA COHORTE'));
+        heading.append(node('p', 'og-dashboard-muted', candidates.length + ' candidat(s) rattaché(s) à votre cohorte'));
+        var closeButton = node('button', 'og-dashboard-close', 'Fermer');
+        closeButton.type = 'button';
+        closeButton.addEventListener('click', function () { dialog.close(); dialog.remove(); });
+        header.append(heading, closeButton);
+        panel.append(header);
+        var layout = node('div', 'og-qcm-tracking-layout');
+        var list = node('nav', 'og-qcm-candidate-list');
+        list.setAttribute('aria-label', 'Candidats de ma cohorte');
+        var detail = node('section', 'og-qcm-candidate-detail og-candidate-profile-detail');
+        detail.setAttribute('aria-live', 'polite');
+        detail.append(node('p', 'og-qcm-empty', 'Sélectionnez un candidat pour ouvrir sa fiche individuelle.'));
+        candidates.forEach(function (candidate, index) {
+            var identity = candidate.candidate || {};
+            var button = node('button', 'og-qcm-candidate-button');
+            button.type = 'button';
+            button.append(node('strong', '', identity.name || 'Pseudo non renseigné'));
+            button.append(node('span', '', [identity.specialty, identity.email].filter(Boolean).join(' · ') || 'Profil à compléter'));
+            button.setAttribute('aria-pressed', String(index === 0));
+            button.addEventListener('click', function () {
+                list.querySelectorAll('.og-qcm-candidate-button').forEach(function (item) {
+                    item.classList.remove('is-selected');
+                    item.setAttribute('aria-pressed', 'false');
+                });
+                button.classList.add('is-selected');
+                button.setAttribute('aria-pressed', 'true');
+                renderCandidateProfileDetail(detail, candidate);
+            });
+            if (index === 0) {
+                button.classList.add('is-selected');
+                renderCandidateProfileDetail(detail, candidate);
+            }
+            list.append(button);
+        });
+        if (!candidates.length) list.append(node('p', 'og-qcm-empty', 'Aucun candidat n’est rattaché à votre cohorte.'));
+        layout.append(list, detail);
+        panel.append(layout);
+        dialog.append(panel);
+        dialog.addEventListener('click', function (event) {
+            if (event.target === dialog) { dialog.close(); dialog.remove(); }
+        });
+        document.body.append(dialog);
+        dialog.showModal();
+    }
+
     function renderMetrics() {
         metricsNode.replaceChildren();
         var ready = candidates.filter(function (candidate) { return !attention(candidate); }).length;
@@ -440,7 +586,14 @@
             ['CANDIDATS', candidates.length, 'cohorte rattachée'],
             ['À ACCOMPAGNER', candidates.length - ready, 'activité ou résultats à suivre']
         ].forEach(function (metric) {
-            var card = node('article', 'og-dashboard-metric');
+            var card = metric[0] === 'CANDIDATS'
+                ? node('button', 'og-dashboard-metric og-dashboard-metric-action og-dashboard-candidates-tracking')
+                : node('article', 'og-dashboard-metric');
+            if (metric[0] === 'CANDIDATS') {
+                card.type = 'button';
+                card.dataset.guideAction = 'candidates-tracking';
+                card.addEventListener('click', openGuideCandidates);
+            }
             card.append(node('span', 'og-dashboard-metric-label', metric[0]));
             card.append(node('strong', 'og-dashboard-metric-value', String(metric[1])));
             card.append(node('small', '', metric[2]));
