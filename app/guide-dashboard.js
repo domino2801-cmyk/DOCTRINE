@@ -41,7 +41,7 @@
         } catch (_) { return null; }
     }
     function currentGuideStatus() {
-        if (!auth() || typeof auth().jeton !== 'function') return Promise.resolve(false);
+        if (!auth() || typeof auth().jeton !== 'function') return Promise.resolve(null);
         return auth().jeton().then(function (token) {
             var claims = token && decodeClaims(token);
             var meta = claims && claims.app_metadata || {};
@@ -49,7 +49,8 @@
             var admin = role === 'admin' || meta.bm4_admin === true ||
                 meta.bm4_admin === 'true' || meta.bm4_admin === 1 || meta.bm4_admin === '1' ||
                 (typeof auth().estAdmin === 'function' && auth().estAdmin());
-            if (!claims || !claims.sub || admin) return false;
+            if (!claims || !claims.sub) return null;
+            if (admin) return false;
             if (role === 'guide' || role === 'officier_guide') return true;
             // Même source de spécialité que le bouton OG principal de l'application.
             var profileCheck = typeof auth().specialite === 'function'
@@ -75,7 +76,7 @@
                     });
                 }).catch(function () { return false; });
             });
-        }).catch(function () { return false; });
+        }).catch(function () { return null; });
     }
     function guideAccess() {
         return currentGuideStatus();
@@ -87,6 +88,9 @@
         var progressionCard = document.querySelector('.study-dashboard');
         if (progressionCard) progressionCard.hidden = true;
         currentGuideStatus().then(function (isGuide) {
+            // Une session absente ou encore en cours de restauration ne doit jamais
+            // réafficher les modules : attendre doctrine:login et une identité vérifiée.
+            if (isGuide === null) return;
             setGuideModulesHidden(isGuide);
             document.body.classList.toggle('og-guide-entry-only', isGuide);
             if (progressionCard) progressionCard.hidden = isGuide;
