@@ -684,3 +684,13 @@ test("les champs Forme alimentés par Gemini restent visibles dans le tableau de
     assert.doesNotMatch(dashboardScript, /formObservationLabel\.hidden\s*=\s*true/);
     assert.doesNotMatch(dashboardScript, /formEvidenceLabel\.hidden\s*=\s*true/);
 });
+
+
+test("Gemini doit rédiger toutes les corrections écrites et orales en français", () => {
+    const frenchRule = /RÈGLE DE LANGUE IMPÉRATIVE[\s\S]*?aucune phrase ni expression anglaise dans tes commentaires/i;
+    assert.match(correctionAiFunction, frenchRule);
+    assert.match(correctionAiFunction, /Rédige toutes les observations, preuves expliquées, limitations, points forts, axes de progrès et la synthèse exclusivement en français/i);
+    assert.match(correctionAiFunction, /const RUBRIC_PROMPT = \[/);
+    assert.match(correctionAiFunction, /const ORAL_RUBRIC_PROMPT = \[/);
+    assert.match(correctionAiFunction, /courte citation originale d’un document peut rester dans sa langue, avec une explication en français/i);
+});
