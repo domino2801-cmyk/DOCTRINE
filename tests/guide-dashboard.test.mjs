@@ -57,10 +57,12 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
 });
 
 test('le clic RETEX ou signalement masque la fiche opposée et le Module 7 réinitialise les deux cartes', () => {
-    assert.match(script, /var otherCard = document\\.getElementById\\(cardId === 'retexCard' \\? 'signalementCard' : 'retexCard'\\)/);
-    assert.match(script, /if \\(otherCard\\) otherCard\\.hidden = true/);
-    assert.match(script, /if \\(card\\) card\\.hidden = false/);
-    assert.match(appScript, /if \\(id === 'module7'\\) \\{[\\s\\S]*\\['retexCard', 'signalementCard'\\][\\s\\S]*card\\.hidden = false/);
+    assert.ok(script.includes("var otherCard = document.getElementById(cardId === 'retexCard' ? 'signalementCard' : 'retexCard');"));
+    assert.ok(script.includes('if (otherCard) otherCard.hidden = true;'));
+    assert.ok(script.includes('if (card) card.hidden = false;'));
+    assert.ok(appScript.includes("if (id === 'module7') {"));
+    assert.ok(appScript.includes("['retexCard', 'signalementCard'].forEach"));
+    assert.ok(appScript.includes('if (card) card.hidden = false;'));
 });
 
 test('le tableau de bord utilise les données filtrées par le RPC guide', () => {
