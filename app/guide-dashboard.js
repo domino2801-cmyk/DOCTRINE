@@ -2086,8 +2086,8 @@
         exerciseSection.append(exerciseContent);
         libraryGrid.append(courseSection, exerciseSection);
 
-        // Accès aux ressources du Module 2.1 et proposition de documents
-        // placé immédiatement sous les deux cartes de bibliothèques.
+        // Carte de proposition documentaire, placée sous les deux bibliothèques.
+        // Aucune ressource du Module 2.1 n'est affichée dans cet espace.
         var proposalEntry = node('section', 'og-dashboard-library-entry module2-og-entry');
         var proposalToggle = node('button', 'og-dashboard-library-entry-toggle', 'PROPOSITION DE DOCUMENTS À AJOUTER POUR LES CANDIDATS');
         proposalToggle.type = 'button';
@@ -2098,17 +2098,13 @@
             var expanded = proposalToggle.getAttribute('aria-expanded') !== 'true';
             proposalToggle.setAttribute('aria-expanded', String(expanded));
             proposalContent.hidden = !expanded;
-            if (expanded) loadModule2GuideContent();
+            if (expanded) loadModule2OwnProposals();
         });
         proposalEntry.append(proposalToggle,
-            node('p', 'og-dashboard-muted', 'Ressources de la rubrique 2.1 · Propositions suivies par l’administrateur.'));
+            node('p', 'og-dashboard-muted', 'Proposez de nouveaux documents pour les candidats et suivez leur traitement par l’administrateur.'));
         var proposalPanel = node('div', 'module2-og-panel');
-        proposalPanel.append(node('h3', '', '2.1. Les Piliers de l’Armée de Terre de Combat'));
-        proposalPanel.append(node('p', 'og-dashboard-muted', 'Consultez les ressources validées et proposez un document complémentaire. Le lien Google Drive sera ajouté par l’administrateur.'));
-        var proposalResources = node('ul', 'module2-og-resources');
-        var proposalResourceStatus = node('p', 'module2-og-status');
-        proposalResourceStatus.setAttribute('role', 'status');
-        proposalPanel.append(node('h4', '', 'Ressources disponibles pour les candidats'), proposalResources, proposalResourceStatus);
+        proposalPanel.append(node('h3', '', 'Proposition de documents à ajouter pour les candidats'));
+        proposalPanel.append(node('p', 'og-dashboard-muted', 'Les documents proposés sont examinés par l’administrateur, qui ajoute le lien documentaire et décide de leur publication.'));
         var proposalForm = node('form', 'module2-og-form');
         function proposalField(labelText, tagName, required, maxLength) {
             var label = node('label', '', labelText);
@@ -2148,10 +2144,28 @@
         var ownProposals = node('ul', 'module2-og-own-list');
         var ownStatus = node('p', 'module2-og-status');
         ownStatus.setAttribute('role', 'status');
-        proposalPanel.append(node('h4', '', 'Proposer un nouveau document'), proposalForm,
-            node('h4', '', 'Suivi de mes propositions'), ownProposals, ownStatus);
+        proposalPanel.append(node('h4', '', 'Suivi de mes propositions'), proposalForm, ownProposals, ownStatus);
         proposalContent.append(proposalPanel);
         proposalEntry.append(proposalContent);
+        function loadModule2OwnProposals() {
+            api('guide_document_proposals?select=id,title,category,status,admin_note,created_at&order=created_at.desc')
+                .then(function (rows) {
+                    ownProposals.replaceChildren();
+                    if (!rows.length) {
+                        ownStatus.textContent = 'Aucune proposition enregistrée.';
+                        return;
+                    }
+                    rows.forEach(function (row) {
+                        var item = node('li', '', row.title + ' — ' + row.category + ' — ' +
+                            (row.status === 'approved' ? 'Validée' : row.status === 'rejected' ? 'Refusée' : 'En attente'));
+                        if (row.admin_note) item.append(node('p', '', row.admin_note));
+                        ownProposals.append(item);
+                    });
+                    ownStatus.textContent = '';
+                }).catch(function (error) {
+                    ownStatus.textContent = error.message || 'Chargement du suivi impossible.';
+                });
+        }
         libraryGrid.append(proposalEntry);
 
         function loadModule2GuideContent() {
