@@ -168,7 +168,7 @@
             lockRetex();
         }).catch(function (err) {
             retexSubmit.disabled = false;
-            if (err.code === '23505') lockRetex());
+            if (err.code === '23505') lockRetex();
             else setStatus(retexStatus, errorMessage(err), false);
         });
     });
