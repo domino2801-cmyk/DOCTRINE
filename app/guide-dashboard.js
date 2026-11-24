@@ -2039,6 +2039,9 @@
         if (!item) {
             item = node('li');
             item.id = 'guideDashboardNav';
+            // Accès fermé par défaut : ne jamais afficher l'espace OG
+            // avant vérification du rôle et de la spécialité du profil.
+            item.hidden = true;
             var button = node('button', '', 'Espace Officier Guide');
             button.type = 'button';
             button.addEventListener('click', function () {
@@ -2053,8 +2056,12 @@
             nav.append(item);
         }
         guideAccess().then(function (allowed) {
-            item.hidden = !allowed;
-            if (!allowed && root && !root.hidden) close();
+            var isOG = allowed === true;
+            item.hidden = !isOG;
+            if (!isOG && root && !root.hidden) close();
+        }).catch(function () {
+            item.hidden = true;
+            if (root && !root.hidden) close();
         });
     }
     function init() {
