@@ -258,3 +258,14 @@ test('le tableau Officier Guide bloque la modification si les observations struc
     assert.match(script, /modification est bloquée pour protéger les observations existantes/);
     assert.match(script, /Enregistrement bloqué : les observations structurées BM4/);
 });
+
+
+test('les cartes proposition et support oral affichent les commentaires complets de l’Officier Guide', () => {
+    assert.match(script, /var title = isOral \? 'FICHE SUPPORT ORAL' : 'FICHE DE PROPOSITION'/);
+    assert.match(script, /'Commentaires de l’Officier Guide'/);
+    assert.match(script, /result\.textContent = String\(review\.comment\)/);
+    assert.doesNotMatch(script, /commentText\.length > 360/);
+    assert.doesNotMatch(script, /commentText\.slice\(0,\s*357\)/);
+    assert.match(css, /\.og-dashboard-ai-result \{[^}]*white-space:pre-wrap/s);
+    assert.match(css, /\.og-dashboard-ai-result \{[^}]*overflow-wrap:anywhere/s);
+});
