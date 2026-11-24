@@ -285,13 +285,18 @@
     function attention(candidate) {
         return !candidateFollowUpStatus(candidate).ready;
     }
+    function openGuideQcmTracking() {
+        // Réutilise le tableau de suivi sécurisé du Module 8 : une ligne par candidat
+        // rattaché au guide, avec les résultats QCM-MAJOR et le détail individuel.
+        window.location.href = 'app/guide-module8.html';
+    }
+
     function renderMetrics() {
         metricsNode.replaceChildren();
         var ready = candidates.filter(function (candidate) { return !attention(candidate); }).length;
         [
             ['CANDIDATS', candidates.length, 'cohorte rattachée'],
-            ['À ACCOMPAGNER', candidates.length - ready, 'activité ou résultats à suivre'],
-            ['SUPPORTS OG', courses.length, 'ressources partagées']
+            ['À ACCOMPAGNER', candidates.length - ready, 'activité ou résultats à suivre']
         ].forEach(function (metric) {
             var card = node('article', 'og-dashboard-metric');
             card.append(node('span', 'og-dashboard-metric-label', metric[0]));
@@ -299,6 +304,15 @@
             card.append(node('small', '', metric[2]));
             metricsNode.append(card);
         });
+
+        var qcmTrackingCard = node('button', 'og-dashboard-metric og-dashboard-metric-action og-dashboard-qcm-tracking');
+        qcmTrackingCard.type = 'button';
+        qcmTrackingCard.dataset.guideAction = 'qcm-major-tracking';
+        qcmTrackingCard.append(node('span', 'og-dashboard-metric-label', 'SUIVI QCM-MAJOR'));
+        qcmTrackingCard.append(node('strong', 'og-dashboard-metric-value', String(candidates.length)));
+        qcmTrackingCard.append(node('small', '', 'Suivi individuel par candidat de ma cohorte'));
+        qcmTrackingCard.addEventListener('click', openGuideQcmTracking);
+        metricsNode.append(qcmTrackingCard);
         var assignCard = node('button', 'og-dashboard-metric og-dashboard-metric-action');
         assignCard.type = 'button';
         assignCard.append(node('span', 'og-dashboard-metric-label', 'RATTACHER UN CANDIDAT'));
