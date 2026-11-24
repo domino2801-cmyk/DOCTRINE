@@ -621,7 +621,7 @@
         sousTitre.textContent = 'Fiches autonomes transmises depuis l’espace Officier Guide.';
         actions.replaceChildren(bouton('Actualiser', function () { chargerFichesGuide(type); }), bouton('Fermer', fermer));
         corps.replaceChildren(); etat.textContent = 'Chargement…';
-        api(tableName + '?select=id,user_id,payload,priority,status,admin_response,created_at,updated_at&order=created_at.desc&limit=' + TAILLE_PAGE)
+        api(tableName + '?select=id,user_id,guide_email,payload,priority,status,admin_response,created_at,updated_at&order=created_at.desc&limit=' + TAILLE_PAGE)
             .then(function (rows) {
                 if (mode !== type) return;
                 corps.replaceChildren();
@@ -631,7 +631,7 @@
                     var card = el('article','adm-fiches-guide-entry');
                     var head = el('header','adm-fiches-guide-entry-head');
                     head.append(el('strong','', (isRetex ? 'RETEX' : 'Signalement') + ' n°' + row.id));
-                    head.append(el('span','',formaterDate(row.created_at)));
+                    head.append(el('span','', (row.guide_email || 'Officier Guide non identifié') + ' · ' + formaterDate(row.created_at)));
                     card.append(head);
                     var details = el('dl','adm-fiches-guide-payload');
                     Object.keys(row.payload || {}).forEach(function (key) {
