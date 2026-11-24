@@ -101,8 +101,8 @@ test("module 7 is completed automatically when a RETEX is inserted", async () =>
     const retexCard = html.slice(retexCardStart, retexCardEnd);
     assert.doesNotMatch(retexCard, /id="retexStatus"/);
     assert.match(html, /<p id="retexStatus" class="fiche-status module7-retex-status" role="status" aria-live="polite"><\/p>\s*<section class="part-card fiche-card" id="signalementCard">/);
-    assert.match(retexViewer, /rows\.length\) lockRetex\('RETEX déjà transmis\. Module 7 validé automatiquement/);
-    assert.match(retexViewer, /err\.code === '23505'\) return 'RETEX déjà transmis\. Module 7 validé automatiquement/);
+    assert.match(retexViewer, /rows\.length\) lockRetex\(\)/);
+    assert.match(retexViewer, /if \(err\.code === '23505'\) lockRetex\(\)/);
     assert.match(retexMigration, /create or replace function public\.doctrine_retex_complete_module7\(\)/i);
     assert.match(retexMigration, /after insert on public\.doctrine_retex/i);
     assert.match(retexMigration, /event_type = 'module_completed'/i);
