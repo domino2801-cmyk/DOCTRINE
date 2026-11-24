@@ -723,7 +723,7 @@ body.og-guide-entry-only #guideDashboardNav > button {
 /* Entrée Officier Guide : carte pleine largeur, hors navigation,
    immédiatement au-dessus de « À propos du corpus ». */
 .og-guide-entry-card {
-  width:100%;
+  width:calc((100% - 8px) / 2);
   min-width:0;
   box-sizing:border-box;
   margin:0 0 18px;
@@ -734,11 +734,11 @@ body.og-guide-entry-only #guideDashboardNav > button {
   align-items:center;
   justify-content:center;
   width:100%;
-  min-height:0;
-  height:auto;
+  min-height:70px;
+  height:70px;
   margin:0;
   box-sizing:border-box;
-  padding:14px 18px;
+  padding:10px 11px;
   border:1px solid rgba(183,207,185,.28);
   border-left:4px solid #d8b85b;
   border-radius:8px;
@@ -759,6 +759,9 @@ body.og-guide-entry-only #guideDashboardNav > button {
 .og-guide-entry-button:disabled { opacity:.65; cursor:wait; }
 .main-wrapper > nav[hidden] { display:none !important; }
 @media(max-width:600px) {
-  .og-guide-entry-card { margin-bottom:13px; }
-  .og-guide-entry-button { padding:13px 14px; }
+  .og-guide-entry-card { width:calc((100% - 8px) / 2); margin-bottom:13px; }
+  .og-guide-entry-button { height:70px; min-height:70px; padding:10px 11px; font-size:14px; }
+}
+@media(max-width:390px) {
+  .og-guide-entry-card { width:100%; }
 }
