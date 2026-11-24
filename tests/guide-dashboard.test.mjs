@@ -28,6 +28,10 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(script, /var ids = \['1', '2', '3', '4', '5', '6', '7'\]/);
     assert.match(script, /module8Item\.hidden = true/);
     assert.match(script, /module8Button\.tabIndex = -1/);
+    assert.match(script, /item\.hidden = true/);
+    assert.match(script, /var isOG = allowed === true/);
+    assert.match(script, /item\.hidden = !isOG/);
+    assert.match(script, /item\.hidden = true;[\\s\\S]*if \(root && !root\.hidden\) close\(\)/);
     assert.match(script, /var hidden = !!isGuide \|\| \(!isGuide && match\[1\] === '8'\)/);
     assert.match(script, /navigateModule.*module\(\[1-8\]\)/);
     assert.match(script, /og-guide-entry-only/);
