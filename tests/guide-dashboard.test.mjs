@@ -134,7 +134,7 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /Objectif d’oraux blancs/);
     assert.match(script, /Date du prochain oral/);
     assert.match(script, /Suivi du CCPM/);
-    assert.match(script, /Suivi admissibilité/);
+    assert.match(script, /Suivi d’admission/);
     assert.match(script, /Correction assistée par IA/);
     assert.match(script, /Grille interactive d’évaluation BM4/);
     assert.match(script, /fiche de proposition \(70 %\)/);
