@@ -36,7 +36,7 @@ alter table public.guide_retex_reports add column if not exists priority text no
 alter table public.guide_signalements add column if not exists guide_email text not null default '';
 
 create or replace function public.guide_feedback_set_identity()
-returns trigger language plpgsql set search_path = '' as $
+returns trigger language plpgsql set search_path = '' as $$
 begin
     new.user_id := auth.uid();
     new.guide_email := coalesce(auth.jwt() ->> 'email', '');
@@ -45,7 +45,7 @@ begin
     end if;
     return new;
 end;
-$;
+$$;
 
 drop trigger if exists guide_retex_reports_set_identity on public.guide_retex_reports;
 create trigger guide_retex_reports_set_identity
