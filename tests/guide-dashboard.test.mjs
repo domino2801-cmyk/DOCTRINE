@@ -357,6 +357,20 @@ test('les quatre accordéons de la fiche candidat partagent le même style et le
     assert.ok(!ai.includes('og-dashboard-subaccordion'));
 });
 
+test('l’Officier Guide peut télécharger le CV transmis depuis la fiche candidat', () => {
+    const start = script.indexOf('function renderCandidateProfileDetail(target, candidate)');
+    const end = script.indexOf('function openGuideCandidates()', start);
+    const profile = script.slice(start, end);
+    assert.match(profile, /Télécharger le document/);
+    assert.ok(profile.includes('downloadCandidateCv(candidate, cv, downloadCvButton)'));
+    const downloadStart = script.indexOf('async function downloadCandidateCv(candidate, cv, button)');
+    const downloadEnd = script.indexOf('async function openCandidatePdf', downloadStart);
+    const download = script.slice(downloadStart, downloadEnd);
+    assert.ok(download.includes('object/sign/candidate-cvs/'));
+    assert.ok(download.includes('download: filename'));
+    assert.ok(download.includes('link.click()'));
+});
+
 test('la fiche candidat utilise des accordéons repliés et ne duplique pas les statistiques QCM', () => {
     const start = script.indexOf('function renderCandidateProfileDetail(target, candidate)');
     const end = script.indexOf('function openGuideCandidates()', start);
