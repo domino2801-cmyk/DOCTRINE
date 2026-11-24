@@ -546,21 +546,7 @@
                     : 'État des documents momentanément indisponible.'));
             }
             content.append(documents);
-            var viewedDocuments = Array.isArray(doctrine.documents) ? doctrine.documents : [];
-            var activity = node('section', 'og-candidate-profile-documents og-candidate-profile-activity');
-            activity.append(node('h4', '', 'Activité documentaire'));
-            if (!viewedDocuments.length) {
-                activity.append(node('p', 'og-qcm-empty', 'Aucune consultation documentaire enregistrée.'));
-            } else {
-                viewedDocuments.forEach(function (view) {
-                    var line = [view.document_title || 'Document consulté'];
-                    if (view.opened_at && Number.isFinite(Date.parse(view.opened_at))) {
-                        line.push(new Date(view.opened_at).toLocaleString('fr-FR'));
-                    }
-                    activity.append(node('p', 'og-candidate-profile-line', line.join(' · ')));
-                });
-            }
-            content.append(activity);
+            // L’activité documentaire n’est pas affichée dans l’espace Officier Guide.
         });
 
         // Un seul accordéon : renderAiCorrection fournit déjà son propre panneau repliable.
