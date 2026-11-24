@@ -2117,8 +2117,6 @@
             return control;
         }
         var proposalTitle = proposalField('Titre du document', 'input', true, 160);
-        var proposalCategory = proposalField('Catégorie', 'input', true, 100);
-        var proposalDescription = proposalField('Description (facultatif)', 'textarea', false, 1200);
         var proposalFileLabel = node('label', '', 'Joindre un document (PDF, TXT ou PPT — 20 Mo maximum)');
         var proposalFile = node('input');
         proposalFile.type = 'file';
@@ -2183,8 +2181,8 @@
             upload.then(function (attachment) {
                 return api('guide_document_proposals', { method: 'POST', prefer: 'return=minimal', body: {
                     title: proposalTitle.value.trim(),
-                    category: proposalCategory.value.trim(),
-                    description: proposalDescription.value.trim(),
+                    category: 'Proposition Officier Guide',
+                    description: '',
                     uploaded_file_path: attachment ? attachment.path : null,
                     original_filename: attachment ? file.name.slice(0, 255) : null,
                     file_size: attachment ? file.size : null,
