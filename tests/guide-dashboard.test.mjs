@@ -56,16 +56,18 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.doesNotMatch(script, /app\/guide-module8\.html|guide_action|og-dashboard-ai-frame/);
 });
 
-test('le clic RETEX ou signalement masque l’autre carte dans le tableau de bord Officier Guide', () => {
-    assert.match(script, /var selectedGuideModule7Card = null/);
-    assert.match(script, /selectedGuideModule7Card === 'retex'/);
-    assert.match(script, /selectedGuideModule7Card === 'signalement'/);
-    assert.match(script, /selectedGuideModule7Card = 'retex'/);
-    assert.match(script, /selectedGuideModule7Card = 'signalement'/);
-    assert.match(script, /renderMetrics\(\)/);
-    assert.match(script, /dataset\.guideModule7Card = 'retex'/);
-    assert.match(script, /dataset\.guideModule7Card = 'signalement'/);
-    assert.doesNotMatch(script, /var otherCard = document\.getElementById\(cardId === 'retexCard'/);
+test('les fiches RETEX et Signalement Officier Guide sont autonomes et indépendantes du Module 7', () => {
+    assert.match(script, /RETOUR D’EXPÉRIENCE OFFICIER GUIDE/);
+    assert.match(script, /SIGNALEMENT OFFICIER GUIDE/);
+    assert.match(script, /function openGuideFeedback\(kind\)/);
+    assert.match(script, /guide_retex_reports/);
+    assert.match(script, /guide_signalements/);
+    assert.match(script, /Mon historique/);
+    assert.match(script, /Enregistrer et transmettre/);
+    assert.doesNotMatch(script, /openModule7Form/);
+    assert.doesNotMatch(script, /selectedGuideModule7Card/);
+    assert.match(script, /Faits constatés et conséquences/);
+    assert.match(script, /Intervention ou décision attendue/);
 });
 
 test('le tableau de bord utilise les données filtrées par le RPC guide', () => {
