@@ -53,7 +53,7 @@ const CORRIGES: Record<string, number> = {
 };
 const MAX_PROFONDEUR = 8;
 
-type Candidat = { id: string; admin: boolean };
+type Candidat = { id: string; admin: boolean; officierGuide: boolean };
 
 async function candidatValide(jeton: string): Promise<Candidat | null> {
   const url = Deno.env.get('SUPABASE_URL');
@@ -64,8 +64,26 @@ async function candidatValide(jeton: string): Promise<Candidat | null> {
   const u = await r.json();
   if (!(u && u.id && (u.email_confirmed_at || u.confirmed_at))) return null;
   const meta = u.app_metadata || {};
-  const admin = meta.role === 'admin' || meta.bm4_admin === true || meta.bm4_admin === 'true' || meta.bm4_admin === '1';
-  return { id: u.id, admin };
+  const role = String(meta.role || '').trim().toLowerCase();
+  const admin = role === 'admin' || meta.bm4_admin === true || meta.bm4_admin === 'true' || meta.bm4_admin === '1';
+
+  // Même règle que doctrine_is_guide() : rôle sécurisé + spécialité profiles.speciality = OG.
+  // La lecture utilise la clé service_role pour ne pas dépendre des politiques RLS du profil.
+  let officierGuide = false;
+  if (!admin && (role === 'guide' || role === 'officier_guide')) {
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (serviceKey) {
+      const profil = await fetch(
+        `${url}/rest/v1/profiles?id=eq.${encodeURIComponent(u.id)}&select=speciality`,
+        { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } },
+      );
+      if (profil.ok) {
+        const profils: { speciality?: string | null }[] = await profil.json();
+        officierGuide = profils.some((p) => String(p.speciality || '').trim().toUpperCase() === 'OG');
+      }
+    }
+  }
+  return { id: u.id, admin, officierGuide };
 }
 
 async function fichesTransmises(candidatId: string): Promise<Set<number>> {
@@ -210,12 +228,15 @@ Deno.serve(async (req) => {
       if (accesBibliotheque === false) return erreur(403, 'Ce dossier ou document n’est pas publié pour les Officiers Guides');
     }
 
-        if (!candidat.admin && accesBibliotheque === null) {
-          const requis = await dossierRequis(id, fichier.parents || [], jeton);
-          if (requis !== null && !(await fichesTransmises(candidat.id)).has(requis)) {
-            return erreur(403, 'Transmettez votre fiche du dossier ' + requis + ' pour ouvrir ce corrigé');
-          }
-        }
+    // La règle de transmission préalable ne concerne que les candidats.
+    // Un Officier Guide OG consulte les corrigés sans soumettre de fiche,
+    // tout en restant soumis au contrôle de publication de la bibliothèque.
+    if (!candidat.admin && !candidat.officierGuide && accesBibliotheque === null) {
+      const requis = await dossierRequis(id, fichier.parents || [], jeton);
+      if (requis !== null && !(await fichesTransmises(candidat.id)).has(requis)) {
+        return erreur(403, 'Transmettez votre fiche du dossier ' + requis + ' pour ouvrir ce corrigé');
+      }
+    }
     if (action === 'list') {
       if (fichier.mimeType !== FOLDER) return erreur(400, 'Ce n\'est pas un dossier');
       const q = encodeURIComponent(`'${id}' in parents and trashed = false`);
