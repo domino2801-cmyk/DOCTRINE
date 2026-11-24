@@ -2079,7 +2079,7 @@
             item.hidden = !isOG;
             if (!isOG && root && !root.hidden) close();
         }).catch(function () {
-            item.hidden = true; if (root && !root.hidden) close();
+            item.hidden = true;if (root && !root.hidden) close();
         });
     }
     function init() {
