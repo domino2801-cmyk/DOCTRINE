@@ -35,70 +35,48 @@ create index if not exists guide_signalements_user_created_idx
 create index if not exists guide_signalements_status_created_idx
     on public.guide_signalements(status, created_at desc);
 
-create or replace function public.guide_feedback_is_admin()
-returns boolean
-language sql stable security invoker
-set search_path = ''
-as $$
-    select coalesce(auth.jwt() -> 'app_metadata' ->> 'role' = 'admin', false)
-        or coalesce(auth.jwt() -> 'app_metadata' ->> 'bm4_admin' in ('true','1'), false);
-$$;
-
-create or replace function public.guide_feedback_is_guide()
-returns boolean
-language sql stable security invoker
-set search_path = ''
-as $$
-    select coalesce(auth.jwt() -> 'app_metadata' ->> 'role' in ('guide','officier_guide'), false)
-        or exists (
-            select 1 from public.user_roles ur
-            where ur.user_id = auth.uid()
-              and lower(ur.role) in ('guide','officier_guide')
-        );
-$$;
-
 alter table public.guide_retex_reports enable row level security;
 alter table public.guide_signalements enable row level security;
 
 drop policy if exists guide_retex_insert_own on public.guide_retex_reports;
 create policy guide_retex_insert_own on public.guide_retex_reports
     for insert to authenticated
-    with check (user_id = auth.uid() and public.guide_feedback_is_guide());
+    with check (user_id = auth.uid() and public.doctrine_is_guide());
 
 drop policy if exists guide_retex_read_own on public.guide_retex_reports;
 create policy guide_retex_read_own on public.guide_retex_reports
     for select to authenticated
-    using (user_id = auth.uid() and public.guide_feedback_is_guide());
+    using (user_id = auth.uid() and public.doctrine_is_guide());
 
 drop policy if exists guide_retex_admin_read on public.guide_retex_reports;
 create policy guide_retex_admin_read on public.guide_retex_reports
-    for select to authenticated using (public.guide_feedback_is_admin());
+    for select to authenticated using (public.doctrine_is_admin());
 
 drop policy if exists guide_retex_admin_update on public.guide_retex_reports;
 create policy guide_retex_admin_update on public.guide_retex_reports
     for update to authenticated
-    using (public.guide_feedback_is_admin())
-    with check (public.guide_feedback_is_admin());
+    using (public.doctrine_is_admin())
+    with check (public.doctrine_is_admin());
 
 drop policy if exists guide_signalements_insert_own on public.guide_signalements;
 create policy guide_signalements_insert_own on public.guide_signalements
     for insert to authenticated
-    with check (user_id = auth.uid() and public.guide_feedback_is_guide());
+    with check (user_id = auth.uid() and public.doctrine_is_guide());
 
 drop policy if exists guide_signalements_read_own on public.guide_signalements;
 create policy guide_signalements_read_own on public.guide_signalements
     for select to authenticated
-    using (user_id = auth.uid() and public.guide_feedback_is_guide());
+    using (user_id = auth.uid() and public.doctrine_is_guide());
 
 drop policy if exists guide_signalements_admin_read on public.guide_signalements;
 create policy guide_signalements_admin_read on public.guide_signalements
-    for select to authenticated using (public.guide_feedback_is_admin());
+    for select to authenticated using (public.doctrine_is_admin());
 
 drop policy if exists guide_signalements_admin_update on public.guide_signalements;
 create policy guide_signalements_admin_update on public.guide_signalements
     for update to authenticated
-    using (public.guide_feedback_is_admin())
-    with check (public.guide_feedback_is_admin());
+    using (public.doctrine_is_admin())
+    with check (public.doctrine_is_admin());
 
 grant select, insert, update on public.guide_retex_reports to authenticated;
 grant select, insert, update on public.guide_signalements to authenticated;
