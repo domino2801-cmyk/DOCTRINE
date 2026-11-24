@@ -89,6 +89,10 @@
     }
 
     function setGuideModulesHidden(isGuide) {
+        // L'espace Officier Guide est une entrée autonome, hors de la barre
+        // de navigation : celle-ci ne présente aucun module à ce profil.
+        var moduleNav = document.querySelector('.main-wrapper > nav');
+        if (moduleNav) moduleNav.hidden = !!isGuide;
         // Les candidats conservent les modules 1 à 7, mais ne voient jamais
         // le Module 8 réservé au parcours Officier Guide.
         var ids = ['1', '2', '3', '4', '5', '6', '7'];
@@ -2094,16 +2098,14 @@
         document.body.append(root);
     }
     function updateTrigger() {
-        var nav = document.querySelector('body > .main-wrapper nav ul, .main-wrapper nav ul');
-        if (!nav) return;
+        var section = document.getElementById('corpusPreface');
+        if (!section || !section.parentNode) return;
         var item = document.getElementById('guideDashboardNav');
         if (!item) {
-            item = node('li');
+            item = node('div', 'og-guide-entry-card');
             item.id = 'guideDashboardNav';
-            // Accès fermé par défaut : ne jamais afficher l'espace OG
-            // avant vérification du rôle et de la spécialité du profil.
             item.hidden = true;
-            var button = node('button', '', 'Espace Officier Guide');
+            var button = node('button', 'og-guide-entry-button', 'Espace Officier Guide');
             button.type = 'button';
             button.addEventListener('click', function () {
                 // Le contrôle est répété au clic : un candidat ne peut pas ouvrir
@@ -2130,10 +2132,10 @@
                 });
             });
             item.append(button);
-            nav.append(item);
+            section.parentNode.insertBefore(item, section);
         }
         // Masquer immédiatement à chaque initialisation/changement de session.
-        // L'entrée ne réapparaît qu'après validation du rôle ET de la spécialité OG.
+        // La carte ne réapparaît qu'après validation du rôle ET de la spécialité OG.
         item.hidden = true;
         if (root && !root.hidden) close();
         guideAccess().then(function (allowed) {
@@ -2141,7 +2143,8 @@
             item.hidden = !isOG;
             if (!isOG && root && !root.hidden) close();
         }).catch(function () {
-            item.hidden = true;if (root && !root.hidden) close();
+            item.hidden = true;
+            if (root && !root.hidden) close();
         });
     }
     function init() {
