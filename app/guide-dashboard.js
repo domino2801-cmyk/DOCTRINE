@@ -288,7 +288,7 @@
     function openGuideQcmTracking() {
         // Réutilise le tableau de suivi sécurisé du Module 8 : une ligne par candidat
         // rattaché au guide, avec les résultats QCM-MAJOR et le détail individuel.
-        window.location.href = 'app/guide-module8.html';
+        window.location.href = 'app/guide-module8.html?embedded=1';
     }
 
     function renderMetrics() {
