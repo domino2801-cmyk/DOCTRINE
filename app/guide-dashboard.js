@@ -73,7 +73,7 @@
             return profileCheck.then(function (isOg) {
                 if (isOg) return true;
                 if (admin) return false;
-                return fetch(auth().url.replace(/\\/$/, '') + '/rest/v1/rpc/get_current_user_specialty', {
+                return fetch(auth().url.replace(/\/$/, '') + '/rest/v1/rpc/get_current_user_specialty', {
                     method: 'POST',
                     headers: {
                         apikey: auth().key,
