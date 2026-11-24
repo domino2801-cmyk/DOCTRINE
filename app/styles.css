@@ -2261,7 +2261,7 @@ body.og-guide-entry-only #corpusPreface {
     box-sizing: border-box;
     width: 100%;
     max-width: none;
-    margin-top: -18px !important;
+    margin-top: 0 !important;
     padding-top: 0 !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
@@ -2291,4 +2291,25 @@ body.og-guide-entry-only #corpusPreface .preface-box ul {
         padding: 10px 12px;
         overflow-wrap: anywhere;
     }
+}
+
+
+/* Officier Guide : la carte d'accès et « À propos du corpus » sont
+   deux éléments voisins. Supprimer l'espacement flex générique entre eux. */
+body.og-guide-entry-only .content-container {
+    row-gap: 4px !important;
+}
+body.og-guide-entry-only .content-container > #lockWarning,
+body.og-guide-entry-only .content-container > .study-dashboard {
+    display: none !important;
+}
+body.og-guide-entry-only .content-container > .app-utility-bar {
+    margin-bottom: 8px;
+}
+body.og-guide-entry-only .content-container > #guideDashboardNav {
+    margin: 0 !important;
+}
+body.og-guide-entry-only .content-container > #guideDashboardNav + #corpusPreface {
+    margin: 0 !important;
+    padding-top: 8px !important;
 }
