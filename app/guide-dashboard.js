@@ -101,22 +101,22 @@
             button.tabIndex = isGuide ? -1 : 0;
         });
 
+        // Le Module 8 n'est pas un espace autonome : les OG accèdent
+        // uniquement à leur tableau de bord Officier Guide.
         var module8Button = document.getElementById('btn-mod8');
         var module8Item = document.getElementById('guideModule8Nav') ||
             (module8Button && (module8Button.closest('li') || module8Button));
         if (module8Item) {
-            module8Item.hidden = !isGuide;
-            if (!isGuide) module8Item.style.setProperty('display', 'none', 'important');
-            else module8Item.style.removeProperty('display');
+            module8Item.hidden = true;
+            module8Item.style.setProperty('display', 'none', 'important');
         }
         if (module8Button) {
-            module8Button.setAttribute('aria-hidden', String(!isGuide));
-            module8Button.tabIndex = isGuide ? 0 : -1;
+            module8Button.setAttribute('aria-hidden', 'true');
+            module8Button.tabIndex = -1;
         }
 
-        // Empêche aussi un candidat d'atteindre le Module 8 par le bouton
-        // « Suivant » du Module 7. Pour le guide, toute navigation intermodule
-        // est masquée dans son espace dédié.
+        // Empêche les navigations intermodules depuis l'espace Officier Guide ;
+        // les candidats ne peuvent pas non plus accéder au Module 8.
         document.querySelectorAll('.module-nav-button[onclick]').forEach(function (button) {
             var match = button.getAttribute('onclick').match(/navigateModule\(['"]module([1-8])['"]\)/);
             if (!match) return;
