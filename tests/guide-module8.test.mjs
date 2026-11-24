@@ -44,7 +44,7 @@ test("les fonctions de cohorte autorisent les admins et limitent les guides aux 
     assert.match(ogAccessPatch, /security definer[\s\S]*auth\.jwt\(\) -> 'app_metadata' ->> 'role'[\s\S]*from public\.profiles profile[\s\S]*profile\.id = auth\.uid\(\)[\s\S]*'OG'/);
     assert.doesNotMatch(ogAccessPatch, /auth\.jwt\(\) -> 'app_metadata' ->> 'specialty'/);
     assert.match(dashboardScript, /var role = String\(meta\.role \|\| ''\)\.trim\(\)\.toLowerCase\(\)/);
-    assert.doesNotMatch(dashboardScript, /meta\\.role \\|\\| userMeta\\.role/);
+    assert.doesNotMatch(dashboardScript, /meta\.role \|\| userMeta\.role/);
     assert.match(sql, /create or replace function public\.search_guide_candidates\(p_query text\)/);
     assert.match(sql, /cp\.id as candidate_id[\s\S]*cp\.email::text as email[\s\S]*cp\.label as display_name[\s\S]*cp\.matricule_value as matricule/i);
     assert.match(sql, /create or replace function public\.get_guide_candidate_dashboard/);
