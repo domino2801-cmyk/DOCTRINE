@@ -85,31 +85,41 @@
         });
     }
 
-    function setGuideModulesHidden(hidden) {
-        var ids = ['1', '2', '3', '4', '5', '6', '7', '8'];
+    function setGuideModulesHidden(isGuide) {
+        // Les candidats conservent les modules 1 à 7, mais ne voient jamais
+        // le Module 8 réservé au parcours Officier Guide.
+        var ids = ['1', '2', '3', '4', '5', '6', '7'];
         ids.forEach(function (id) {
             var button = document.getElementById('btn-mod' + id);
             if (!button) return;
             var item = button.closest('li') || button;
-            item.hidden = hidden;
-            if (hidden) item.style.setProperty('display', 'none', 'important');
+            item.hidden = !!isGuide;
+            if (isGuide) item.style.setProperty('display', 'none', 'important');
             else item.style.removeProperty('display');
-            button.setAttribute('aria-hidden', String(hidden));
-            button.tabIndex = hidden ? -1 : 0;
+            button.setAttribute('aria-hidden', String(!!isGuide));
+            button.tabIndex = isGuide ? -1 : 0;
         });
-        // Bloque également la navigation précédent/suivant vers les modules masqués.
-        var ogCoursesButton = document.getElementById('btn-mod-og');
-        if (ogCoursesButton) {
-            var ogCoursesItem = ogCoursesButton.closest('li') || ogCoursesButton;
-            ogCoursesItem.hidden = hidden;
-            if (hidden) ogCoursesItem.style.setProperty('display', 'none', 'important');
-            else ogCoursesItem.style.removeProperty('display');
-            ogCoursesButton.setAttribute('aria-hidden', String(hidden));
-            ogCoursesButton.tabIndex = hidden ? -1 : 0;
+
+        var module8Button = document.getElementById('btn-mod8');
+        var module8Item = document.getElementById('guideModule8Nav') ||
+            (module8Button && (module8Button.closest('li') || module8Button));
+        if (module8Item) {
+            module8Item.hidden = !isGuide;
+            if (!isGuide) module8Item.style.setProperty('display', 'none', 'important');
+            else module8Item.style.removeProperty('display');
         }
+        if (module8Button) {
+            module8Button.setAttribute('aria-hidden', String(!isGuide));
+            module8Button.tabIndex = isGuide ? 0 : -1;
+        }
+
+        // Empêche aussi un candidat d'atteindre le Module 8 par le bouton
+        // « Suivant » du Module 7. Pour le guide, toute navigation intermodule
+        // est masquée dans son espace dédié.
         document.querySelectorAll('.module-nav-button[onclick]').forEach(function (button) {
             var match = button.getAttribute('onclick').match(/navigateModule\(['"]module([1-8])['"]\)/);
             if (!match) return;
+            var hidden = !!isGuide || (!isGuide && match[1] === '8');
             button.hidden = hidden;
             if (hidden) button.style.setProperty('display', 'none', 'important');
             else button.style.removeProperty('display');
