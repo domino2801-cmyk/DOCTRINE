@@ -26,6 +26,8 @@
     var moduleEventsAvailable = true;
     var candidateCvs = Object.create(null);
     var cvStatusAvailable = true;
+    // Mémorise le choix de fiche depuis le tableau de bord Officier Guide.
+    var selectedGuideModule7Card = null;
 
     function auth() { return window.DoctrineAuth; }
     function node(tag, className, text) {
@@ -307,21 +309,35 @@
         assignCard.addEventListener('click', openAssignCandidateDialog);
         metricsNode.append(assignCard);
 
-        var retexCard = node('button', 'og-dashboard-metric og-dashboard-metric-action');
-        retexCard.type = 'button';
-        retexCard.append(node('span', 'og-dashboard-metric-label', 'FICHE RETEX DOCTRINE'));
-        retexCard.append(node('strong', 'og-dashboard-metric-value', '↗'));
-        retexCard.append(node('small', '', 'RETEX déjà envoyé · accéder au Module 7'));
-        retexCard.addEventListener('click', function () { openModule7Form('retexCard', 'retexForm'); });
-        metricsNode.append(retexCard);
+        if (!selectedGuideModule7Card || selectedGuideModule7Card === 'retex') {
+            var retexCard = node('button', 'og-dashboard-metric og-dashboard-metric-action');
+            retexCard.type = 'button';
+            retexCard.dataset.guideModule7Card = 'retex';
+            retexCard.append(node('span', 'og-dashboard-metric-label', 'FICHE RETEX DOCTRINE'));
+            retexCard.append(node('strong', 'og-dashboard-metric-value', '↗'));
+            retexCard.append(node('small', '', 'RETEX déjà envoyé · accéder au formulaire'));
+            retexCard.addEventListener('click', function () {
+                selectedGuideModule7Card = 'retex';
+                renderMetrics();
+                openModule7Form('retexCard', 'retexForm');
+            });
+            metricsNode.append(retexCard);
+        }
 
-        var reportCard = node('button', 'og-dashboard-metric og-dashboard-metric-action');
-        reportCard.type = 'button';
-        reportCard.append(node('span', 'og-dashboard-metric-label', 'FICHE DE SIGNALEMENT'));
-        reportCard.append(node('strong', 'og-dashboard-metric-value', '+'));
-        reportCard.append(node('small', '', 'Rédiger et transmettre un signalement'));
-        reportCard.addEventListener('click', function () { openModule7Form('signalementCard', 'signalementForm'); });
-        metricsNode.append(reportCard);
+        if (!selectedGuideModule7Card || selectedGuideModule7Card === 'signalement') {
+            var reportCard = node('button', 'og-dashboard-metric og-dashboard-metric-action');
+            reportCard.type = 'button';
+            reportCard.dataset.guideModule7Card = 'signalement';
+            reportCard.append(node('span', 'og-dashboard-metric-label', 'FICHE DE SIGNALEMENT'));
+            reportCard.append(node('strong', 'og-dashboard-metric-value', '+'));
+            reportCard.append(node('small', '', 'Rédiger et transmettre un signalement'));
+            reportCard.addEventListener('click', function () {
+                selectedGuideModule7Card = 'signalement';
+                renderMetrics();
+                openModule7Form('signalementCard', 'signalementForm');
+            });
+            metricsNode.append(reportCard);
+        }
     }
     function openModule7Form(cardId, formId) {
         if (typeof window.openModal !== 'function') {
@@ -336,10 +352,6 @@
         var form = document.getElementById(formId);
         var heading = card && card.querySelector(':scope > p');
         if (!form || !heading) return;
-        // Dans le parcours Officier Guide, ne présenter que la fiche choisie.
-        var otherCard = document.getElementById(cardId === 'retexCard' ? 'signalementCard' : 'retexCard');
-        if (card) card.hidden = false;
-        if (otherCard) otherCard.hidden = true;
         if (form.hidden) heading.click();
         var firstField = form.querySelector('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])');
         if (firstField) firstField.focus({ preventScroll: true });
