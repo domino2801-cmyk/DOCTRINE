@@ -341,6 +341,22 @@ test('les cartes proposition et support oral affichent les commentaires complets
 });
 
 
+test('les quatre accordéons de la fiche candidat partagent le même style et le même indicateur +/−', () => {
+    const start = script.indexOf('function renderCandidateProfileDetail(target, candidate)');
+    const end = script.indexOf('function openGuideCandidates()', start);
+    const profile = script.slice(start, end);
+    assert.match(profile, /og-candidate-profile-accordion/);
+    assert.match(profile, /target\\.append\\(renderAiCorrection\\(candidate\\)\\)/);
+    const aiStart = script.indexOf('function renderAiCorrection(candidate)');
+    const aiEnd = script.indexOf('\\n    function ', aiStart + 20);
+    const ai = script.slice(aiStart, aiEnd);
+    assert.match(ai, /og-candidate-profile-accordion og-candidate-profile-ai/);
+    assert.match(ai, /og-candidate-profile-accordion-content/);
+    assert.match(css, /\\.og-candidate-profile-accordion > summary::after \\{ content:'＋'/);
+    assert.match(css, /\\.og-candidate-profile-accordion\\[open\\] > summary::after \\{ content:'−'/);
+    assert.doesNotMatch(ai, /og-dashboard-subaccordion/);
+});
+
 test('la fiche candidat utilise des accordéons repliés et ne duplique pas les statistiques QCM', () => {
     const start = script.indexOf('function renderCandidateProfileDetail(target, candidate)');
     const end = script.indexOf('function openGuideCandidates()', start);
