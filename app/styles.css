@@ -2252,3 +2252,30 @@ background-color: #0056b3; /* Effet de survol sur le bouton */
     .anc-legal-disclosure { width: 100%; }
     .anc-legal-disclosure summary { width: 100%; justify-content: center; box-sizing: border-box; }
 }
+
+
+/* Espace Officier Guide : centrer réellement la carte « À propos du corpus »
+   sur grand écran comme sur mobile, indépendamment de la mise en page du parent. */
+body.og-guide-entry-only #corpusPreface {
+    display: block;
+    box-sizing: border-box;
+    width: min(1125px, calc(100% - 32px));
+    max-width: 1125px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+body.og-guide-entry-only #corpusPreface .preface-box {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+}
+@media (max-width: 600px) {
+    body.og-guide-entry-only #corpusPreface {
+        width: calc(100% - 24px);
+        padding: 12px;
+    }
+    body.og-guide-entry-only #corpusPreface .preface-box {
+        padding: 10px 12px;
+        overflow-wrap: anywhere;
+    }
+}
