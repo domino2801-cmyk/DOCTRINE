@@ -533,26 +533,32 @@
         var header = node('header', 'og-qcm-tracking-header');
         var heading = node('div');
         heading.append(node('p', 'og-dashboard-kicker', 'ESPACE OFFICIER GUIDE / COHORTE'));
-        heading.append(node('h2', '', 'CANDIDATS DE MA COHORTE'));
-        heading.append(node('p', 'og-dashboard-muted', candidates.length + ' candidat(s) rattaché(s) à votre cohorte'));
+        heading.append(node('h2', '', 'CANDIDATS — COHORTE RATTACHÉE'));
+        heading.append(node('p', 'og-dashboard-muted', 'Sélectionnez un candidat pour ouvrir sa fiche individuelle.'));
         var closeButton = node('button', 'og-dashboard-close', 'Fermer');
         closeButton.type = 'button';
         closeButton.addEventListener('click', function () { dialog.close(); dialog.remove(); });
         header.append(heading, closeButton);
         panel.append(header);
-        var layout = node('div', 'og-qcm-tracking-layout');
+
+        // Même accordéon de regroupement que la liste des candidats du tableau de bord.
+        var group = node('details', 'og-dashboard-candidate-group');
+        var groupSummary = node('summary', 'og-dashboard-candidate-group-title',
+            'TOUS — ' + candidates.length + ' candidat(s)');
+        group.append(groupSummary);
+        var groupItems = node('div', 'og-dashboard-candidate-group-items');
         var list = node('nav', 'og-qcm-candidate-list');
-        list.setAttribute('aria-label', 'Candidats de ma cohorte');
+        list.setAttribute('aria-label', 'Tous les candidats de ma cohorte');
         var detail = node('section', 'og-qcm-candidate-detail og-candidate-profile-detail');
         detail.setAttribute('aria-live', 'polite');
-        detail.append(node('p', 'og-qcm-empty', 'Sélectionnez un candidat pour ouvrir sa fiche individuelle.'));
+        detail.append(node('p', 'og-qcm-empty', 'Ouvrez le groupe TOUS, puis sélectionnez un candidat pour consulter sa fiche.'));
         candidates.forEach(function (candidate, index) {
             var identity = candidate.candidate || {};
             var button = node('button', 'og-qcm-candidate-button');
             button.type = 'button';
             button.append(node('strong', '', identity.name || 'Pseudo non renseigné'));
             button.append(node('span', '', [identity.specialty, identity.email].filter(Boolean).join(' · ') || 'Profil à compléter'));
-            button.setAttribute('aria-pressed', String(index === 0));
+            button.setAttribute('aria-pressed', 'false');
             button.addEventListener('click', function () {
                 list.querySelectorAll('.og-qcm-candidate-button').forEach(function (item) {
                     item.classList.remove('is-selected');
@@ -562,15 +568,12 @@
                 button.setAttribute('aria-pressed', 'true');
                 renderCandidateProfileDetail(detail, candidate);
             });
-            if (index === 0) {
-                button.classList.add('is-selected');
-                renderCandidateProfileDetail(detail, candidate);
-            }
             list.append(button);
         });
         if (!candidates.length) list.append(node('p', 'og-qcm-empty', 'Aucun candidat n’est rattaché à votre cohorte.'));
-        layout.append(list, detail);
-        panel.append(layout);
+        groupItems.append(list);
+        group.append(groupItems);
+        panel.append(group, detail);
         dialog.append(panel);
         dialog.addEventListener('click', function (event) {
             if (event.target === dialog) { dialog.close(); dialog.remove(); }
