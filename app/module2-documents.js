@@ -311,11 +311,7 @@
     function init() {
         if (initialized) return;
         initialized = true;
-        if (document.getElementById('guideModule8App')) {
-            buildGuidePanel();
-            document.addEventListener('doctrine:login', buildGuidePanel);
-            return;
-        }
+        if (document.getElementById('guideModule8App')) return;
         if (isAdmin()) adminPanel();
         loadPublished();
         document.addEventListener('doctrine:content-updated', function (event) {
