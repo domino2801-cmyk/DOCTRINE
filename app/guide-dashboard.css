@@ -719,5 +719,23 @@ body.og-guide-entry-only #guideDashboardNav > button {
   .og-dashboard-library-actions > * { flex:1 1 100%; text-align:center; box-sizing:border-box; }
 }
 
-/* Centrage de la navigation lorsque l’espace Officier Guide est affiché seul. */
-body.og-guide-entry-only nav ul { justify-content:center; }
+
+/* Espace Officier Guide : entrée unique centrée, sur ordinateur comme sur mobile. */
+body.og-guide-entry-only .main-wrapper > nav ul {
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:center !important;
+  flex-wrap:wrap !important;
+}
+body.og-guide-entry-only .main-wrapper > nav li#guideDashboardNav {
+  display:flex !important;
+  flex:0 0 auto !important;
+  width:auto !important;
+  min-width:0 !important;
+}
+body.og-guide-entry-only .main-wrapper > nav li#guideDashboardNav > button {
+  width:auto !important;
+  min-width:0;
+  text-align:center !important;
+}
