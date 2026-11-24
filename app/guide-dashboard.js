@@ -320,6 +320,7 @@
             card.addEventListener('click', function () { openGuideFeedback(definition.kind); });
             metricsNode.append(card);
         });
+    }
     function guideFeedbackDialog(kind) {
         var isRetex = kind === 'retex';
         var table = isRetex ? 'guide_retex_reports' : 'guide_signalements';
