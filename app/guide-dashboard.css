@@ -358,3 +358,13 @@ body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw)
 .og-qcm-empty { padding:16px; color:#bdcdbf; text-align:center; border:1px dashed rgba(183,207,185,.2); border-radius:8px; }
 @media(max-width:760px) { .og-qcm-tracking-layout { grid-template-columns:1fr; } .og-qcm-candidate-list { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:520px) { .og-qcm-tracking-header { flex-direction:column; } .og-qcm-tracking-header .og-dashboard-close { align-self:flex-end; } .og-qcm-candidate-list,.og-qcm-detail-summary { grid-template-columns:1fr; } .og-qcm-history-row { align-items:flex-start; } }
+
+
+/* Accordéon de l'historique : replié à l'ouverture du dossier candidat. */
+.og-qcm-history-section { margin-top:20px; border:1px solid rgba(183,207,185,.2); border-radius:8px; overflow:hidden; }
+.og-qcm-history-toggle { display:flex; align-items:center; justify-content:space-between; gap:14px; width:100%; padding:13px 15px; border:0; background:rgba(255,255,255,.045); color:#d8b85b; text-align:left; font:inherit; font-weight:750; cursor:pointer; }
+.og-qcm-history-toggle::after { content:'+'; color:#ffdc75; font-size:22px; line-height:1; }
+.og-qcm-history-toggle.is-expanded::after { content:'−'; }
+.og-qcm-history-toggle:focus-visible { outline:2px solid #e6c96f; outline-offset:-3px; }
+.og-qcm-history-content { padding:10px; }
+.og-qcm-history-content[hidden] { display:none !important; }
