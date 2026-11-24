@@ -70,8 +70,9 @@
     }
 
     function applyGuideModuleVisibility() {
-        // Masquage immédiat pendant la vérification du profil : aucun flash des éléments réservés.
-        setGuideModulesHidden(true);
+        // État sûr pendant la vérification : afficher les modules candidat 1 à 7,
+        // garder le Module 8 et l’espace OG masqués jusqu’à confirmation OG.
+        setGuideModulesHidden(false);
         var progressionCard = document.querySelector('.study-dashboard');
         if (progressionCard) progressionCard.hidden = true;
         currentGuideStatus().then(function (isGuide) {
