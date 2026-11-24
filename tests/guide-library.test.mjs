@@ -60,8 +60,11 @@ test('l’espace Officier Guide affiche uniquement les contenus publiés et leur
     assert.match(guide, /★★ — Bases/);
     assert.match(guide, /★★★ — Approfondissement/);
     assert.match(guide, /★★★★ — Défi/);
-    assert.match(guide, /og-dashboard-library-correction-stars/);\n    assert.match(guide, /Visualiser la correction/);\n    assert.match(guide, /Télécharger la correction/);\n    assert.match(guide, /driveDownload\(correction\.drive_url\)/);\n    assert.match(guide, /currentGuideStatus\(\)/);
-    assert.match(guideCss, /\.og-dashboard-library-grid/);
+    assert.match(guide, /og-dashboard-library-correction-stars/);
+    assert.match(guide, /Visualiser la correction/);
+    assert.match(guide, /Télécharger la correction/);
+    assert.match(guide, /driveDownload\(correction\.drive_url\)/);
+    assert.match(guideCss, /\.og-dashboard-pedagogical-libraries/);
 });
 
 test('le panneau Admin est chargé séparément et fonctionne hors connexion via le cache PWA', () => {
