@@ -53,7 +53,7 @@
             var guideRole = role === 'guide' || role === 'officier_guide';
             if (!guideRole) return false;
 
-            return fetch(auth().url.replace(/\\/$/, '') + '/rest/v1/profiles?id=eq.' +
+            return fetch(auth().url.replace(/\/$/, '') + '/rest/v1/profiles?id=eq.' +
                 encodeURIComponent(claims.sub) + '&select=speciality', {
                 method: 'GET',
                 headers: {
