@@ -46,6 +46,8 @@ jobs:
         run: node --test tests/guide-dashboard.test.mjs
       - name: Test Guide exercise and correction libraries
         run: node --test tests/guide-library.test.mjs
+      - name: Test Module 2 document proposals and publication
+        run: node --check app/module2-documents.js && node --test tests/module2-documents.test.mjs
 
   deploy:
     needs: test
