@@ -378,3 +378,18 @@ test('la fiche candidat est alimentée par les sources réelles et expose les é
     assert.match(script, /api\('candidate_admission_tracking\?on_conflict=candidate_id/);
     assert.doesNotMatch(profile, /Moyenne QCM|Tentatives QCM|qcmAverage\(/);
 });
+
+
+test('les indicateurs administratifs sont regroupés dans une carte responsive de la fiche candidat', () => {
+    const start = script.indexOf('function renderCandidateProfileDetail(target, candidate)');
+    const end = script.indexOf('function openGuideCandidates()', start);
+    const profile = script.slice(start, end);
+    assert.match(profile, /og-candidate-profile-summary-card/);
+    assert.match(profile, /Fiches soumises/);
+    assert.match(profile, /Fiches validées/);
+    assert.match(profile, /Dernière activité/);
+    assert.doesNotMatch(profile, /Moyenne QCM|Tentatives QCM/);
+    assert.match(css, /\.og-candidate-profile-summary-card\s*\{[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/s);
+    assert.match(css, /@media\(max-width:640px\)/);
+    assert.match(css, /@media\(max-width:390px\)/);
+});
