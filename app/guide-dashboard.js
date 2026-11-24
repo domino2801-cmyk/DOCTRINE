@@ -433,6 +433,7 @@
         document.body.append(dialog);
         dialog.showModal();
     }
+    // Fiche individuelle : accordéons indépendants, sans recopier les statistiques QCM.
     function renderCandidateProfileDetail(target, candidate) {
         target.replaceChildren();
         var identity = candidate.candidate || {};
