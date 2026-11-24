@@ -280,6 +280,7 @@
     function attention(candidate) {
         return !candidateFollowUpStatus(candidate).ready;
     }
+    // Regroupe les notes QCM persistées par thème pour l'histogramme individuel.
     function qcmThemeSummary(results) {
         var groups = Object.create(null);
         results.forEach(function (result) {
