@@ -163,8 +163,7 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(viewerScript, /panneau\.focus\(\{ preventScroll: true \}\)/);
     assert.match(viewerCss, /z-index:\s*2147483647/);
     assert.match(script, /og-dashboard-review-criteria/);
-    assert.match(script, /eligibility\.append\(renderOralTracking\(candidate\)\)/);
-    assert.match(script, /eligibility\.append\(renderCcpmTracking\(candidate\)\)/);
+    assert.match(script, /accordion\('Suivi d’admission'[\s\S]*?content\.append\(renderOralTracking\(candidate\)\);[\s\S]*?content\.append\(renderCcpmTracking\(candidate\)\)/);
 
     assert.match(script, /Note CCPM \/ 20/);
     assert.match(script, /Notes de l’Officier Guide/);
