@@ -349,6 +349,7 @@ test('la fiche candidat utilise des accordéons repliés et ne duplique pas les 
     assert.match(profile, /Progression des modules 1 à 7/);
     assert.match(profile, /Suivi d’admission/);
     assert.match(profile, /Dossier et documents demandés/);
+    assert.doesNotMatch(profile, /Activité documentaire|og-candidate-profile-activity|doctrine\.documents/);
     assert.doesNotMatch(profile, /accordion\('Correction assistée par IA'/);
     assert.match(profile, /target\.append\(renderAiCorrection\(candidate\)\)/);
     assert.match(profile, /renderOralTracking\(candidate\)/);
