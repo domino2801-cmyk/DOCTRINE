@@ -113,7 +113,7 @@
         message('Chargement du document…');
         return proxy('file', id).then(function (r) {
             if (numero !== requete) return;
-            if (!r.headers.get('X-Doctrine-Proxy')) return repliApercu(id);
+            if (!r.headers.get('X-Doctrine-Proxy')) return message('La visionneuse sécurisée est indisponible. Le document ne sera pas ouvert sur Google Drive.', true);
             if (!r.ok) return message(messageErreur(r), true);
             var fichier = r.headers.get('X-File-Name');
             var type = (r.headers.get('Content-Type') || '').split(';')[0];
@@ -132,7 +132,7 @@
                 montrer(type, urlObjet, id);
             });
         }).catch(function () {
-            if (numero === requete) repliApercu(id);
+            if (numero === requete) message('Impossible de charger le document dans la visionneuse sécurisée. Réessayez plus tard.', true);
         });
     }
 
@@ -225,27 +225,14 @@
             noeud.controls = true;
             noeud.setAttribute('controlsList', 'nodownload');
         } else {
-            // Formats non lisibles par le navigateur (Excel, Word…) : aperçu Drive, téléchargement conservé.
-            return id ? apercuDrive(id) : message('Aperçu indisponible pour ce format : utilisez « Télécharger ».');
+            // Formats non lisibles par le navigateur (Excel, Word…) : ne jamais basculer vers l’interface Google Drive.
+            return message('Aperçu intégré indisponible pour ce format. Utilisez « Télécharger ».');
         }
         noeud.src = src;
         corps.replaceChildren(noeud);
     }
 
-    function apercuDrive(id) {
-        var noeud = element('iframe', 'dv-frame');
-        noeud.title = 'Document';
-        noeud.setAttribute('allow', 'fullscreen');
-        noeud.setAttribute('referrerpolicy', 'no-referrer');
-        noeud.src = 'https://drive.google.com/file/d/' + id + '/preview';
-        corps.replaceChildren(noeud);
-    }
-
-    // Fonction non déployée : aperçu Drive intégré (sans téléchargement).
-    function repliApercu(id) {
-        libererObjet();
-        apercuDrive(id);
-    }
+    // Aucun repli vers Google Drive : l'accès doit rester dans la visionneuse DOCTRINE.
 
     function afficherDossier(id, nom) {
         var numero = ++requete;
