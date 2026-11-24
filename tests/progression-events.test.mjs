@@ -86,6 +86,19 @@ test("module 4 is completed automatically after submissions on two distinct doss
 });
 
 
+test("module 2 validation is based on the Supabase event, never on local browser storage", () => {
+    const start = app.indexOf("    function ensureModuleCompletionControl");
+    const end = app.indexOf("\n    // Un dossier du module 4", start);
+    assert.ok(start >= 0 && end > start, "Contrôle de validation du module 2 introuvable");
+    const control = app.slice(start, end);
+    assert.match(control, /if \(id !== 'module2'\) return/);
+    assert.match(control, /enregistrerEvenementProgression\('module_completed', number\)/);
+    assert.match(control, /seul l'événement module_completed enregistré dans Supabase/);
+    assert.doesNotMatch(control, /localStorage\.getItem\(['"]doctrine-module-completed-/);
+    assert.doesNotMatch(control, /localStorage\.setItem\(['"]doctrine-module-completed-/);
+    assert.match(control, /La validation n’a pas été synchronisée/);
+});
+
 test("module 7 is completed automatically when a RETEX is inserted", async () => {
     const retexMigration = readFileSync(path.join(root, "supabase", "module7-retex-auto-validation.sql"), "utf8");
     const retexViewer = readFileSync(path.join(root, "viewer", "retex-signalements.js"), "utf8");
