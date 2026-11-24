@@ -2045,20 +2045,38 @@
             var button = node('button', '', 'Espace Officier Guide');
             button.type = 'button';
             button.addEventListener('click', function () {
-                trigger = button;
-                build();
-                root.hidden = false;
-                document.body.classList.add('og-dashboard-open');
-                load();
-                loadExerciseLibraries();
+                // Le contrôle est répété au clic : un candidat ne peut pas ouvrir
+                // le tableau de bord même si l'élément a été rendu visible par erreur.
+                button.disabled = true;
+                guideAccess().then(function (allowed) {
+                    button.disabled = false;
+                    if (allowed !== true) {
+                        item.hidden = true;
+                        if (root && !root.hidden) close();
+                        return;
+                    }
+                    trigger = button;
+                    build();
+                    root.hidden = false;
+                    document.body.classList.add('og-dashboard-open');
+                    load();
+                    loadExerciseLibraries();
+                }).catch(function () {
+                    button.disabled = false;
+                    item.hidden = true;
+                    if (root && !root.hidden) close();
+                });
             });
             item.append(button);
             nav.append(item);
         }
+        // Masquer immédiatement à chaque initialisation/changement de session.
+        // L'entrée ne réapparaît qu'après validation du rôle ET de la spécialité OG.
+        item.hidden = true;
+        if (root && !root.hidden) close();
         guideAccess().then(function (allowed) {
-            var isOG = allowed === true;
-            item.hidden = !isOG;
-            if (!isOG && root && !root.hidden) close();
+            item.hidden = allowed !== true;
+            if (allowed !== true && root && !root.hidden) close();
         }).catch(function () {
             item.hidden = true;
             if (root && !root.hidden) close();
