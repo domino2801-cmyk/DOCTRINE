@@ -73,13 +73,17 @@ async function candidatValide(jeton: string): Promise<Candidat | null> {
   if (!admin && (role === 'guide' || role === 'officier_guide')) {
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     if (serviceKey) {
-      const profil = await fetch(
-        `${url}/rest/v1/profiles?id=eq.${encodeURIComponent(u.id)}&select=speciality`,
-        { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } },
-      );
-      if (profil.ok) {
-        const profils: { speciality?: string | null }[] = await profil.json();
-        officierGuide = profils.some((p) => String(p.speciality || '').trim().toUpperCase() === 'OG');
+      try {
+        const profil = await fetch(
+          `${url}/rest/v1/profiles?id=eq.${encodeURIComponent(u.id)}&select=speciality`,
+          { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } },
+        );
+        if (profil.ok) {
+          const profils: { speciality?: string | null }[] = await profil.json();
+          officierGuide = profils.some((p) => String(p.speciality || '').trim().toUpperCase() === 'OG');
+        }
+      } catch (e) {
+        console.error('Vérification de la spécialité Officier Guide impossible', e);
       }
     }
   }
