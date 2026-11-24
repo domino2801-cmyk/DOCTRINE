@@ -2214,7 +2214,7 @@
         proposalContent.append(proposalPanel);
         proposalEntry.append(proposalContent);
         function loadModule2OwnProposals() {
-            api('guide_document_proposals?select=id,title,category,status,admin_note,created_at&order=created_at.desc')
+            api('guide_document_proposals?select=id,title,category,status,admin_note,created_at,original_filename&order=created_at.desc')
                 .then(function (rows) {
                     ownProposals.replaceChildren();
                     if (!rows.length) {
@@ -2224,6 +2224,7 @@
                     rows.forEach(function (row) {
                         var item = node('li', '', row.title + ' — ' + row.category + ' — ' +
                             (row.status === 'approved' ? 'Validée' : row.status === 'rejected' ? 'Refusée' : 'En attente'));
+                        if (row.original_filename) item.append(node('p', '', 'Pièce jointe : ' + row.original_filename));
                         if (row.admin_note) item.append(node('p', '', row.admin_note));
                         ownProposals.append(item);
                     });
