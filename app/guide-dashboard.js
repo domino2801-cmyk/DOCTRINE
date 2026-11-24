@@ -454,15 +454,13 @@
         var summary = node('div', 'og-candidate-profile-summary-card');
         [
             ['Fiches soumises', String(dossierItems.length)],
-            ['Fiches validées', String(validatedSubmissions)],
-            ['Dernière activité', lastActivity && Number.isFinite(Date.parse(lastActivity))
-                ? new Date(lastActivity).toLocaleDateString('fr-FR') : 'Non renseignée']
+            ['Fiches validées', String(validatedSubmissions)]
         ].forEach(function (entry) {
             var metric = node('div', 'og-candidate-profile-summary-item');
             metric.append(node('span', '', entry[0]), node('strong', '', entry[1]));
             summary.append(metric);
         });
-        profileHero.append(identityCard, summary);
+        profileHero.append(summary, identityCard);
         target.append(profileHero);
 
         function accordion(title, className, contentBuilder) {
@@ -507,9 +505,7 @@
             progressGrid.prepend(node('p', 'og-qcm-empty', 'Les données de progression sont momentanément indisponibles.'));
         }
         progressSection.append(progressGrid);
-        accordion('Progression des modules 1 à 7', 'og-candidate-profile-progress', function (content) {
-            content.append(progressSection);
-        });
+        target.append(progressSection);
 
         accordion('Suivi d’admission', 'og-candidate-profile-admission', function (content) {
             content.append(renderOralTracking(candidate));
@@ -579,6 +575,7 @@
         panel.append(header);
 
         // La liste est affichée immédiatement, sans écran d’accordéon intermédiaire.
+        var workspace = node('div', 'og-candidate-workspace');
         var group = node('section', 'og-dashboard-candidate-group og-dashboard-candidate-group-open');
         group.append(node('div', 'og-dashboard-candidate-group-heading',
             'TOUS — ' + candidates.length + ' candidat(s)'));
@@ -612,7 +609,8 @@
         if (!candidates.length) list.append(node('p', 'og-qcm-empty', 'Aucun candidat n’est rattaché à votre cohorte.'));
         groupItems.append(list);
         group.append(groupItems);
-        panel.append(group, detail);
+        workspace.append(group, detail);
+        panel.append(workspace);
         // Ouvrir directement la fiche du premier candidat à l’arrivée.
         var firstCandidateButton = list.querySelector('.og-qcm-candidate-button');
         if (firstCandidateButton) firstCandidateButton.click();
