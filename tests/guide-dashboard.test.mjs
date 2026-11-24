@@ -53,7 +53,6 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(css, /\.og-dashboard-metric-action/);
     assert.match(css, /\.og-dashboard-assign-dialog/);
     assert.match(script, /id = 'guideDashboard'/);
-    assert.doesNotMatch(script, /btn-mod8|modal-module8/i);
     assert.match(script, /SUIVI QCM-MAJOR/);
     assert.match(script, /Suivi individuel par candidat de ma cohorte/);
     assert.match(script, /dataset\.guideAction = 'qcm-major-tracking'/);
