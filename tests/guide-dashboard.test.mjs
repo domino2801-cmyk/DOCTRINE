@@ -62,6 +62,9 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.ok(script.includes('og-qcm-bar-track'));
     assert.ok(script.includes('Historique complet des résultats enregistrés'));
     assert.ok(script.includes("for (var number = 1; number <= 6; number += 1)"));
+    assert.match(script, /label\.match\(\/\^\\s\*\(\?:\(\?:th\[eè\]me\|theme\|module\)\\s\*\)\?\(\[1-6\]\)\\b\/i\)/);
+    assert.match(script, /return left\.number - right\.number/);
+    assert.match(script, /result\.theme_number \|\| result\.module_number/);
     assert.ok(script.includes("Aucune note"));
     assert.ok(script.includes("historyContent.hidden = true"));
     assert.ok(script.includes("historyToggle.setAttribute('aria-expanded', 'false')"));
