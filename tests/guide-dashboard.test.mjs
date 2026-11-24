@@ -95,9 +95,13 @@ test('la carte CANDIDATS ouvre la cohorte puis une fiche individuelle limitée a
     assert.match(script, /Historique complet des résultats enregistrés/);
     assert.match(script, /historyContent\.hidden = true/);
     assert.match(script, /og-dashboard-qcm-tracking/);
-    assert.match(script, /ACTIVITÉ DOCTRINE/);
-    assert.match(script, /DOSSIERS ET ÉVALUATIONS/);
-    assert.match(script, /SUIVI D’ADMISSION/);
+    assert.match(script, /Progression des modules 1 à 7/);
+    assert.match(script, /Suivi d’admission/);
+    assert.match(script, /Dossier et documents demandés/);
+    assert.match(script, /Correction assistée par IA/);
+    assert.match(script, /renderOralTracking\(candidate\)/);
+    assert.match(script, /renderCcpmTracking\(candidate\)/);
+    assert.match(script, /renderAiCorrection\(candidate\)/);
     assert.match(css, /\.og-candidate-profile-identity/);
     assert.match(css, /\.og-candidate-profile-section/);
     assert.doesNotMatch(script.slice(script.indexOf('function renderCandidateProfileDetail'), script.indexOf('function openGuideCandidates')), /identity\.(?:grade|unit|matricule)/);
