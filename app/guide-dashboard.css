@@ -323,3 +323,38 @@ body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw)
 .og-dashboard-feedback-history-item p { white-space:pre-wrap; overflow-wrap:anywhere; }
 .og-dashboard-feedback-response { color:#bfe1c3; }
 @media(max-width:600px) { .og-dashboard-feedback-shell { padding:13px; } .og-dashboard-feedback-form { grid-template-columns:1fr; } .og-dashboard-feedback-field:has(textarea) { grid-column:auto; } .og-dashboard-feedback-header { flex-direction:column; } }
+
+
+/* Tableau de cohorte QCM-MAJOR et histogrammes individuels par thème. */
+.og-qcm-tracking-dialog { width:min(1180px,calc(100% - 28px)); max-width:1180px; max-height:92vh; padding:0; border:1px solid rgba(183,207,185,.3); border-radius:12px; background:#101c17; color:#e8efe8; box-shadow:0 24px 80px rgba(0,0,0,.65); }
+.og-qcm-tracking-dialog::backdrop { background:rgba(3,9,6,.82); }
+.og-qcm-tracking-panel { max-height:92vh; overflow:auto; padding:clamp(15px,2.5vw,26px); }
+.og-qcm-tracking-header { display:flex; justify-content:space-between; align-items:flex-start; gap:18px; padding-bottom:16px; border-bottom:1px solid rgba(183,207,185,.2); }
+.og-qcm-tracking-header h2 { margin:0; color:#f2f5ee; font-size:clamp(21px,3vw,28px); }
+.og-qcm-tracking-header p:last-child { margin:7px 0 0; }
+.og-qcm-tracking-layout { display:grid; grid-template-columns:minmax(220px,.75fr) minmax(0,2fr); gap:16px; padding-top:18px; }
+.og-qcm-candidate-list { display:grid; align-content:start; gap:8px; }
+.og-qcm-candidate-button { display:grid; gap:6px; width:100%; padding:12px; border:1px solid rgba(183,207,185,.22); border-radius:7px; background:rgba(255,255,255,.035); color:#f2f5ee; text-align:left; cursor:pointer; font:inherit; }
+.og-qcm-candidate-button span,.og-qcm-history-copy small { color:#b8c8bb; font-size:12px; }
+.og-qcm-candidate-button:hover,.og-qcm-candidate-button.is-selected { border-color:#d8b85b; background:rgba(216,184,91,.12); }
+.og-qcm-candidate-button:focus-visible { outline:2px solid #e6c96f; outline-offset:2px; }
+.og-qcm-candidate-detail { min-width:0; }
+.og-qcm-detail-title { margin:0 0 12px; color:#f2f5ee; font-size:20px; }
+.og-qcm-detail-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.og-qcm-summary-item { display:grid; gap:6px; padding:12px; border:1px solid rgba(183,207,185,.17); border-radius:7px; background:rgba(255,255,255,.035); }
+.og-qcm-summary-item span,.og-qcm-theme-meta { color:#b8c8bb; font-size:12px; }
+.og-qcm-summary-item strong { color:#f2f5ee; font-size:19px; }
+.og-qcm-section-title { margin:20px 0 12px; color:#d8b85b; font-size:16px; }
+.og-qcm-theme-chart { display:grid; gap:12px; }
+.og-qcm-theme-row { display:grid; gap:6px; }
+.og-qcm-theme-heading { display:flex; justify-content:space-between; gap:12px; color:#f2f5ee; }
+.og-qcm-theme-heading span { color:#ffdc75; font-weight:800; white-space:nowrap; }
+.og-qcm-bar-track { height:14px; overflow:hidden; border-radius:20px; background:#26392f; box-shadow:inset 0 0 0 1px rgba(183,207,185,.16); }
+.og-qcm-bar { display:block; height:100%; border-radius:20px; background:linear-gradient(90deg,#526b4e,#d8b85b); }
+.og-qcm-history { display:grid; gap:6px; }
+.og-qcm-history-row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 12px; border:1px solid rgba(183,207,185,.13); border-radius:6px; background:rgba(255,255,255,.025); }
+.og-qcm-history-copy { display:grid; gap:4px; min-width:0; }
+.og-qcm-history-score { color:#ffdc75; white-space:nowrap; }
+.og-qcm-empty { padding:16px; color:#bdcdbf; text-align:center; border:1px dashed rgba(183,207,185,.2); border-radius:8px; }
+@media(max-width:760px) { .og-qcm-tracking-layout { grid-template-columns:1fr; } .og-qcm-candidate-list { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:520px) { .og-qcm-tracking-header { flex-direction:column; } .og-qcm-tracking-header .og-dashboard-close { align-self:flex-end; } .og-qcm-candidate-list,.og-qcm-detail-summary { grid-template-columns:1fr; } .og-qcm-history-row { align-items:flex-start; } }
