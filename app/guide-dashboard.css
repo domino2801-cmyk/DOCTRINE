@@ -300,3 +300,26 @@
 body.og-guide-entry-only nav ul { justify-content:center; }
 body.og-guide-entry-only #guideDashboardNav { margin-inline:auto; }
 body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw); text-align:center; }
+
+
+/* Fiches autonomes RETEX et signalement — espace Officier Guide. */
+.og-dashboard-feedback-dialog { width:min(820px,calc(100vw - 28px)); max-width:820px; max-height:92vh; padding:0; border:1px solid rgba(183,207,185,.3); border-radius:12px; background:#17251e; color:#f2f5ee; box-shadow:0 24px 80px rgba(0,0,0,.6); }
+.og-dashboard-feedback-dialog::backdrop { background:rgba(3,10,7,.8); backdrop-filter:blur(3px); }
+.og-dashboard-feedback-shell { padding:20px; overflow:auto; max-height:92vh; }
+.og-dashboard-feedback-header { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; border-bottom:1px solid rgba(183,207,185,.2); padding-bottom:14px; }
+.og-dashboard-feedback-header h2 { margin:0; color:#f2f5ee; font-size:21px; }
+.og-dashboard-feedback-help { color:#c6d2c8; line-height:1.55; }
+.og-dashboard-feedback-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.og-dashboard-feedback-field { display:grid; gap:6px; color:#e6eee7; font-size:13px; font-weight:700; }
+.og-dashboard-feedback-field:has(textarea) { grid-column:1/-1; }
+.og-dashboard-feedback-field input,.og-dashboard-feedback-field select,.og-dashboard-feedback-field textarea { width:100%; min-width:0; box-sizing:border-box; padding:10px; border:1px solid #607667; border-radius:6px; background:#26392f; color:#f2f5ee; color-scheme:dark; font:inherit; }
+.og-dashboard-feedback-field textarea { min-height:76px; resize:vertical; }
+.og-dashboard-feedback-status { grid-column:1/-1; min-height:18px; margin:0; color:#e6c96f; }
+.og-dashboard-feedback-form > button { justify-self:start; }
+.og-dashboard-feedback-history { margin-top:22px; border-top:1px solid rgba(183,207,185,.2); padding-top:14px; }
+.og-dashboard-feedback-history h3 { color:#e6c96f; }
+.og-dashboard-feedback-history-item { margin:8px 0; padding:12px; border:1px solid rgba(183,207,185,.18); border-radius:7px; background:rgba(255,255,255,.03); }
+.og-dashboard-feedback-history-meta { color:#e6c96f; font-size:12px; font-weight:800; }
+.og-dashboard-feedback-history-item p { white-space:pre-wrap; overflow-wrap:anywhere; }
+.og-dashboard-feedback-response { color:#bfe1c3; }
+@media(max-width:600px) { .og-dashboard-feedback-shell { padding:13px; } .og-dashboard-feedback-form { grid-template-columns:1fr; } .og-dashboard-feedback-field:has(textarea) { grid-column:auto; } .og-dashboard-feedback-header { flex-direction:column; } }
