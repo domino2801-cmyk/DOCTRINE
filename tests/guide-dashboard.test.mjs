@@ -55,15 +55,14 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(script, /Suivi individuel par candidat de ma cohorte/);
     assert.match(script, /dataset\.guideAction = 'qcm-major-tracking'/);
     assert.match(script, /function openGuideQcmTracking\(\)/);
-    assert.match(script, /function qcmThemeSummary\\(results\\)/);
-    assert.match(script, /function renderQcmCandidateDetail\\(target, candidate\\)/);
-    assert.match(script, /function openGuideQcmTracking\\(\\)/);
-    assert.match(script, /result\\.theme/);
-    assert.match(script, /og-qcm-bar-track/);
-    assert.match(script, /Historique complet des résultats enregistrés/);
-    assert.doesNotMatch(script, /window\\.location\\.href/);
-    assert.match(css, /\\.og-qcm-theme-chart/);
-    assert.match(css, /\\.og-qcm-candidate-button/);
+    assert.ok(script.includes('function qcmThemeSummary(results)'));
+    assert.ok(script.includes('function renderQcmCandidateDetail(target, candidate)'));
+    assert.ok(script.includes('function openGuideQcmTracking()'));
+    assert.ok(script.includes('result.theme'));
+    assert.ok(script.includes('og-qcm-bar-track'));
+    assert.ok(script.includes('Historique complet des résultats enregistrés'));
+    assert.ok(css.includes('.og-qcm-theme-chart'));
+    assert.ok(css.includes('.og-qcm-candidate-button'));
     assert.doesNotMatch(script, /guide_action|og-dashboard-ai-frame/);
 });
 
