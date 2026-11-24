@@ -2262,6 +2262,7 @@ body.og-guide-entry-only #corpusPreface {
     width: 100%;
     max-width: none;
     margin-top: 0 !important;
+    padding-top: 0 !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
     text-align: center;
@@ -2284,7 +2285,7 @@ body.og-guide-entry-only #corpusPreface .preface-box ul {
 }
 @media (max-width: 600px) {
     body.og-guide-entry-only #corpusPreface {
-        padding: 12px;
+        padding: 0 12px 12px;
     }
     body.og-guide-entry-only #corpusPreface .preface-box {
         padding: 10px 12px;
