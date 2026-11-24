@@ -720,22 +720,43 @@ body.og-guide-entry-only #guideDashboardNav > button {
 }
 
 
-/* Espace Officier Guide : entrée unique centrée, sur ordinateur comme sur mobile. */
-body.og-guide-entry-only .main-wrapper > nav ul {
-  display:flex !important;
-  flex-direction:row !important;
-  align-items:center !important;
-  justify-content:center !important;
-  flex-wrap:wrap !important;
-}
-body.og-guide-entry-only .main-wrapper > nav li#guideDashboardNav {
-  display:flex !important;
-  flex:0 0 auto !important;
-  width:auto !important;
-  min-width:0 !important;
-}
-body.og-guide-entry-only .main-wrapper > nav li#guideDashboardNav > button {
-  width:auto !important;
+/* Entrée Officier Guide : carte pleine largeur, hors navigation,
+   immédiatement au-dessus de « À propos du corpus ». */
+.og-guide-entry-card {
+  width:100%;
   min-width:0;
-  text-align:center !important;
+  box-sizing:border-box;
+  margin:0 0 18px;
+}
+.og-guide-entry-card[hidden] { display:none !important; }
+.og-guide-entry-button {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:76px;
+  box-sizing:border-box;
+  padding:18px 22px;
+  border:1px solid #9baa8d;
+  border-left:5px solid #d8b85b;
+  border-radius:10px;
+  background:linear-gradient(110deg,#17271e,#304735);
+  color:#f5f7ef;
+  text-align:center;
+  font:800 clamp(16px,2vw,20px)/1.35 'Helvetica Neue',Arial,sans-serif;
+  letter-spacing:.035em;
+  cursor:pointer;
+  box-shadow:0 8px 22px rgba(10,24,15,.16);
+}
+.og-guide-entry-button:hover,
+.og-guide-entry-button:focus-visible {
+  border-color:#d8b85b;
+  outline:2px solid rgba(216,184,91,.35);
+  outline-offset:2px;
+}
+.og-guide-entry-button:disabled { opacity:.65; cursor:wait; }
+.main-wrapper > nav[hidden] { display:none !important; }
+@media(max-width:600px) {
+  .og-guide-entry-card { margin-bottom:13px; }
+  .og-guide-entry-button { min-height:64px; padding:14px; }
 }
