@@ -726,7 +726,7 @@ body.og-guide-entry-only #guideDashboardNav > button {
   width:calc((100% - 8px) / 2);
   min-width:0;
   box-sizing:border-box;
-  margin:0 0 18px;
+  margin:0 0 6px;
 }
 .og-guide-entry-card[hidden] { display:none !important; }
 .og-guide-entry-button {
