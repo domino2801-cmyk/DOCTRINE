@@ -281,7 +281,7 @@
                             var popup = window.open('about:blank', '_blank');
                             if (popup) popup.opener = null;
                             auth.jeton().then(function (token) {
-                                return fetch(auth.url.replace(/\\/$/, '') + '/storage/v1/object/sign/guide-document-proposals/' +
+                                return fetch(auth.url.replace(/\/$/, '') + '/storage/v1/object/sign/guide-document-proposals/' +
                                     row.uploaded_file_path.split('/').map(encodeURIComponent).join('/'), {
                                     method: 'POST',
                                     headers: { apikey: auth.key, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
@@ -292,7 +292,7 @@
                                     if (!response.ok) throw new Error(payload.message || 'Lien de téléchargement indisponible.');
                                     var signed = payload.signedURL || payload.signedUrl;
                                     if (!signed) throw new Error('Lien de téléchargement absent.');
-                                    var target = signed.indexOf('http') === 0 ? signed : auth.url.replace(/\\/$/, '') + '/storage/v1' + signed;
+                                    var target = signed.indexOf('http') === 0 ? signed : auth.url.replace(/\/$/, '') + '/storage/v1' + signed;
                                     if (popup) popup.location = target;
                                     else window.location.href = target;
                                 });
