@@ -291,8 +291,8 @@
             if (!Number.isFinite(score)) return;
             var label = String(result.theme || '').trim();
             var numberMatch = label.match(/(?:th[eè]me|theme|module)?\\s*([1-6])(?:\\b|$)/i);
-            var key = numberMatch ? 'theme-' + numberMatch[1] : 'label-' + (label || 'non-renseigne');
-            if (!groups[key]) groups[key] = { theme: label || 'Thème non renseigné', scores: [], count: 0 };
+            if (!numberMatch) return;
+            var key = 'theme-' + numberMatch[1];
             groups[key].scores.push(score);
             groups[key].count += 1;
         });
