@@ -187,11 +187,11 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(css, /\.og-candidate-follow-up-status\.is-ok/);
     assert.match(css, /\.og-candidate-follow-up-status\.is-danger/);
     assert.match(css, /\.og-candidate-follow-up-status\.is-warning/);
-    assert.match(css, /\.og-dashboard-status-filters \\{ display:flex; flex-wrap:wrap/);
-    assert.match(css, /\.og-dashboard-status-filter\\.is-ok \\{ color:#9ed4a6/);
-    assert.match(css, /\.og-dashboard-status-filter\\.is-danger \\{ color:#ffaaa0/);
-    assert.match(css, /\.og-dashboard-status-filter\\.is-warning \\{ color:#f0ce79/);
-    assert.match(css, /@media\\(max-width:480px\\)/);
+    assert.match(css, /\.og-dashboard-status-filters \{ display:flex; flex-wrap:wrap/);
+    assert.match(css, /\.og-dashboard-status-filter\.is-ok \{ color:#9ed4a6/);
+    assert.match(css, /\.og-dashboard-status-filter\.is-danger \{ color:#ffaaa0/);
+    assert.match(css, /\.og-dashboard-status-filter\.is-warning \{ color:#f0ce79/);
+    assert.match(css, /@media\(max-width:480px\)/);
     assert.doesNotMatch(script, /SUIVI NORMAL/);
     assert.match(script, /var guideRole = role === 'guide' \|\| role === 'officier_guide'/);
     assert.ok(script.includes('rôle guide/officier_guide ET champ profiles.speciality exactement égal à OG'));
