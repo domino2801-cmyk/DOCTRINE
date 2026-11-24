@@ -1158,10 +1158,13 @@
                     ? ' · ' + Number(review.grade).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' / 20' : '';
                 card.append(node('p', 'og-dashboard-ai-state', state + grade));
                 if (review && review.comment) {
+                    var commentHeading = node('strong', 'og-dashboard-ai-comment-heading',
+                        'Commentaires de l’Officier Guide');
                     var result = node('p', 'og-dashboard-ai-result');
-                    var commentText = String(review.comment);
-                    result.textContent = commentText.length > 360 ? commentText.slice(0, 357) + '…' : commentText;
-                    card.append(result);
+                    // Afficher le commentaire enregistré en entier, pour les deux types de fiche.
+                    // white-space: pre-wrap dans le CSS conserve les paragraphes et retours à la ligne.
+                    result.textContent = String(review.comment);
+                    card.append(commentHeading, result);
                 }
                 var actions = node('div', 'og-dashboard-ai-actions');
                 var openButton = node('button', 'og-dashboard-ai-action is-primary',
