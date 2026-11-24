@@ -524,3 +524,30 @@ body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw)
   .og-candidate-workspace .og-candidate-profile-identity { padding:12px; }
   .og-candidate-workspace .og-candidate-profile-pseudo { font-size:20px; }
 }
+
+
+/* Cartes de compteurs plus compactes dans la fiche candidat. */
+.og-candidate-workspace .og-candidate-profile-summary-card {
+  gap:6px;
+}
+.og-candidate-workspace .og-candidate-profile-summary-item {
+  min-height:54px;
+  padding:7px 9px;
+  gap:4px;
+  justify-content:center;
+}
+.og-candidate-workspace .og-candidate-profile-summary-item span {
+  font-size:10px;
+  line-height:1.2;
+}
+.og-candidate-workspace .og-candidate-profile-summary-item strong {
+  font-size:15px;
+  line-height:1.15;
+}
+@media(max-width:520px) {
+  .og-candidate-workspace .og-candidate-profile-summary-item {
+    min-height:48px;
+    padding:6px 8px;
+  }
+  .og-candidate-workspace .og-candidate-profile-summary-item strong { font-size:14px; }
+}
