@@ -551,3 +551,45 @@ body.og-guide-entry-only #guideDashboardNav > button { min-width:min(320px,80vw)
   }
   .og-candidate-workspace .og-candidate-profile-summary-item strong { font-size:14px; }
 }
+
+
+/* Empêcher tout défilement horizontal dans la fenêtre de cohorte candidat. */
+.og-candidate-list-dialog,
+.og-candidate-list-dialog .og-qcm-tracking-panel,
+.og-candidate-list-dialog .og-candidate-workspace,
+.og-candidate-list-dialog .og-candidate-profile-detail {
+  min-width:0;
+  max-width:100%;
+  overflow-x:clip;
+}
+.og-candidate-list-dialog .og-qcm-tracking-panel {
+  width:min(1500px,calc(100vw - 32px));
+}
+.og-candidate-list-dialog .og-candidate-workspace {
+  display:grid;
+  grid-template-columns:minmax(220px,.8fr) minmax(0,1.7fr);
+  width:100%;
+}
+.og-candidate-list-dialog .og-candidate-workspace > *,
+.og-candidate-list-dialog .og-candidate-profile-hero > *,
+.og-candidate-list-dialog .og-candidate-profile-summary-card > *,
+.og-candidate-list-dialog .og-candidate-profile-progress-grid > *,
+.og-candidate-list-dialog .og-candidate-profile-accordion-content > * {
+  min-width:0;
+  max-width:100%;
+}
+.og-candidate-list-dialog .og-candidate-profile-module-row {
+  grid-template-columns:38px minmax(0,1fr);
+}
+.og-candidate-list-dialog .og-candidate-profile-module-track {
+  width:100%;
+  min-width:0;
+}
+.og-candidate-list-dialog :is(p,span,strong,small,summary,button) {
+  overflow-wrap:anywhere;
+}
+@media(max-width:850px) {
+  .og-candidate-list-dialog .og-candidate-workspace {
+    grid-template-columns:minmax(0,1fr);
+  }
+}
