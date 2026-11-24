@@ -197,6 +197,14 @@
         if (trigger && trigger.isConnected && !trigger.hidden) trigger.focus();
     }
 
+    function openDashboard(source) {
+        if (!isAdmin()) return;
+        trigger = source || null;
+        buildDialog();
+        dialog.hidden = false;
+        load();
+    }
+
     function buildDialog() {
         if (dialog) return;
         dialog = node('div', 'anc-cohort-dialog');
@@ -268,12 +276,7 @@
                 button = node('button', 'module-nav-button adm-cohort-toolbar', '👥 Cohorte');
                 button.type = 'button';
                 button.title = 'Suivi global de tous les candidats';
-                button.addEventListener('click', function () {
-                    trigger = button;
-                    buildDialog();
-                    dialog.hidden = false;
-                    load();
-                });
+                button.addEventListener('click', function () { openDashboard(button); });
                 zone.appendChild(button);
             }
             button.hidden = !isAdmin();
@@ -282,6 +285,9 @@
 
     function init() {
         addToolbarButton();
+        document.addEventListener('doctrine:open-cohort-dashboard', function () {
+            openDashboard(null);
+        });
         document.addEventListener('doctrine:login', addToolbarButton);
         document.addEventListener('doctrine:logout', function () {
             if (dialog) dialog.hidden = true;
