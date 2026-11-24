@@ -2075,8 +2075,9 @@
         item.hidden = true;
         if (root && !root.hidden) close();
         guideAccess().then(function (allowed) {
-            item.hidden = allowed !== true;
-            if (allowed !== true && root && !root.hidden) close();
+            var isOG = allowed === true;
+            item.hidden = !isOG;
+            if (!isOG && root && !root.hidden) close();
         }).catch(function () {
             item.hidden = true;
             if (root && !root.hidden) close();
