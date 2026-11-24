@@ -2043,7 +2043,7 @@
         intro.append(node('p', 'og-dashboard-kicker', 'DOCTRINE / ACCOMPAGNEMENT PÉDAGOGIQUE'));
         var h = node('h2', '', 'Espace Officier Guide');
         h.id = 'guideDashboardTitle';
-        intro.append(h, node('p', 'og-dashboard-subtitle', 'Votre cohorte, vos suivis et les 30 supports de cours partagés.'));
+        intro.append(h, node('p', 'og-dashboard-subtitle', 'Votre cohorte, vos suivis et vos supports.'));
         var closeButton = node('button', 'og-dashboard-close', 'Fermer');
         closeButton.type = 'button';
         closeButton.addEventListener('click', close);
