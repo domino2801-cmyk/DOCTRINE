@@ -336,6 +336,10 @@
         var form = document.getElementById(formId);
         var heading = card && card.querySelector(':scope > p');
         if (!form || !heading) return;
+        // Dans le parcours Officier Guide, ne présenter que la fiche choisie.
+        var otherCard = document.getElementById(cardId === 'retexCard' ? 'signalementCard' : 'retexCard');
+        if (card) card.hidden = false;
+        if (otherCard) otherCard.hidden = true;
         if (form.hidden) heading.click();
         var firstField = form.querySelector('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])');
         if (firstField) firstField.focus({ preventScroll: true });
