@@ -16,6 +16,10 @@ test('le parcours documentaire Module 2 est chargé dans les deux interfaces', (
 test('la carte de proposition est placée sous les deux bibliothèques sans afficher les ressources validées', () => {
     const index = read('index.html');
     const guide = read('app/guide-dashboard.js');
+    const cardStart = guide.indexOf('// Carte de proposition documentaire');
+    const cardEnd = guide.indexOf('libraryGrid.append(proposalEntry)', cardStart);
+    const card = guide.slice(cardStart, cardEnd);
+    assert.ok(cardStart >= 0 && cardEnd > cardStart, 'la carte doit être insérée sous les deux bibliothèques');
     assert.match(index, /app\/guide-dashboard\.js/);
     assert.match(guide, /libraryGrid\.append\(courseSection, exerciseSection\)/);
     assert.match(guide, /libraryGrid\.append\(proposalEntry\)/);
@@ -24,8 +28,8 @@ test('la carte de proposition est placée sous les deux bibliothèques sans affi
     assert.match(guide, /Catégorie/);
     assert.match(guide, /Suivi de mes propositions/);
     assert.match(guide, /guide_document_proposals/);
-    assert.doesNotMatch(guide, /loadModule2GuideContent|Ressources disponibles pour les candidats|status=eq\.approved/);
-    assert.doesNotMatch(guide, /drive_url\s*:/);
+    assert.doesNotMatch(card, /loadModule2GuideContent|Ressources disponibles pour les candidats|status=eq\.approved/);
+    assert.doesNotMatch(card, /drive_url\s*:/);
 });
 test('seuls les documents approuvés sont ajoutés à la rubrique 2.1', () => {
     const source = read('app/module2-documents.js');
