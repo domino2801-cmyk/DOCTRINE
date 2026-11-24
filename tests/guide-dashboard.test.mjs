@@ -21,7 +21,7 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(script, /if \(!claims \|\| !claims\.sub\) return null/);
     assert.match(script, /if \(isGuide === null\) return/);
     assert.match(script, /Une session absente ou encore en cours de restauration ne doit jamais/);
-    assert.match(script, /auth\(\)\.specialite\(\)/);
+    assert.match(script, /select=speciality/);
     assert.match(script, /style\.setProperty\('display', 'none', 'important'\)/);
     assert.match(script, /getElementById\('btn-mod' \+ id\)/);
     assert.match(script, /module-nav-button\[onclick\]/);
