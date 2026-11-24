@@ -40,27 +40,40 @@
             return JSON.parse(decodeURIComponent(escape(atob(part))));
         } catch (_) { return null; }
     }
+    function isGuideSpecialty(value) {
+        if (Array.isArray(value)) value = value[0];
+        if (value && typeof value === 'object') {
+            value = value.specialty || value.speciality || value.get_current_user_specialty || value.role;
+        }
+        var specialty = String(value || '').trim().toUpperCase()
+            .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
+        return specialty === 'OG' || specialty === 'OFFICIER GUIDE' ||
+            specialty === 'OFFICIER_GUIDE' || specialty === 'OFFICIER-GUIDE';
+    }
+
     function currentGuideStatus() {
         if (!auth() || typeof auth().jeton !== 'function') return Promise.resolve(null);
         return auth().jeton().then(function (token) {
             var claims = token && decodeClaims(token);
-            var meta = claims && claims.app_metadata || {};
-            var role = String(meta.role || '').trim().toLowerCase();
+            if (!claims || !claims.sub) return null;
+            var meta = claims.app_metadata || {};
+            var userMeta = claims.user_metadata || {};
+            var role = String(meta.role || userMeta.role || '').trim().toLowerCase();
+            var guideRole = role === 'guide' || role === 'officier_guide';
             var admin = role === 'admin' || meta.bm4_admin === true ||
                 meta.bm4_admin === 'true' || meta.bm4_admin === 1 || meta.bm4_admin === '1' ||
                 (typeof auth().estAdmin === 'function' && auth().estAdmin());
-            if (!claims || !claims.sub) return null;
-            if (admin) return false;
-            if (role === 'guide' || role === 'officier_guide') return true;
-            // Même source de spécialité que le bouton OG principal de l'application.
+
+            // La spécialité OG prime sur le rôle administratif : un Officier Guide
+            // disposant aussi de droits d'administration conserve son espace dédié.
+            if (guideRole) return true;
             var profileCheck = typeof auth().specialite === 'function'
-                ? auth().specialite().then(function (value) {
-                    return String(value || '').trim().toUpperCase() === 'OG';
-                }).catch(function () { return false; })
+                ? auth().specialite().then(isGuideSpecialty).catch(function () { return false; })
                 : Promise.resolve(false);
             return profileCheck.then(function (isOg) {
                 if (isOg) return true;
-                return fetch(auth().url.replace(/\/$/, '') + '/rest/v1/rpc/get_current_user_specialty', {
+                if (admin) return false;
+                return fetch(auth().url.replace(/\\/$/, '') + '/rest/v1/rpc/get_current_user_specialty', {
                     method: 'POST',
                     headers: {
                         apikey: auth().key,
@@ -70,10 +83,7 @@
                     body: '{}'
                 }).then(function (response) {
                     if (!response.ok) return false;
-                    return response.json().then(function (data) {
-                        var specialty = data && typeof data === 'object' ? data.specialty : data;
-                        return String(specialty || '').trim().toUpperCase() === 'OG';
-                    });
+                    return response.json().then(isGuideSpecialty);
                 }).catch(function () { return false; });
             });
         }).catch(function () { return null; });
