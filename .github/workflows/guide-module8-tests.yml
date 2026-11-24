@@ -29,3 +29,7 @@ jobs:
           node-version: 22
       - name: Run Guide Module 8 regression tests
         run: node --test tests/guide-module8.test.mjs
+      - name: Check Officier Guide dashboard and feedback scripts
+        run: node --check app/guide-dashboard.js && node --check admin/fiches-admin.js && node --check admin/admin.js
+      - name: Run Officier Guide feedback regression tests
+        run: node --test tests/guide-dashboard.test.mjs tests/guide-feedback.test.mjs
