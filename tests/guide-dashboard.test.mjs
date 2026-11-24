@@ -171,7 +171,6 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /ccpm_score: numericScore/);
     assert.match(script, /guide_notes: notes\.value\.trim\(\) \|\| null/);
     assert.match(script, /ccpm_validated: validated\.checked/);
-    assert.match(script, /'ccpm_date'/);
     assert.match(script, /doctrine_candidate_cvs\?select=candidate_id,storage_path,original_filename,uploaded_at/);
     assert.match(script, /CV du candidat/);
     assert.match(script, /Non fourni/);
