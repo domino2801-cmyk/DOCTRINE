@@ -22,6 +22,8 @@
     var moduleEventsAvailable = true;
     var candidateCvs = Object.create(null);
     var cvStatusAvailable = true;
+    var progressRefreshTimer = null;
+    var progressRefreshInFlight = false;
 
     function auth() { return window.DoctrineAuth; }
     function node(tag, className, text) {
@@ -886,12 +888,14 @@
     }
     function renderModuleProgress(candidate) {
         var section = node('details', 'og-dashboard-subaccordion og-dashboard-module-progress');
+        section.dataset.candidateId = String(candidate.candidate && candidate.candidate.id || '');
         var summary = node('summary', '', 'Progression des modules 1 à 7');
         section.append(summary);
         var grid = node('div', 'og-dashboard-module-grid');
         for (var moduleId = 1; moduleId <= 7; moduleId++) {
             var status = moduleState(candidate, moduleId);
             var item = node('div', 'og-dashboard-module-item');
+            item.dataset.moduleId = String(moduleId);
             item.append(node('strong', '', 'Module ' + moduleId));
             item.append(node('span', 'og-dashboard-pill ' + status.className, status.label));
             grid.append(item);
@@ -1959,7 +1963,64 @@
             }
         }).finally(function () { loading = false; });
     }
+    function refreshProgressEvents() {
+        if (progressRefreshInFlight || !root || root.hidden || !candidates.length || !auth()) return Promise.resolve();
+        var ids = candidates.map(function (candidate) {
+            return candidate.candidate && candidate.candidate.id;
+        }).filter(Boolean);
+        if (!ids.length) return Promise.resolve();
+        progressRefreshInFlight = true;
+        return api('doctrine_progress_events?select=user_id,module_id,event_type,created_at&user_id=in.(' +
+            ids.map(encodeURIComponent).join(',') + ')&order=created_at.desc').then(function (events) {
+            var rows = Array.isArray(events) ? events : [];
+            candidates.forEach(function (candidate) {
+                candidate.doctrine = candidate.doctrine || {};
+                candidate.doctrine.progress_events = rows.filter(function (event) {
+                    return String(event.user_id) === String(candidate.candidate && candidate.candidate.id);
+                });
+            });
+            moduleEventsAvailable = true;
+            // Mettre à jour les indicateurs déjà affichés sans reconstruire les fiches
+            // (les accordéons ouverts, formulaires et évaluations restent intacts).
+            if (root && !root.hidden) {
+                root.querySelectorAll('.og-dashboard-module-progress').forEach(function (section) {
+                    var candidate = candidates.find(function (item) {
+                        return String(item.candidate && item.candidate.id) === section.dataset.candidateId;
+                    });
+                    if (!candidate) return;
+                    section.querySelectorAll('.og-dashboard-module-item').forEach(function (item) {
+                        var status = moduleState(candidate, item.dataset.moduleId);
+                        var pill = item.querySelector('.og-dashboard-pill');
+                        if (!pill) return;
+                        pill.className = 'og-dashboard-pill ' + status.className;
+                        pill.textContent = status.label;
+                    });
+                });
+            }
+        }).catch(function (error) {
+            // Une panne ponctuelle ne remplace pas les données déjà affichées.
+            console.warn('Actualisation automatique de la progression indisponible.', error);
+        }).finally(function () {
+            progressRefreshInFlight = false;
+        });
+    }
+    function startProgressRefresh() {
+        stopProgressRefresh();
+        progressRefreshTimer = window.setInterval(refreshProgressEvents, 15000);
+        document.addEventListener('visibilitychange', handleProgressVisibility);
+    }
+    function stopProgressRefresh() {
+        if (progressRefreshTimer !== null) {
+            window.clearInterval(progressRefreshTimer);
+            progressRefreshTimer = null;
+        }
+        document.removeEventListener('visibilitychange', handleProgressVisibility);
+    }
+    function handleProgressVisibility() {
+        if (document.visibilityState === 'visible' && root && !root.hidden) refreshProgressEvents();
+    }
     function close() {
+        stopProgressRefresh();
         if (root) root.hidden = true;
         document.body.classList.remove('og-dashboard-open');
         if (trigger && trigger.isConnected && !trigger.hidden) trigger.focus();
@@ -2059,6 +2120,7 @@
                     build();
                     root.hidden = false;
                     document.body.classList.add('og-dashboard-open');
+                    startProgressRefresh();
                     load();
                     loadExerciseLibraries();
                 }).catch(function () {
@@ -2090,6 +2152,7 @@
             applyGuideModuleVisibility();
         });
         document.addEventListener('doctrine:logout', function () {
+            stopProgressRefresh();
             if (root) root.hidden = true;
             var item = document.getElementById('guideDashboardNav');
             if (item) item.hidden = true;
