@@ -63,8 +63,8 @@ test('le clic RETEX ou signalement masque l’autre carte dans le tableau de bor
     assert.match(script, /selectedGuideModule7Card = 'retex'/);
     assert.match(script, /selectedGuideModule7Card = 'signalement'/);
     assert.match(script, /renderMetrics\(\)/);
-    assert.match(script, /data\.guideModule7Card = 'retex'/);
-    assert.match(script, /data\.guideModule7Card = 'signalement'/);
+    assert.match(script, /dataset\.guideModule7Card = 'retex'/);
+    assert.match(script, /dataset\.guideModule7Card = 'signalement'/);
     assert.doesNotMatch(script, /var otherCard = document\.getElementById\(cardId === 'retexCard'/);
 });
 
