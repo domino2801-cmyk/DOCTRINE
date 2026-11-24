@@ -1,0 +1,24 @@
+name: Guide Module 8 tests
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/guide-dashboard.js"
+      - "app/guide-module8.js"
+      - "tests/guide-module8.test.mjs"
+      - "supabase/**"
+  workflow_dispatch:
+
+jobs:
+  guide-module8:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run Guide Module 8 regression tests
+        run: node --test tests/guide-module8.test.mjs
