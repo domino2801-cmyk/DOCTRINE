@@ -286,12 +286,18 @@
         for (var number = 1; number <= 6; number += 1) {
             groups['theme-' + number] = { number: number, theme: 'Thème ' + number, scores: [], count: 0 };
         }
+        // ALL est un thème transversal distinct des six thèmes numérotés.
+        groups.all = { number: 7, theme: 'ALL', scores: [], count: 0 };
         results.forEach(function (result) {
             var score = Number(result.score);
             if (!Number.isFinite(score)) return;
             var label = String(result.theme || result.theme_name || result.category || '').trim();
+            if (/^all$/i.test(label)) {
+                groups.all.scores.push(score);
+                groups.all.count += 1;
+                return;
+            }
             // Les résultats Supabase peuvent porter « Thème 1 », « Module 1 » ou « 1. ... ».
-            // Utiliser une expression régulière correctement échappée (\s et \b).
             var numberMatch = label.match(/^\s*(?:(?:th[eè]me|theme|module)\s*)?([1-6])\b/i);
             var explicitNumber = Number(result.theme_number || result.module_number || result.theme_id || result.module_id);
             var themeNumber = numberMatch ? Number(numberMatch[1]) :
