@@ -71,7 +71,7 @@
 
     function nettoye(el) {
         var c = el.cloneNode(true);
-        c.querySelectorAll('.adm-ui').forEach(function (n) { n.remove(); });
+        c.querySelectorAll('.adm-ui, .module2-approved-documents').forEach(function (n) { n.remove(); });
         c.querySelectorAll('[contenteditable]').forEach(function (n) { n.removeAttribute('contenteditable'); });
         c.querySelectorAll(SELECTEUR_ETUDE).forEach(function (n) { n.remove(); });
         c.querySelectorAll('.dossier-item[hidden]').forEach(function (n) { n.removeAttribute('hidden'); });
