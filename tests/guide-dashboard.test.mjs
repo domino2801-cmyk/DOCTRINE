@@ -373,7 +373,8 @@ test('la fiche candidat est alimentée par les sources réelles et expose les é
     assert.match(profile, /renderOralTracking\(candidate\)/);
     assert.match(profile, /renderCcpmTracking\(candidate\)/);
     assert.match(profile, /candidateCvs\[candidate\.candidate && candidate\.candidate\.id\]/);
-    assert.match(profile, /doctrine\.documents/);
+    assert.match(profile, /Documents transmis/);
+    assert.doesNotMatch(profile, /doctrine\.documents|activité documentaire/i);
     assert.match(profile, /renderAiCorrection\(candidate\)/);
     assert.match(script, /api\('doctrine_progress_events\?select=user_id,module_id,event_type,created_at/);
     assert.match(script, /api\('doctrine_candidate_cvs\?select=candidate_id,storage_path,original_filename,uploaded_at/);
