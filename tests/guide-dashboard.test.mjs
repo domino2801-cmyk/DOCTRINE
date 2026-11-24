@@ -2,13 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const [html, script, css, seed, viewerScript, viewerCss] = await Promise.all([
+const [html, script, css, seed, viewerScript, viewerCss, appScript] = await Promise.all([
     readFile(new URL('../index.html', import.meta.url), 'utf8'),
     readFile(new URL('../app/guide-dashboard.js', import.meta.url), 'utf8'),
     readFile(new URL('../app/guide-dashboard.css', import.meta.url), 'utf8'),
     readFile(new URL('../supabase/patches/2026-11-22-guide-course-catalog-seed.sql', import.meta.url), 'utf8'),
     readFile(new URL('../viewer/viewer.js', import.meta.url), 'utf8'),
-    readFile(new URL('../viewer/viewer.css', import.meta.url), 'utf8')
+    readFile(new URL('../viewer/viewer.css', import.meta.url), 'utf8'),
+    readFile(new URL('../app/app.js', import.meta.url), 'utf8')
 ]);
 
 test('l’espace Officier Guide est chargé séparément des modules existants', () => {
@@ -53,6 +54,13 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.match(script, /id = 'guideDashboard'/);
     assert.doesNotMatch(script, /btn-mod8|modal-module8/i);
     assert.doesNotMatch(script, /app\/guide-module8\.html|guide_action|og-dashboard-ai-frame/);
+});
+
+test('le clic RETEX ou signalement masque la fiche opposée et le Module 7 réinitialise les deux cartes', () => {
+    assert.match(script, /var otherCard = document\\.getElementById\\(cardId === 'retexCard' \\? 'signalementCard' : 'retexCard'\\)/);
+    assert.match(script, /if \\(otherCard\\) otherCard\\.hidden = true/);
+    assert.match(script, /if \\(card\\) card\\.hidden = false/);
+    assert.match(appScript, /if \\(id === 'module7'\\) \\{[\\s\\S]*\\['retexCard', 'signalementCard'\\][\\s\\S]*card\\.hidden = false/);
 });
 
 test('le tableau de bord utilise les données filtrées par le RPC guide', () => {
