@@ -452,7 +452,7 @@
         identityCard.append(node('strong', 'og-candidate-profile-pseudo', pseudo));
         if (identity.specialty) identityCard.append(node('p', '', 'Spécialité : ' + identity.specialty));
         if (identity.email) identityCard.append(node('p', '', 'E-mail : ' + identity.email));
-        var summary = node('div', 'og-candidate-profile-summary');
+        var summary = node('div', 'og-candidate-profile-summary-card');
         [
             ['Fiches soumises', String(dossierItems.length)],
             ['Fiches validées', String(validatedSubmissions)],
