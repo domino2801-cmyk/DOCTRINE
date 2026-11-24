@@ -280,22 +280,33 @@
     function attention(candidate) {
         return !candidateFollowUpStatus(candidate).ready;
     }
-    // Regroupe les notes QCM persistées par thème pour l'histogramme individuel.
+    // Affiche systématiquement les six thèmes, même lorsqu'aucune note n'est enregistrée.
     function qcmThemeSummary(results) {
         var groups = Object.create(null);
+        for (var number = 1; number <= 6; number += 1) {
+            groups['theme-' + number] = { theme: 'Thème ' + number, scores: [], count: 0 };
+        }
         results.forEach(function (result) {
             var score = Number(result.score);
             if (!Number.isFinite(score)) return;
-            var theme = String(result.theme || '').trim() || 'Thème non renseigné';
-            if (!groups[theme]) groups[theme] = { theme: theme, scores: [], count: 0 };
-            groups[theme].scores.push(score);
-            groups[theme].count += 1;
+            var label = String(result.theme || '').trim();
+            var numberMatch = label.match(/(?:th[eè]me|theme|module)?\\s*([1-6])(?:\\b|$)/i);
+            var key = numberMatch ? 'theme-' + numberMatch[1] : 'label-' + (label || 'non-renseigne');
+            if (!groups[key]) groups[key] = { theme: label || 'Thème non renseigné', scores: [], count: 0 };
+            groups[key].scores.push(score);
+            groups[key].count += 1;
         });
         return Object.keys(groups).map(function (key) {
             var item = groups[key];
-            item.average = item.scores.reduce(function (sum, value) { return sum + value; }, 0) / item.scores.length;
+            item.average = item.scores.length
+                ? item.scores.reduce(function (sum, value) { return sum + value; }, 0) / item.scores.length
+                : null;
             return item;
-        }).sort(function (left, right) { return left.theme.localeCompare(right.theme, 'fr'); });
+        }).sort(function (left, right) {
+            var leftNumber = Number((left.theme.match(/^Thème ([1-6])$/) || [])[1] || 99);
+            var rightNumber = Number((right.theme.match(/^Thème ([1-6])$/) || [])[1] || 99);
+            return leftNumber - rightNumber || left.theme.localeCompare(right.theme, 'fr');
+        });
     }
     function renderQcmCandidateDetail(target, candidate) {
         target.replaceChildren();
@@ -303,10 +314,12 @@
             return result.score !== null && result.score !== undefined && result.score !== '' && Number.isFinite(Number(result.score));
         }).slice().sort(function (left, right) { return Date.parse(right.created_at || '') - Date.parse(left.created_at || ''); });
         var average = qcmAverage(candidate);
+        var themes = qcmThemeSummary(results);
+        var evaluatedThemes = themes.filter(function (theme) { return theme.count > 0; }).length;
         target.append(node('h3', 'og-qcm-detail-title', candidateName(candidate)));
         var summary = node('div', 'og-qcm-detail-summary');
         [['Moyenne générale', average === null ? 'Non disponible' : average.toFixed(2) + ' / 20'],
-            ['QCM enregistrés', String(results.length)], ['Thèmes évalués', String(qcmThemeSummary(results).length)]]
+            ['QCM enregistrés', String(results.length)], ['Thèmes évalués', String(evaluatedThemes)]]
             .forEach(function (entry) {
                 var item = node('article', 'og-qcm-summary-item');
                 item.append(node('span', '', entry[0]), node('strong', '', entry[1]));
@@ -314,21 +327,29 @@
             });
         target.append(summary, node('h4', 'og-qcm-section-title', 'Histogramme des notes par thème'));
         var chart = node('div', 'og-qcm-theme-chart');
-        qcmThemeSummary(results).forEach(function (theme) {
+        themes.forEach(function (theme) {
             var row = node('article', 'og-qcm-theme-row');
             var heading = node('div', 'og-qcm-theme-heading');
-            heading.append(node('strong', '', theme.theme), node('span', '', theme.average.toFixed(2) + ' / 20'));
+            heading.append(node('strong', '', theme.theme),
+                node('span', '', theme.average === null ? 'Aucune note' : theme.average.toFixed(2) + ' / 20'));
             var track = node('div', 'og-qcm-bar-track');
             track.setAttribute('role', 'img');
-            track.setAttribute('aria-label', theme.theme + ' : ' + theme.average.toFixed(2) + ' sur 20');
+            track.setAttribute('aria-label', theme.theme + ' : ' +
+                (theme.average === null ? 'aucune note enregistrée' : theme.average.toFixed(2) + ' sur 20'));
             var bar = node('span', 'og-qcm-bar');
-            bar.style.width = Math.max(0, Math.min(100, theme.average / 20 * 100)) + '%';
+            bar.style.width = theme.average === null ? '0%' : Math.max(0, Math.min(100, theme.average / 20 * 100)) + '%';
             track.append(bar);
-            row.append(heading, track, node('small', 'og-qcm-theme-meta', theme.count + ' QCM enregistré(s)'));
+            row.append(heading, track, node('small', 'og-qcm-theme-meta',
+                theme.count + ' QCM enregistré(s)'));
             chart.append(row);
         });
-        if (!chart.childNodes.length) chart.append(node('p', 'og-qcm-empty', 'Aucune note QCM exploitable n’est enregistrée pour ce candidat.'));
-        target.append(chart, node('h4', 'og-qcm-section-title', 'Historique complet des résultats enregistrés'));
+        target.append(chart);
+        var historySection = node('section', 'og-qcm-history-section');
+        var historyToggle = node('button', 'og-qcm-history-toggle', 'Historique complet des résultats enregistrés');
+        historyToggle.type = 'button';
+        historyToggle.setAttribute('aria-expanded', 'false');
+        var historyContent = node('div', 'og-qcm-history-content');
+        historyContent.hidden = true;
         var history = node('div', 'og-qcm-history');
         results.forEach(function (result) {
             var row = node('article', 'og-qcm-history-row');
@@ -341,9 +362,17 @@
             history.append(row);
         });
         if (!results.length) history.append(node('p', 'og-qcm-empty', 'Aucun résultat enregistré dans Supabase.'));
-        target.append(history);
+        historyContent.append(history);
+        historyToggle.addEventListener('click', function () {
+            var expanded = historyToggle.getAttribute('aria-expanded') === 'true';
+            historyToggle.setAttribute('aria-expanded', String(!expanded));
+            historyContent.hidden = expanded;
+            historyToggle.classList.toggle('is-expanded', !expanded);
+        });
+        historySection.append(historyToggle, historyContent);
+        target.append(historySection);
     }
-    function openGuideQcmTracking() {
+        function openGuideQcmTracking() {
         var dialog = node('dialog', 'og-qcm-tracking-dialog');
         var panel = node('section', 'og-qcm-tracking-panel');
         var header = node('header', 'og-qcm-tracking-header');
