@@ -95,7 +95,13 @@ create policy guide_document_proposals_files_read
 drop policy if exists guide_document_proposals_files_delete on storage.objects;
 create policy guide_document_proposals_files_delete
     on storage.objects for delete to authenticated
-    using (bucket_id = 'guide-document-proposals' and public.doctrine_is_admin());
+    using (
+        bucket_id = 'guide-document-proposals'
+        and (
+            public.doctrine_is_admin()
+            or (public.doctrine_is_guide() and (storage.foldername(name))[1] = auth.uid()::text)
+        )
+    );
 
 revoke all on function public.guide_document_proposals_validate_attachment() from public, anon, authenticated;
 notify pgrst, 'reload schema';
