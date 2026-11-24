@@ -718,3 +718,6 @@ body.og-guide-entry-only #guideDashboardNav > button {
   .og-dashboard-library-actions { align-items:stretch; }
   .og-dashboard-library-actions > * { flex:1 1 100%; text-align:center; box-sizing:border-box; }
 }
+
+/* Centrage de la navigation lorsque l’espace Officier Guide est affiché seul. */
+body.og-guide-entry-only nav ul { justify-content:center; }
