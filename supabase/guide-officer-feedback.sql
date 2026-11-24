@@ -4,7 +4,9 @@
 create table if not exists public.guide_retex_reports (
     id bigint generated always as identity primary key,
     user_id uuid not null references auth.users(id) on delete cascade,
+    guide_email text not null default '',
     payload jsonb not null default '{}'::jsonb,
+    priority text not null default 'normal' check (priority in ('low','normal','high')),
     status text not null default 'submitted'
         check (status in ('submitted','in_review','action_required','resolved','closed')),
     admin_response text,
@@ -17,6 +19,7 @@ create table if not exists public.guide_retex_reports (
 create table if not exists public.guide_signalements (
     id bigint generated always as identity primary key,
     user_id uuid not null references auth.users(id) on delete cascade,
+    guide_email text not null default '',
     payload jsonb not null default '{}'::jsonb,
     priority text not null default 'normal' check (priority in ('low','normal','high','urgent')),
     status text not null default 'submitted'
@@ -27,6 +30,32 @@ create table if not exists public.guide_signalements (
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
 );
+
+alter table public.guide_retex_reports add column if not exists guide_email text not null default '';
+alter table public.guide_retex_reports add column if not exists priority text not null default 'normal';
+alter table public.guide_signalements add column if not exists guide_email text not null default '';
+
+create or replace function public.guide_feedback_set_identity()
+returns trigger language plpgsql set search_path = '' as $
+begin
+    new.user_id := auth.uid();
+    new.guide_email := coalesce(auth.jwt() ->> 'email', '');
+    if tg_op = 'INSERT' then
+        new.created_at := now();
+    end if;
+    return new;
+end;
+$;
+
+drop trigger if exists guide_retex_reports_set_identity on public.guide_retex_reports;
+create trigger guide_retex_reports_set_identity
+    before insert on public.guide_retex_reports
+    for each row execute function public.guide_feedback_set_identity();
+
+drop trigger if exists guide_signalements_set_identity on public.guide_signalements;
+create trigger guide_signalements_set_identity
+    before insert on public.guide_signalements
+    for each row execute function public.guide_feedback_set_identity();
 
 create index if not exists guide_retex_reports_user_created_idx
     on public.guide_retex_reports(user_id, created_at desc);
