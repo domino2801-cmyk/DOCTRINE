@@ -434,6 +434,7 @@
         dialog.showModal();
     }
     // Fiche individuelle : données issues des sources DOCTRINE, sans dupliquer les statistiques QCM.
+    // Les indicateurs de la fiche sont calculés à partir des événements et dépôts réellement chargés.
     function renderCandidateProfileDetail(target, candidate) {
         target.replaceChildren();
         var identity = candidate.candidate || {};
