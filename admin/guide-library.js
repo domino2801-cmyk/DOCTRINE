@@ -112,23 +112,14 @@
         var sections = el('div', 'adm-guide-library-grid');
         var exerciseSection = el('section', 'adm-guide-library-section');
         var exerciseHeading = el('div', 'adm-guide-library-section-heading');
-        exerciseHeading.append(el('h3', '', 'Dossiers d’exercices'));
-        var addExercise = el('button', 'adm-guide-library-primary', '+ Ajouter');
+        exerciseHeading.append(el('h3', '', 'Dossiers d’exercices et leurs corrections'));
+        var addExercise = el('button', 'adm-guide-library-primary', '+ Ajouter un exercice');
         addExercise.type = 'button';
         addExercise.addEventListener('click', function () { openForm('exercise', null); });
         exerciseHeading.append(addExercise);
         exerciseList = el('div', 'adm-guide-library-list');
         exerciseSection.append(exerciseHeading, exerciseList);
-        var correctionSection = el('section', 'adm-guide-library-section');
-        var correctionHeading = el('div', 'adm-guide-library-section-heading');
-        correctionHeading.append(el('h3', '', 'Corrections'));
-        var addCorrection = el('button', 'adm-guide-library-primary', '+ Ajouter');
-        addCorrection.type = 'button';
-        addCorrection.addEventListener('click', function () { openForm('correction', null); });
-        correctionHeading.append(addCorrection);
-        correctionList = el('div', 'adm-guide-library-list');
-        correctionSection.append(correctionHeading, correctionList);
-        sections.append(exerciseSection, correctionSection);
+        sections.append(exerciseSection);
         formPanel = el('section', 'adm-guide-library-form-panel');
         formPanel.hidden = true;
         formTitle = el('h3', '', 'Ajouter un élément');
@@ -144,40 +135,66 @@
         });
         document.body.append(root);
     }
+    function renderCorrection(item, parentList) {
+        var article = el('article', 'adm-guide-library-item adm-guide-library-correction-item');
+        var copy = el('div', 'adm-guide-library-copy');
+        copy.append(el('h4', '', item.title));
+        copy.append(el('p', 'adm-guide-library-stars', stars(item.difficulty_level) + ' · ' +
+            LEVELS[Number(item.difficulty_level) - 1].label.split(' — ')[1]));
+        copy.append(el('span', 'adm-guide-library-publication ' + (item.is_published ? 'is-published' : ''), item.is_published ? 'Publié' : 'Brouillon'));
+        if (item.description) copy.append(el('p', '', item.description));
+        var actions = el('div', 'adm-guide-library-item-actions');
+        var open = el('button', 'adm-guide-library-secondary', 'Ouvrir');
+        open.type = 'button';
+        open.addEventListener('click', function () { openDriveInViewer(item.drive_url, item.title); });
+        var edit = el('button', 'adm-guide-library-secondary', 'Modifier');
+        edit.type = 'button';
+        edit.addEventListener('click', function () { openForm('correction', item); });
+        var remove = el('button', 'adm-guide-library-danger', 'Supprimer');
+        remove.type = 'button';
+        remove.addEventListener('click', function () { deleteItem('correction', item); });
+        actions.append(open, edit, remove);
+        article.append(copy, actions);
+        parentList.append(article);
+    }
     function renderList(type) {
-        var target = type === 'exercise' ? exerciseList : correctionList;
-        var rows = type === 'exercise' ? exercises : corrections;
-        target.replaceChildren();
-        if (!rows.length) {
-            target.append(el('p', 'adm-guide-library-empty', 'Aucun élément enregistré.'));
+        if (type !== 'exercise') return;
+        exerciseList.replaceChildren();
+        if (!exercises.length) {
+            exerciseList.append(el('p', 'adm-guide-library-empty', 'Aucun dossier enregistré.'));
             return;
         }
-        rows.forEach(function (item) {
-            var article = el('article', 'adm-guide-library-item');
+        exercises.forEach(function (item) {
+            var article = el('article', 'adm-guide-library-item adm-guide-library-exercise-item');
             var copy = el('div', 'adm-guide-library-copy');
             copy.append(el('h4', '', item.title));
             copy.append(el('p', 'adm-guide-library-stars', stars(item.difficulty_level) + ' · ' +
                 LEVELS[Number(item.difficulty_level) - 1].label.split(' — ')[1]));
-            if (type === 'exercise') copy.append(el('p', '', item.category || 'Général'));
-            else {
-                var parent = exercises.find(function (exercise) { return exercise.id === item.exercise_id; });
-                copy.append(el('p', '', 'Exercice : ' + (parent ? parent.title : 'Exercice introuvable')));
-            }
+            copy.append(el('p', '', item.category || 'Général'));
             copy.append(el('span', 'adm-guide-library-publication ' + (item.is_published ? 'is-published' : ''), item.is_published ? 'Publié' : 'Brouillon'));
             if (item.description) copy.append(el('p', '', item.description));
             var actions = el('div', 'adm-guide-library-item-actions');
-            var open = el('button', 'adm-guide-library-secondary', 'Ouvrir dans DOCTRINE');
+            var open = el('button', 'adm-guide-library-secondary', 'Ouvrir');
             open.type = 'button';
             open.addEventListener('click', function () { openDriveInViewer(item.drive_url, item.title); });
             var edit = el('button', 'adm-guide-library-secondary', 'Modifier');
             edit.type = 'button';
-            edit.addEventListener('click', function () { openForm(type, item); });
+            edit.addEventListener('click', function () { openForm('exercise', item); });
             var remove = el('button', 'adm-guide-library-danger', 'Supprimer');
             remove.type = 'button';
-            remove.addEventListener('click', function () { deleteItem(type, item); });
-            actions.append(open, edit, remove);
+            remove.addEventListener('click', function () { deleteItem('exercise', item); });
+            var addCorrection = el('button', 'adm-guide-library-primary', '+ Ajouter une correction');
+            addCorrection.type = 'button';
+            addCorrection.addEventListener('click', function () { openForm('correction', null, item.id); });
+            actions.append(open, edit, remove, addCorrection);
             article.append(copy, actions);
-            target.append(article);
+            var childSection = el('div', 'adm-guide-library-linked-corrections');
+            childSection.append(el('h5', '', 'Corrections de ce dossier'));
+            var linked = corrections.filter(function (correction) { return correction.exercise_id === item.id; });
+            if (!linked.length) childSection.append(el('p', 'adm-guide-library-empty', 'Aucune correction associée.'));
+            else linked.forEach(function (correction) { renderCorrection(correction, childSection); });
+            article.append(childSection);
+            exerciseList.append(article);
         });
     }
     function load() {
@@ -189,13 +206,12 @@
             exercises = Array.isArray(result[0]) ? result[0] : [];
             corrections = Array.isArray(result[1]) ? result[1] : [];
             renderList('exercise');
-            renderList('correction');
             setStatus(exercises.length + ' exercice(s) · ' + corrections.length + ' correction(s).');
         }).catch(function (error) {
             setStatus(error.message || 'Chargement impossible.', true);
         });
     }
-    function openForm(type, item) {
+    function openForm(type, item, linkedExerciseId) {
         if (!isAdmin()) return;
         activeType = type;
         activeId = item ? item.id : '';
@@ -223,6 +239,7 @@
         form.querySelector('#agl-level').value = item ? String(item.difficulty_level) : '1';
         form.querySelector('#agl-published').checked = !!(item && item.is_published);
         if (type === 'correction' && item) exerciseSelect.value = item.exercise_id;
+        else if (type === 'correction' && linkedExerciseId) exerciseSelect.value = linkedExerciseId;
         formPanel.hidden = false;
         form.querySelector('#agl-title').focus();
     }
