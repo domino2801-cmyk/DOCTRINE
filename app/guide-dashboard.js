@@ -2514,7 +2514,6 @@
             if (expanded) {
                 loadModule2OwnProposals();
                 loadApprovedModule2Documents();
-                if (dashboardMode === 'admin') loadAdminDocumentProposals();
             }
         });
         proposalEntry.append(proposalToggle,
@@ -2676,7 +2675,7 @@
                     ownStatus.textContent = error.message || 'Chargement du suivi impossible.';
                 });
         }
-        libraryGrid.append(proposalEntry);
+        if (dashboardMode !== 'admin') libraryGrid.append(proposalEntry);
 
         panel.append(libraryGrid);
         statusNode = node('p', 'og-dashboard-status');
