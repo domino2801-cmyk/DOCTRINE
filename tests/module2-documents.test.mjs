@@ -79,14 +79,15 @@ test('l’espace Admin conserve la publication directe sans afficher la file de 
 test('les documents validés du Module 2.1 restent visibles dans l’espace OG sans file Admin dupliquée', () => {
     const guide = read('app/guide-dashboard.js');
     const admin = read('app/module2-documents.js');
+    const adminPanel = admin.slice(admin.indexOf('function adminPanel()'), admin.indexOf('function init()'));
     assert.match(guide, /function loadApprovedModule2Documents\(\)/);
     assert.match(guide, /status=eq\.approved/);
     assert.match(guide, /row\.drive_url/);
     assert.match(guide, /Documents validés et disponibles/);
     assert.match(guide, /if \(dashboardMode !== 'admin'\) libraryGrid\.append\(proposalEntry\)/);
     assert.doesNotMatch(guide, /function loadAdminApprovedDocuments\(\)|Documents déjà validés — Module 2\.1/);
-    assert.doesNotMatch(admin, /Propositions des Officiers Guides|Aucune proposition en attente|Session expirée\. Reconnectez-vous\./);
-    assert.match(admin, /Ajouter et publier la carte/);
+    assert.doesNotMatch(adminPanel, /Propositions des Officiers Guides|Aucune proposition en attente|loadProposals|Session expirée\. Reconnectez-vous\./);
+    assert.match(adminPanel, /Ajouter et publier la carte/);
 });
 test('les cartes dynamiques restent hors du HTML sauvegardé du Module 2', () => {
     const admin = read('admin/admin.js');
