@@ -285,9 +285,6 @@
 
     function init() {
         addToolbarButton();
-        document.addEventListener('doctrine:open-cohort-dashboard', function () {
-            openDashboard(null);
-        });
         document.addEventListener('doctrine:login', addToolbarButton);
         document.addEventListener('doctrine:logout', function () {
             if (dialog) dialog.hidden = true;
