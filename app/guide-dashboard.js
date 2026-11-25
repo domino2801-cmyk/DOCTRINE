@@ -2466,7 +2466,7 @@
         panel.append(metricsNode);
         var libraryGrid = node('div', 'og-dashboard-pedagogical-libraries');
         var courseSection = node('section', 'og-dashboard-library-entry');
-        var courseToggle = node('button', 'og-dashboard-library-entry-toggle', 'BIBLIOTHÈQUE DES 30 SUPPORTS OFFICIER GUIDE');
+        var courseToggle = node('button', 'og-dashboard-library-entry-toggle', 'BIBLIOTHÈQUE DES SUPPORTS OFFICIER GUIDE');
         courseToggle.type = 'button';
         courseToggle.setAttribute('aria-expanded', 'false');
         var courseContent = node('div', 'og-dashboard-library-entry-content');
