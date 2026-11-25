@@ -2087,7 +2087,7 @@
             : api('guide_course_catalog?id=eq.' + encodeURIComponent(course.id), { method: 'DELETE' });
         var removeProposal = proposalId
             ? archiveProposal(proposalId)
-            : api('guide_document_proposals?select=id,title,description&category=eq.Cours%20Officier%20Guide&status=eq.approved')
+            : api('guide_document_proposals?select=id,title,category,description&category=in.%28%22Cours%20Officier%20Guide%22%2C%22Proposition%20Officier%20Guide%22%29&status=eq.approved')
                 .then(function (proposals) {
                     var match = (Array.isArray(proposals) ? proposals : []).find(function (proposal) {
                         return String(proposal.title || '').trim().toLocaleLowerCase('fr') ===
@@ -2112,7 +2112,7 @@
         // alimenter la même bibliothèque. On fusionne les deux sources sans doublon.
         return Promise.allSettled([
             api('guide_course_catalog?select=id,title,category,description,drive_url&order=category.asc,title.asc'),
-            api('guide_document_proposals?select=id,title,description,drive_url,status,created_at&category=eq.Cours%20Officier%20Guide&status=eq.approved&order=created_at.asc')
+            api('guide_document_proposals?select=id,title,category,description,drive_url,status,created_at&category=in.%28%22Cours%20Officier%20Guide%22%2C%22Proposition%20Officier%20Guide%22%29&status=eq.approved&order=created_at.asc')
         ]).then(function (results) {
             var catalogRows = results[0].status === 'fulfilled' && Array.isArray(results[0].value)
                 ? results[0].value : [];
@@ -2129,7 +2129,7 @@
             approvedRows.forEach(function (proposal) {
                 var description = String(proposal.description || '');
                 var categoryMatch = description.match(/^Catégorie : ([^\\n]*)/);
-                var category = categoryMatch ? categoryMatch[1].trim() : 'Cours Officier Guide';
+                var category = categoryMatch ? categoryMatch[1].trim() : (proposal.category || 'Cours Officier Guide');
                 var courseDescription = categoryMatch
                     ? description.slice(categoryMatch[0].length).replace(/^\\s*/, '') : description;
                 var key = [proposal.title, category].map(function (value) {
@@ -2156,7 +2156,7 @@
     }
     function loadCourseProposals() {
         if (!courseProposalList || dashboardMode !== 'admin') return;
-        api('guide_document_proposals?select=id,title,category,description,status,admin_note,created_at,uploaded_file_path,original_filename,file_size&category=eq.Cours%20Officier%20Guide&order=created_at.asc')
+        api('guide_document_proposals?select=id,title,category,description,status,admin_note,created_at,uploaded_file_path,original_filename,file_size&category=in.%28%22Cours%20Officier%20Guide%22%2C%22Proposition%20Officier%20Guide%22%29&order=created_at.asc')
             .then(function (rows) {
                 courseProposalList.replaceChildren(node('h3', '', 'Propositions de cours des Officiers Guides'));
                 if (!rows.length) { courseProposalList.append(node('p', 'og-dashboard-muted', 'Aucune proposition de cours.')); return; }
@@ -2164,7 +2164,7 @@
                     var card = node('article', 'og-dashboard-course-proposal');
                     var proposedDescription = String(proposal.description || '');
                     var categoryMatch = proposedDescription.match(/^Catégorie : ([^\n]*)/);
-                    var proposedCategory = categoryMatch ? categoryMatch[1].trim() : 'Cours Officier Guide';
+                    var proposedCategory = categoryMatch ? categoryMatch[1].trim() : (proposal.category || 'Cours Officier Guide');
                     var courseDescription = categoryMatch ? proposedDescription.slice(categoryMatch[0].length).replace(/^\s*/, '') : proposedDescription;
                     card.append(node('strong', '', proposal.title), node('p', '', courseDescription || 'Aucune description.'));
                     if (proposal.uploaded_file_path) {
