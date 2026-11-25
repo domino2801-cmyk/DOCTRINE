@@ -465,7 +465,7 @@ test('le mode administrateur reprend le tableau de bord et isole les candidats O
     assert.match(script, /var ogCandidates = dashboardMode === 'admin'/);
     assert.match(script, /var ogGroup = node\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\)/);
     assert.match(script, /CANDIDATS OFFICIER GUIDE — '/);
-    assert.match(script, /var ogDetails = node\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\)/);
+    assert.match(script, /ogDetails = node\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\)/);
     assert.match(cohortDashboardScript, /node\('button', 'module-nav-button adm-admin-dashboard-toolbar', '🏛️ Admin ANC'\)/);
     assert.match(script, /document\.dispatchEvent\(new CustomEvent\('doctrine:admin-dashboard'\)\)/);
 });
