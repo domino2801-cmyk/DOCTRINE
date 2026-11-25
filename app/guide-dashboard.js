@@ -2017,18 +2017,121 @@
             }
         });
     }
+    var courseAdminForm = null;
+    var courseProposalList = null;
+    function openCourseAdminForm(course) {
+        if (dashboardMode !== 'admin') return;
+        if (!courseAdminForm) {
+            courseAdminForm = node('form', 'og-dashboard-course-admin-form');
+            courseAdminForm.addEventListener('submit', saveCourseAdminForm);
+        }
+        courseAdminForm.replaceChildren();
+        courseAdminForm.dataset.id = course ? course.id : '';
+        courseAdminForm.append(node('h4', '', course ? 'Modifier le cours' : 'Ajouter un cours'));
+        function field(labelText, name, value, tag, required, maxLength) {
+            var label = node('label', 'og-dashboard-course-admin-field', labelText);
+            var input = node(tag || 'input');
+            input.name = name; input.value = value || ''; input.required = !!required;
+            if (maxLength) input.maxLength = maxLength;
+            if (tag === 'textarea') input.rows = 3;
+            label.append(input); courseAdminForm.append(label);
+        }
+        field('Intitulé du cours', 'title', course && course.title, 'input', true, 160);
+        field('Catégorie', 'category', course && course.category, 'input', true, 100);
+        field('Description', 'description', course && course.description, 'textarea', false, 1200);
+        field('Lien Google Drive', 'drive_url', course && course.drive_url, 'input', true, 1000);
+        var actions = node('div', 'og-dashboard-course-admin-actions');
+        var save = node('button', 'og-dashboard-download', 'Enregistrer'); save.type = 'submit';
+        var cancel = node('button', 'og-dashboard-download', 'Annuler'); cancel.type = 'button';
+        cancel.addEventListener('click', function () { courseAdminForm.hidden = true; });
+        actions.append(save, cancel); courseAdminForm.append(actions);
+        courseAdminForm.hidden = false; coursesNode.prepend(courseAdminForm);
+        courseAdminForm.querySelector('[name="title"]').focus();
+    }
+    function saveCourseAdminForm(event) {
+        event.preventDefault();
+        if (dashboardMode !== 'admin' || !courseAdminForm) return;
+        var form = courseAdminForm;
+        var payload = {
+            title: form.querySelector('[name="title"]').value.trim(),
+            category: form.querySelector('[name="category"]').value.trim(),
+            description: form.querySelector('[name="description"]').value.trim(),
+            drive_url: form.querySelector('[name="drive_url"]').value.trim()
+        };
+        if (!payload.title || !payload.category || !safeDriveUrl(payload.drive_url)) {
+            setStatus('Renseignez le titre, la catégorie et un lien Google Drive valide.', true); return;
+        }
+        var id = form.dataset.id;
+        api('guide_course_catalog' + (id ? '?id=eq.' + encodeURIComponent(id) : ''), {
+            method: id ? 'PATCH' : 'POST', prefer: 'return=representation', body: payload
+        }).then(function () { form.hidden = true; return loadCourseCatalog(); })
+          .catch(function (error) { setStatus('Enregistrement impossible : ' + (error.message || ''), true); });
+    }
+    function deleteCourseAdmin(course) {
+        if (dashboardMode !== 'admin' || !window.confirm('Supprimer définitivement « ' + course.title + ' » ?')) return;
+        api('guide_course_catalog?id=eq.' + encodeURIComponent(course.id), { method: 'DELETE' })
+            .then(loadCourseCatalog)
+            .catch(function (error) { setStatus('Suppression impossible : ' + (error.message || ''), true); });
+    }
+    function loadCourseCatalog() {
+        return api('guide_course_catalog?select=id,title,category,description,drive_url&order=category.asc,title.asc')
+            .then(function (rows) { courses = Array.isArray(rows) ? rows : []; renderCourses(); });
+    }
+    function loadCourseProposals() {
+        if (!courseProposalList || dashboardMode !== 'admin') return;
+        api('guide_document_proposals?select=id,title,category,description,status,admin_note,created_at&category=eq.Cours%20Officier%20Guide&order=created_at.asc')
+            .then(function (rows) {
+                courseProposalList.replaceChildren(node('h3', '', 'Propositions de cours des Officiers Guides'));
+                if (!rows.length) { courseProposalList.append(node('p', 'og-dashboard-muted', 'Aucune proposition de cours.')); return; }
+                rows.forEach(function (proposal) {
+                    var card = node('article', 'og-dashboard-course-proposal');
+                    card.append(node('strong', '', proposal.title), node('p', '', proposal.description || 'Aucune description.'));
+                    card.append(node('p', 'og-dashboard-muted', 'Statut : ' + (proposal.status === 'approved' ? 'Validée' : proposal.status === 'rejected' ? 'Refusée' : 'En attente')));
+                    if (proposal.status === 'pending') {
+                        var urlLabel = node('label', 'og-dashboard-course-admin-field', 'Lien Google Drive à publier');
+                        var url = node('input'); url.type = 'url'; url.required = true; url.placeholder = 'https://drive.google.com/...'; urlLabel.append(url);
+                        var noteLabel = node('label', 'og-dashboard-course-admin-field', 'Commentaire à l’Officier Guide');
+                        var note = node('textarea'); note.rows = 2; note.maxLength = 1000; noteLabel.append(note);
+                        var approve = node('button', 'og-dashboard-download', 'Valider et ajouter au catalogue'); approve.type = 'button';
+                        approve.addEventListener('click', function () {
+                            if (!safeDriveUrl(url.value)) { setStatus('Lien Google Drive invalide.', true); return; }
+                            approve.disabled = true;
+                            api('guide_course_catalog', { method: 'POST', prefer: 'return=minimal', body: {
+                                title: proposal.title, category: 'Cours Officier Guide', description: proposal.description || '', drive_url: url.value.trim()
+                            }}).then(function () {
+                                return api('guide_document_proposals?id=eq.' + encodeURIComponent(proposal.id), {
+                                    method: 'PATCH', prefer: 'return=minimal', body: { status: 'approved', drive_url: url.value.trim(), admin_note: note.value.trim() }
+                                });
+                            }).then(function () { return Promise.all([loadCourseCatalog(), loadCourseProposals()]); })
+                              .catch(function (error) { setStatus('Validation impossible : ' + (error.message || ''), true); approve.disabled = false; });
+                        });
+                        var reject = node('button', 'og-dashboard-download', 'Refuser'); reject.type = 'button';
+                        reject.addEventListener('click', function () {
+                            if (!window.confirm('Refuser cette proposition de cours ?')) return;
+                            api('guide_document_proposals?id=eq.' + encodeURIComponent(proposal.id), {
+                                method: 'PATCH', prefer: 'return=minimal', body: { status: 'rejected', admin_note: note.value.trim() }
+                            }).then(loadCourseProposals).catch(function (error) { setStatus(error.message || 'Refus impossible.', true); });
+                        });
+                        card.append(urlLabel, noteLabel, approve, reject);
+                    } else if (proposal.admin_note) card.append(node('p', '', proposal.admin_note));
+                    courseProposalList.append(card);
+                });
+            }).catch(function (error) { courseProposalList.append(node('p', 'og-dashboard-muted', error.message || 'Chargement impossible.')); });
+    }
     function renderCourses() {
         coursesNode.replaceChildren();
-        var groups = Object.create(null);
-        courses.forEach(function (course) {
-            var category = course.category || 'Autres ressources';
-            (groups[category] || (groups[category] = [])).push(course);
-        });
-        var categories = Object.keys(groups).sort(function (a, b) { return a.localeCompare(b, 'fr'); });
-        if (!categories.length) {
-            coursesNode.append(node('p', 'og-dashboard-empty', 'Le catalogue des supports est momentanément indisponible.'));
-            return;
+        if (dashboardMode === 'admin') {
+            var toolbar = node('div', 'og-dashboard-course-admin-tools');
+            var add = node('button', 'og-dashboard-download', '+ Ajouter un cours');
+            add.type = 'button'; add.addEventListener('click', function () { openCourseAdminForm(null); });
+            toolbar.append(add); coursesNode.append(toolbar);
+            courseProposalList = node('section', 'og-dashboard-course-proposals');
+            courseProposalList.append(node('h3', '', 'Propositions de cours des Officiers Guides'));
         }
+        var groups = Object.create(null);
+        courses.forEach(function (course) { var category = course.category || 'Autres ressources'; (groups[category] || (groups[category] = [])).push(course); });
+        var categories = Object.keys(groups).sort(function (a, b) { return a.localeCompare(b, 'fr'); });
+        if (!categories.length) coursesNode.append(node('p', 'og-dashboard-empty', 'Aucun support dans le catalogue.'));
         categories.forEach(function (category) {
             var group = node('details', 'og-dashboard-course-group');
             var summary = node('summary', 'og-dashboard-accordion-title');
@@ -2040,20 +2143,21 @@
                 copy.append(node('h4', '', course.title || 'Support sans titre'));
                 if (course.description) copy.append(node('p', '', course.description));
                 item.append(copy);
-                var link = node('a', 'og-dashboard-download', 'Télécharger');
-                link.href = driveDownload(course.drive_url);
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                if (!link.href || !safeDriveUrl(course.drive_url)) {
-                    link.removeAttribute('href');
-                    link.setAttribute('aria-disabled', 'true');
-                    link.textContent = 'Lien indisponible';
+                if (dashboardMode === 'admin') {
+                    var edit = node('button', 'og-dashboard-download', 'Modifier'); edit.type = 'button';
+                    edit.addEventListener('click', function () { openCourseAdminForm(course); });
+                    var remove = node('button', 'og-dashboard-download', 'Supprimer'); remove.type = 'button';
+                    remove.addEventListener('click', function () { deleteCourseAdmin(course); });
+                    item.append(edit, remove);
                 }
-                item.append(link);
-                group.append(item);
+                var link = node('a', 'og-dashboard-download', 'Télécharger');
+                link.href = driveDownload(course.drive_url); link.target = '_blank'; link.rel = 'noopener noreferrer';
+                if (!link.href || !safeDriveUrl(course.drive_url)) { link.removeAttribute('href'); link.setAttribute('aria-disabled', 'true'); link.textContent = 'Lien indisponible'; }
+                item.append(link); group.append(item);
             });
             coursesNode.append(group);
         });
+        if (dashboardMode === 'admin') { coursesNode.append(courseProposalList); loadCourseProposals(); }
     }
     function load() {
         if (loading) return;
