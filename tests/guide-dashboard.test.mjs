@@ -144,6 +144,23 @@ test('les fiches RETEX et Signalement Officier Guide sont autonomes et indépend
     assert.match(script, /Intervention ou décision attendue/);
 });
 
+test('le catalogue des 30 supports est administrable depuis le tableau de bord admin', () => {
+    assert.match(script, /function openCourseAdminForm\(course\)/);
+    assert.match(script, /\+ Ajouter un cours/);
+    assert.match(script, /deleteCourseAdmin\(course\)/);
+    assert.match(script, /Propositions de cours des Officiers Guides/);
+    assert.match(script, /Valider et ajouter au catalogue/);
+    assert.match(script, /category: categoryInput\.value\.trim\(\)/);
+    assert.match(script, /guide_course_catalog/);
+});
+test('les Officiers Guides peuvent proposer un cours et suivre la décision administrateur', () => {
+    assert.match(script, /Proposer un cours pour le Module 2\.1/);
+    assert.match(script, /category: 'Cours Officier Guide'/);
+    assert.match(script, /function loadOwnCourseProposals\(\)/);
+    assert.match(script, /Suivi de mes propositions de cours/);
+    assert.match(script, /En attente de validation/);
+});
+
 test('le tableau de bord utilise les données filtrées par le RPC guide', () => {
     assert.match(script, /rpc\/get_guide_candidate_dashboard/);
     assert.match(script, /body:\s*\{\s*p_candidate_id:\s*null\s*\}/);
