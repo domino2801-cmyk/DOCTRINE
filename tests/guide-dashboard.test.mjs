@@ -511,3 +511,16 @@ test('le rôle admin transmis par QCM-MAJOR est reconnu côté navigateur et cô
     assert.match(adminRoleSql, /auth\.jwt\(\) -> 'app_metadata' ->> 'role'\) = 'admin'/);
     assert.match(script, /api\('rpc\/doctrine_is_admin'/);
 });
+
+test('les propositions de cours OG sont affichées dans une carte indépendante sous les bibliothèques', () => {
+    const start = script.indexOf('function renderCourses()');
+    const end = script.indexOf('function load()', start);
+    const render = script.slice(start, end);
+    assert.match(script, /var courseProposalArea = null/);
+    assert.match(script, /courseProposalArea = dashboardMode === 'admin' \? node\('div', 'og-dashboard-course-proposal-area'\) : null/);
+    assert.match(script, /panel\.append\(libraryGrid\);[\s\S]*?panel\.append\(courseProposalArea\)/);
+    assert.match(render, /courseProposalArea\.replaceChildren\(courseProposalList\)/);
+    assert.doesNotMatch(render, /coursesNode\.append\(courseProposalList\)/);
+    assert.match(css, /\.og-dashboard-course-proposal-area/);
+    assert.match(css, /\.og-dashboard-course-proposals \{[^}]*padding:14px/s);
+});
