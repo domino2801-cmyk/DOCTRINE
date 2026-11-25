@@ -445,6 +445,59 @@
         return true;
     }
 
+    function ouvrirDocumentSigne(url, nom, typeAttendu, module) {
+        var urlSupabase;
+        var urlDocument;
+        try {
+            urlSupabase = new URL(auth().url);
+            urlDocument = new URL(url, urlSupabase);
+        } catch (e) {
+            return Promise.reject(new Error('URL documentaire invalide.'));
+        }
+        if (urlDocument.protocol !== 'https:' || urlDocument.origin !== urlSupabase.origin ||
+            !urlDocument.pathname.startsWith('/storage/v1/object/sign/guide-document-proposals/') ||
+            !urlDocument.searchParams.has('token')) {
+            return Promise.reject(new Error('URL documentaire signée non autorisée.'));
+        }
+
+        construire();
+        dernierFocus = document.activeElement;
+        contexteModule = module || '';
+        dossierCourant = null;
+        panneau.hidden = false;
+        panneau.style.zIndex = '2147483647';
+        panneau.setAttribute('tabindex', '-1');
+        document.body.classList.add('dv-open');
+        panneau.focus({ preventScroll: true });
+        panneau.querySelector('.dv-btn:last-child').focus();
+
+        var numero = ++requete;
+        libererObjet();
+        titre.textContent = nom || 'Document';
+        retour.hidden = true;
+        message('Chargement du document…');
+        return fetch(urlDocument.href).then(function (r) {
+            if (!r.ok) throw new Error('Réponse Storage ' + r.status);
+            var type = (r.headers.get('Content-Type') || typeAttendu || 'application/octet-stream').split(';')[0];
+            return r.blob().then(function (blob) { return { blob: blob, type: type }; });
+        }).then(function (resultat) {
+            if (numero !== requete) return;
+            var nomFichier = nomSur(nom || 'document');
+            urlObjet = URL.createObjectURL(new Blob([resultat.blob], { type: resultat.type }));
+            courant = {
+                nom: nomFichier,
+                url: urlSupabase.origin + '/storage/v1/object/sign/guide-document-proposals/',
+                module: module || ''
+            };
+            titre.textContent = nomFichier;
+            telecharger.hidden = false;
+            montrer(resultat.type, urlObjet, null);
+        }).catch(function (error) {
+            if (numero === requete) message('Impossible d’ouvrir ce document. Vérifiez vos droits puis réessayez.', true);
+            throw error;
+        });
+    }
+
     function ouvrirPdfSigne(url, nom, module) {
         var urlSupabase;
         var urlDocument;
@@ -499,7 +552,7 @@
         });
     }
 
-    window.DoctrineViewer = { openSignedPdf: ouvrirPdfSigne, openDrive: ouvrirDrive };
+    window.DoctrineViewer = { openSignedPdf: ouvrirPdfSigne, openSignedDocument: ouvrirDocumentSigne, openDrive: ouvrirDrive };
 
     function fermer() {
         if (!panneau) return;
