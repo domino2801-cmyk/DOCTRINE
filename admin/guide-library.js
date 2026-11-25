@@ -306,24 +306,11 @@
         document.body.classList.remove('adm-guide-library-open');
     }
     function updateButtons() {
-        var visible = isAdmin();
-        document.querySelectorAll('.module-nav-controls').forEach(function (zone) {
-            var button = zone.querySelector('.adm-guide-library-toggle');
-            if (!button && visible) {
-                button = el('button', 'module-nav-button adm-guide-library-toggle', '📚 Exercices & corrections');
-                button.type = 'button';
-                button.title = 'Administrer les bibliothèques d’exercices et de corrections';
-                button.addEventListener('click', openPanel);
-                zone.append(button);
-            }
-            if (button) button.hidden = !visible;
-        });
-
-        // Retire l’ancien raccourci de la barre d’accueil.
-        document.querySelectorAll('.adm-guide-library-home-toggle').forEach(function (button) {
+        // L’accès « Exercices & corrections » ne doit plus apparaître dans la navigation.
+        document.querySelectorAll('.adm-guide-library-toggle, .adm-guide-library-home-toggle').forEach(function (button) {
             button.remove();
         });
-        if (!visible && root && !root.hidden) closePanel();
+        if (root && !root.hidden) closePanel();
     }
     function init() {
         buildInterface();
