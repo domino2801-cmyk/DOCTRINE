@@ -346,14 +346,6 @@
         initialized = true;
         if (document.getElementById('guideModule8App')) return;
         if (isAdmin()) adminPanel();
-        document.addEventListener('doctrine:open-module2-documents-admin', function () {
-            if (!isAdmin()) return;
-            if (typeof window.openModal === 'function') window.openModal('module2');
-            window.setTimeout(function () {
-                var panel = document.getElementById('module2DocumentAdmin');
-                if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 150);
-        });
         loadPublished();
         document.addEventListener('doctrine:content-updated', function (event) {
             if (event.detail && event.detail.moduleId === '2') loadPublished();
