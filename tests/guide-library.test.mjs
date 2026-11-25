@@ -44,6 +44,16 @@ test('la RLS réserve la gestion aux administrateurs et masque les brouillons au
     assert.match(admin, /is_published: form\.querySelector\('#agl-published'\)\.checked/);
 });
 
+test('chaque dossier regroupe ses corrections et propose les actions de gestion', () => {
+    assert.match(admin, /function renderCorrection\(item, parentList\)/);
+    assert.match(admin, /function renderList\(type\)/);
+    assert.match(admin, /corrections\.filter\(function \(correction\) \{ return correction\.exercise_id === item\.id; \}\)/);
+    assert.match(admin, /\+ Ajouter une correction/);
+    assert.match(admin, /openForm\('correction', null, item\.id\)/);
+    assert.match(admin, /function deleteItem\(type, item\)/);
+    assert.match(adminCss, /adm-guide-library-linked-corrections/);
+});
+
 test('les liens Google Drive sont validés côté interface et base', () => {
     assert.match(admin, /drive\\\.google\\\.com\|docs\\\.google\\\.com/);
     assert.match(migration, /drive\[\.\]google\[\.\]com/);
