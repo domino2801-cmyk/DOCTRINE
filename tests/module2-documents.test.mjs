@@ -67,6 +67,17 @@ test('les administrateurs peuvent publier directement et traiter les proposition
     assert.match(source, /status: 'rejected'/);
 });
 
+test('la validation documentaire actualise le Module 2.1 ainsi que les listes publiées OG et admin', () => {
+    const guide = read('app/guide-dashboard.js');
+    assert.match(guide, /Valider et publier dans le Module 2\.1/);
+    assert.match(guide, /status: 'approved'/);
+    assert.match(guide, /doctrine:content-updated/);
+    assert.match(guide, /function loadAdminApprovedDocuments\(\)/);
+    assert.match(guide, /Documents déjà validés — Module 2\.1/);
+    assert.match(guide, /function loadApprovedModule2Documents\(\)/);
+    assert.match(guide, /status=eq\.approved/);
+    assert.match(guide, /loadAdminApprovedDocuments\(\), loadApprovedModule2Documents\(\)/);
+});
 test('les cartes dynamiques restent hors du HTML sauvegardé du Module 2', () => {
     const admin = read('admin/admin.js');
     assert.match(admin, /\.adm-ui, \.module2-approved-documents/);
