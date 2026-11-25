@@ -1755,9 +1755,132 @@
         section.append(content);
         return section;
     }
+    var exerciseLibraryForm = null;
+    function exerciseLibraryAdminForm(type, item) {
+        if (dashboardMode !== 'admin') return;
+        if (!exerciseLibraryForm) {
+            exerciseLibraryForm = node('form', 'og-dashboard-library-admin-form');
+            exerciseLibraryForm.addEventListener('submit', saveExerciseLibraryItem);
+        }
+        exerciseLibraryForm.replaceChildren();
+        var heading = node('h4', '', (item ? 'Modifier ' : 'Ajouter ') + (type === 'exercise' ? 'un dossier d’exercice' : 'une correction'));
+        exerciseLibraryForm.append(heading);
+        function field(labelText, name, value, tag, required) {
+            var label = node('label', 'og-dashboard-library-admin-field', labelText);
+            var input = node(tag || 'input');
+            input.name = name;
+            input.value = value || '';
+            input.required = !!required;
+            if (tag === 'textarea') input.rows = 3;
+            label.append(input);
+            exerciseLibraryForm.append(label);
+            return input;
+        }
+        exerciseLibraryForm.dataset.type = type;
+        exerciseLibraryForm.dataset.id = item ? item.id : '';
+        field('Titre', 'title', item && item.title, 'input', true);
+        if (type === 'exercise') field('Catégorie', 'category', item && item.category || 'Général', 'input', false);
+        else {
+            var label = node('label', 'og-dashboard-library-admin-field', 'Dossier associé');
+            var select = node('select');
+            select.name = 'exercise_id';
+            exerciseLibraryItems.forEach(function (exercise) {
+                var option = node('option', '', exercise.title);
+                option.value = exercise.id;
+                select.append(option);
+            });
+            select.value = item ? item.exercise_id : exerciseLibraryForm.dataset.exerciseId || '';
+            label.append(select);
+            exerciseLibraryForm.append(label);
+        }
+        field('Description', 'description', item && item.description, 'textarea', false);
+        field('Lien Google Drive', 'drive_url', item && item.drive_url, 'input', true);
+        var levelLabel = node('label', 'og-dashboard-library-admin-field', 'Difficulté');
+        var level = node('select');
+        level.name = 'difficulty_level';
+        EXERCISE_LEVELS.forEach(function (entry, index) {
+            var option = node('option', '', entry.label);
+            option.value = String(index + 1);
+            level.append(option);
+        });
+        level.value = String(item && item.difficulty_level || 1);
+        levelLabel.append(level);
+        exerciseLibraryForm.append(levelLabel);
+        var publishLabel = node('label', 'og-dashboard-library-admin-publish');
+        var publish = node('input');
+        publish.type = 'checkbox';
+        publish.name = 'is_published';
+        publish.checked = item ? !!item.is_published : true;
+        publishLabel.append(publish, node('span', '', 'Publier pour les Officiers Guides'));
+        exerciseLibraryForm.append(publishLabel);
+        var buttons = node('div', 'og-dashboard-library-admin-actions');
+        var save = node('button', 'og-dashboard-download', 'Enregistrer');
+        save.type = 'submit';
+        var cancel = node('button', 'og-dashboard-download', 'Annuler');
+        cancel.type = 'button';
+        cancel.addEventListener('click', function () { exerciseLibraryForm.hidden = true; });
+        buttons.append(save, cancel);
+        exerciseLibraryForm.append(buttons);
+        exerciseLibraryForm.hidden = false;
+        exerciseLibraryNode.prepend(exerciseLibraryForm);
+        exerciseLibraryForm.querySelector('[name="title"]').focus();
+    }
+    function saveExerciseLibraryItem(event) {
+        event.preventDefault();
+        if (dashboardMode !== 'admin' || !exerciseLibraryForm) return;
+        var form = exerciseLibraryForm;
+        var type = form.dataset.type;
+        var id = form.dataset.id;
+        var payload = {
+            title: form.querySelector('[name="title"]').value.trim(),
+            description: form.querySelector('[name="description"]').value.trim(),
+            drive_url: form.querySelector('[name="drive_url"]').value.trim(),
+            difficulty_level: Number(form.querySelector('[name="difficulty_level"]').value),
+            is_published: form.querySelector('[name="is_published"]').checked,
+            updated_at: new Date().toISOString()
+        };
+        if (type === 'exercise') payload.category = form.querySelector('[name="category"]').value.trim() || 'Général';
+        else payload.exercise_id = form.querySelector('[name="exercise_id"]').value;
+        if (!payload.title || !safeDriveUrl(payload.drive_url) || (type === 'correction' && !payload.exercise_id)) {
+            setStatus('Vérifiez le titre, le lien Google Drive et le dossier associé.', true);
+            return;
+        }
+        var table = type === 'exercise' ? 'guide_exercise_library' : 'guide_correction_library';
+        var path = table + (id ? '?id=eq.' + encodeURIComponent(id) : '');
+        api(path, { method: id ? 'PATCH' : 'POST', prefer: 'return=representation', body: payload })
+            .then(function () { form.hidden = true; return loadExerciseLibraries(); })
+            .catch(function (error) { setStatus('Enregistrement impossible : ' + (error.message || 'erreur inconnue'), true); });
+    }
+    function deleteExerciseLibraryItem(type, item) {
+        if (dashboardMode !== 'admin') return;
+        var label = type === 'exercise' ? 'ce dossier et ses corrections associées' : 'cette correction';
+        if (!window.confirm('Supprimer définitivement « ' + item.title + ' » (' + label + ') ?')) return;
+        var table = type === 'exercise' ? 'guide_exercise_library' : 'guide_correction_library';
+        api(table + '?id=eq.' + encodeURIComponent(item.id), { method: 'DELETE' })
+            .then(loadExerciseLibraries)
+            .catch(function (error) {
+                setStatus('Suppression impossible. Pour un dossier, supprimez d’abord ses corrections. ' + (error.message || ''), true);
+            });
+    }
     function renderExerciseLibraries() {
         if (!exerciseLibraryNode) return;
         exerciseLibraryNode.replaceChildren();
+        if (dashboardMode === 'admin') {
+            var adminToolbar = node('div', 'og-dashboard-library-admin-toolbar');
+            var addExerciseButton = node('button', 'og-dashboard-download', '+ Ajouter un dossier d’exercice');
+            addExerciseButton.type = 'button';
+            addExerciseButton.addEventListener('click', function () { exerciseLibraryAdminForm('exercise', null); });
+            var addCorrectionButton = node('button', 'og-dashboard-download', '+ Ajouter une correction');
+            addCorrectionButton.type = 'button';
+            addCorrectionButton.disabled = !exerciseLibraryItems.length;
+            addCorrectionButton.addEventListener('click', function () {
+                exerciseLibraryForm.dataset.exerciseId = exerciseLibraryItems[0] ? exerciseLibraryItems[0].id : '';
+                exerciseLibraryAdminForm('correction', null);
+            });
+            adminToolbar.append(addExerciseButton, addCorrectionButton);
+            exerciseLibraryNode.append(adminToolbar);
+            exerciseLibraryForm = null;
+        }
         var list = node('div', 'og-dashboard-library-levels');
         EXERCISE_LEVELS.forEach(function (level) {
             var levelRows = exerciseLibraryItems.filter(function (exercise) {
@@ -1808,6 +1931,21 @@
                         openDriveInViewer(exercise.drive_url, exercise.title);
                     });
                     actions.append(open);
+                    if (dashboardMode === 'admin') {
+                        var editExercise = node('button', 'og-dashboard-download', 'Modifier');
+                        editExercise.type = 'button';
+                        editExercise.addEventListener('click', function () { exerciseLibraryAdminForm('exercise', exercise); });
+                        var deleteExercise = node('button', 'og-dashboard-download', 'Supprimer');
+                        deleteExercise.type = 'button';
+                        deleteExercise.addEventListener('click', function () { deleteExerciseLibraryItem('exercise', exercise); });
+                        var addRelatedCorrection = node('button', 'og-dashboard-download', '+ Ajouter une correction');
+                        addRelatedCorrection.type = 'button';
+                        addRelatedCorrection.addEventListener('click', function () {
+                            exerciseLibraryForm.dataset.exerciseId = exercise.id;
+                            exerciseLibraryAdminForm('correction', null);
+                        });
+                        actions.append(editExercise, deleteExercise, addRelatedCorrection);
+                    }
                     var related = correctionLibraryItems.filter(function (correction) {
                         return correction.exercise_id === exercise.id;
                     });
@@ -1828,6 +1966,15 @@
                                 openDriveInViewer(correction.drive_url, correction.title);
                             });
                             correctionActions.append(link);
+                            if (dashboardMode === 'admin') {
+                                var editCorrection = node('button', 'og-dashboard-download', 'Modifier');
+                                editCorrection.type = 'button';
+                                editCorrection.addEventListener('click', function () { exerciseLibraryAdminForm('correction', correction); });
+                                var deleteCorrection = node('button', 'og-dashboard-download', 'Supprimer');
+                                deleteCorrection.type = 'button';
+                                deleteCorrection.addEventListener('click', function () { deleteExerciseLibraryItem('correction', correction); });
+                                correctionActions.append(editCorrection, deleteCorrection);
+                            }
                             var downloadUrl = driveDownload(correction.drive_url);
                             var download = node('a', 'og-dashboard-download og-dashboard-library-download', 'Télécharger la correction');
                             if (downloadUrl) {
@@ -1858,8 +2005,8 @@
     function loadExerciseLibraries() {
         if (!exerciseLibraryNode) return Promise.resolve();
         return Promise.allSettled([
-            api('guide_exercise_library?select=id,title,category,description,drive_url,difficulty_level,sort_order&is_published=eq.true&order=difficulty_level.asc,sort_order.asc,title.asc'),
-            api('guide_correction_library?select=id,exercise_id,title,description,drive_url,difficulty_level,sort_order&is_published=eq.true&order=difficulty_level.asc,sort_order.asc,title.asc')
+            api('guide_exercise_library?select=id,title,category,description,drive_url,difficulty_level,sort_order,is_published&' + (dashboardMode === 'admin' ? '' : 'is_published=eq.true&') + 'order=difficulty_level.asc,sort_order.asc,title.asc'),
+            api('guide_correction_library?select=id,exercise_id,title,description,drive_url,difficulty_level,sort_order,is_published&' + (dashboardMode === 'admin' ? '' : 'is_published=eq.true&') + 'order=difficulty_level.asc,sort_order.asc,title.asc')
         ]).then(function (results) {
             exerciseLibraryItems = results[0].status === 'fulfilled' && Array.isArray(results[0].value) ? results[0].value : [];
             correctionLibraryItems = results[1].status === 'fulfilled' && Array.isArray(results[1].value) ? results[1].value : [];
