@@ -643,7 +643,7 @@
             button.append(node('span', '', [identity.specialty, identity.email].filter(Boolean).join(' · ') || 'Profil à compléter'));
             button.setAttribute('aria-pressed', 'false');
             button.addEventListener('click', function () {
-                list.querySelectorAll('.og-qcm-candidate-button').forEach(function (item) {
+                workspace.querySelectorAll('.og-qcm-candidate-button').forEach(function (item) {
                     item.classList.remove('is-selected');
                     item.setAttribute('aria-pressed', 'false');
                 });
@@ -687,7 +687,7 @@
         metricsNode.replaceChildren();
         var ready = candidates.filter(function (candidate) { return !attention(candidate); }).length;
         [
-            ['CANDIDATS', candidates.length, 'cohorte rattachée'],
+            ['CANDIDATS', candidates.length, dashboardMode === 'admin' ? 'ensemble des comptes' : 'cohorte rattachée'],
             ['À ACCOMPAGNER', candidates.length - ready, 'activité ou résultats à suivre']
         ].forEach(function (metric) {
             var card = metric[0] === 'CANDIDATS'
