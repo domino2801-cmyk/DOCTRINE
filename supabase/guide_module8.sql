@@ -16,7 +16,8 @@ security invoker
 set search_path = ''
 as $$
     select coalesce(
-        (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
+        (auth.jwt() ->> 'role') = 'admin'
+        or (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
         or (auth.jwt() -> 'app_metadata' ->> 'bm4_admin') in ('true', '1'),
         false
     );
