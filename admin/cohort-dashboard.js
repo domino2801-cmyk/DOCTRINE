@@ -269,18 +269,10 @@
     }
 
     function addToolbarButton() {
-        if (!isAdmin()) return;
-        document.querySelectorAll('.module-nav-controls').forEach(function (zone) {
-            var button = zone.querySelector('.adm-cohort-toolbar');
-            if (!button) {
-                button = node('button', 'module-nav-button adm-cohort-toolbar', '👥 Cohorte');
-                button.type = 'button';
-                button.title = 'Suivi global de tous les candidats';
-                button.addEventListener('click', function () { openDashboard(button); });
-                zone.appendChild(button);
-            }
-            button.hidden = !isAdmin();
-
+        // Le raccourci « Cohorte » est retiré de la barre de navigation.
+        // Le tableau de bord et ses fonctions internes restent conservés.
+        document.querySelectorAll('.adm-cohort-toolbar').forEach(function (button) {
+            button.remove();
         });
     }
 
@@ -289,7 +281,7 @@
         document.addEventListener('doctrine:login', addToolbarButton);
         document.addEventListener('doctrine:logout', function () {
             if (dialog) dialog.hidden = true;
-            document.querySelectorAll('.adm-cohort-toolbar').forEach(function (button) { button.hidden = true; });
+            document.querySelectorAll('.adm-cohort-toolbar').forEach(function (button) { button.remove(); });
         });
         var observer = new MutationObserver(addToolbarButton);
         observer.observe(document.body, { childList: true, subtree: true });
