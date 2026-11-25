@@ -458,6 +458,10 @@ test('les indicateurs administratifs sont regroupés dans une carte responsive d
 test('le mode administrateur reprend le tableau de bord et isole les candidats OG dans un accordéon replié', () => {
     assert.match(script, /function adminAccess\(\)/);
     assert.match(script, /function openAdminDashboard\(\)/);
+    assert.match(script, /function adminLaunchRequested\(\)/);
+    assert.match(script, /new URLSearchParams\(window\.location\.search\)\.get\('admin'\) === '1'/);
+    assert.match(script, /if \(adminLaunchRequested\(\)\) openAdminDashboard\(\)/);
+    assert.doesNotMatch(cohortDashboardScript, /adm-admin-dashboard-toolbar|doctrine:admin-dashboard/);
     assert.match(script, /doctrine:admin-dashboard/);
     assert.match(script, /dashboardTitleNode\.textContent = 'Espace Administrateur'/);
     assert.match(script, /function isOgCandidate\(candidate\)/);
@@ -466,6 +470,4 @@ test('le mode administrateur reprend le tableau de bord et isole les candidats O
     assert.match(script, /var ogGroup = node\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\)/);
     assert.match(script, /CANDIDATS OFFICIER GUIDE — '/);
     assert.match(script, /ogDetails = node\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\)/);
-    assert.match(cohortDashboardScript, /node\('button', 'module-nav-button adm-admin-dashboard-toolbar', '🏛️ Admin ANC'\)/);
-    assert.match(cohortDashboardScript, /document\.dispatchEvent\(new CustomEvent\('doctrine:admin-dashboard'\)\)/);
 });
