@@ -792,3 +792,12 @@ body.og-guide-entry-only #guideDashboardNav > button {
 .module2-og-course-proposals { display:grid; gap:9px; margin-top:16px; padding:12px; border-left:3px solid #d8b85b; background:rgba(0,0,0,.12); }
 .module2-og-own-course-item { padding:9px; border:1px solid rgba(183,207,185,.2); border-radius:7px; }
 @media(max-width:560px) { .og-dashboard-course-admin-form { grid-template-columns:1fr; } .og-dashboard-course-admin-form h4,.og-dashboard-course-admin-actions { grid-column:auto; } }
+
+/* Documents OG validés et publication Module 2.1 */
+.module2-og-approved-documents,.module2-og-admin-approved { display:grid; gap:9px; margin:10px 0; }
+.module2-og-approved-item { display:grid; gap:6px; padding:11px; border:1px solid rgba(216,184,91,.38); border-radius:8px; background:rgba(0,0,0,.12); min-width:0; }
+.module2-og-approved-item a { justify-self:start; }
+.module2-og-admin-documents { display:grid; gap:10px; margin-top:14px; padding:14px; border:1px solid rgba(216,184,91,.4); border-radius:9px; }
+.module2-og-admin-documents h3,.module2-og-admin-documents h4 { margin:0; color:#e6c96f; }
+.module2-og-admin-proposal { display:grid; gap:8px; padding:12px; border:1px solid rgba(183,207,185,.22); border-radius:8px; min-width:0; }
+.module2-og-admin-proposal input,.module2-og-admin-proposal textarea { width:100%; min-width:0; box-sizing:border-box; }
