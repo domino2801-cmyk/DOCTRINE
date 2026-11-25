@@ -433,8 +433,13 @@
     function estAdmin(jeton) {
         try {
             var p = jeton.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-            var meta = JSON.parse(decodeURIComponent(escape(atob(p)))).app_metadata || {};
-            return meta.role === 'admin' || meta.bm4_admin === true || meta.bm4_admin === 'true' || meta.bm4_admin === 1 || meta.bm4_admin === '1';
+            var claims = JSON.parse(decodeURIComponent(escape(atob(p))));
+            var meta = claims.app_metadata || {};
+            // QCM-MAJOR reconnaît aussi le claim JWT standard « role ».
+            // Reprendre exactement cette règle pour éviter de refuser un admin valide.
+            return claims.role === 'admin' || meta.role === 'admin' ||
+                meta.bm4_admin === true || meta.bm4_admin === 'true' ||
+                meta.bm4_admin === 1 || meta.bm4_admin === '1';
         } catch (e) { return false; }
     }
 
