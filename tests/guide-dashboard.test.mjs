@@ -153,6 +153,14 @@ test('le catalogue des 30 supports est administrable depuis le tableau de bord a
     assert.match(script, /category: categoryInput\.value\.trim\(\)/);
     assert.match(script, /guide_course_catalog/);
 });
+test('une proposition de cours Module 2.1 accepte une pièce jointe PDF TXT ou PPT de 20 Mo', () => {
+    assert.match(script, /courseProposalFileLabel = node\('label', '', 'Joindre un document \(PDF, TXT ou PPT — 20 Mo maximum\)'\)/);
+    assert.match(script, /courseProposalFile\.accept = '\.pdf,\.txt,\.ppt/);
+    assert.match(script, /uploaded_file_path: attachment \? attachment\.path : null/);
+    assert.match(script, /file_size: attachment \? file\.size : null/);
+    assert.match(script, /file\.size > 20 \* 1024 \* 1024/);
+    assert.match(script, /Télécharger la pièce jointe/);
+});
 test('les Officiers Guides peuvent proposer un cours et suivre la décision administrateur', () => {
     assert.match(script, /Proposer un cours pour le Module 2\.1/);
     assert.match(script, /category: 'Cours Officier Guide'/);
