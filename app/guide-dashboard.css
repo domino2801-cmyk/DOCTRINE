@@ -765,3 +765,14 @@ body.og-guide-entry-only #guideDashboardNav > button {
 @media(max-width:390px) {
   .og-guide-entry-card { width:100%; }
 }
+
+/* Gestion de la bibliothèque depuis l'Espace Administrateur uniquement. */
+.og-dashboard-library-admin-toolbar { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px; }
+.og-dashboard-library-admin-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px; margin:12px 0 16px; padding:15px; border:1px solid rgba(216,184,91,.5); border-radius:9px; background:#17251e; }
+.og-dashboard-library-admin-form[hidden] { display:none; }
+.og-dashboard-library-admin-form h4 { grid-column:1/-1; margin:0; color:#e6c96f; }
+.og-dashboard-library-admin-field { display:grid; gap:6px; color:#e3ebe4; font-size:13px; font-weight:700; }
+.og-dashboard-library-admin-field input,.og-dashboard-library-admin-field select,.og-dashboard-library-admin-field textarea { width:100%; min-width:0; box-sizing:border-box; padding:10px; border:1px solid #607667; border-radius:6px; background:#26392f; color:#f2f5ee; color-scheme:dark; font:inherit; }
+.og-dashboard-library-admin-publish { display:flex; align-items:center; gap:8px; color:#e6c96f; font-weight:750; }
+.og-dashboard-library-admin-actions { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:8px; }
+@media(max-width:560px) { .og-dashboard-library-admin-form { grid-template-columns:1fr; } .og-dashboard-library-admin-form h4,.og-dashboard-library-admin-actions { grid-column:auto; } }
