@@ -2,14 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const [html, script, css, seed, viewerScript, viewerCss, appScript] = await Promise.all([
+const [html, script, css, seed, viewerScript, viewerCss, appScript, cohortDashboardScript] = await Promise.all([
     readFile(new URL('../index.html', import.meta.url), 'utf8'),
     readFile(new URL('../app/guide-dashboard.js', import.meta.url), 'utf8'),
     readFile(new URL('../app/guide-dashboard.css', import.meta.url), 'utf8'),
     readFile(new URL('../supabase/patches/2026-11-22-guide-course-catalog-seed.sql', import.meta.url), 'utf8'),
     readFile(new URL('../viewer/viewer.js', import.meta.url), 'utf8'),
     readFile(new URL('../viewer/viewer.css', import.meta.url), 'utf8'),
-    readFile(new URL('../app/app.js', import.meta.url), 'utf8')
+    readFile(new URL('../app/app.js', import.meta.url), 'utf8'),
+    readFile(new URL('../admin/cohort-dashboard.js', import.meta.url), 'utf8')
 ]);
 
 test('l’espace Officier Guide est chargé séparément des modules existants', () => {
@@ -95,7 +96,7 @@ test('la carte CANDIDATS ouvre la cohorte puis une fiche individuelle limitée a
     assert.match(script, /card\.addEventListener\('click', openGuideCandidates\)/);
     assert.match(script, /function renderCandidateProfileDetail\(target, candidate\)/);
     assert.match(script, /CANDIDATS — COHORTE RATTACHÉE/);
-    assert.match(script, /'TOUS — ' : 'CANDIDATS — '\) \+ regularCandidates\.length/);
+    assert.match(script, /\(dashboardMode === 'admin' \? 'CANDIDATS — ' : 'TOUS — '\) \+ regularCandidates\.length/);
     assert.match(script, /og-dashboard-candidate-group-open/);
     assert.match(script, /og-dashboard-candidate-group-heading/);
     assert.match(script, /og-dashboard-candidate-group-items/);
@@ -465,6 +466,6 @@ test('le mode administrateur reprend le tableau de bord et isole les candidats O
     assert.match(script, /var ogGroup = node\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\)/);
     assert.match(script, /CANDIDATS OFFICIER GUIDE — '/);
     assert.match(script, /var ogDetails = node\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\)/);
-    assert.match(script, /node\('button', 'module-nav-button adm-admin-dashboard-toolbar', '🏛️ Admin ANC'\)/);
+    assert.match(cohortDashboardScript, /node\('button', 'module-nav-button adm-admin-dashboard-toolbar', '🏛️ Admin ANC'\)/);
     assert.match(script, /document\.dispatchEvent\(new CustomEvent\('doctrine:admin-dashboard'\)\)/);
 });
