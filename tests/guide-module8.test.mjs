@@ -272,7 +272,7 @@ test("les deux types de fiches sont identifiés, enregistrés séparément et li
         assert.match(styles, /\.guide-module8-page\.is-embedded \.guide-app\s*\{\s*padding: 0 8px 18px;/);
         assert.match(appStyles, /\.module8-frame\s*\{[^}]*height: clamp\(240px, calc\(100dvh - 280px\), 760px\)/);
         assert.match(appStyles, /\.module8-frame \{ height: clamp\(180px, calc\(100dvh - 250px\), 680px\); \}/);
-        assert.match(viewerScript, /window\.DoctrineViewer = \{ openSignedPdf: ouvrirPdfSigne, openDrive: ouvrirDrive \}/);
+        assert.match(viewerScript, /window\.DoctrineViewer = \{ openSignedPdf: ouvrirPdfSigne, openSignedDocument: ouvrirDocumentSigne, openDrive: ouvrirDrive \}/);
         assert.match(viewerScript, /urlDocument\.pathname\.startsWith\('\/storage\/v1\/object\/sign\/candidate-fiches\/'\)/);
         assert.match(viewerScript, /new Blob\(\[blob\], \{ type: 'application\/pdf' \}\)/);
         assert.match(viewerScript, /telecharger\.hidden = false/);
