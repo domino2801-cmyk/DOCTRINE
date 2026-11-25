@@ -34,8 +34,8 @@ test('la carte de proposition est placée sous les deux bibliothèques sans affi
     assert.doesNotMatch(proposalForm, /proposalCategory|proposalDescription|Catégorie|Description \(facultatif\)/);
     assert.match(card, /function loadApprovedModule2Documents\(\)/);
     assert.match(card, /status=eq\.approved/);
-    assert.match(card, /function loadAdminDocumentProposals\(\)/);
-    assert.match(card, /function loadAdminApprovedDocuments\(\)/);
+    assert.match(guide, /if \(dashboardMode !== 'admin'\) libraryGrid\.append\(proposalEntry\)/);
+    assert.doesNotMatch(guide, /function loadAdminDocumentProposals\(\)|function loadAdminApprovedDocuments\(\)/);
 });
 test('les Officiers Guides peuvent joindre un PDF, TXT ou PPT à leur proposition', () => {
     const guide = read('app/guide-dashboard.js');
@@ -51,8 +51,10 @@ test('les Officiers Guides peuvent joindre un PDF, TXT ou PPT à leur propositio
     assert.match(sql, /20971520/);
     assert.match(sql, /doctrine_is_guide\(\)/);
     assert.match(sql, /doctrine_is_admin\(\)/);
-    assert.match(admin, /Télécharger la pièce jointe/);
-    assert.match(admin, /storage\/v1\/object\/sign/);
+    assert.match(guide, /proposalFile\.accept = '\.pdf,\.txt,\.ppt/);
+    assert.match(guide, /function uploadProposalAttachment\(file\)/);
+    assert.match(guide, /storageApi\('object\/sign\/guide-document-proposals/);
+    assert.doesNotMatch(admin, /Propositions des Officiers Guides|Télécharger la pièce jointe/);
 });
 
 test('seuls les documents approuvés sont ajoutés à la rubrique 2.1', () => {
@@ -74,16 +76,17 @@ test('l’espace Admin conserve la publication directe sans afficher la file de 
     assert.match(source, /if \(isAdmin\(\)\) adminPanel\(\)/);
 });
 
-test('la validation documentaire actualise le Module 2.1 ainsi que les listes publiées OG et admin', () => {
+test('les documents validés du Module 2.1 restent visibles dans l’espace OG sans file Admin dupliquée', () => {
     const guide = read('app/guide-dashboard.js');
-    assert.match(guide, /Valider et publier dans le Module 2\.1/);
-    assert.match(guide, /status: 'approved'/);
-    assert.match(guide, /doctrine:content-updated/);
-    assert.match(guide, /function loadAdminApprovedDocuments\(\)/);
-    assert.match(guide, /Documents déjà validés — Module 2\.1/);
+    const admin = read('app/module2-documents.js');
     assert.match(guide, /function loadApprovedModule2Documents\(\)/);
     assert.match(guide, /status=eq\.approved/);
-    assert.match(guide, /loadAdminApprovedDocuments\(\), loadApprovedModule2Documents\(\)/);
+    assert.match(guide, /row\.drive_url/);
+    assert.match(guide, /Documents validés et disponibles/);
+    assert.match(guide, /if \(dashboardMode !== 'admin'\) libraryGrid\.append\(proposalEntry\)/);
+    assert.doesNotMatch(guide, /function loadAdminApprovedDocuments\(\)|Documents déjà validés — Module 2\.1/);
+    assert.doesNotMatch(admin, /Propositions des Officiers Guides|Aucune proposition en attente|Session expirée\. Reconnectez-vous\./);
+    assert.match(admin, /Ajouter et publier la carte/);
 });
 test('les cartes dynamiques restent hors du HTML sauvegardé du Module 2', () => {
     const admin = read('admin/admin.js');
