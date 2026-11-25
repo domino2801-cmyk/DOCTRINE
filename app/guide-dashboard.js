@@ -2101,7 +2101,8 @@
             return removeProposal.then(function () { return removeFromCatalog; });
         }).then(function () {
             setStatus('Cours supprimé de la bibliothèque et retiré des cours validés du Module 2.1.');
-            return Promise.all([loadCourseCatalog(), loadApprovedModule2Documents()]);
+            document.dispatchEvent(new CustomEvent('doctrine:content-updated', { detail: { moduleId: '2' } }));
+            return loadCourseCatalog();
         }).catch(function (error) {
             setStatus('Suppression impossible : ' + (error.message || ''), true);
         });
