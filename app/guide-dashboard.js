@@ -2386,17 +2386,12 @@
             applyGuideModuleVisibility();
             if (adminLaunchRequested()) openAdminDashboard();
         });
-        // Le relais QCM-MAJOR peut terminer sa restauration avant que ce script
-        // différé n'installe ses écouteurs. Dans ce cas, l'événement doctrine:login
-        // est déjà passé : vérifier aussi la session au démarrage pour ouvrir
-        // directement l'espace administrateur sans repasser par l'accueil.
-        if (adminLaunchRequested() && auth() && typeof auth().jeton === 'function') {
-            auth().jeton().then(function (token) {
-                if (token) openAdminDashboard();
-            }).catch(function (error) {
-                console.warn('Vérification de la session administrateur au démarrage impossible.', error);
-            });
-        }
+        // Le paramètre admin=1 est une demande explicite provenant du bouton
+        // ADMIN ANC de QCM-MAJOR. Ouvrir immédiatement le tableau de bord :
+        // le contrôle des droits est ensuite effectué par adminAccess().
+        // Ne pas conditionner l'ouverture à jeton() : le relais de session peut
+        // être encore en cours de restauration et laisser l'accueil affiché.
+        if (adminLaunchRequested()) openAdminDashboard();
         document.addEventListener('doctrine:logout', function () {
             stopProgressRefresh();
             if (root) root.hidden = true;
