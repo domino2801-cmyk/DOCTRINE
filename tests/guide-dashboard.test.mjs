@@ -463,6 +463,8 @@ test('le mode administrateur reprend le tableau de bord et isole les candidats O
     assert.match(script, /function adminLaunchRequested\(\)/);
     assert.match(script, /new URLSearchParams\(window\.location\.search\)\.get\('admin'\) === '1'/);
     assert.match(script, /if \(adminLaunchRequested\(\)\) openAdminDashboard\(\)/);
+    assert.match(script, /if \(adminLaunchRequested\(\) && auth\(\) && typeof auth\(\)\.jeton === 'function'\)/);
+    assert.match(script, /auth\(\)\.jeton\(\)\.then\(function \(token\) \{\s*if \(token\) openAdminDashboard\(\);/);
     assert.doesNotMatch(cohortDashboardScript, /adm-admin-dashboard-toolbar|doctrine:admin-dashboard/);
     assert.match(script, /doctrine:admin-dashboard/);
     assert.match(script, /dashboardTitleNode\.textContent = 'Espace Administrateur'/);
