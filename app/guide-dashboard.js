@@ -2625,7 +2625,7 @@
         var approvedDocumentsStatus = node('p', 'module2-og-status');
         proposalPanel.append(node('h4', '', 'Documents validés et disponibles'), approvedDocuments, approvedDocumentsStatus);
         function loadApprovedModule2Documents() {
-            api('guide_document_proposals?select=id,title,category,description,drive_url,status&status=eq.approved&order=created_at.asc')
+            api('guide_document_proposals?select=id,title,category,description,drive_url,uploaded_file_path,original_filename,mime_type,status&status=eq.approved&order=created_at.asc')
                 .then(function (rows) {
                     approvedDocuments.replaceChildren();
                     if (!rows.length) {
@@ -2637,10 +2637,36 @@
                         item.append(node('strong', '', row.title),
                             node('span', 'module2-document-category', row.category || 'Document complémentaire'));
                         if (row.description) item.append(node('p', 'og-dashboard-muted', row.description));
-                        var link = node('a', 'og-dashboard-download', 'Ouvrir le document');
-                        link.href = row.drive_url;
-                        link.target = '_blank';
-                        link.rel = 'noopener noreferrer';
+                        var link = node('button', 'og-dashboard-download', 'Ouvrir le document');
+                        link.type = 'button';
+                        link.addEventListener('click', function () {
+                            link.disabled = true;
+                            var ouvrir = row.uploaded_file_path
+                                ? auth().jeton().then(function (token) {
+                                    if (!token) throw new Error('Session expirée. Reconnectez-vous.');
+                                    var path = row.uploaded_file_path.split('/').map(encodeURIComponent).join('/');
+                                    return fetch(auth().url.replace(/\\/$/, '') + '/storage/v1/object/sign/guide-document-proposals/' + path, {
+                                        method: 'POST',
+                                        headers: { apikey: auth().key, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ expiresIn: 300 })
+                                    });
+                                }).then(function (response) {
+                                    return response.json().catch(function () { return {}; }).then(function (payload) {
+                                        if (!response.ok) throw new Error(payload.message || payload.error || 'Accès au document refusé.');
+                                        var signed = payload.signedURL || payload.signedUrl;
+                                        if (!signed) throw new Error('Lien sécurisé indisponible.');
+                                        if (!window.DoctrineViewer || !window.DoctrineViewer.openSignedDocument) throw new Error('Visionneuse documentaire indisponible.');
+                                        return window.DoctrineViewer.openSignedDocument(new URL(signed, auth().url.replace(/\\/$/, '') + '/').href,
+                                            row.original_filename || row.title, row.mime_type || '', '2');
+                                    });
+                                })
+                                : row.drive_url && window.DoctrineViewer && window.DoctrineViewer.openDrive
+                                    ? window.DoctrineViewer.openDrive(row.drive_url, row.title, '2')
+                                    : Promise.reject(new Error('Aucun fichier associé à ce document.'));
+                            Promise.resolve(ouvrir).catch(function (error) {
+                                approvedDocumentsStatus.textContent = error.message || 'Ouverture du document impossible.';
+                            }).finally(function () { link.disabled = false; });
+                        });
                         item.append(link);
                         approvedDocuments.append(item);
                     });
