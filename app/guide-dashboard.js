@@ -2407,6 +2407,8 @@
             if (expanded) {
                 loadModule2OwnProposals();
                 loadOwnCourseProposals();
+                loadApprovedModule2Documents();
+                if (dashboardMode === 'admin') loadAdminDocumentProposals();
             }
         });
         proposalEntry.append(proposalToggle,
@@ -2514,6 +2516,113 @@
                 }
             }).finally(function () { proposalSubmit.disabled = false; });
         });
+        var approvedDocuments = node('div', 'module2-og-approved-documents');
+        var approvedDocumentsStatus = node('p', 'module2-og-status');
+        proposalPanel.append(node('h4', '', 'Documents validés et disponibles'), approvedDocuments, approvedDocumentsStatus);
+        function loadApprovedModule2Documents() {
+            api('guide_document_proposals?select=id,title,category,description,drive_url,status&status=eq.approved&order=created_at.asc')
+                .then(function (rows) {
+                    approvedDocuments.replaceChildren();
+                    if (!rows.length) {
+                        approvedDocumentsStatus.textContent = 'Aucun document complémentaire validé.';
+                        return;
+                    }
+                    rows.forEach(function (row) {
+                        var item = node('article', 'module2-og-approved-item');
+                        item.append(node('strong', '', row.title),
+                            node('span', 'module2-document-category', row.category || 'Document complémentaire'));
+                        if (row.description) item.append(node('p', 'og-dashboard-muted', row.description));
+                        var link = node('a', 'og-dashboard-download', 'Ouvrir le document');
+                        link.href = row.drive_url;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        item.append(link);
+                        approvedDocuments.append(item);
+                    });
+                    approvedDocumentsStatus.textContent = rows.length + ' document(s) validé(s).';
+                }).catch(function (error) {
+                    approvedDocumentsStatus.textContent = error.message || 'Chargement des documents validés impossible.';
+                });
+        }
+        var adminDocumentProposals = null;
+        var adminDocumentStatus = null;
+        function loadAdminDocumentProposals() {
+            if (!adminDocumentProposals || dashboardMode !== 'admin') return;
+            api('guide_document_proposals?select=id,title,category,description,status,admin_note,created_at,uploaded_file_path,original_filename,file_size&status=eq.pending&order=created_at.asc')
+                .then(function (rows) {
+                    adminDocumentProposals.replaceChildren();
+                    if (!rows.length) {
+                        adminDocumentStatus.textContent = 'Aucune proposition documentaire en attente.';
+                        return;
+                    }
+                    rows.forEach(function (proposal) {
+                        var card = node('article', 'module2-og-admin-proposal');
+                        card.append(node('strong', '', proposal.title),
+                            node('p', '', proposal.category || 'Document proposé'),
+                            node('p', '', proposal.description || 'Aucune description.'));
+                        if (proposal.original_filename) {
+                            card.append(node('p', 'og-dashboard-muted', 'Pièce jointe : ' + proposal.original_filename +
+                                ' (' + Math.max(1, Math.round(Number(proposal.file_size || 0) / 1024)) + ' Ko)'));
+                        }
+                        var linkLabel = node('label', 'og-dashboard-course-admin-field', 'Lien Google Drive après vérification');
+                        var link = node('input');
+                        link.type = 'url'; link.required = true; link.placeholder = 'https://drive.google.com/...';
+                        linkLabel.append(link);
+                        var noteLabel = node('label', 'og-dashboard-course-admin-field', 'Commentaire à l’Officier Guide');
+                        var note = node('textarea'); note.rows = 2; note.maxLength = 1000;
+                        noteLabel.append(note);
+                        var approve = node('button', 'og-dashboard-download', 'Valider et publier dans le Module 2.1');
+                        approve.type = 'button';
+                        approve.addEventListener('click', function () {
+                            var parsed;
+                            try { parsed = new URL(link.value.trim()); } catch (_) { parsed = null; }
+                            if (!parsed || parsed.protocol !== 'https:' ||
+                                !['drive.google.com', 'docs.google.com'].includes(parsed.hostname.toLowerCase())) {
+                                setStatus(statusNode, 'Saisissez un lien Google Drive ou Google Docs valide en HTTPS.', true);
+                                return;
+                            }
+                            approve.disabled = true;
+                            api('guide_document_proposals?id=eq.' + encodeURIComponent(proposal.id), {
+                                method: 'PATCH', prefer: 'return=minimal',
+                                body: { drive_url: parsed.href, status: 'approved', admin_note: note.value.trim() }
+                            }).then(function () {
+                                adminDocumentStatus.textContent = 'Document validé et publié. Le Module 2.1 et les bibliothèques seront actualisés depuis Supabase.';
+                                return Promise.all([loadAdminDocumentProposals(), loadApprovedModule2Documents()]);
+                            }).catch(function (error) {
+                                setStatus(statusNode, 'Validation impossible : ' + (error.message || ''), true);
+                                approve.disabled = false;
+                            });
+                        });
+                        var reject = node('button', 'og-dashboard-download', 'Refuser');
+                        reject.type = 'button';
+                        reject.addEventListener('click', function () {
+                            if (!window.confirm('Refuser cette proposition documentaire ?')) return;
+                            reject.disabled = true;
+                            api('guide_document_proposals?id=eq.' + encodeURIComponent(proposal.id), {
+                                method: 'PATCH', prefer: 'return=minimal',
+                                body: { status: 'rejected', admin_note: note.value.trim() }
+                            }).then(loadAdminDocumentProposals).catch(function (error) {
+                                setStatus(statusNode, error.message || 'Refus impossible.', true);
+                                reject.disabled = false;
+                            });
+                        });
+                        card.append(linkLabel, noteLabel, approve, reject);
+                        adminDocumentProposals.append(card);
+                    });
+                    adminDocumentStatus.textContent = rows.length + ' proposition(s) documentaire(s) en attente.';
+                }).catch(function (error) {
+                    adminDocumentStatus.textContent = error.message || 'Chargement des propositions impossible.';
+                });
+        }
+        if (dashboardMode === 'admin') {
+            var adminDocumentsPanel = node('section', 'module2-og-admin-documents');
+            adminDocumentsPanel.append(node('h3', '', 'Propositions de documents des Officiers Guides — Module 2.1'));
+            adminDocumentProposals = node('div', 'module2-og-admin-proposals');
+            adminDocumentStatus = node('p', 'module2-og-status');
+            adminDocumentsPanel.append(adminDocumentProposals, adminDocumentStatus);
+            proposalPanel.append(adminDocumentsPanel);
+            loadAdminDocumentProposals();
+        }
         var ownProposals = node('ul', 'module2-og-own-list');
         var ownStatus = node('p', 'module2-og-status');
         ownStatus.setAttribute('role', 'status');
