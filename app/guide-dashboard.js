@@ -2074,8 +2074,51 @@
             .catch(function (error) { setStatus('Suppression impossible : ' + (error.message || ''), true); });
     }
     function loadCourseCatalog() {
-        return api('guide_course_catalog?select=id,title,category,description,drive_url&order=category.asc,title.asc')
-            .then(function (rows) { courses = Array.isArray(rows) ? rows : []; renderCourses(); });
+        // Le catalogue admin/OG et les cours validés dans Module 2.1 doivent
+        // alimenter la même bibliothèque. On fusionne les deux sources sans doublon.
+        return Promise.allSettled([
+            api('guide_course_catalog?select=id,title,category,description,drive_url&order=category.asc,title.asc'),
+            api('guide_document_proposals?select=id,title,description,drive_url,status,created_at&category=eq.Cours%20Officier%20Guide&status=eq.approved&order=created_at.asc')
+        ]).then(function (results) {
+            var catalogRows = results[0].status === 'fulfilled' && Array.isArray(results[0].value)
+                ? results[0].value : [];
+            var approvedRows = results[1].status === 'fulfilled' && Array.isArray(results[1].value)
+                ? results[1].value : [];
+            var merged = catalogRows.slice();
+            var seen = Object.create(null);
+            merged.forEach(function (course) {
+                var key = [course.title, course.category].map(function (value) {
+                    return String(value || '').trim().toLocaleLowerCase('fr');
+                }).join('|');
+                seen[key] = true;
+            });
+            approvedRows.forEach(function (proposal) {
+                var description = String(proposal.description || '');
+                var categoryMatch = description.match(/^Catégorie : ([^\\n]*)/);
+                var category = categoryMatch ? categoryMatch[1].trim() : 'Cours Officier Guide';
+                var courseDescription = categoryMatch
+                    ? description.slice(categoryMatch[0].length).replace(/^\\s*/, '') : description;
+                var key = [proposal.title, category].map(function (value) {
+                    return String(value || '').trim().toLocaleLowerCase('fr');
+                }).join('|');
+                if (seen[key]) return;
+                seen[key] = true;
+                merged.push({
+                    id: 'proposal-' + proposal.id,
+                    title: proposal.title,
+                    category: category,
+                    description: courseDescription,
+                    drive_url: proposal.drive_url || ''
+                });
+            });
+            courses = merged;
+            renderCourses();
+            if (results[0].status === 'rejected') {
+                setStatus('Catalogue des cours indisponible : ' + (results[0].reason.message || ''), true);
+            } else if (results[1].status === 'rejected') {
+                console.warn('Cours validés du Module 2.1 non fusionnés dans la bibliothèque.', results[1].reason);
+            }
+        });
     }
     function loadCourseProposals() {
         if (!courseProposalList || dashboardMode !== 'admin') return;
