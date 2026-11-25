@@ -41,14 +41,48 @@
         node.classList.toggle('is-error', !!error);
     }
 
+    function openApprovedDocument(row) {
+        if (row.uploaded_file_path) {
+            return auth.jeton().then(function (token) {
+                if (!token) throw new Error('Session expirée. Reconnectez-vous.');
+                var path = row.uploaded_file_path.split('/').map(encodeURIComponent).join('/');
+                return fetch(auth.url.replace(/\\/$/, '') + '/storage/v1/object/sign/guide-document-proposals/' + path, {
+                    method: 'POST',
+                    headers: { apikey: auth.key, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ expiresIn: 300 })
+                });
+            }).then(function (response) {
+                return response.json().catch(function () { return {}; }).then(function (payload) {
+                    if (!response.ok) throw new Error(payload.message || payload.error || 'Accès au document refusé.');
+                    var signed = payload.signedURL || payload.signedUrl;
+                    if (!signed) throw new Error('Lien sécurisé du document indisponible.');
+                    var url = new URL(signed, auth.url.replace(/\\/$/, '') + '/');
+                    if (!window.DoctrineViewer || typeof window.DoctrineViewer.openSignedDocument !== 'function') {
+                        throw new Error('Visionneuse documentaire indisponible.');
+                    }
+                    return window.DoctrineViewer.openSignedDocument(url.href, row.original_filename || row.title || 'Document', row.mime_type || '', '2');
+                });
+            });
+        }
+        if (row.drive_url && window.DoctrineViewer && window.DoctrineViewer.openDrive) {
+            return window.DoctrineViewer.openDrive(row.drive_url, row.title, '2');
+        }
+        throw new Error('Aucun fichier n’est associé à ce document.');
+    }
+
     function documentCard(row) {
         var card = el('li', 'dossier-item module2-approved-document');
         var title = el('span', 'dossier-text', row.title);
         var meta = el('span', 'module2-document-category', row.category || 'Document complémentaire');
-        var link = el('a', 'doc-link', 'Ouvrir');
-        link.href = row.drive_url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
+        var link = el('button', 'doc-link', 'Ouvrir');
+        link.type = 'button';
+        link.addEventListener('click', function () {
+            link.disabled = true;
+            Promise.resolve(openApprovedDocument(row)).catch(function (error) {
+                console.error('Ouverture du document validé impossible.', error);
+                window.alert(error.message || 'Impossible d’ouvrir ce document.');
+            }).finally(function () { link.disabled = false; });
+        });
         card.append(title, meta, link);
         return card;
     }
@@ -66,7 +100,7 @@
     function loadPublished() {
         var list = findModule2Anchor();
         if (!list) return;
-        api(TABLE + '?select=id,title,category,description,drive_url,created_at&status=eq.approved&order=created_at.asc')
+        api(TABLE + '?select=id,title,category,description,drive_url,uploaded_file_path,original_filename,mime_type,created_at&status=eq.approved&order=created_at.asc')
             .then(function (rows) {
                 var old = list.parentElement.querySelector('.module2-approved-documents');
                 if (old) old.remove();
@@ -178,10 +212,14 @@
                     copy.appendChild(el('strong', 'dossier-text', row.title));
                     copy.appendChild(el('span', 'module2-document-category', row.category || 'Document complémentaire'));
                     if (row.description) copy.appendChild(el('p', 'guide-muted', row.description));
-                    var link = el('a', 'doc-link', 'Ouvrir');
-                    link.href = row.drive_url;
-                    link.target = '_blank';
-                    link.rel = 'noopener noreferrer';
+                    var link = el('button', 'doc-link', 'Ouvrir');
+                    link.type = 'button';
+                    link.addEventListener('click', function () {
+                        link.disabled = true;
+                        Promise.resolve(openApprovedDocument(row)).catch(function (error) {
+                            setStatus(status, error.message || 'Ouverture du document impossible.', true);
+                        }).finally(function () { link.disabled = false; });
+                    });
                     item.append(copy, link);
                     list.appendChild(item);
                 });
