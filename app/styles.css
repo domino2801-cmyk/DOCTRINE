@@ -1262,6 +1262,7 @@ margin: 8px 0;
 }
 
 body.adm-on .specialty-admin-picker,
+body.admin-account .study-dashboard { display: none !important; }
 body.admin-account .specialty-admin-picker {
 display: block;
 }
