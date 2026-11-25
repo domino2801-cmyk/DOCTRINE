@@ -2645,7 +2645,7 @@
                                 ? auth().jeton().then(function (token) {
                                     if (!token) throw new Error('Session expirée. Reconnectez-vous.');
                                     var path = row.uploaded_file_path.split('/').map(encodeURIComponent).join('/');
-                                    return fetch(auth().url.replace(/\\/$/, '') + '/storage/v1/object/sign/guide-document-proposals/' + path, {
+                                    return fetch(auth().url.replace(/\/$/, '') + '/storage/v1/object/sign/guide-document-proposals/' + path, {
                                         method: 'POST',
                                         headers: { apikey: auth().key, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ expiresIn: 300 })
@@ -2656,7 +2656,7 @@
                                         var signed = payload.signedURL || payload.signedUrl;
                                         if (!signed) throw new Error('Lien sécurisé indisponible.');
                                         if (!window.DoctrineViewer || !window.DoctrineViewer.openSignedDocument) throw new Error('Visionneuse documentaire indisponible.');
-                                        return window.DoctrineViewer.openSignedDocument(new URL(signed, auth().url.replace(/\\/$/, '') + '/').href,
+                                        return window.DoctrineViewer.openSignedDocument(new URL(signed, auth().url.replace(/\/$/, '') + '/').href,
                                             row.original_filename || row.title, row.mime_type || '', '2');
                                     });
                                 })
