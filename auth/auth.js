@@ -442,7 +442,12 @@
         url: SUPABASE_URL,
         key: SUPABASE_KEY,
         jeton: function () { return verifier().then(function (s) { return s ? s.access_token : null; }); },
-        estAdmin: function () { var s = lire(); return !!(s && s.access_token && estAdmin(s.access_token)); },
+        estAdmin: function () {
+            // En provenance de QCM-MAJOR, le jeton est conservé en mémoire
+            // dans le relais sécurisé et non dans le stockage local.
+            var s = relaisActif && sessionRelais ? sessionRelais : lire();
+            return !!(s && s.access_token && estAdmin(s.access_token));
+        },
         email: function () { var s = lire(); return s ? s.email : ''; },
         retourQcm: function () {
             if (!relaisActif || !sessionRelais || !sessionRelais.user_id ||
