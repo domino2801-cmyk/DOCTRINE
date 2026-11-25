@@ -2085,9 +2085,15 @@
                 if (!rows.length) { courseProposalList.append(node('p', 'og-dashboard-muted', 'Aucune proposition de cours.')); return; }
                 rows.forEach(function (proposal) {
                     var card = node('article', 'og-dashboard-course-proposal');
-                    card.append(node('strong', '', proposal.title), node('p', '', proposal.description || 'Aucune description.'));
+                    var proposedDescription = String(proposal.description || '');
+                    var categoryMatch = proposedDescription.match(/^Catégorie : ([^\\n]*)/);
+                    var proposedCategory = categoryMatch ? categoryMatch[1].trim() : 'Cours Officier Guide';
+                    var courseDescription = categoryMatch ? proposedDescription.slice(categoryMatch[0].length).replace(/^\\s*/, '') : proposedDescription;
+                    card.append(node('strong', '', proposal.title), node('p', '', courseDescription || 'Aucune description.'));
                     card.append(node('p', 'og-dashboard-muted', 'Statut : ' + (proposal.status === 'approved' ? 'Validée' : proposal.status === 'rejected' ? 'Refusée' : 'En attente')));
                     if (proposal.status === 'pending') {
+                        var categoryLabel = node('label', 'og-dashboard-course-admin-field', 'Catégorie du cours');
+                        var categoryInput = node('input'); categoryInput.value = proposedCategory; categoryInput.required = true; categoryLabel.append(categoryInput);
                         var urlLabel = node('label', 'og-dashboard-course-admin-field', 'Lien Google Drive à publier');
                         var url = node('input'); url.type = 'url'; url.required = true; url.placeholder = 'https://drive.google.com/...'; urlLabel.append(url);
                         var noteLabel = node('label', 'og-dashboard-course-admin-field', 'Commentaire à l’Officier Guide');
@@ -2097,7 +2103,7 @@
                             if (!safeDriveUrl(url.value)) { setStatus('Lien Google Drive invalide.', true); return; }
                             approve.disabled = true;
                             api('guide_course_catalog', { method: 'POST', prefer: 'return=minimal', body: {
-                                title: proposal.title, category: 'Cours Officier Guide', description: proposal.description || '', drive_url: url.value.trim()
+                                title: proposal.title, category: categoryInput.value.trim(), description: courseDescription, drive_url: url.value.trim()
                             }}).then(function () {
                                 return api('guide_document_proposals?id=eq.' + encodeURIComponent(proposal.id), {
                                     method: 'PATCH', prefer: 'return=minimal', body: { status: 'approved', drive_url: url.value.trim(), admin_note: note.value.trim() }
@@ -2112,7 +2118,7 @@
                                 method: 'PATCH', prefer: 'return=minimal', body: { status: 'rejected', admin_note: note.value.trim() }
                             }).then(loadCourseProposals).catch(function (error) { setStatus(error.message || 'Refus impossible.', true); });
                         });
-                        card.append(urlLabel, noteLabel, approve, reject);
+                        card.append(categoryLabel, urlLabel, noteLabel, approve, reject);
                     } else if (proposal.admin_note) card.append(node('p', '', proposal.admin_note));
                     courseProposalList.append(card);
                 });
