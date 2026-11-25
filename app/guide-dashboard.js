@@ -2367,10 +2367,12 @@
         guideAccess().then(function (allowed) {
             var isOG = allowed === true;
             item.hidden = !isOG;
-            if (!isOG && root && !root.hidden) close();
+            // Un compte administrateur n'est pas nécessairement Officier Guide :
+            // ne jamais fermer son tableau de bord lors du contrôle OG indépendant.
+            if (!isOG && dashboardMode !== 'admin' && root && !root.hidden) close();
         }).catch(function () {
             item.hidden = true;
-            if (root && !root.hidden) close();
+            if (dashboardMode !== 'admin' && root && !root.hidden) close();
         });
     }
     function adminLaunchRequested() {
