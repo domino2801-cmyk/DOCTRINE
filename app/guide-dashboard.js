@@ -2513,7 +2513,6 @@
             proposalContent.hidden = !expanded;
             if (expanded) {
                 loadModule2OwnProposals();
-                loadOwnCourseProposals();
                 loadApprovedModule2Documents();
                 if (dashboardMode === 'admin') loadAdminDocumentProposals();
             }
@@ -2767,97 +2766,6 @@
         var ownStatus = node('p', 'module2-og-status');
         ownStatus.setAttribute('role', 'status');
         proposalPanel.append(node('h4', '', 'Suivi de mes propositions'), proposalForm, ownProposals, ownStatus);
-        // Le formulaire de proposition de cours est réservé à l’espace Officier Guide.
-        if (dashboardMode !== 'admin') {
-            // Propositions de cours OG : circuit distinct, suivi individuel et validation admin.
-            var courseProposalPanel = node('section', 'module2-og-course-proposals');
-            courseProposalPanel.append(node('h3', '', 'Proposer un cours pour le Module 2.1'));
-            courseProposalPanel.append(node('p', 'og-dashboard-muted', 'L’administrateur vérifie la proposition, ajoute le lien Google Drive et décide de sa publication dans le Module 2.1 des candidats.'));
-            var courseProposalForm = node('form', 'module2-og-form');
-            function courseProposalField(labelText, tagName, maxLength) {
-                var label = node('label', '', labelText);
-                var control = node(tagName);
-                control.required = tagName === 'input';
-                if (maxLength) control.maxLength = maxLength;
-                if (tagName === 'textarea') control.rows = 3;
-                label.append(control);
-                courseProposalForm.append(label);
-                return control;
-            }
-            var courseProposalTitle = courseProposalField('Intitulé du cours', 'input', 160);
-            var courseProposalCategory = courseProposalField('Catégorie / thème', 'input', 100);
-            var courseProposalDescription = courseProposalField('Présentation et intérêt pédagogique', 'textarea', 1200);
-            courseProposalDescription.required = true;
-            var courseProposalFileLabel = node('label', '', 'Joindre un document (PDF, TXT ou PPT — 20 Mo maximum)');
-            var courseProposalFile = node('input');
-            courseProposalFile.type = 'file';
-            courseProposalFile.accept = '.pdf,.txt,.ppt,application/pdf,text/plain,application/vnd.ms-powerpoint';
-            courseProposalFileLabel.append(courseProposalFile);
-            courseProposalForm.append(courseProposalFileLabel);
-            var courseProposalSubmit = node('button', 'og-dashboard-download', 'Envoyer la proposition de cours');
-            courseProposalSubmit.type = 'submit';
-            var courseProposalFormStatus = node('p', 'module2-og-status');
-            courseProposalFormStatus.setAttribute('role', 'status');
-            courseProposalForm.append(courseProposalSubmit, courseProposalFormStatus);
-            var ownCourseProposals = node('div', 'module2-og-own-course-list');
-            var ownCourseStatus = node('p', 'module2-og-status');
-            ownCourseStatus.setAttribute('role', 'status');
-            courseProposalForm.addEventListener('submit', function (event) {
-                event.preventDefault();
-                if (!courseProposalForm.reportValidity()) return;
-                var file = courseProposalFile.files && courseProposalFile.files[0];
-                courseProposalSubmit.disabled = true;
-                courseProposalFormStatus.textContent = file ? 'Téléversement du document puis envoi de la proposition…' : 'Transmission de la proposition…';
-                var uploadedPath = null;
-                var upload = file ? uploadProposalAttachment(file).then(function (result) {
-                    uploadedPath = result.path;
-                    return result;
-                }) : Promise.resolve(null);
-                upload.then(function (attachment) {
-                    return api('guide_document_proposals', { method: 'POST', prefer: 'return=minimal', body: {
-                        title: courseProposalTitle.value.trim(),
-                        category: 'Cours Officier Guide',
-                        description: 'Catégorie : ' + courseProposalCategory.value.trim() + '\n' + courseProposalDescription.value.trim(),
-                        uploaded_file_path: attachment ? attachment.path : null,
-                        original_filename: attachment ? file.name.slice(0, 255) : null,
-                        file_size: attachment ? file.size : null,
-                        mime_type: attachment ? attachment.mime : null
-                    }});
-                }).then(function () {
-                    courseProposalForm.reset();
-                    courseProposalFormStatus.textContent = 'Proposition de cours transmise à l’administrateur.';
-                    loadOwnCourseProposals();
-                }).catch(function (error) {
-                    courseProposalFormStatus.textContent = error.message || 'Envoi impossible.';
-                    if (uploadedPath) {
-                        auth().jeton().then(function (token) {
-                            return fetch(auth().url.replace(/\/$/, '') + '/storage/v1/object/guide-document-proposals/' +
-                                uploadedPath.split('/').map(encodeURIComponent).join('/'), {
-                                method: 'DELETE',
-                                headers: { apikey: auth().key, Authorization: 'Bearer ' + token }
-                            });
-                        }).catch(function () {});
-                    }
-                }).finally(function () { courseProposalSubmit.disabled = false; });
-            });
-            function loadOwnCourseProposals() {
-                api('guide_document_proposals?select=id,title,description,status,admin_note,created_at&category=eq.Cours%20Officier%20Guide&order=created_at.desc')
-                    .then(function (rows) {
-                        ownCourseProposals.replaceChildren();
-                        if (!rows.length) { ownCourseStatus.textContent = 'Aucune proposition de cours enregistrée.'; return; }
-                        rows.forEach(function (row) {
-                            var state = row.status === 'approved' ? 'Validée et publiée' : row.status === 'rejected' ? 'Refusée' : 'En attente de validation';
-                            var card = node('article', 'module2-og-own-course-item');
-                            card.append(node('strong', '', row.title), node('p', '', state));
-                            if (row.admin_note) card.append(node('p', '', 'Retour administrateur : ' + row.admin_note));
-                            ownCourseProposals.append(card);
-                        });
-                        ownCourseStatus.textContent = '';
-                    }).catch(function (error) { ownCourseStatus.textContent = error.message || 'Chargement du suivi impossible.'; });
-            }
-            courseProposalPanel.append(courseProposalForm, node('h4', '', 'Suivi de mes propositions de cours'), ownCourseProposals, ownCourseStatus);
-            proposalPanel.append(courseProposalPanel);
-        }
         proposalContent.append(proposalPanel);
         proposalEntry.append(proposalContent);
         function loadModule2OwnProposals() {
