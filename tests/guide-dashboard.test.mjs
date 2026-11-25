@@ -95,13 +95,13 @@ test('la carte CANDIDATS ouvre la cohorte puis une fiche individuelle limitée a
     assert.match(script, /card\.addEventListener\('click', openGuideCandidates\)/);
     assert.match(script, /function renderCandidateProfileDetail\(target, candidate\)/);
     assert.match(script, /CANDIDATS — COHORTE RATTACHÉE/);
-    assert.match(script, /'TOUS — ' \+ candidates\.length \+ ' candidat\(s\)'/);
+    assert.match(script, /'TOUS — ' : 'CANDIDATS — '\) \+ regularCandidates\.length/);
     assert.match(script, /og-dashboard-candidate-group-open/);
     assert.match(script, /og-dashboard-candidate-group-heading/);
     assert.match(script, /og-dashboard-candidate-group-items/);
     assert.match(script, /renderCandidateProfileDetail\(detail, candidate\)/);
     assert.match(script, /firstCandidateButton\.click\(\)/);
-    assert.doesNotMatch(script.slice(script.indexOf('function openGuideCandidates'), script.indexOf('function renderMetrics')), /node\('details', 'og-dashboard-candidate-group'/);
+    assert.match(script.slice(script.indexOf('function openGuideCandidates'), script.indexOf('function renderMetrics')), /if \(dashboardMode === 'admin'\) \{[\s\S]*?var ogGroup = node\('details', 'og-dashboard-candidate-group/);
     assert.match(script, /identity\.name \|\| 'Pseudo non renseigné'/);
     assert.match(script, /identity\.specialty, identity\.email/);
     assert.match(script, /FICHE CANDIDAT/);
@@ -451,4 +451,20 @@ test('les indicateurs administratifs sont regroupés dans une carte responsive d
     assert.match(css, /@media\(max-width:760px\)[\s\S]*?\.og-candidate-profile-summary-card\s*\{\s*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
     assert.match(css, /@media\(max-width:520px\)[\s\S]*?\.og-candidate-profile-summary-card\s*\{\s*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
     assert.match(css, /@media\(max-width:390px\)[\s\S]*?\.og-candidate-profile-summary-card\s*\{\s*grid-template-columns:minmax\(0,1fr\)/);
+});
+
+
+test('le mode administrateur reprend le tableau de bord et isole les candidats OG dans un accordéon replié', () => {
+    assert.match(script, /function adminAccess\(\)/);
+    assert.match(script, /function openAdminDashboard\(\)/);
+    assert.match(script, /doctrine:admin-dashboard/);
+    assert.match(script, /dashboardTitleNode\.textContent = 'Espace Administrateur'/);
+    assert.match(script, /function isOgCandidate\(candidate\)/);
+    assert.match(script, /var regularCandidates = dashboardMode === 'admin'/);
+    assert.match(script, /var ogCandidates = dashboardMode === 'admin'/);
+    assert.match(script, /var ogGroup = node\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\)/);
+    assert.match(script, /CANDIDATS OFFICIER GUIDE — '/);
+    assert.match(script, /var ogDetails = node\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\)/);
+    assert.match(script, /node\('button', 'module-nav-button adm-admin-dashboard-toolbar', '🏛️ Admin ANC'\)/);
+    assert.match(script, /document\.dispatchEvent\(new CustomEvent\('doctrine:admin-dashboard'\)\)/);
 });
