@@ -77,6 +77,20 @@ test('l’espace Officier Guide affiche uniquement les contenus publiés et leur
     assert.match(guideCss, /\.og-dashboard-pedagogical-libraries/);
 });
 
+test('la gestion des dossiers et corrections est intégrée à la bibliothèque du tableau de bord administrateur', () => {
+    assert.match(guide, /dashboardMode === 'admin'/);
+    assert.match(guide, /function exerciseLibraryAdminForm\(type, item\)/);
+    assert.match(guide, /\+ Ajouter un dossier d’exercice/);
+    assert.match(guide, /\+ Ajouter une correction/);
+    assert.match(guide, /editExercise/);
+    assert.match(guide, /deleteExerciseLibraryItem\('exercise', exercise\)/);
+    assert.match(guide, /editCorrection/);
+    assert.match(guide, /deleteExerciseLibraryItem\('correction', correction\)/);
+    assert.match(guide, /Publier pour les Officiers Guides/);
+    assert.match(guide, /exerciseLibrarySelectedId/);
+    assert.match(guideCss, /og-dashboard-library-admin-form/);
+});
+
 test('le panneau Admin est chargé séparément et fonctionne hors connexion via le cache PWA', () => {
     assert.match(html, /admin\/guide-library\.js/);
     assert.match(html, /admin\/guide-library\.css/);
