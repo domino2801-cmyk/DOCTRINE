@@ -28,8 +28,15 @@ test('la carte de proposition est placée sous les deux bibliothèques sans affi
     assert.doesNotMatch(card, /proposalCategory|proposalDescription|Catégorie|Description \(facultatif\)/);
     assert.match(guide, /Suivi de mes propositions/);
     assert.match(guide, /guide_document_proposals/);
-    assert.doesNotMatch(card, /loadModule2GuideContent|Ressources disponibles pour les candidats|status=eq\.approved/);
-    assert.doesNotMatch(card, /drive_url\s*:/);
+    const proposalFormStart = card.indexOf("var proposalForm = node('form'");
+    const proposalFormEnd = card.indexOf("var ownProposals =", proposalFormStart);
+    const proposalForm = card.slice(proposalFormStart, proposalFormEnd);
+    assert.ok(proposalFormStart >= 0 && proposalFormEnd > proposalFormStart);
+    assert.doesNotMatch(proposalForm, /proposalCategory|proposalDescription|Catégorie|Description \(facultatif\)/);
+    assert.match(card, /function loadApprovedModule2Documents\(\)/);
+    assert.match(card, /status=eq\.approved/);
+    assert.match(card, /function loadAdminDocumentProposals\(\)/);
+    assert.match(card, /function loadAdminApprovedDocuments\(\)/);
 });
 test('les Officiers Guides peuvent joindre un PDF, TXT ou PPT à leur proposition', () => {
     const guide = read('app/guide-dashboard.js');
