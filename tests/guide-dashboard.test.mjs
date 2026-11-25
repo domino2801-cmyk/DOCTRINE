@@ -153,20 +153,14 @@ test('le catalogue des 30 supports est administrable depuis le tableau de bord a
     assert.match(script, /category: categoryInput\.value\.trim\(\)/);
     assert.match(script, /guide_course_catalog/);
 });
-test('une proposition de cours Module 2.1 accepte une pièce jointe PDF TXT ou PPT de 20 Mo', () => {
-    assert.match(script, /courseProposalFileLabel = node\('label', '', 'Joindre un document \(PDF, TXT ou PPT — 20 Mo maximum\)'\)/);
-    assert.match(script, /courseProposalFile\.accept = '\.pdf,\.txt,\.ppt/);
-    assert.match(script, /uploaded_file_path: attachment \? attachment\.path : null/);
-    assert.match(script, /file_size: attachment \? file\.size : null/);
-    assert.match(script, /file\.size > 20 \* 1024 \* 1024/);
-    assert.match(script, /Télécharger la pièce jointe/);
-});
-test('les Officiers Guides peuvent proposer un cours et suivre la décision administrateur', () => {
-    assert.match(script, /Proposer un cours pour le Module 2\.1/);
-    assert.match(script, /category: 'Cours Officier Guide'/);
-    assert.match(script, /function loadOwnCourseProposals\(\)/);
-    assert.match(script, /Suivi de mes propositions de cours/);
-    assert.match(script, /En attente de validation/);
+test('la carte de proposition de cours est retirée de l’interface Officier Guide', () => {
+    assert.doesNotMatch(script, /Proposer un cours pour le Module 2\.1/);
+    assert.doesNotMatch(script, /module2-og-course-proposals/);
+    assert.doesNotMatch(script, /function loadOwnCourseProposals\(\)/);
+    assert.doesNotMatch(script, /Suivi de mes propositions de cours/);
+    // Le circuit de proposition documentaire général reste disponible.
+    assert.match(script, /PROPOSITION DE DOCUMENTS À AJOUTER POUR LES CANDIDATS/);
+    assert.match(script, /function loadModule2OwnProposals\(\)/);
 });
 
 test('le tableau de bord utilise les données filtrées par le RPC guide', () => {
