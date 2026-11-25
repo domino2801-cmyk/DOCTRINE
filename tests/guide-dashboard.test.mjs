@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const [html, script, css, seed, viewerScript, viewerCss, appScript, cohortDashboardScript] = await Promise.all([
+const [html, script, css, seed, viewerScript, viewerCss, appScript, cohortDashboardScript, authScript, adminRoleSql] = await Promise.all([
     readFile(new URL('../index.html', import.meta.url), 'utf8'),
     readFile(new URL('../app/guide-dashboard.js', import.meta.url), 'utf8'),
     readFile(new URL('../app/guide-dashboard.css', import.meta.url), 'utf8'),
@@ -10,7 +10,9 @@ const [html, script, css, seed, viewerScript, viewerCss, appScript, cohortDashbo
     readFile(new URL('../viewer/viewer.js', import.meta.url), 'utf8'),
     readFile(new URL('../viewer/viewer.css', import.meta.url), 'utf8'),
     readFile(new URL('../app/app.js', import.meta.url), 'utf8'),
-    readFile(new URL('../admin/cohort-dashboard.js', import.meta.url), 'utf8')
+    readFile(new URL('../admin/cohort-dashboard.js', import.meta.url), 'utf8'),
+    readFile(new URL('../auth/auth.js', import.meta.url), 'utf8'),
+    readFile(new URL('../supabase/admin-role-qcm-major-compatibility.sql', import.meta.url), 'utf8')
 ]);
 
 test('l’espace Officier Guide est chargé séparément des modules existants', () => {
@@ -470,4 +472,13 @@ test('le mode administrateur reprend le tableau de bord et isole les candidats O
     assert.match(script, /var ogGroup = node\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\)/);
     assert.match(script, /CANDIDATS OFFICIER GUIDE — '/);
     assert.match(script, /ogDetails = node\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\)/);
+});
+
+
+test('le rôle admin transmis par QCM-MAJOR est reconnu côté navigateur et côté Supabase', () => {
+    assert.match(authScript, /claims\.role === 'admin'/);
+    assert.match(authScript, /meta\.role === 'admin'/);
+    assert.match(adminRoleSql, /auth\.jwt\(\) ->> 'role'\) = 'admin'/);
+    assert.match(adminRoleSql, /auth\.jwt\(\) -> 'app_metadata' ->> 'role'\) = 'admin'/);
+    assert.match(script, /api\('rpc\/doctrine_is_admin'/);
 });
