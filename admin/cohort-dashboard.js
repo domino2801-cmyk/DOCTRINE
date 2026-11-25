@@ -281,18 +281,6 @@
             }
             button.hidden = !isAdmin();
 
-            var adminButton = zone.querySelector('.adm-admin-dashboard-toolbar');
-            if (!adminButton) {
-                adminButton = node('button', 'module-nav-button adm-admin-dashboard-toolbar', '🏛️ Admin ANC');
-                adminButton.type = 'button';
-                adminButton.title = 'Ouvrir l’espace Administrateur complet';
-                adminButton.addEventListener('click', function () {
-                    if (!isAdmin()) return;
-                    document.dispatchEvent(new CustomEvent('doctrine:admin-dashboard'));
-                });
-                zone.appendChild(adminButton);
-            }
-            adminButton.hidden = !isAdmin();
         });
     }
 
