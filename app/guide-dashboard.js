@@ -2679,6 +2679,12 @@
         var courseProposalCategory = courseProposalField('Catégorie / thème', 'input', 100);
         var courseProposalDescription = courseProposalField('Présentation et intérêt pédagogique', 'textarea', 1200);
         courseProposalDescription.required = true;
+        var courseProposalFileLabel = node('label', '', 'Joindre un document (PDF, TXT ou PPT — 20 Mo maximum)');
+        var courseProposalFile = node('input');
+        courseProposalFile.type = 'file';
+        courseProposalFile.accept = '.pdf,.txt,.ppt,application/pdf,text/plain,application/vnd.ms-powerpoint';
+        courseProposalFileLabel.append(courseProposalFile);
+        courseProposalForm.append(courseProposalFileLabel);
         var courseProposalSubmit = node('button', 'og-dashboard-download', 'Envoyer la proposition de cours');
         courseProposalSubmit.type = 'submit';
         var courseProposalFormStatus = node('p', 'module2-og-status');
@@ -2690,18 +2696,39 @@
         courseProposalForm.addEventListener('submit', function (event) {
             event.preventDefault();
             if (!courseProposalForm.reportValidity()) return;
+            var file = courseProposalFile.files && courseProposalFile.files[0];
             courseProposalSubmit.disabled = true;
-            courseProposalFormStatus.textContent = 'Transmission de la proposition…';
-            api('guide_document_proposals', { method: 'POST', prefer: 'return=minimal', body: {
-                title: courseProposalTitle.value.trim(),
-                category: 'Cours Officier Guide',
-                description: 'Catégorie : ' + courseProposalCategory.value.trim() + '\n' + courseProposalDescription.value.trim()
-            }}).then(function () {
+            courseProposalFormStatus.textContent = file ? 'Téléversement du document puis envoi de la proposition…' : 'Transmission de la proposition…';
+            var uploadedPath = null;
+            var upload = file ? uploadProposalAttachment(file).then(function (result) {
+                uploadedPath = result.path;
+                return result;
+            }) : Promise.resolve(null);
+            upload.then(function (attachment) {
+                return api('guide_document_proposals', { method: 'POST', prefer: 'return=minimal', body: {
+                    title: courseProposalTitle.value.trim(),
+                    category: 'Cours Officier Guide',
+                    description: 'Catégorie : ' + courseProposalCategory.value.trim() + '\n' + courseProposalDescription.value.trim(),
+                    uploaded_file_path: attachment ? attachment.path : null,
+                    original_filename: attachment ? file.name.slice(0, 255) : null,
+                    file_size: attachment ? file.size : null,
+                    mime_type: attachment ? attachment.mime : null
+                }});
+            }).then(function () {
                 courseProposalForm.reset();
                 courseProposalFormStatus.textContent = 'Proposition de cours transmise à l’administrateur.';
                 loadOwnCourseProposals();
             }).catch(function (error) {
                 courseProposalFormStatus.textContent = error.message || 'Envoi impossible.';
+                if (uploadedPath) {
+                    auth().jeton().then(function (token) {
+                        return fetch(auth().url.replace(/\/$/, '') + '/storage/v1/object/guide-document-proposals/' +
+                            uploadedPath.split('/').map(encodeURIComponent).join('/'), {
+                            method: 'DELETE',
+                            headers: { apikey: auth().key, Authorization: 'Bearer ' + token }
+                        });
+                    }).catch(function () {});
+                }
             }).finally(function () { courseProposalSubmit.disabled = false; });
         });
         function loadOwnCourseProposals() {
