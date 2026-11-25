@@ -477,6 +477,14 @@ test('le mode administrateur reprend le tableau de bord et isole les candidats O
 });
 
 
+test('le contrôle Officier Guide ne ferme pas le tableau de bord administrateur', () => {
+    const start = script.indexOf('function updateTrigger()');
+    const end = script.indexOf('function adminLaunchRequested()', start);
+    const updateTrigger = script.slice(start, end);
+    assert.match(updateTrigger, /dashboardMode !== 'admin' && root && !root\.hidden\) close\(\)/);
+    assert.match(updateTrigger, /dashboardMode !== 'admin' && root && !root\.hidden\) close\(\)/);
+});
+
 test('le rôle admin transmis par QCM-MAJOR est reconnu côté navigateur et côté Supabase', () => {
     assert.match(authScript, /claims\.role === 'admin'/);
     assert.match(authScript, /meta\.role === 'admin'/);
