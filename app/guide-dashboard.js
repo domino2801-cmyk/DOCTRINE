@@ -2295,26 +2295,28 @@
     }
     function openAdminDashboard() {
         if (root && !root.hidden && dashboardMode === 'admin') return Promise.resolve(true);
+        // Construire le panneau avant d'écrire son statut : statusNode n'existe
+        // pas encore au premier accès depuis le bouton Admin ANC de QCM-MAJOR.
+        dashboardMode = 'admin';
+        build();
+        if (dashboardTitleNode) dashboardTitleNode.textContent = 'Espace Administrateur';
+        if (dashboardSubtitleNode) dashboardSubtitleNode.textContent = 'Tous les candidats, leurs suivis et les ressources pédagogiques.';
+        root.hidden = false;
+        document.body.classList.add('og-dashboard-open');
         setStatus('Vérification des droits administrateur…');
         return adminAccess().then(function (allowed) {
             if (!allowed) {
                 setStatus('Accès administrateur refusé. Vérifiez que le compte QCM-MAJOR possède le rôle administrateur dans les métadonnées Supabase.', true);
                 return false;
             }
-            dashboardMode = 'admin';
-            build();
-            if (dashboardTitleNode) dashboardTitleNode.textContent = 'Espace Administrateur';
-            if (dashboardSubtitleNode) dashboardSubtitleNode.textContent = 'Tous les candidats, leurs suivis et les ressources pédagogiques.';
             trigger = null;
-            root.hidden = false;
-            document.body.classList.add('og-dashboard-open');
             startProgressRefresh();
             load();
             loadExerciseLibraries();
             return true;
         }).catch(function (error) {
             console.error('Ouverture de l’espace Administrateur impossible.', error);
-            if (statusNode) setStatus('Impossible de vérifier les droits administrateur : ' + (error.message || 'erreur de connexion Supabase'), true);
+            setStatus('Impossible de vérifier les droits administrateur : ' + (error.message || 'erreur de connexion Supabase'), true);
             return false;
         });
     }
