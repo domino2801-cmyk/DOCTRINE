@@ -2068,10 +2068,43 @@
           .catch(function (error) { setStatus('Enregistrement impossible : ' + (error.message || ''), true); });
     }
     function deleteCourseAdmin(course) {
-        if (dashboardMode !== 'admin' || !window.confirm('Supprimer définitivement « ' + course.title + ' » ?')) return;
-        api('guide_course_catalog?id=eq.' + encodeURIComponent(course.id), { method: 'DELETE' })
-            .then(loadCourseCatalog)
-            .catch(function (error) { setStatus('Suppression impossible : ' + (error.message || ''), true); });
+        if (dashboardMode !== 'admin' || !window.confirm('Supprimer définitivement « ' + course.title + ' » de la bibliothèque et du Module 2.1 candidat ?')) return;
+        function archiveProposal(proposalId) {
+            return api('guide_document_proposals?id=eq.' + encodeURIComponent(proposalId), {
+                method: 'PATCH', prefer: 'return=minimal',
+                body: { status: 'rejected', admin_note: 'Cours retiré de la bibliothèque Officier Guide.' }
+            });
+        }
+        function proposalCategory(proposal) {
+            var description = String(proposal.description || '');
+            var match = description.match(/^Catégorie : ([^\\n]*)/);
+            return match ? match[1].trim() : 'Cours Officier Guide';
+        }
+        var proposalId = String(course.id || '').indexOf('proposal-') === 0
+            ? String(course.id).slice('proposal-'.length) : '';
+        var removeFromCatalog = proposalId
+            ? Promise.resolve()
+            : api('guide_course_catalog?id=eq.' + encodeURIComponent(course.id), { method: 'DELETE' });
+        var removeProposal = proposalId
+            ? archiveProposal(proposalId)
+            : api('guide_document_proposals?select=id,title,description&category=eq.Cours%20Officier%20Guide&status=eq.approved')
+                .then(function (proposals) {
+                    var match = (Array.isArray(proposals) ? proposals : []).find(function (proposal) {
+                        return String(proposal.title || '').trim().toLocaleLowerCase('fr') ===
+                            String(course.title || '').trim().toLocaleLowerCase('fr') &&
+                            proposalCategory(proposal).toLocaleLowerCase('fr') ===
+                            String(course.category || '').trim().toLocaleLowerCase('fr');
+                    });
+                    return match ? archiveProposal(match.id) : null;
+                });
+        Promise.resolve().then(function () {
+            return removeProposal.then(function () { return removeFromCatalog; });
+        }).then(function () {
+            setStatus('Cours supprimé de la bibliothèque et retiré des cours validés du Module 2.1.');
+            return Promise.all([loadCourseCatalog(), loadApprovedModule2Documents()]);
+        }).catch(function (error) {
+            setStatus('Suppression impossible : ' + (error.message || ''), true);
+        });
     }
     function loadCourseCatalog() {
         // Le catalogue admin/OG et les cours validés dans Module 2.1 doivent
