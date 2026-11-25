@@ -1296,14 +1296,6 @@
             if (c) defauts[n] = c.innerHTML;
         });
         construireDialogue();
-        document.addEventListener('doctrine:open-document-views', function () {
-            if (!auth() || !auth().estAdmin()) return;
-            ouvrirSuivi();
-        });
-        document.addEventListener('doctrine:open-module-editor', function () {
-            if (!auth() || !auth().estAdmin() || adminActif) return;
-            entrer();
-        });
         if (defauts['3']) {
             var modele = document.createElement('template');
             modele.innerHTML = defauts['3'];
