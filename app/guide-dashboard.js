@@ -2386,6 +2386,17 @@
             applyGuideModuleVisibility();
             if (adminLaunchRequested()) openAdminDashboard();
         });
+        // Le relais QCM-MAJOR peut terminer sa restauration avant que ce script
+        // différé n'installe ses écouteurs. Dans ce cas, l'événement doctrine:login
+        // est déjà passé : vérifier aussi la session au démarrage pour ouvrir
+        // directement l'espace administrateur sans repasser par l'accueil.
+        if (adminLaunchRequested() && auth() && typeof auth().jeton === 'function') {
+            auth().jeton().then(function (token) {
+                if (token) openAdminDashboard();
+            }).catch(function (error) {
+                console.warn('Vérification de la session administrateur au démarrage impossible.', error);
+            });
+        }
         document.addEventListener('doctrine:logout', function () {
             stopProgressRefresh();
             if (root) root.hidden = true;
