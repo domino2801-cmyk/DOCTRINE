@@ -1756,6 +1756,7 @@
         return section;
     }
     var exerciseLibraryForm = null;
+    var exerciseLibrarySelectedId = '';
     function exerciseLibraryAdminForm(type, item) {
         if (dashboardMode !== 'admin') return;
         if (!exerciseLibraryForm) {
@@ -1789,7 +1790,7 @@
                 option.value = exercise.id;
                 select.append(option);
             });
-            select.value = item ? item.exercise_id : exerciseLibraryForm.dataset.exerciseId || '';
+            select.value = item ? item.exercise_id : exerciseLibrarySelectedId || '';
             label.append(select);
             exerciseLibraryForm.append(label);
         }
@@ -1874,7 +1875,7 @@
             addCorrectionButton.type = 'button';
             addCorrectionButton.disabled = !exerciseLibraryItems.length;
             addCorrectionButton.addEventListener('click', function () {
-                exerciseLibraryForm.dataset.exerciseId = exerciseLibraryItems[0] ? exerciseLibraryItems[0].id : '';
+                exerciseLibrarySelectedId = exerciseLibraryItems[0] ? exerciseLibraryItems[0].id : '';
                 exerciseLibraryAdminForm('correction', null);
             });
             adminToolbar.append(addExerciseButton, addCorrectionButton);
@@ -1941,7 +1942,7 @@
                         var addRelatedCorrection = node('button', 'og-dashboard-download', '+ Ajouter une correction');
                         addRelatedCorrection.type = 'button';
                         addRelatedCorrection.addEventListener('click', function () {
-                            exerciseLibraryForm.dataset.exerciseId = exercise.id;
+                            exerciseLibrarySelectedId = exercise.id;
                             exerciseLibraryAdminForm('correction', null);
                         });
                         actions.append(editExercise, deleteExercise, addRelatedCorrection);
