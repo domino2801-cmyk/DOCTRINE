@@ -35,3 +35,15 @@
 .adm-guide-library-empty { margin:0; padding:12px; color:#aebfb1; font-size:13px; }
 @media(max-width:760px) { .adm-guide-library-grid { grid-template-columns:1fr; } }
 @media(max-width:560px) { .adm-guide-library-overlay { padding:6px; } .adm-guide-library-card { max-height:97vh; padding:13px; } .adm-guide-library-header { flex-direction:column; } .adm-guide-library-form { grid-template-columns:1fr; } .adm-guide-library-actions { grid-column:auto; } .adm-guide-library-item-actions > * { flex:1; } }
+
+/* Corrections présentées à l'intérieur de chaque dossier parent. */
+.adm-guide-library-exercise-item { gap:12px; border-color:rgba(216,184,91,.28); }
+.adm-guide-library-linked-corrections { display:grid; gap:9px; margin-top:2px; padding:12px; border-left:3px solid rgba(216,184,91,.55); border-radius:0 8px 8px 0; background:rgba(0,0,0,.16); }
+.adm-guide-library-linked-corrections h5 { margin:0; color:#e6c96f; font-size:13px; }
+.adm-guide-library-correction-item { grid-template-columns:minmax(0,1fr) auto; align-items:center; padding:10px; background:rgba(255,255,255,.035); }
+.adm-guide-library-correction-item .adm-guide-library-copy h4 { font-size:13px; }
+.adm-guide-library-correction-item .adm-guide-library-item-actions { justify-content:flex-end; }
+@media(max-width:560px) {
+ .adm-guide-library-correction-item { grid-template-columns:1fr; }
+ .adm-guide-library-correction-item .adm-guide-library-item-actions { justify-content:stretch; }
+}
