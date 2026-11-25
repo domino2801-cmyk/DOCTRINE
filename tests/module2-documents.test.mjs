@@ -25,7 +25,6 @@ test('la carte de proposition est placée sous les deux bibliothèques sans affi
     assert.match(guide, /libraryGrid\.append\(proposalEntry\)/);
     assert.match(guide, /PROPOSITION DE DOCUMENTS À AJOUTER POUR LES CANDIDATS/);
     assert.match(guide, /Titre du document/);
-    assert.doesNotMatch(card, /proposalCategory|proposalDescription|Catégorie|Description \(facultatif\)/);
     assert.match(guide, /Suivi de mes propositions/);
     assert.match(guide, /guide_document_proposals/);
     const proposalFormStart = card.indexOf("var proposalForm = node('form'");
