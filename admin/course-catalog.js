@@ -35,7 +35,7 @@
             var headers = { apikey: auth().key, Authorization: 'Bearer ' + token };
             if (options.body !== undefined) headers['Content-Type'] = 'application/json';
             if (options.prefer) headers.Prefer = options.prefer;
-            return fetch(auth().url.replace(/\\/$/, '') + '/rest/v1/' + path, {
+            return fetch(auth().url.replace(/\/$/, '') + '/rest/v1/' + path, {
                 method: options.method || 'GET',
                 headers: headers,
                 body: options.body === undefined ? undefined : JSON.stringify(options.body)
@@ -50,7 +50,7 @@
 
     function safeDriveUrl(value) {
         var url = String(value || '').trim();
-        if (!/^https:\\/\\/(?:drive\\.google\\.com|docs\\.google\\.com)\\//i.test(url)) {
+        if (!/^https:\/\/(?:drive\.google\.com|docs\.google\.com)\//i.test(url)) {
             throw new Error('Le lien doit être une adresse Google Drive ou Google Docs en HTTPS.');
         }
         return url;
@@ -58,7 +58,7 @@
 
     function downloadUrl(value) {
         var url = safeDriveUrl(value);
-        var match = url.match(/\\/(?:file|document|spreadsheets|presentation|forms)\\/d\\/([a-zA-Z0-9_-]+)/);
+        var match = url.match(/\/(?:file|document|spreadsheets|presentation|forms)\/d\/([a-zA-Z0-9_-]+)/);
         var id = match ? match[1] : new URL(url).searchParams.get('id');
         return id ? 'https://drive.google.com/uc?export=download&id=' + encodeURIComponent(id) : url;
     }
@@ -289,6 +289,7 @@
         document.addEventListener('click', function (event) {
             if (event.target.closest && event.target.closest('.module-nav-controls')) addToolbarButtons();
         });
+        if (isAdmin()) addToolbarButtons();
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
