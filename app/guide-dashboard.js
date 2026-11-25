@@ -2291,7 +2291,7 @@
         build();
         if (dashboardTitleNode) dashboardTitleNode.textContent = 'Espace Administrateur';
         if (dashboardSubtitleNode) dashboardSubtitleNode.textContent = 'Tous les candidats, leurs suivis et les ressources pédagogiques.';
-        trigger = document.querySelector('.adm-admin-dashboard-toolbar');
+        trigger = null;
         root.hidden = false;
         document.body.classList.add('og-dashboard-open');
         startProgressRefresh();
@@ -2351,6 +2351,10 @@
             if (root && !root.hidden) close();
         });
     }
+    function adminLaunchRequested() {
+        try { return new URLSearchParams(window.location.search).get('admin') === '1'; }
+        catch (_) { return false; }
+    }
     function init() {
         document.addEventListener('doctrine:admin-dashboard', openAdminDashboard);
         updateTrigger();
@@ -2358,6 +2362,7 @@
         document.addEventListener('doctrine:login', function () {
             updateTrigger();
             applyGuideModuleVisibility();
+            if (adminLaunchRequested()) openAdminDashboard();
         });
         document.addEventListener('doctrine:logout', function () {
             stopProgressRefresh();
