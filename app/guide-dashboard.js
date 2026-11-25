@@ -2079,7 +2079,7 @@
     }
     function loadCourseProposals() {
         if (!courseProposalList || dashboardMode !== 'admin') return;
-        api('guide_document_proposals?select=id,title,category,description,status,admin_note,created_at&category=eq.Cours%20Officier%20Guide&order=created_at.asc')
+        api('guide_document_proposals?select=id,title,category,description,status,admin_note,created_at,uploaded_file_path,original_filename,file_size&category=eq.Cours%20Officier%20Guide&order=created_at.asc')
             .then(function (rows) {
                 courseProposalList.replaceChildren(node('h3', '', 'Propositions de cours des Officiers Guides'));
                 if (!rows.length) { courseProposalList.append(node('p', 'og-dashboard-muted', 'Aucune proposition de cours.')); return; }
@@ -2090,6 +2090,36 @@
                     var proposedCategory = categoryMatch ? categoryMatch[1].trim() : 'Cours Officier Guide';
                     var courseDescription = categoryMatch ? proposedDescription.slice(categoryMatch[0].length).replace(/^\s*/, '') : proposedDescription;
                     card.append(node('strong', '', proposal.title), node('p', '', courseDescription || 'Aucune description.'));
+                    if (proposal.uploaded_file_path) {
+                        var attachmentButton = node('button', 'og-dashboard-download',
+                            'Télécharger la pièce jointe' + (proposal.original_filename ? ' : ' + proposal.original_filename : ''));
+                        attachmentButton.type = 'button';
+                        attachmentButton.addEventListener('click', async function () {
+                            attachmentButton.disabled = true;
+                            try {
+                                var safeFilename = String(proposal.original_filename || 'document-cours').replace(/[\\/]/g, '_');
+                                var signed = await storageApi('object/sign/guide-document-proposals/' +
+                                    proposal.uploaded_file_path.split('/').map(encodeURIComponent).join('/'), {
+                                    method: 'POST', body: { expiresIn: 300, download: safeFilename }
+                                });
+                                var signedUrl = signed.signedURL || signed.signedUrl;
+                                if (!signedUrl) throw new Error('Lien sécurisé indisponible.');
+                                var downloadLink = node('a');
+                                downloadLink.href = relativeStorageUrl(signedUrl);
+                                downloadLink.download = safeFilename;
+                                downloadLink.rel = 'noopener noreferrer';
+                                downloadLink.style.display = 'none';
+                                document.body.append(downloadLink);
+                                downloadLink.click();
+                                downloadLink.remove();
+                            } catch (error) {
+                                setStatus('Téléchargement de la pièce jointe impossible : ' + (error.message || error), true);
+                            } finally { attachmentButton.disabled = false; }
+                        });
+                        card.append(attachmentButton);
+                        if (proposal.file_size) card.append(node('p', 'og-dashboard-muted',
+                            Math.max(1, Math.round(proposal.file_size / 1024)) + ' Ko'));
+                    }
                     card.append(node('p', 'og-dashboard-muted', 'Statut : ' + (proposal.status === 'approved' ? 'Validée' : proposal.status === 'rejected' ? 'Refusée' : 'En attente')));
                     if (proposal.status === 'pending') {
                         var categoryLabel = node('label', 'og-dashboard-course-admin-field', 'Catégorie du cours');
