@@ -74,7 +74,15 @@
         return currentGuideStatus();
     }
     function adminAccess() {
-        return !!(auth() && typeof auth().estAdmin === 'function' && auth().estAdmin());
+        if (!auth() || typeof auth().jeton !== 'function') return Promise.resolve(false);
+        // Vérifier le rôle côté Supabase avec le même JWT que celui transmis
+        // par QCM-MAJOR : le tableau de bord ne dépend pas d'un décodage local
+        // potentiellement incomplet des claims.
+        return api('rpc/doctrine_is_admin', { method: 'POST', body: {} })
+            .then(function (allowed) { return allowed === true; })
+            .catch(function () {
+                return !!(typeof auth().estAdmin === 'function' && auth().estAdmin());
+            });
     }
     function isOgCandidate(candidate) {
         var identity = candidate && candidate.candidate || {};
@@ -2286,17 +2294,29 @@
         document.body.append(root);
     }
     function openAdminDashboard() {
-        if (!adminAccess()) return;
-        dashboardMode = 'admin';
-        build();
-        if (dashboardTitleNode) dashboardTitleNode.textContent = 'Espace Administrateur';
-        if (dashboardSubtitleNode) dashboardSubtitleNode.textContent = 'Tous les candidats, leurs suivis et les ressources pédagogiques.';
-        trigger = null;
-        root.hidden = false;
-        document.body.classList.add('og-dashboard-open');
-        startProgressRefresh();
-        load();
-        loadExerciseLibraries();
+        if (root && !root.hidden && dashboardMode === 'admin') return Promise.resolve(true);
+        setStatus('Vérification des droits administrateur…');
+        return adminAccess().then(function (allowed) {
+            if (!allowed) {
+                setStatus('Accès administrateur refusé. Vérifiez que le compte QCM-MAJOR possède le rôle administrateur dans les métadonnées Supabase.', true);
+                return false;
+            }
+            dashboardMode = 'admin';
+            build();
+            if (dashboardTitleNode) dashboardTitleNode.textContent = 'Espace Administrateur';
+            if (dashboardSubtitleNode) dashboardSubtitleNode.textContent = 'Tous les candidats, leurs suivis et les ressources pédagogiques.';
+            trigger = null;
+            root.hidden = false;
+            document.body.classList.add('og-dashboard-open');
+            startProgressRefresh();
+            load();
+            loadExerciseLibraries();
+            return true;
+        }).catch(function (error) {
+            console.error('Ouverture de l’espace Administrateur impossible.', error);
+            if (statusNode) setStatus('Impossible de vérifier les droits administrateur : ' + (error.message || 'erreur de connexion Supabase'), true);
+            return false;
+        });
     }
     function updateTrigger() {
         var section = document.getElementById('corpusPreface');
