@@ -2086,9 +2086,9 @@
                 rows.forEach(function (proposal) {
                     var card = node('article', 'og-dashboard-course-proposal');
                     var proposedDescription = String(proposal.description || '');
-                    var categoryMatch = proposedDescription.match(/^Catégorie : ([^\\n]*)/);
+                    var categoryMatch = proposedDescription.match(/^Catégorie : ([^\n]*)/);
                     var proposedCategory = categoryMatch ? categoryMatch[1].trim() : 'Cours Officier Guide';
-                    var courseDescription = categoryMatch ? proposedDescription.slice(categoryMatch[0].length).replace(/^\\s*/, '') : proposedDescription;
+                    var courseDescription = categoryMatch ? proposedDescription.slice(categoryMatch[0].length).replace(/^\s*/, '') : proposedDescription;
                     card.append(node('strong', '', proposal.title), node('p', '', courseDescription || 'Aucune description.'));
                     card.append(node('p', 'og-dashboard-muted', 'Statut : ' + (proposal.status === 'approved' ? 'Validée' : proposal.status === 'rejected' ? 'Refusée' : 'En attente')));
                     if (proposal.status === 'pending') {
