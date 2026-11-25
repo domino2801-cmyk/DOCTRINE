@@ -2546,6 +2546,33 @@
         }
         var adminDocumentProposals = null;
         var adminDocumentStatus = null;
+        var adminApprovedDocuments = null;
+        var adminApprovedDocumentsStatus = null;
+        function loadAdminApprovedDocuments() {
+            if (!adminApprovedDocuments || dashboardMode !== 'admin') return;
+            api('guide_document_proposals?select=id,title,category,description,drive_url,admin_note,reviewed_at&status=eq.approved&order=reviewed_at.desc')
+                .then(function (rows) {
+                    adminApprovedDocuments.replaceChildren();
+                    if (!rows.length) {
+                        adminApprovedDocumentsStatus.textContent = 'Aucun document validé pour le moment.';
+                        return;
+                    }
+                    rows.forEach(function (row) {
+                        var item = node('article', 'module2-og-approved-item');
+                        item.append(node('strong', '', row.title),
+                            node('span', 'module2-document-category', row.category || 'Document complémentaire'));
+                        if (row.description) item.append(node('p', 'og-dashboard-muted', row.description));
+                        var link = node('a', 'og-dashboard-download', 'Ouvrir le document');
+                        link.href = row.drive_url; link.target = '_blank'; link.rel = 'noopener noreferrer';
+                        item.append(link);
+                        if (row.admin_note) item.append(node('p', 'og-dashboard-muted', 'Commentaire : ' + row.admin_note));
+                        adminApprovedDocuments.append(item);
+                    });
+                    adminApprovedDocumentsStatus.textContent = rows.length + ' document(s) publié(s) dans le Module 2.1.';
+                }).catch(function (error) {
+                    adminApprovedDocumentsStatus.textContent = error.message || 'Chargement des documents publiés impossible.';
+                });
+        }
         function loadAdminDocumentProposals() {
             if (!adminDocumentProposals || dashboardMode !== 'admin') return;
             api('guide_document_proposals?select=id,title,category,description,status,admin_note,created_at,uploaded_file_path,original_filename,file_size&status=eq.pending&order=created_at.asc')
@@ -2587,7 +2614,8 @@
                                 body: { drive_url: parsed.href, status: 'approved', admin_note: note.value.trim() }
                             }).then(function () {
                                 adminDocumentStatus.textContent = 'Document validé et publié. Le Module 2.1 et les bibliothèques seront actualisés depuis Supabase.';
-                                return Promise.all([loadAdminDocumentProposals(), loadApprovedModule2Documents()]);
+                                document.dispatchEvent(new CustomEvent('doctrine:content-updated', { detail: { moduleId: '2' } }));
+                                return Promise.all([loadAdminDocumentProposals(), loadAdminApprovedDocuments(), loadApprovedModule2Documents()]);
                             }).catch(function (error) {
                                 setStatus(statusNode, 'Validation impossible : ' + (error.message || ''), true);
                                 approve.disabled = false;
@@ -2619,9 +2647,14 @@
             adminDocumentsPanel.append(node('h3', '', 'Propositions de documents des Officiers Guides — Module 2.1'));
             adminDocumentProposals = node('div', 'module2-og-admin-proposals');
             adminDocumentStatus = node('p', 'module2-og-status');
-            adminDocumentsPanel.append(adminDocumentProposals, adminDocumentStatus);
+            adminApprovedDocuments = node('div', 'module2-og-admin-approved');
+            adminApprovedDocumentsStatus = node('p', 'module2-og-status');
+            adminDocumentsPanel.append(adminDocumentProposals, adminDocumentStatus,
+                node('h4', '', 'Documents déjà validés — Module 2.1'),
+                adminApprovedDocuments, adminApprovedDocumentsStatus);
             proposalPanel.append(adminDocumentsPanel);
             loadAdminDocumentProposals();
+            loadAdminApprovedDocuments();
         }
         var ownProposals = node('ul', 'module2-og-own-list');
         var ownStatus = node('p', 'module2-og-status');
