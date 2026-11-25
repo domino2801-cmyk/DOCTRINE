@@ -249,96 +249,11 @@
                 form.reset();
                 setStatus(status, 'Carte publiée dans la rubrique 2.1.');
                 loadPublished();
-                loadProposals(proposals, proposalStatus);
             }).catch(function (error) { setStatus(status, error.message || 'Publication impossible.', true); })
                 .finally(function () { add.disabled = false; });
         });
         panel.appendChild(form);
-        panel.appendChild(el('h3', '', 'Propositions des Officiers Guides'));
-        var proposals = el('div', 'module2-admin-proposals');
-        var proposalStatus = el('p', 'adm-state');
-        panel.append(proposals, proposalStatus);
         body.after(panel);
-        loadProposals(proposals, proposalStatus);
-    }
-
-    function loadProposals(container, status) {
-        api(TABLE + '?select=id,title,category,description,guide_id,created_at,uploaded_file_path,original_filename,file_size,mime_type&status=eq.pending&order=created_at.asc')
-            .then(function (rows) {
-                container.replaceChildren();
-                if (!rows.length) { setStatus(status, 'Aucune proposition en attente.'); return; }
-                rows.forEach(function (row) {
-                    var card = el('article', 'module2-admin-proposal');
-                    card.append(el('strong', '', row.title), el('p', '', row.category),
-                        el('p', '', row.description || 'Aucune description.'));
-                    if (row.uploaded_file_path && row.original_filename) {
-                        var attachmentLine = el('div', 'module2-admin-attachment');
-                        attachmentLine.append(el('span', '', 'Document joint : ' + row.original_filename +
-                            ' (' + (Math.max(1, Math.round(Number(row.file_size || 0) / 1024))) + ' Ko)'));
-                        var attachmentOpen = el('button', 'guide-button', 'Télécharger la pièce jointe');
-                        attachmentOpen.type = 'button';
-                        attachmentOpen.addEventListener('click', function () {
-                            var popup = window.open('about:blank', '_blank');
-                            if (popup) popup.opener = null;
-                            auth.jeton().then(function (token) {
-                                return fetch(auth.url.replace(/\/$/, '') + '/storage/v1/object/sign/guide-document-proposals/' +
-                                    row.uploaded_file_path.split('/').map(encodeURIComponent).join('/'), {
-                                    method: 'POST',
-                                    headers: { apikey: auth.key, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ expiresIn: 300 })
-                                });
-                            }).then(function (response) {
-                                return response.json().then(function (payload) {
-                                    if (!response.ok) throw new Error(payload.message || 'Lien de téléchargement indisponible.');
-                                    var signed = payload.signedURL || payload.signedUrl;
-                                    if (!signed) throw new Error('Lien de téléchargement absent.');
-                                    var target = signed.indexOf('http') === 0 ? signed : auth.url.replace(/\/$/, '') + '/storage/v1' + signed;
-                                    if (popup) popup.location = target;
-                                    else window.location.href = target;
-                                });
-                            }).catch(function (error) {
-                                if (popup) popup.close();
-                                setStatus(status, error.message || 'Téléchargement impossible.', true);
-                            });
-                        });
-                        attachmentLine.append(attachmentOpen);
-                        card.append(attachmentLine);
-                    }
-                    var linkLabel = el('label', '', 'Lien Google Drive après insertion dans votre Drive');
-                    var link = el('input'); link.type = 'url'; link.required = true; link.placeholder = 'https://drive.google.com/...';
-                    linkLabel.appendChild(link);
-                    var noteLabel = el('label', '', 'Commentaire (facultatif)');
-                    var note = el('textarea'); note.maxLength = 1000; noteLabel.appendChild(note);
-                    var approve = el('button', 'guide-button guide-button-primary', 'Ajouter le lien et valider');
-                    approve.type = 'button';
-                    approve.addEventListener('click', function () {
-                        var parsed;
-                        try { parsed = new URL(link.value.trim()); } catch (error) { parsed = null; }
-                        if (!parsed || parsed.protocol !== 'https:' || !['drive.google.com', 'docs.google.com'].includes(parsed.hostname.toLowerCase())) {
-                            setStatus(status, 'Saisissez un lien Google Drive ou Google Docs en HTTPS.', true); return;
-                        }
-                        approve.disabled = true;
-                        api(TABLE + '?id=eq.' + encodeURIComponent(row.id), { method: 'PATCH', prefer: 'return=minimal',
-                            body: { drive_url: parsed.href, status: 'approved', admin_note: note.value.trim() }
-                        }).then(function () {
-                            card.remove(); loadPublished(); setStatus(status, 'Proposition validée et publiée.');
-                        }).catch(function (error) { setStatus(status, error.message || 'Validation impossible.', true); approve.disabled = false; });
-                    });
-                    var reject = el('button', 'guide-button', 'Refuser');
-                    reject.type = 'button';
-                    reject.addEventListener('click', function () {
-                        if (!window.confirm('Refuser cette proposition ?')) return;
-                        reject.disabled = true;
-                        api(TABLE + '?id=eq.' + encodeURIComponent(row.id), { method: 'PATCH', prefer: 'return=minimal',
-                            body: { status: 'rejected', admin_note: note.value.trim() }
-                        }).then(function () { card.remove(); setStatus(status, 'Proposition refusée.'); })
-                            .catch(function (error) { setStatus(status, error.message || 'Refus impossible.', true); reject.disabled = false; });
-                    });
-                    card.append(linkLabel, noteLabel, approve, reject);
-                    container.appendChild(card);
-                });
-                setStatus(status, rows.length + ' proposition(s) en attente.');
-            }).catch(function (error) { setStatus(status, error.message || 'Chargement des propositions impossible.', true); });
     }
 
     function init() {

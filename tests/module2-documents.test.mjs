@@ -64,13 +64,14 @@ test('seuls les documents approuvés sont ajoutés à la rubrique 2.1', () => {
     assert.match(source, /docs\.google\.com/);
 });
 
-test('les administrateurs peuvent publier directement et traiter les propositions', () => {
+test('l’espace Admin conserve la publication directe sans afficher la file de propositions OG', () => {
     const source = read('app/module2-documents.js');
-    assert.match(source, /Ajouter et publier la carte/);
-    assert.match(source, /Ajouter le lien et valider/);
-    assert.match(source, /Refuser/);
-    assert.match(source, /status: 'approved'/);
-    assert.match(source, /status: 'rejected'/);
+    const adminPanel = source.slice(source.indexOf('function adminPanel()'), source.indexOf('function init()'));
+    assert.match(adminPanel, /Ajouter et publier la carte/);
+    assert.match(adminPanel, /status: 'approved'/);
+    assert.doesNotMatch(adminPanel, /Propositions des Officiers Guides|Aucune proposition en attente|loadProposals/);
+    assert.doesNotMatch(source, /function loadProposals\(/);
+    assert.match(source, /if \(isAdmin\(\)\) adminPanel\(\)/);
 });
 
 test('la validation documentaire actualise le Module 2.1 ainsi que les listes publiées OG et admin', () => {
