@@ -2019,6 +2019,7 @@
     }
     var courseAdminForm = null;
     var courseProposalList = null;
+    var courseProposalArea = null;
     function openCourseAdminForm(course) {
         if (dashboardMode !== 'admin') return;
         if (!courseAdminForm) {
@@ -2270,7 +2271,10 @@
             });
             coursesNode.append(group);
         });
-        if (dashboardMode === 'admin') { coursesNode.append(courseProposalList); loadCourseProposals(); }
+        if (dashboardMode === 'admin') {
+            if (courseProposalArea) courseProposalArea.replaceChildren(courseProposalList);
+            loadCourseProposals();
+        }
     }
     function load() {
         if (loading) return;
@@ -2704,6 +2708,8 @@
         if (dashboardMode !== 'admin') libraryGrid.append(proposalEntry);
 
         panel.append(libraryGrid);
+        courseProposalArea = dashboardMode === 'admin' ? node('div', 'og-dashboard-course-proposal-area') : null;
+        if (courseProposalArea) panel.append(courseProposalArea);
         statusNode = node('p', 'og-dashboard-status');
         statusNode.setAttribute('role', 'status');
         statusNode.setAttribute('aria-live', 'polite');
