@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'bm4-shell-v139';
+const CACHE_NAME = 'bm4-shell-v140';
 
 const APP_SHELL_URL = new URL('./index.html', self.location.href).toString();
 const LEGACY_APP_URL = new URL('./INDEX%20BM4V2.HTML', self.location.href).toString();
@@ -17,6 +17,7 @@ const SHELL_ASSETS = [
   new URL('./app/app.js', self.location.href).toString(),
   new URL('./app/guide-dashboard.css', self.location.href).toString(),
   new URL('./app/guide-dashboard.js?v=20261125-1', self.location.href).toString(),
+  new URL('./app/module2-documents.js?v=20261125-2', self.location.href).toString(),
   new URL('./app/guide-module8.html', self.location.href).toString(),
   new URL('./app/guide-module8.css', self.location.href).toString(),
   new URL('./app/guide-module8.js', self.location.href).toString(),
