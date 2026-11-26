@@ -3717,14 +3717,15 @@
         document.addEventListener('doctrine:login', function () {
             updateTrigger();
             applyGuideModuleVisibility();
-            if (adminLaunchRequested()) openAdminDashboard();
+            // À chaque connexion, un compte portant le rôle administrateur
+            // arrive directement sur son espace, sans passer par l'accueil.
+            if (adminLaunchRequested() || (auth() && auth().estAdmin())) openAdminDashboard();
         });
-        // Le paramètre admin=1 est une demande explicite provenant du bouton
-        // ADMIN ANC de QCM-MAJOR. Ouvrir immédiatement le tableau de bord :
-        // le contrôle des droits est ensuite effectué par adminAccess().
-        // Ne pas conditionner l'ouverture à jeton() : le relais de session peut
-        // être encore en cours de restauration et laisser l'accueil affiché.
-        if (adminLaunchRequested()) openAdminDashboard();
+        // Ouvrir aussi le tableau de bord si la session administrateur était
+        // déjà restaurée avant l'initialisation de cet écran. Le paramètre
+        // admin=1 reste pris en charge pour le bouton ADMIN ANC de QCM-MAJOR.
+        // La validation définitive des droits reste effectuée par adminAccess().
+        if (adminLaunchRequested() || (auth() && auth().estAdmin())) openAdminDashboard();
         document.addEventListener('doctrine:logout', function () {
             stopProgressRefresh();
             if (root) root.hidden = true;
