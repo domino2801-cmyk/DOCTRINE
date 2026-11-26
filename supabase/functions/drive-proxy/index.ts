@@ -150,15 +150,15 @@ async function accesBibliothequePubliee(ids: string[], admin: boolean): Promise<
     const ex = await fetch(`${url}/rest/v1/guide_exercise_library?drive_url=like.${driveIdFilter}&select=id,is_published`, { headers });
     if (!ex.ok) throw new Error('Vérification de publication des exercices impossible');
     const exercices: { id: string; is_published: boolean }[] = await ex.json();
-    if (exercices.length) return exercices.some((e) => e.is_published);
+    if (exercices.length) return admin || exercices.some((e) => e.is_published);
 
     const co = await fetch(`${url}/rest/v1/guide_correction_library?drive_url=like.${driveIdFilter}&select=id,exercise_id,is_published`, { headers });
     if (!co.ok) throw new Error('Vérification de publication des corrections impossible');
     const corrections: { id: string; exercise_id: string; is_published: boolean }[] = await co.json();
     if (corrections.length) {
-      if (!corrections.some((c) => c.is_published)) return false;
+      if (!admin && !corrections.some((c) => c.is_published)) return false;
       const exerciseIds = [...new Set(corrections.map((c) => c.exercise_id))];
-      for (const exerciseId of exerciseIds) {
+      for (const exerciseId of (admin ? [] : exerciseIds)) {
         const parent = await fetch(`${url}/rest/v1/guide_exercise_library?id=eq.${encodeURIComponent(exerciseId)}&select=is_published`, { headers });
         if (!parent.ok) throw new Error('Vérification de publication de l’exercice associé impossible');
         const parents: { is_published: boolean }[] = await parent.json();
