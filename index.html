@@ -1113,9 +1113,13 @@
 
 <script>
 document.addEventListener('click', function (event) {
-    const link = event.target.closest('a[href="#mentions-legales"], a[href="#confidentialite"]');
+    const link = event.target.closest('a[href]');
     if (!link) return;
-    const target = document.getElementById(link.getAttribute('href').slice(1));
+    let destination;
+    try { destination = new URL(link.href, location.href); } catch (_) { return; }
+    if (destination.origin !== location.origin ||
+        !['#mentions-legales', '#confidentialite'].includes(destination.hash)) return;
+    const target = document.getElementById(destination.hash.slice(1));
     if (!target) return;
     event.preventDefault();
     const wasOpen = target.open;
