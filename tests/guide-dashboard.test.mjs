@@ -132,7 +132,9 @@ test('les fiches RETEX et Signalement Officier Guide sont autonomes et indépend
     assert.match(script, /Enregistrer et transmettre/);
     assert.doesNotMatch(script, /openModule7Form/);
     assert.doesNotMatch(script, /selectedGuideModule7Card/);
-    assert.match(script, /Faits constatés et conséquences/);
+    assert.match(script, /Q1\. Comment évaluez-vous la facilité d’utilisation/);
+    assert.match(script, /Q14\. Quelle recommandation/);
+    assert.match(script, /Q6\. Quelles difficultés rencontrez-vous/);
     assert.match(script, /Intervention ou décision attendue/);
 });
 
