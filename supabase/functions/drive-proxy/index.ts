@@ -176,7 +176,7 @@ async function supportsHistoriquesAutorises(ids: string[]): Promise<boolean> {
   const url = Deno.env.get('SUPABASE_URL');
   const cle = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   if (!url || !cle) throw new Error('Configuration Supabase manquante');
-  const uniques = [...new Set(ids)].filter((id) => /^[\\w-]{10,80}$/.test(id));
+  const uniques = [...new Set(ids)].filter((id) => /^[\w-]{10,80}$/.test(id));
   if (!uniques.length) return false;
   const filtre = uniques.map((id) => '"' + id + '"').join(',');
   const r = await fetch(
