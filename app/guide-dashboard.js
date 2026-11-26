@@ -2620,10 +2620,9 @@
         exerciseLibraryNode = node('div', 'og-dashboard-library');
         exerciseContent.append(exerciseLibraryNode);
         exerciseSection.append(exerciseContent);
-        // Supports Drive reste réservé aux Officiers Guides.
-        // La bibliothèque des exercices et corrections est commune aux deux espaces.
-        if (dashboardMode !== 'admin') libraryGrid.append(courseSection);
-        libraryGrid.append(exerciseSection);
+        // La bibliothèque des supports OG est commune aux espaces Officier Guide et Administrateur.
+        // Les commandes d'ajout, de modification et de suppression restent réservées à l'administrateur.
+        libraryGrid.append(courseSection, exerciseSection);
 
         // Carte de proposition documentaire, placée sous les deux bibliothèques.
         // Aucune ressource du Module 2.1 n'est affichée dans cet espace.
