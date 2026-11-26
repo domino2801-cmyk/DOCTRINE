@@ -524,3 +524,14 @@ test('les propositions de cours OG sont affichées dans une carte indépendante 
     assert.match(css, /\.og-dashboard-course-proposal-area/);
     assert.match(css, /\.og-dashboard-course-proposals \{[^}]*padding:14px/s);
 });
+
+test('le suivi QCM-MAJOR global exclut les 8 profils Officier Guide du total des candidats', () => {
+    const start = script.indexOf('function openGuideQcmTracking()');
+    const end = script.indexOf('// Fiche individuelle', start);
+    const tracking = script.slice(start, end);
+    assert.match(tracking, /var qcmCandidates = dashboardMode === 'admin' \? candidates\.filter\(function \(candidate\) \{ return !isOgCandidate\(candidate\); \}\) : candidates/);
+    assert.match(tracking, /qcmCandidates\.length \+ ' candidat\(s\) dans '/);
+    assert.match(tracking, /var adminOgCandidates = dashboardMode === 'admin' \? qcmCandidates : \[\]/);
+    assert.match(tracking, /dashboardMode === 'admin' \|\| isOgCandidate\(candidate\)/);
+    assert.match(tracking, /CANDIDATS QCM-MAJOR/);
+});
