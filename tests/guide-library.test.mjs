@@ -111,7 +111,8 @@ test('les exercices et corrections réutilisent la visionneuse intégrée et le 
     assert.match(driveProxy, /nextPageToken/);
     assert.match(driveProxy, /accesBibliothequePubliee/);
     assert.match(driveProxy, /accesBibliotheque === false/);
-    assert.match(driveProxy, /accesBibliotheque === null/);
+    assert.match(driveProxy, /if \(!supportHistorique && accesBibliotheque !== true && requis === null\)/);
+    assert.match(driveProxy, /Ressource Drive non autorisée/);
     assert.match(driveProxy, /chaineParentsDrive/);
     assert.match(admin, /openDriveInViewer\(item\.drive_url, item\.title\)/);
     assert.doesNotMatch(admin, /open\.target = '_blank'/);
