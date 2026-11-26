@@ -27,6 +27,7 @@
     var cvStatusAvailable = true;
     var progressRefreshTimer = null;
     var progressRefreshInFlight = false;
+    var adminSignalementRefreshTimer = null;
 
     function auth() { return window.DoctrineAuth; }
     function node(tag, className, text) {
@@ -760,6 +761,27 @@
         document.body.append(dialog); dialog.showModal();
     }
 
+    function refreshAdminSignalementBadge(badge) {
+        if (dashboardMode !== 'admin' || !badge) return;
+        Promise.all([
+            api('guide_signalements?select=id,status&limit=500'),
+            api('doctrine_signalements?select=id,status&limit=500'),
+            api('question_reports?select=id,status&limit=500')
+        ]).then(function (sources) {
+            var pending = sources.reduce(function (total, rows) {
+                return total + (Array.isArray(rows) ? rows.filter(function (row) {
+                    return !['resolved', 'closed'].includes(String(row.status || '').toLowerCase());
+                }).length : 0);
+            }, 0);
+            badge.textContent = String(pending);
+            badge.hidden = pending === 0;
+            badge.setAttribute('aria-label', pending + ' signalement(s) en attente de traitement');
+        }).catch(function () {
+            // En cas d'indisponibilité temporaire, ne pas afficher un compteur trompeur.
+            badge.hidden = true;
+        });
+    }
+
     function renderMetrics() {
         metricsNode.replaceChildren();
         var ready = candidates.filter(function (candidate) { return !attention(candidate); }).length;
@@ -825,6 +847,20 @@
             card.append(node('span', 'og-dashboard-metric-label', definition.title));
             card.append(node('strong', 'og-dashboard-metric-value', definition.symbol));
             card.append(node('small', '', definition.subtitle));
+            if (definition.kind === 'signalement' && dashboardMode === 'admin') {
+                card.style.position = 'relative';
+                var signalementBadge = node('span', 'og-dashboard-signalement-badge', '0');
+                signalementBadge.hidden = true;
+                signalementBadge.setAttribute('role', 'status');
+                signalementBadge.setAttribute('aria-live', 'polite');
+                signalementBadge.style.cssText = 'position:absolute;top:9px;right:10px;min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:#c93636;color:#fff;font-size:13px;font-weight:800;line-height:24px;text-align:center;box-sizing:border-box;box-shadow:0 0 0 2px rgba(255,255,255,.18)';
+                card.append(signalementBadge);
+                refreshAdminSignalementBadge(signalementBadge);
+                if (adminSignalementRefreshTimer) clearInterval(adminSignalementRefreshTimer);
+                adminSignalementRefreshTimer = setInterval(function () {
+                    refreshAdminSignalementBadge(signalementBadge);
+                }, 30000);
+            }
             card.addEventListener('click', function () {
                 if (definition.kind === 'signalement' && dashboardMode === 'admin') openAdminSignalements();
                 else openGuideFeedback(definition.kind);
