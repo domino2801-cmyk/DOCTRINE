@@ -570,6 +570,35 @@
         if (identity.specialty) identityCopy.append(node('p', '', 'Spécialité : ' + identity.specialty));
         if (identity.email) identityCopy.append(node('p', '', 'E-mail : ' + identity.email));
         identityCard.append(identityCopy);
+        if (dashboardMode === 'admin') {
+            var blockButton = node('button', 'admin-account-block-btn admin-delete-btn', identity.blocked ? 'Débloquer' : 'Bloquer le compte');
+            blockButton.type = 'button';
+            blockButton.disabled = !identity.id || identity.blockedStatusKnown !== true;
+            blockButton.setAttribute('aria-label', (identity.blocked ? 'Débloquer' : 'Bloquer') + ' le compte ' + (identity.pseudo || identity.name || identity.email || 'candidat'));
+            if (identity.blockedStatusKnown !== true) blockButton.title = 'Statut de blocage indisponible';
+            blockButton.addEventListener('click', function () {
+                var blocked = !identity.blocked;
+                var accountName = identity.pseudo || identity.name || identity.email || 'ce candidat';
+                if (!window.confirm((blocked ? 'Bloquer' : 'Débloquer') + ' le compte de ' + accountName + ' ?')) return;
+                blockButton.disabled = true;
+                api('rpc/set_account_blocked', {
+                    method: 'POST',
+                    body: { p_user_id: identity.id, p_blocked: blocked }
+                }).then(function (result) {
+                    if (result !== blocked) throw new Error('Le changement de statut n’a pas été confirmé.');
+                    identity.blocked = blocked;
+                    blockButton.textContent = blocked ? 'Débloquer' : 'Bloquer le compte';
+                    blockButton.setAttribute('aria-label', (blocked ? 'Débloquer' : 'Bloquer') + ' le compte ' + accountName);
+                    blockButton.classList.toggle('is-blocked', blocked);
+                }).catch(function (error) {
+                    window.alert('Modification du blocage impossible : ' + (error.message || 'Erreur inconnue'));
+                }).finally(function () {
+                    blockButton.disabled = false;
+                });
+            });
+            blockButton.classList.toggle('is-blocked', Boolean(identity.blocked));
+            identityCard.append(blockButton);
+        }
         var summary = node('div', 'og-candidate-profile-summary-card');
         var lastActivityDate = lastActivity && Number.isFinite(Date.parse(lastActivity))
             ? new Date(lastActivity).toLocaleDateString('fr-FR') : 'Non renseignée';
@@ -3083,12 +3112,29 @@
             return api('fiche_reviews?select=submission_id,guide_id,form_observations,form_evidence,rubric_observations,rubric_evidence&submission_id=in.(' +
                 submissionIds.map(encodeURIComponent).join(',') + ')');
         });
-        Promise.allSettled([candidateRequest, courseRequest, progressRequest, cvRequest, reviewRequest]).then(function (results) {
+        var blockedAccountsRequest = dashboardMode === 'admin'
+            ? api('rpc/get_admin_blocked_accounts', { method: 'POST', body: {} })
+            : Promise.resolve(null);
+        Promise.allSettled([candidateRequest, courseRequest, progressRequest, cvRequest, reviewRequest, blockedAccountsRequest]).then(function (results) {
             if (results[0].status === 'fulfilled') {
                 candidates = Array.isArray(results[0].value.candidates) ? results[0].value.candidates : [];
             } else {
                 candidates = [];
                 setStatus('Suivi candidats indisponible : ' + results[0].reason.message, true);
+            }
+            if (dashboardMode === 'admin') {
+                var blockedStatusKnown = results[5] && results[5].status === 'fulfilled' && Array.isArray(results[5].value);
+                var blockedIds = new Set(blockedStatusKnown ? results[5].value.map(function (row) {
+                    return String(row.user_id || row.id || '');
+                }) : []);
+                candidates.forEach(function (candidate) {
+                    var identity = candidate.candidate || {};
+                    identity.blockedStatusKnown = blockedStatusKnown;
+                    identity.blocked = blockedStatusKnown && blockedIds.has(String(identity.id || ''));
+                });
+                if (!blockedStatusKnown) {
+                    console.warn('Statut de blocage des comptes indisponible.', results[5] && results[5].reason);
+                }
             }
             if (results[4].status === 'fulfilled') {
                 var structuredReviews = new Map((Array.isArray(results[4].value) ? results[4].value : []).map(function (review) {
