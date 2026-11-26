@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const [html, script, css, seed, viewerScript, viewerCss, appScript, cohortDashboardScript, authScript, adminRoleSql] = await Promise.all([
+const [html, script, css, seed, viewerScript, viewerCss, appScript, cohortDashboardScript, authScript, adminRoleSql, guideModuleSql] = await Promise.all([
     readFile(new URL('../index.html', import.meta.url), 'utf8'),
     readFile(new URL('../app/guide-dashboard.js', import.meta.url), 'utf8'),
     readFile(new URL('../app/guide-dashboard.css', import.meta.url), 'utf8'),
@@ -12,7 +12,8 @@ const [html, script, css, seed, viewerScript, viewerCss, appScript, cohortDashbo
     readFile(new URL('../app/app.js', import.meta.url), 'utf8'),
     readFile(new URL('../admin/cohort-dashboard.js', import.meta.url), 'utf8'),
     readFile(new URL('../auth/auth.js', import.meta.url), 'utf8'),
-    readFile(new URL('../supabase/admin-role-qcm-major-compatibility.sql', import.meta.url), 'utf8')
+    readFile(new URL('../supabase/admin-role-qcm-major-compatibility.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../supabase/guide_module8.sql', import.meta.url), 'utf8')
 ]);
 
 test('l’espace Officier Guide est chargé séparément des modules existants', () => {
@@ -161,6 +162,17 @@ test('la carte de proposition de cours est retirée de l’interface Officier Gu
     // Le circuit de proposition documentaire général reste disponible.
     assert.match(script, /PROPOSITION DE DOCUMENTS À AJOUTER POUR LES CANDIDATS/);
     assert.match(script, /function loadModule2OwnProposals\(\)/);
+});
+
+test('le RPC administrateur inclut les profils OG même avec un rôle guide, sans changer leurs droits', () => {
+    const start = guideModuleSql.indexOf('create or replace function public.get_guide_candidate_dashboard');
+    const end = guideModuleSql.indexOf('revoke all on function public.get_guide_candidate_dashboard', start);
+    const rpc = guideModuleSql.slice(start, end);
+    assert.match(rpc, /coalesce\(user_account\.raw_app_meta_data ->> 'role', 'candidat'\)[\s\S]*?not in \('admin', 'guide', 'officier_guide'\)[\s\S]*?or upper\(trim\(coalesce\([\s\S]*?\)\)\) = 'OG'/);
+    assert.match(rpc, /user_account\.email_confirmed_at is not null/);
+    assert.match(rpc, /and not coalesce\([\s\S]*?bm4_admin/);
+    assert.match(rpc, /doctrine_is_admin\(\) or assignment\.assigned_at is not null/);
+    assert.match(rpc, /grant execute on function public\.get_guide_candidate_dashboard\(uuid\) to authenticated/);
 });
 
 test('le tableau de bord utilise les données filtrées par le RPC guide', () => {
