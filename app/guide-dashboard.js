@@ -28,6 +28,7 @@
     var progressRefreshTimer = null;
     var progressRefreshInFlight = false;
     var adminSignalementRefreshTimer = null;
+    var adminRetexRefreshTimer = null;
 
     function auth() { return window.DoctrineAuth; }
     function node(tag, className, text) {
@@ -782,6 +783,26 @@
         });
     }
 
+    function refreshAdminRetexBadge(badge) {
+        if (dashboardMode !== 'admin' || !badge) return;
+        // Compter ensemble les RETEX QCM-MAJOR et Officier Guide :
+        // la notification est indépendante de leur origine ou de leur statut.
+        Promise.all([
+            api('retex_responses?select=id&limit=2000'),
+            api('guide_retex_reports?select=id&limit=2000')
+        ]).then(function (sources) {
+            var total = sources.reduce(function (count, rows) {
+                return count + (Array.isArray(rows) ? rows.length : 0);
+            }, 0);
+            badge.textContent = String(total);
+            badge.hidden = total === 0;
+            badge.setAttribute('aria-label', total + ' retour(s) d’expérience enregistré(s), tous types confondus');
+        }).catch(function () {
+            // Ne pas afficher de compteur potentiellement erroné si une source est indisponible.
+            badge.hidden = true;
+        });
+    }
+
     function renderMetrics() {
         metricsNode.replaceChildren();
         var ready = candidates.filter(function (candidate) { return !attention(candidate); }).length;
@@ -847,6 +868,20 @@
             card.append(node('span', 'og-dashboard-metric-label', definition.title));
             card.append(node('strong', 'og-dashboard-metric-value', definition.symbol));
             card.append(node('small', '', definition.subtitle));
+            if (definition.kind === 'retex' && dashboardMode === 'admin') {
+                card.style.position = 'relative';
+                var retexBadge = node('span', 'og-dashboard-retex-badge', '0');
+                retexBadge.hidden = true;
+                retexBadge.setAttribute('role', 'status');
+                retexBadge.setAttribute('aria-live', 'polite');
+                retexBadge.style.cssText = 'position:absolute;top:9px;right:10px;min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:#c93636;color:#fff;font-size:13px;font-weight:800;line-height:24px;text-align:center;box-sizing:border-box;box-shadow:0 0 0 2px rgba(255,255,255,.18)';
+                card.append(retexBadge);
+                refreshAdminRetexBadge(retexBadge);
+                if (adminRetexRefreshTimer) clearInterval(adminRetexRefreshTimer);
+                adminRetexRefreshTimer = setInterval(function () {
+                    refreshAdminRetexBadge(retexBadge);
+                }, 30000);
+            }
             if (definition.kind === 'signalement' && dashboardMode === 'admin') {
                 card.style.position = 'relative';
                 var signalementBadge = node('span', 'og-dashboard-signalement-badge', '0');
