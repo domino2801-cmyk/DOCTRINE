@@ -575,6 +575,10 @@ test('la bibliothèque exercices et corrections est commune, avec gestion admin 
     const libraries = script.slice(start, end);
     assert.match(libraries, /if \(dashboardMode !== 'admin'\) libraryGrid\.append\(courseSection\)/);
     assert.match(libraries, /libraryGrid\.append\(exerciseSection\)/);
+    assert.match(script, /if \(root && root\.dataset\.dashboardMode === dashboardMode\) return/);
+    assert.match(script, /root\.dataset\.dashboardMode = dashboardMode/);
+    assert.match(script, /exerciseSection\.id = 'ogExerciseLibraryEntry'/);
+    assert.match(css, /\.og-dashboard-exercise-library-entry\s*\{[\s\S]*?display:block !important/);
     assert.match(script, /BIBLIOTHÈQUE DES SUPPORTS OFFICIER GUIDE/);
     assert.match(script, /BIBLIOTHÈQUE DES DOSSIERS D’EXERCICES ET CORRECTIONS/);
     assert.match(script, /4 niveaux · Exercices et corrections publiés, consultables et téléchargeables\./);

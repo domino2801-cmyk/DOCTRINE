@@ -2558,8 +2558,14 @@
         if (trigger && trigger.isConnected && !trigger.hidden) trigger.focus();
     }
     function build() {
-        if (root) return;
+        // Reconstruire le panneau si l'on passe du mode OG au mode Admin ou inversement.
+        if (root && root.dataset.dashboardMode === dashboardMode) return;
+        if (root) {
+            root.remove();
+            root = null;
+        }
         root = node('section', 'og-dashboard-overlay');
+        root.dataset.dashboardMode = dashboardMode;
         root.id = 'guideDashboard';
         root.hidden = true;
         root.setAttribute('role', 'dialog');
@@ -2597,7 +2603,8 @@
         coursesNode = node('div', 'og-dashboard-courses');
         courseContent.append(coursesNode);
         courseSection.append(courseContent);
-        var exerciseSection = node('section', 'og-dashboard-library-entry');
+        var exerciseSection = node('section', 'og-dashboard-library-entry og-dashboard-exercise-library-entry');
+        exerciseSection.id = 'ogExerciseLibraryEntry';
         var exerciseToggle = node('button', 'og-dashboard-library-entry-toggle', 'BIBLIOTHÈQUE DES DOSSIERS D’EXERCICES ET CORRECTIONS');
         exerciseToggle.type = 'button';
         exerciseToggle.setAttribute('aria-expanded', 'false');
