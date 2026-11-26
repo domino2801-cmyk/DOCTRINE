@@ -538,15 +538,24 @@ test('les propositions de cours OG sont affichées dans une carte indépendante 
     assert.match(css, /\.og-dashboard-course-proposals \{[^}]*padding:14px/s);
 });
 
-test('le suivi QCM-MAJOR global exclut les 8 profils Officier Guide du total des candidats', () => {
+test('le suivi QCM-MAJOR global affiche le stepper à gauche, les Officiers Guides dessous et la fiche candidat à droite', () => {
     const start = script.indexOf('function openGuideQcmTracking()');
     const end = script.indexOf('// Fiche individuelle', start);
     const tracking = script.slice(start, end);
-    assert.match(tracking, /var qcmCandidates = dashboardMode === 'admin' \? candidates\.filter\(function \(candidate\) \{ return !isOgCandidate\(candidate\); \}\) : candidates/);
+    assert.match(tracking, /candidates\.filter\(function \(candidate\) \{ return !isOgCandidate\(candidate\); \}\)/);
     assert.match(tracking, /qcmCandidates\.length \+ ' candidat\(s\) dans '/);
-    assert.match(tracking, /var adminOgCandidates = dashboardMode === 'admin' \? qcmCandidates : \[\]/);
-    assert.match(tracking, /dashboardMode === 'admin' \|\| isOgCandidate\(candidate\)/);
-    assert.match(tracking, /CANDIDATS QCM-MAJOR/);
+    assert.match(tracking, /CANDIDATS QCM-MAJOR — ' \+ qcmCandidates\.length/);
+    assert.match(tracking, /og-candidate-stepper/);
+    assert.match(tracking, /Candidat précédent/);
+    assert.match(tracking, /Candidat suivant/);
+    assert.match(tracking, /Candidat ' \+ \(selectedIndex \+ 1\) \+ ' \/ '/);
+    assert.match(tracking, /OFFICIERS GUIDES — ' \+ ogCandidates\.length \+ ' compte\(s\)'/);
+    assert.match(tracking, /sidebar\.append\(ogGroup\)/);
+    assert.match(tracking, /layout\.append\(sidebar, detail\)/);
+    assert.match(tracking, /renderCandidateProfileDetail\(detail, candidate\)/);
+    assert.doesNotMatch(tracking, /og-qcm-og-navigator|renderQcmCandidateDetail/);
+    assert.match(css, /\.og-qcm-global-follow-up-layout \{ grid-template-columns:minmax\(260px,\.72fr\) minmax\(0,1\.8fr\)/);
+    assert.match(css, /@media\(max-width:850px\)[\s\S]*?\.og-qcm-global-follow-up-layout \{ grid-template-columns:minmax\(0,1fr\)/);
 });
 
 
