@@ -695,22 +695,40 @@
         metricsNode.replaceChildren();
         var ready = candidates.filter(function (candidate) { return !attention(candidate); }).length;
         [
-            ['CANDIDATS', candidates.length, dashboardMode === 'admin' ? 'ensemble des comptes' : 'cohorte rattachée'],
-            ['À ACCOMPAGNER', candidates.length - ready, 'activité ou résultats à suivre']
+            ['CANDIDATS', candidates.length, dashboardMode === 'admin' ? 'ensemble des comptes' : 'cohorte rattachée']
         ].forEach(function (metric) {
-            var card = metric[0] === 'CANDIDATS'
-                ? node('button', 'og-dashboard-metric og-dashboard-metric-action og-dashboard-candidates-tracking')
-                : node('article', 'og-dashboard-metric');
-            if (metric[0] === 'CANDIDATS') {
-                card.type = 'button';
-                card.dataset.guideAction = 'candidates-tracking';
-                card.addEventListener('click', openGuideCandidates);
-            }
+            var card = node('button', 'og-dashboard-metric og-dashboard-metric-action og-dashboard-candidates-tracking');
+            card.type = 'button';
+            card.dataset.guideAction = 'candidates-tracking';
+            card.addEventListener('click', openGuideCandidates);
             card.append(node('span', 'og-dashboard-metric-label', metric[0]));
             card.append(node('strong', 'og-dashboard-metric-value', String(metric[1])));
             card.append(node('small', '', metric[2]));
             metricsNode.append(card);
         });
+
+        if (dashboardMode === 'admin') {
+            var questionBankCard = node('button', 'og-dashboard-metric og-dashboard-metric-action og-dashboard-qcm-questions');
+            questionBankCard.type = 'button';
+            questionBankCard.dataset.guideAction = 'qcm-major-questions';
+            questionBankCard.append(node('span', 'og-dashboard-metric-label', 'GESTION DES QUESTIONS QCM-MAJOR'));
+            questionBankCard.append(node('strong', 'og-dashboard-metric-value', 'Gérer'));
+            questionBankCard.append(node('small', '', 'Ajouter, modifier, supprimer, classer et rechercher'));
+            questionBankCard.addEventListener('click', function () {
+                if (window.DoctrineQcmQuestions && typeof window.DoctrineQcmQuestions.open === 'function') {
+                    window.DoctrineQcmQuestions.open();
+                } else {
+                    window.alert('Le gestionnaire de questions QCM-MAJOR n’est pas disponible. Actualisez la page.');
+                }
+            });
+            metricsNode.append(questionBankCard);
+        } else {
+            var attentionCard = node('article', 'og-dashboard-metric');
+            attentionCard.append(node('span', 'og-dashboard-metric-label', 'À ACCOMPAGNER'));
+            attentionCard.append(node('strong', 'og-dashboard-metric-value', String(candidates.length - ready)));
+            attentionCard.append(node('small', '', 'activité ou résultats à suivre'));
+            metricsNode.append(attentionCard);
+        }
 
         var qcmTrackingCard = node('button', 'og-dashboard-metric og-dashboard-metric-action og-dashboard-qcm-tracking');
         qcmTrackingCard.type = 'button';
