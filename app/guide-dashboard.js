@@ -679,6 +679,7 @@
         });
 
         // La correction IA apparaît immédiatement sous « Dossier et documents demandés ».
+        // L’officier conserve la validation finale de l’évaluation.
         target.append(renderAiCorrection(candidate));
     }
 
