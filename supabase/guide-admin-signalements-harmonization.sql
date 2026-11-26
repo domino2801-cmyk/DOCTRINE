@@ -26,3 +26,10 @@ create index if not exists doctrine_signalements_status_created_at_idx
 
 -- La politique doctrine_signalements_admin_update existante continue de protéger
 -- les modifications : seuls les comptes reconnus administrateurs peuvent traiter.
+
+-- Les candidats conservent uniquement le droit de créer leur propre signalement.
+-- Compatibilité temporaire avec les clients encore configurés sur l'ancien statut pending.
+drop policy if exists doctrine_signalements_candidate_insert on public.doctrine_signalements;
+create policy doctrine_signalements_candidate_insert on public.doctrine_signalements
+    for insert to authenticated
+    with check (user_id = auth.uid() and status in ('submitted','pending'));
