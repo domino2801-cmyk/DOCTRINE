@@ -1373,7 +1373,7 @@
                     '</p><p class="meta">' + currentRows.length + ' retour(s) analysé(s) - édité le ' + escapeHtml(edited) +
                     ' - période du ' + escapeHtml(period) + '</p></header>' +
                     sources.guide.pdfChartQuestions.map(makeChart).join('') +
-                    '<span class="page-number">Page 1 / 2</span></div><div class="page"><header><h1>'
+                    '<span class="page-number">Page 1 / 2</span></div><div class="page"><header><h1>' +
                     escapeHtml(title) + '</h1><p class="subtitle">' + escapeHtml(subtitle) +
                     '</p><p class="meta">' + currentRows.length + ' retour(s) analysé(s)</p></header>' + commentsSection() +
                     '<span class="page-number">Page 2 / 2</span></div>');
