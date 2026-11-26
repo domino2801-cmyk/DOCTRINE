@@ -346,7 +346,7 @@ test('les deux bibliothèques utilisent des cartes de largeur identique, titres 
 
 
 test('la page principale recharge la version du tableau de bord contenant les bibliothèques', () => {
-    assert.ok(html.includes('app/guide-dashboard.js?v=20261126-ADMIN-SIGNALEMENTS-4'));
+    assert.ok(html.includes('app/guide-dashboard.js?v=20261126-ADMIN-SIGNALEMENTS-5'));
     assert.ok(html.includes('pdf-lib@1.17.1/dist/pdf-lib.min.js'));
     assert.ok(html.indexOf('pdf-lib@1.17.1/dist/pdf-lib.min.js') < html.indexOf('app/guide-dashboard.js'));
     assert.ok(script.includes("await import('./bm4-official-pdf.mjs')"));
@@ -625,4 +625,14 @@ test('la migration harmonise les statuts candidats sans désactiver RLS', async 
     assert.match(migration, /pending.*submitted/);
     assert.match(migration, /in_review.*action_required.*resolved.*closed/s);
     assert.doesNotMatch(migration, /disable row level security/i);
+});
+
+test('la carte Signalement admin affiche une pastille globale pour les trois origines et actualise le compteur', () => {
+    assert.match(script, /function refreshAdminSignalementBadge\(badge\)/);
+    assert.match(script, /guide_signalements\?select=id,status&limit=500/);
+    assert.match(script, /doctrine_signalements\?select=id,status&limit=500/);
+    assert.match(script, /question_reports\?select=id,status&limit=500/);
+    assert.match(script, /og-dashboard-signalement-badge/);
+    assert.match(script, /setInterval\(function \(\) \{[\s\S]*?refreshAdminSignalementBadge\(signalementBadge\)/);
+    assert.match(script, /pending === 0/);
 });
