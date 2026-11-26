@@ -177,7 +177,7 @@ test('les signalements de questions QCM-MAJOR sont intégrés à la fenêtre adm
     assert.match(script, /question_text:'Question signalée'/);
     assert.match(script, /answers:'Réponses proposées'/);
     assert.match(script, /record\.origin === 'questions' \? \[\['pending','À traiter'\],\['resolved','Résolu'\]\]/);
-    assert.match(script, /record\.origin === 'questions' \? 'question_reports'/);
+    assert.match(script, /record\.origin === 'candidate' \? 'doctrine_signalements' : 'question_reports'/);
 });
 
 test('le tableau de bord utilise les données filtrées par le RPC guide', () => {
@@ -346,7 +346,7 @@ test('les deux bibliothèques utilisent des cartes de largeur identique, titres 
 
 
 test('la page principale recharge la version du tableau de bord contenant les bibliothèques', () => {
-    assert.ok(html.includes('app/guide-dashboard.js?v=20261126-ADMIN-SIGNALEMENTS-3'));
+    assert.ok(html.includes('app/guide-dashboard.js?v=20261126-ADMIN-SIGNALEMENTS-4'));
     assert.ok(html.includes('pdf-lib@1.17.1/dist/pdf-lib.min.js'));
     assert.ok(html.indexOf('pdf-lib@1.17.1/dist/pdf-lib.min.js') < html.indexOf('app/guide-dashboard.js'));
     assert.ok(script.includes("await import('./bm4-official-pdf.mjs')"));
