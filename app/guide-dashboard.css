@@ -838,3 +838,13 @@ body.og-guide-entry-only #guideDashboardNav > button {
   .og-qcm-og-arrow { width:38px; height:38px; }
   .og-qcm-og-identity strong { font-size:13px; }
 }
+
+.og-candidate-stepper { display:grid; grid-template-columns:44px minmax(0,1fr) 44px; align-items:center; gap:10px; padding:12px; border-top:1px solid rgba(183,207,185,.16); }
+.og-candidate-stepper-arrow { display:grid; place-items:center; width:44px; height:44px; border:1px solid rgba(216,184,91,.42); border-radius:9px; background:rgba(83,111,86,.2); color:#e6c96f; font-size:32px; line-height:1; cursor:pointer; }
+.og-candidate-stepper-arrow:hover:not(:disabled) { background:rgba(216,184,91,.13); }
+.og-candidate-stepper-arrow:disabled { opacity:.35; cursor:not-allowed; }
+.og-candidate-stepper-arrow:focus-visible { outline:2px solid #e6c96f; outline-offset:2px; }
+.og-candidate-stepper-current { display:grid; min-width:0; gap:4px; text-align:center; }
+.og-candidate-stepper-name { overflow-wrap:anywhere; color:#f2f5ee; font-size:16px; }
+.og-candidate-stepper-status,.og-candidate-stepper-position { color:#c2cbbd; font-size:12px; }
+@media(max-width:520px) { .og-candidate-stepper { grid-template-columns:38px minmax(0,1fr) 38px; gap:6px; padding:10px 8px; } .og-candidate-stepper-arrow { width:38px; height:40px; } .og-candidate-stepper-name { font-size:14px; } .og-candidate-stepper-status,.og-candidate-stepper-position { font-size:11px; } }
