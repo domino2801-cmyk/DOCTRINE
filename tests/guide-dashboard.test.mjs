@@ -173,7 +173,8 @@ test('le RPC administrateur inclut les profils OG même avec un rôle guide, san
     assert.match(rpc, /user_account\.email_confirmed_at is not null/);
     assert.match(rpc, /and not coalesce\([\s\S]*?bm4_admin/);
     assert.match(rpc, /doctrine_is_admin\(\) or assignment\.assigned_at is not null/);
-    assert.match(rpc, /grant execute on function public\.get_guide_candidate_dashboard\(uuid\) to authenticated/);
+    assert.match(rpc, /auth\\.uid\\(\\) is null or not \\(public\\.doctrine_is_admin\\(\\) or public\\.doctrine_is_guide\\(\\)\\)/);
+    assert.match(rpc, /not public\\.doctrine_can_access_candidate\\(p_candidate_id\\)/);
 });
 
 test('le tableau de bord utilise les données filtrées par le RPC guide', () => {
