@@ -291,7 +291,8 @@ test('les exercices Officier Guide sont regroupés en quatre accordéons par dif
     assert.match(script, /og-dashboard-library-level-group/);
     assert.match(script, /EXERCISE_LEVELS\.forEach/);
     assert.match(script, /Aucun exercice publié à ce niveau/);
-    assert.match(script, /Ouvrir l’exercice/);
+    assert.match(script, /node\('button', 'og-dashboard-download', 'Télécharger'\)/);
+    assert.match(script, /openDriveInViewer\(exercise\.drive_url, exercise\.title\)/);
     assert.match(script, /Corrections disponibles/);
     assert.match(css, /\.og-dashboard-library-level-group/);
     assert.match(css, /\.og-dashboard-library-level-group\[open\]/);
