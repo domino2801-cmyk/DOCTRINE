@@ -697,11 +697,12 @@
 
         // La liste est affichée immédiatement, sans écran d’accordéon intermédiaire.
         var workspace = node('div', 'og-candidate-workspace');
-        var group = node('section', 'og-dashboard-candidate-group og-dashboard-candidate-group-open');
+        var group = node('details', 'og-dashboard-candidate-group og-dashboard-admin-candidate-group');
         var regularCandidates = dashboardMode === 'admin' ? candidates.filter(function (candidate) { return !isOgCandidate(candidate); }) : candidates;
         var ogCandidates = dashboardMode === 'admin' ? candidates.filter(isOgCandidate) : [];
-        group.append(node('div', 'og-dashboard-candidate-group-heading',
-            (dashboardMode === 'admin' ? 'CANDIDATS HORS OG — ' : 'TOUS — ') + regularCandidates.length + ' compte(s)'));
+        var regularSummary = node('summary', 'og-dashboard-candidate-group-heading',
+            (dashboardMode === 'admin' ? 'CANDIDATS HORS OG — ' : 'TOUS — ') + regularCandidates.length + ' compte(s)');
+        group.append(regularSummary);
         var groupItems = node('div', 'og-dashboard-candidate-group-items');
         var list = node('nav', 'og-qcm-candidate-list');
         list.setAttribute('aria-label', dashboardMode === 'admin' ? 'Candidats hors spécialité OG' : 'Tous les candidats de ma cohorte');
@@ -756,6 +757,10 @@
         panel.append(workspace);
         searchInput.addEventListener('input', function () {
             var query = searchInput.value.trim().toLocaleLowerCase('fr');
+            if (query) {
+                group.open = true;
+                if (ogGroup) ogGroup.open = true;
+            }
             workspace.querySelectorAll('.og-qcm-candidate-button').forEach(function (button) {
                 button.hidden = !!query && !button.dataset.searchText.includes(query);
             });
