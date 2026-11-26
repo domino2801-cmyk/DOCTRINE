@@ -1262,8 +1262,30 @@
                     return '<li><i style="background:' + chartColors[index % chartColors.length] + '"></i><span>' +
                         escapeHtml(label) + ' : ' + counts[label] + ' (' + Math.round(counts[label] / total * 100) + ' %)</span></li>';
                 }).join('');
+                // SVG plutôt qu'un simple fond CSS : les camemberts restent visibles dans l'aperçu et à l'impression PDF.
+                var pieParts = [];
+                if (entries.length === 1) {
+                    pieParts.push('<circle cx="50" cy="50" r="48" fill="' + chartColors[0] + '"/>');
+                } else {
+                    var startAngle = -Math.PI / 2;
+                    entries.forEach(function (label, index) {
+                        var slice = counts[label] / total * Math.PI * 2;
+                        var endAngle = startAngle + slice;
+                        var x1 = 50 + 48 * Math.cos(startAngle);
+                        var y1 = 50 + 48 * Math.sin(startAngle);
+                        var x2 = 50 + 48 * Math.cos(endAngle);
+                        var y2 = 50 + 48 * Math.sin(endAngle);
+                        var largeArc = slice > Math.PI ? 1 : 0;
+                        var path = 'M 50 50 L ' + x1.toFixed(3) + ' ' + y1.toFixed(3) +
+                            ' A 48 48 0 ' + largeArc + ' 1 ' + x2.toFixed(3) + ' ' + y2.toFixed(3) + ' Z';
+                        pieParts.push('<path d="' + path + '" fill="' + chartColors[index % chartColors.length] + '"/>');
+                        startAngle = endAngle;
+                    });
+                }
+                var pieSvg = '<svg class="pie-svg" viewBox="0 0 100 100" role="img" aria-label="Camembert : ' +
+                    escapeHtml(question[1]) + '" xmlns="http://www.w3.org/2000/svg">' + pieParts.join('') + '</svg>';
                 return '<section class="chart"><h2>' + escapeHtml(question[1]) + '</h2><div class="chart-content">' +
-                    '<div class="pie" style="background:conic-gradient(' + stops.join(',') + ')"></div><ul>' + legend + '</ul></div></section>';
+                    pieSvg + '<ul>' + legend + '</ul></div></section>';
             }
             var dates = currentRows.map(function (row) { return Date.parse(row.created_at); }).filter(Number.isFinite);
             var period = dates.length ? new Date(Math.min.apply(null, dates)).toLocaleDateString('fr-FR') +
@@ -1305,7 +1327,9 @@
                 'header .meta{font-size:9pt;margin:0 0 4mm;line-height:1.35}.chart{margin:0 0 4.5mm;break-inside:avoid}' +
                 '.chart h2,.comments h2{font-size:11pt;margin:0 0 2mm;padding:0 0 1.5mm;border-bottom:1px solid #c9c9c9}' +
                 '.chart-content{display:flex;align-items:flex-start;gap:7mm;min-height:34mm;padding:0 0 1mm}' +
-                '.pie{width:32mm;height:32mm;min-width:32mm;border-radius:50%;margin:0}' +
+                '.pie-svg{display:block;width:32mm;height:32mm;min-width:32mm;margin:0;overflow:visible}' +
+                'svg,path,circle{-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+                'body{-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
                 '.chart ul{list-style:none;margin:0;padding:1mm 0 0;flex:1}.chart li{display:flex;align-items:flex-start;gap:2mm;margin:0 0 1.1mm;font-size:9pt;line-height:1.2}' +
                 '.chart li i{display:block;width:3mm;height:3mm;min-width:3mm;margin-top:.4mm}' +
                 '.comments{margin-top:3mm}.comments>p{font-size:9pt;line-height:1.35;margin:0 3mm 3mm;white-space:pre-wrap}' +
