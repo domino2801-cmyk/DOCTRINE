@@ -174,7 +174,11 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /rpc\/get_guide_candidate_dashboard/);
     assert.match(script, /body:\s*\{\s*p_candidate_id:\s*null\s*\}/);
     assert.match(script, /guide_course_catalog\?select=/);
-    assert.match(script, /doctrine_progress_events\?select=user_id,module_id,event_type/);
+    assert.match(script, /function extractModuleProgressEvents\(payload\)/);
+    assert.match(script, /candidateRequest\.then\(function \(payload\)/);
+    assert.match(script, /rpc\/get_guide_candidate_dashboard/);
+    assert.doesNotMatch(script, /doctrine_progress_events\?select=user_id,module_id,event_type/);
+    assert.match(guideModuleSql, /event\.module_id in \('1', '2', '3', '4', '5', '6', '7'\)/);
     assert.match(script, /candidate_admission_tracking\?on_conflict=candidate_id/);
     assert.match(script, /Oraux blancs réalisés/);
     assert.match(script, /Objectif d’oraux blancs/);
