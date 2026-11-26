@@ -567,10 +567,42 @@
         var identityCopy = node('div', 'og-candidate-profile-identity-copy');
         identityCopy.append(node('p', 'og-dashboard-kicker', 'FICHE CANDIDAT'));
         identityCopy.append(node('strong', 'og-candidate-profile-pseudo', pseudo));
-        if (identity.specialty) identityCopy.append(node('p', '', 'Spécialité : ' + identity.specialty));
+        var specialtyLine = node('p', '', 'Spécialité : ' + (identity.specialty || 'Non renseignée'));
+        identityCopy.append(specialtyLine);
         if (identity.email) identityCopy.append(node('p', '', 'E-mail : ' + identity.email));
         identityCard.append(identityCopy);
         if (dashboardMode === 'admin') {
+            var specialtyButton = node('button', 'admin-edit-btn', 'Spécialité');
+            specialtyButton.type = 'button';
+            specialtyButton.title = 'Modifier la spécialité du candidat';
+            specialtyButton.disabled = !identity.id;
+            specialtyButton.addEventListener('click', function () {
+                var specialties = ['INF', 'BLD', 'ART', 'GEN', 'AER', 'EMP', 'SIC', 'CYB', 'RENS', 'ADM', 'GRH', 'PBF', 'MVT', 'MAI', 'COM', 'RHL', 'EPS', 'SAN', 'FSP', 'EMIA', 'OG'];
+                var candidateName = identity.pseudo || identity.name || identity.email || 'ce candidat';
+                var newSpecialty = window.prompt('Choisir une nouvelle spécialité pour ' + candidateName + ':\\n\\n' +
+                    specialties.join(', ') + '\\n\\nSpécialité actuelle : ' + (identity.specialty || 'Aucune'), identity.specialty || '');
+                if (newSpecialty === null) return;
+                newSpecialty = newSpecialty.toUpperCase().trim();
+                if (!specialties.includes(newSpecialty)) {
+                    window.alert('Spécialité invalide : ' + newSpecialty);
+                    return;
+                }
+                if (!window.confirm('Modifier la spécialité de ' + candidateName + ' en ' + newSpecialty + ' ?')) return;
+                specialtyButton.disabled = true;
+                api('rpc/update_candidate_specialty', {
+                    method: 'POST',
+                    body: { p_user_id: identity.id, p_new_specialty: newSpecialty }
+                }).then(function (result) {
+                    if (!result) throw new Error('La modification n’a pas été confirmée.');
+                    identity.specialty = newSpecialty;
+                    specialtyLine.textContent = 'Spécialité : ' + newSpecialty;
+                }).catch(function (error) {
+                    window.alert('Modification de la spécialité impossible : ' + (error.message || 'Erreur inconnue'));
+                }).finally(function () {
+                    specialtyButton.disabled = false;
+                });
+            });
+            identityCard.append(specialtyButton);
             var blockButton = node('button', 'admin-account-block-btn admin-delete-btn', identity.blocked ? 'Débloquer' : 'Bloquer le compte');
             blockButton.type = 'button';
             blockButton.disabled = !identity.id || identity.blockedStatusKnown !== true;
