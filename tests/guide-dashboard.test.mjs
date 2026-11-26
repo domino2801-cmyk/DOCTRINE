@@ -593,3 +593,26 @@ test('la bibliothèque exercices et corrections est commune, avec gestion admin 
     assert.match(script, /dashboardMode === 'admin'/);
     assert.match(script, /is_published=eq\.true/);
 });
+
+
+test('le clic sur le signalement ouvre la saisie OG ou la vue admin unifiée selon le rôle', () => {
+    assert.match(script, /if \(definition\.kind === 'signalement' && dashboardMode === 'admin'\) openAdminSignalements\(\)/);
+    assert.match(script, /function openAdminSignalements\(\)/);
+    assert.match(script, /guide_signalements\?select=id,guide_email,payload,priority,status,admin_response,created_at/);
+    assert.match(script, /doctrine_signalements\?select=id,candidate_email,incident_type,module_id,resource,details,priority,status,admin_response,created_at/);
+    assert.match(script, /Toutes les origines/);
+    assert.match(script, /Officiers Guides/);
+    assert.match(script, /Candidats/);
+    assert.match(script, /Enregistrer le traitement/);
+    assert.match(script, /processed_by:claims && claims\.sub/);
+    assert.match(css, /\.og-dashboard-admin-signalement-controls/);
+    assert.match(css, /@media\(max-width:680px\)/);
+});
+
+test('la migration harmonise les statuts candidats sans désactiver RLS', async () => {
+    const migration = await readFile(new URL('../supabase/guide-admin-signalements-harmonization.sql', import.meta.url), 'utf8');
+    assert.match(migration, /add column if not exists admin_response/);
+    assert.match(migration, /pending.*submitted/);
+    assert.match(migration, /in_review.*action_required.*resolved.*closed/s);
+    assert.doesNotMatch(migration, /disable row level security/i);
+});
