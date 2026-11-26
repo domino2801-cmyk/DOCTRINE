@@ -122,6 +122,17 @@ test('la navigation CANDIDATS ouvre la fiche du premier compte et permet de parc
     assert.ok(script.includes('Progression des modules 1 à 7'));
     assert.ok(script.includes('Correction assistée par IA'));
 });
+test('la fiche de chaque candidat de la vue administrateur permet de bloquer ou débloquer son compte', () => {
+    assert.match(script, /if \(dashboardMode === 'admin'\) \{[\s\S]*?var blockButton = node\('button', 'admin-account-block-btn admin-delete-btn'/);
+    assert.match(script, /api\('rpc\/get_admin_blocked_accounts', \{ method: 'POST', body: \{\} \}\)/);
+    assert.match(script, /identity\.blockedStatusKnown = blockedStatusKnown/);
+    assert.match(script, /identity\.blocked = blockedStatusKnown && blockedIds\.has/);
+    assert.match(script, /api\('rpc\/set_account_blocked'/);
+    assert.match(script, /body: \{ p_user_id: identity\.id, p_blocked: blocked \}/);
+    assert.match(script, /blockButton\.classList\.toggle\('is-blocked', blocked\)/);
+    assert.match(script, /blockButton\.disabled = !identity\.id \|\| identity\.blockedStatusKnown !== true/);
+});
+
 test('les fiches RETEX et Signalement Officier Guide sont autonomes et indépendantes du Module 7', () => {
     assert.match(script, /RETOUR D’EXPÉRIENCE OFFICIER GUIDE/);
     assert.match(script, /SIGNALEMENT OFFICIER GUIDE/);
