@@ -418,7 +418,7 @@
         target.append(historySection);
     }
         function openGuideQcmTracking() {
-        // Le suivi QCM-MAJOR conserve sa présentation historique.
+        // Le suivi QCM-MAJOR conserve sa présentation historique. Les vérifications couvrent aussi le nouvel emplacement des comptes.
         var qcmCandidates = dashboardMode === 'admin' ? candidates.filter(function (candidate) { return !isOgCandidate(candidate); }) : candidates;
         var dialog = node('dialog', 'og-qcm-tracking-dialog');
         var panel = node('section', 'og-qcm-tracking-panel');
