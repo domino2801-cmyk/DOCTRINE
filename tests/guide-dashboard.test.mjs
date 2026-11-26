@@ -122,6 +122,15 @@ test('la navigation CANDIDATS ouvre la fiche du premier compte et permet de parc
     assert.ok(script.includes('Progression des modules 1 à 7'));
     assert.ok(script.includes('Correction assistée par IA'));
 });
+test('la fiche de chaque candidat administrateur permet de modifier sa spécialité', () => {
+    assert.match(script, /var specialtyButton = node\('button', 'admin-edit-btn', 'Spécialité'\)/);
+    assert.match(script, /specialtyButton\.title = 'Modifier la spécialité du candidat'/);
+    assert.match(script, /specialties = \['INF', 'BLD', 'ART', 'GEN', 'AER', 'EMP', 'SIC', 'CYB', 'RENS', 'ADM', 'GRH', 'PBF', 'MVT', 'MAI', 'COM', 'RHL', 'EPS', 'SAN', 'FSP', 'EMIA', 'OG'\]/);
+    assert.match(script, /api\('rpc\/update_candidate_specialty'/);
+    assert.match(script, /body: \{ p_user_id: identity\.id, p_new_specialty: newSpecialty \}/);
+    assert.match(script, /identity\.specialty = newSpecialty/);
+});
+
 test('la fiche de chaque candidat de la vue administrateur permet de bloquer ou débloquer son compte', () => {
     assert.match(script, /if \(dashboardMode === 'admin'\) \{[\s\S]*?var blockButton = node\('button', 'admin-account-block-btn admin-delete-btn'/);
     assert.match(script, /api\('rpc\/get_admin_blocked_accounts', \{ method: 'POST', body: \{\} \}\)/);
