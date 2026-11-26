@@ -14,6 +14,9 @@
 .og-dashboard-kicker { margin:0 0 7px; color:#d8b85b; font-size:11px; font-weight:800; letter-spacing:.13em; }
 .og-dashboard-intro h2 { margin:0; color:#f2f5ee; font-size:clamp(22px,3vw,30px); }
 .og-dashboard-subtitle { margin:7px 0 0; color:#b8c8bb; }
+.og-dashboard-header-actions {
+    display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex:0 0 auto;
+}
 .og-dashboard-close, .og-dashboard-download {
     display:inline-flex; align-items:center; justify-content:center; min-height:38px; padding:8px 13px;
     border:1px solid rgba(183,207,185,.35); border-radius:6px; background:#24382d; color:#eef5ef;
