@@ -76,7 +76,7 @@ test('l’espace Officier Guide affiche uniquement les contenus publiés et leur
     assert.match(guide, /openDriveInViewer\(exercise\.drive_url, exercise\.title\)/);
     assert.match(guide, /openDriveInViewer\(correction\.drive_url, correction\.title\)/);
     assert.doesNotMatch(guide, /driveDownload\(correction\.drive_url\)/);
-    assert.doesNotMatch(guide, /drive\.google\.com\/uc\?export=download/);
+    assert.equal((guide.match(/node\\('button', 'og-dashboard-download', 'Télécharger'\\)/g) || []).length, 2);
     assert.match(guideCss, /\.og-dashboard-pedagogical-libraries/);
 });
 
