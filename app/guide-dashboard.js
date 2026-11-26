@@ -687,7 +687,7 @@
         var header = node('header', 'og-qcm-tracking-header');
         var heading = node('div');
         heading.append(node('p', 'og-dashboard-kicker', dashboardMode === 'admin' ? 'ESPACE ADMINISTRATEUR / SUIVI GLOBAL' : 'ESPACE OFFICIER GUIDE / COHORTE'));
-        heading.append(node('h2', '', dashboardMode === 'admin' ? 'CANDIDATS — TOUS LES COMPTES' : 'CANDIDATS — COHORTE RATTACHÉE'));
+        heading.append(node('h2', '', dashboardMode === 'admin' ? 'COMPTES UTILISATEURS — TOUS LES COMPTES' : 'CANDIDATS — COHORTE RATTACHÉE'));
         heading.append(node('p', 'og-dashboard-muted', 'Sélectionnez un candidat pour ouvrir sa fiche individuelle.'));
         var closeButton = node('button', 'og-dashboard-close', 'Fermer');
         closeButton.type = 'button';
@@ -701,7 +701,7 @@
         var regularCandidates = dashboardMode === 'admin' ? candidates.filter(function (candidate) { return !isOgCandidate(candidate); }) : candidates;
         var ogCandidates = dashboardMode === 'admin' ? candidates.filter(isOgCandidate) : [];
         group.append(node('div', 'og-dashboard-candidate-group-heading',
-            (dashboardMode === 'admin' ? 'CANDIDATS — ' : 'TOUS — ') + regularCandidates.length + ' candidat(s)'));
+            (dashboardMode === 'admin' ? 'CANDIDATS HORS OG — ' : 'TOUS — ') + regularCandidates.length + ' compte(s)'));
         var groupItems = node('div', 'og-dashboard-candidate-group-items');
         var list = node('nav', 'og-qcm-candidate-list');
         list.setAttribute('aria-label', dashboardMode === 'admin' ? 'Candidats hors spécialité OG' : 'Tous les candidats de ma cohorte');
@@ -736,10 +736,10 @@
         workspace.append(group);
         if (dashboardMode === 'admin') {
             var ogGroup = node('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group');
-            ogGroup.append(node('summary', 'og-dashboard-candidate-group-heading', 'CANDIDATS OFFICIER GUIDE — ' + ogCandidates.length + ' candidat(s)'));
+            ogGroup.append(node('summary', 'og-dashboard-candidate-group-heading', 'OFFICIERS GUIDES — ' + ogCandidates.length + ' compte(s)'));
             var ogGroupItems = node('div', 'og-dashboard-candidate-group-items');
             var ogCandidateList = node('nav', 'og-qcm-candidate-list');
-            ogCandidateList.setAttribute('aria-label', 'Candidats de spécialité Officier Guide');
+            ogCandidateList.setAttribute('aria-label', 'Officiers Guides');
             ogCandidates.forEach(function (candidate) { appendCandidateButton(candidate, ogCandidateList); });
             if (!ogCandidates.length) ogCandidateList.append(node('p', 'og-qcm-empty', 'Aucun candidat Officier Guide.'));
             ogGroupItems.append(ogCandidateList);
@@ -763,7 +763,7 @@
         metricsNode.replaceChildren();
         var ready = candidates.filter(function (candidate) { return !attention(candidate); }).length;
         [
-            ['CANDIDATS', candidates.length, dashboardMode === 'admin' ? 'ensemble des comptes' : 'cohorte rattachée']
+            ['COMPTES UTILISATEURS', candidates.length, dashboardMode === 'admin' ? 'candidats et Officiers Guides' : 'cohorte rattachée']
         ].forEach(function (metric) {
             var card = node('button', 'og-dashboard-metric og-dashboard-metric-action og-dashboard-candidates-tracking');
             card.type = 'button';
