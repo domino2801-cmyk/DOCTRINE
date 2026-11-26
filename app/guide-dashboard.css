@@ -997,3 +997,33 @@ body.og-guide-entry-only #guideDashboardNav > button {
   .og-dashboard-feedback-section-title { margin-top:12px; }
   .og-dashboard-feedback-form select[multiple] { min-height:126px; }
 }
+
+
+/* Action de blocage du compte depuis la fiche candidat administrateur. */
+.og-candidate-profile-identity .admin-account-block-btn {
+  align-self:flex-start;
+  min-height:38px;
+  padding:8px 14px;
+  border:1px solid rgba(224,116,103,.7);
+  border-radius:8px;
+  background:rgba(125,38,32,.22);
+  color:#ffe3df;
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
+}
+.og-candidate-profile-identity .admin-account-block-btn:hover,
+.og-candidate-profile-identity .admin-account-block-btn:focus-visible {
+  background:rgba(160,48,40,.4);
+  outline:2px solid rgba(224,116,103,.65);
+  outline-offset:2px;
+}
+.og-candidate-profile-identity .admin-account-block-btn.is-blocked {
+  border-color:rgba(116,190,145,.7);
+  background:rgba(35,105,65,.24);
+  color:#dcf7e5;
+}
+.og-candidate-profile-identity .admin-account-block-btn:disabled {
+  opacity:.55;
+  cursor:not-allowed;
+}
