@@ -171,8 +171,8 @@ test('le RPC administrateur inclut les profils OG même avec un rôle guide, san
     assert.ok(rpc.includes("not in ('admin', 'guide', 'officier_guide')"));
     assert.ok(rpc.includes("or upper(trim(coalesce("));
     assert.ok(rpc.includes("))) = 'OG'"));
-    assert.match(rpc, /user_account\\.email_confirmed_at is not null/);
-    assert.match(rpc, /bm4_admin/);
+    assert.ok(rpc.includes('user_account.email_confirmed_at is not null'));
+    assert.ok(rpc.includes('bm4_admin'));
     assert.ok(rpc.includes('public.doctrine_is_admin() or assignment.assigned_at is not null'));
     assert.ok(rpc.includes('public.doctrine_is_admin() or public.doctrine_is_guide()'));
     assert.ok(rpc.includes('not public.doctrine_can_access_candidate(p_candidate_id)'));
