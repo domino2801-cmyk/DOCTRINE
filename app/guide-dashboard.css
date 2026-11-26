@@ -886,3 +886,35 @@ body.og-guide-entry-only #guideDashboardNav > button {
 @media(max-width:850px) {
   .og-candidate-list-dialog .og-admin-users-layout { grid-template-columns:minmax(0,1fr); }
 }
+
+
+/* Vue unifiée des signalements dans le tableau de bord administrateur. */
+.og-dashboard-admin-signalements-dialog { width:min(1040px,calc(100vw - 24px)); max-width:1040px; }
+.og-dashboard-admin-signalements { display:grid; gap:12px; }
+.og-dashboard-admin-signalements-toolbar { display:flex; flex-wrap:wrap; gap:9px; }
+.og-dashboard-admin-signalements-toolbar select,
+.og-dashboard-admin-signalement-controls select,
+.og-dashboard-admin-signalement-controls textarea {
+  min-width:0; box-sizing:border-box; padding:10px; border:1px solid #607667;
+  border-radius:6px; background:#26392f; color:#f2f5ee; color-scheme:dark; font:inherit;
+}
+.og-dashboard-admin-signalements-toolbar select { flex:1 1 220px; }
+.og-dashboard-admin-signalements-list { display:grid; gap:12px; min-width:0; }
+.og-dashboard-admin-signalement-card { display:grid; gap:10px; min-width:0; padding:14px; border:1px solid rgba(183,207,185,.24); border-left:3px solid #d8b85b; border-radius:9px; background:rgba(255,255,255,.035); }
+.og-dashboard-admin-signalement-top { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 12px; }
+.og-dashboard-admin-signalement-top strong { color:#f2f5ee; }
+.og-dashboard-admin-signalement-date,.og-dashboard-admin-signalement-meta { color:#e6c96f; font-size:12px; }
+.og-dashboard-admin-signalement-identity { margin:0; color:#c6d2c8; font-size:13px; overflow-wrap:anywhere; }
+.og-dashboard-admin-signalement-details { display:grid; grid-template-columns:minmax(110px,.35fr) minmax(0,1fr); gap:5px 10px; margin:0; min-width:0; }
+.og-dashboard-admin-signalement-details dt { color:#e6c96f; font-size:12px; font-weight:800; text-transform:capitalize; }
+.og-dashboard-admin-signalement-details dd { margin:0; color:#f2f5ee; white-space:pre-wrap; overflow-wrap:anywhere; }
+.og-dashboard-admin-signalement-controls { display:grid; grid-template-columns:minmax(160px,.45fr) minmax(0,1.4fr) auto; align-items:start; gap:8px; min-width:0; }
+.og-dashboard-admin-signalement-controls textarea { width:100%; resize:vertical; }
+.og-dashboard-admin-signalement-controls button { min-height:40px; }
+.og-dashboard-admin-signalements :is(p,span,strong,dd,dt,button,select) { overflow-wrap:anywhere; }
+@media(max-width:680px) {
+  .og-dashboard-admin-signalement-controls { grid-template-columns:minmax(0,1fr); }
+  .og-dashboard-admin-signalement-controls button { justify-self:start; }
+  .og-dashboard-admin-signalement-details { grid-template-columns:minmax(0,1fr); gap:3px; }
+  .og-dashboard-admin-signalement-details dd { margin-bottom:7px; }
+}
