@@ -23,7 +23,7 @@ test('la carte de proposition est placée sous la bibliothèque d’exercices sa
     assert.match(index, /app\/guide-dashboard\.js/);
     assert.match(guide, /if \(dashboardMode !== 'admin'\) libraryGrid\.append\(courseSection\)/);
     assert.match(guide, /libraryGrid\.append\(exerciseSection\)/);
-    assert.doesNotMatch(guide, /libraryGrid\.append\(courseSection, exerciseSection\)/);
+    assert.match(guide, /BIBLIOTHÈQUE DES DOSSIERS D’EXERCICES ET CORRECTIONS/);
     assert.match(guide, /libraryGrid\.append\(proposalEntry\)/);
     assert.match(guide, /PROPOSITION DE DOCUMENTS À AJOUTER POUR LES CANDIDATS/);
     assert.match(guide, /Titre du document/);
