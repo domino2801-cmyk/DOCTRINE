@@ -46,3 +46,16 @@ test('les deux tables ont des règles RLS guide et admin distinctes', () => {
   assert.match(migration, /priority text not null default 'normal'/);
   assert.match(migration, /guide_feedback_set_identity/);
 });
+
+test('le RETEX Officier Guide recueille le retour sur le suivi des candidats BM4', () => {
+  for (const key of ['cohort', 'candidate_count', 'period', 'ease', 'access', 'features',
+    'tracking', 'early_detection', 'difficulties', 'ai_help', 'ai_relevance',
+    'validation', 'global', 'strength', 'anomalies', 'improvements', 'recommendation']) {
+    assert.ok(dashboard.includes("['" + key + "'"), 'champ RETEX manquant : ' + key);
+  }
+  assert.match(dashboard, /Q14\. Quelle recommandation/);
+  assert.match(dashboard, /type === 'multiselect'/);
+  assert.match(dashboard, /sources\.guide\.chartQuestions/);
+  assert.match(dashboard, /sources\.guide\.pdfChartQuestions/);
+  assert.match(dashboard, /Renseignez les réponses aux questions 1, 2, 4 et 10/);
+});
