@@ -180,22 +180,24 @@
         var isEditing = editingId !== null;
         var currentEditingId = editingId;
         statusNode.textContent = isEditing ? 'Modification en cours…' : 'Ajout en cours…';
-        var path = isEditing ? 'question_bank?id=eq.' + encodeURIComponent(currentEditingId) : 'question_bank';
-        var payload = {
-            theme_id: question.themeId,
-            question: question.q,
-            answer_1: question.r[0],
-            answer_2: question.r[1],
-            answer_3: question.r[2],
-            answer_4: question.r[3],
-            correct_answer: question.r[question.correct]
+        var rpcPayload = {
+            p_theme_id: question.themeId,
+            p_question: question.q,
+            p_answer_1: question.r[0],
+            p_answer_2: question.r[1],
+            p_answer_3: question.r[2],
+            p_answer_4: question.r[3],
+            p_correct_index: question.correct
         };
-        api(path, {
-            method: isEditing ? 'PATCH' : 'POST',
-            body: isEditing ? payload : [payload],
+        if (isEditing) rpcPayload.p_question_id = currentEditingId;
+        api('rpc/' + (isEditing ? 'admin_update_question' : 'admin_create_question'), {
+            method: 'POST',
+            body: rpcPayload,
             prefer: 'return=representation'
-        }).then(function (rows) {
-            if (!Array.isArray(rows) || rows.length !== 1) throw new Error('Supabase n’a pas confirmé l’enregistrement.');
+        }).then(function (result) {
+            if (isEditing ? result !== true : (typeof result !== 'string' || !result)) {
+                throw new Error('Supabase n’a pas confirmé l’enregistrement.');
+            }
             resetForm();
             return loadQuestions().then(function () {
                 statusNode.textContent = isEditing ? 'Question modifiée.' : 'Question ajoutée.';
@@ -253,12 +255,12 @@
     function moveQuestion(question, themeId, control) {
         if (themeId === question.themeId) return;
         control.disabled = true;
-        api('question_bank?id=eq.' + encodeURIComponent(question.id), {
-            method: 'PATCH',
-            body: { theme_id: themeId },
+        api('rpc/admin_move_question_theme', {
+            method: 'POST',
+            body: { p_question_id: question.id, p_theme_id: themeId },
             prefer: 'return=representation'
-        }).then(function (rows) {
-            if (!Array.isArray(rows) || rows.length !== 1) throw new Error('Le changement de thème n’a pas été confirmé.');
+        }).then(function (updated) {
+            if (updated !== true) throw new Error('Le changement de thème n’a pas été confirmé.');
             question.themeId = themeId;
             renderList();
             statusNode.textContent = 'Thème de la question modifié.';
@@ -270,10 +272,12 @@
     function deleteQuestion(question, button) {
         if (!window.confirm('Supprimer définitivement cette question de la banque QCM-MAJOR ?')) return;
         button.disabled = true;
-        api('question_bank?id=eq.' + encodeURIComponent(question.id), {
-            method: 'DELETE',
-            prefer: 'return=minimal'
-        }).then(function () {
+        api('rpc/admin_delete_question', {
+            method: 'POST',
+            body: { p_question_id: question.id },
+            prefer: 'return=representation'
+        }).then(function (deleted) {
+            if (deleted !== true) throw new Error('Supabase n’a pas confirmé la suppression.');
             questions = questions.filter(function (item) { return item.id !== question.id; });
             renderList();
             statusNode.textContent = 'Question supprimée de la banque QCM-MAJOR.';
