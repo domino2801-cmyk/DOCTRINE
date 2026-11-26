@@ -505,7 +505,8 @@ test('le mode administrateur reprend le tableau de bord et isole les candidats O
     assert.match(script, /var ogCandidates = dashboardMode === 'admin'/);
     assert.match(script, /var ogGroup = node\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\)/);
     assert.match(script, /OFFICIERS GUIDES — '/);
-    assert.match(script, /ogDetails = node\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\)/);
+    assert.match(script, /ogGroup\.append\(ogGroupItems\)/);
+    assert.match(script, /workspace\.append\(ogGroup\)/);
 });
 
 
