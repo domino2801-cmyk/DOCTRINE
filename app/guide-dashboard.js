@@ -1030,51 +1030,92 @@
         var header = node('header', 'og-dashboard-feedback-header');
         var heading = node('div');
         heading.append(node('p', 'og-dashboard-kicker', 'CONSULTATION ADMINISTRATEUR'));
-        heading.append(node('h2', '', 'Synthèse RETEX QCM-MAJOR'));
+        heading.append(node('h2', '', 'Consultation des RETEX'));
         var close = node('button', 'og-dashboard-close', 'Fermer');
         close.type = 'button';
         close.addEventListener('click', function () { dialog.close(); });
         header.append(heading, close);
+
+        var tabs = node('div', 'og-admin-retex-tabs');
+        var qcmTab = node('button', 'og-admin-retex-tab is-active', 'RETEX QCM-MAJOR');
+        var guideTab = node('button', 'og-admin-retex-tab', 'RETEX Officier Guide OG');
+        qcmTab.type = guideTab.type = 'button';
+        qcmTab.setAttribute('aria-pressed', 'true');
+        guideTab.setAttribute('aria-pressed', 'false');
+        tabs.append(qcmTab, guideTab);
+
         var status = node('p', 'og-dashboard-feedback-status', 'Vérification des droits administrateur…');
         status.setAttribute('role', 'status');
         status.setAttribute('aria-live', 'polite');
         var meta = node('p', 'og-dashboard-muted');
         var charts = node('div', 'og-admin-retex-charts');
         var responses = node('section', 'og-admin-retex-responses');
-        responses.append(node('h3', '', 'Tous les retours enregistrés'));
+        var responsesTitle = node('h3', '', 'Tous les retours enregistrés');
         var responseList = node('div', 'og-admin-retex-response-list');
-        responses.append(responseList);
+        responses.append(responsesTitle, responseList);
         var actions = node('div', 'og-dashboard-ai-actions');
         var pdf = node('button', 'og-dashboard-close og-dashboard-assign-primary', 'Exporter la synthèse en PDF');
         pdf.type = 'button';
         pdf.disabled = true;
         actions.append(pdf);
-        shell.append(header, status, meta, charts, responses, actions);
+        shell.append(header, tabs, status, meta, charts, responses, actions);
         dialog.append(shell);
         root.append(dialog);
         dialog.addEventListener('click', function (event) { if (event.target === dialog) dialog.close(); });
         dialog.addEventListener('close', function () { dialog.remove(); });
         dialog.showModal();
 
-        var questions = [
-            ['specialty', 'Spécialité BM4'], ['themes', 'Zones les plus ciblées'],
-            ['navigation', 'Navigation dans la console'], ['design', 'Design visuel'],
-            ['best_mode', 'Mode de combat le plus utile'], ['scoring_opinion', 'Barème d’évaluation'],
-            ['used_report_form', 'Utilisation du signalement tactique'],
-            ['recommendation', 'Recommandation de l’application']
-        ];
-        var rows = [];
+        var sources = {
+            qcm: {
+                table: 'retex_responses',
+                title: 'RETEX QCM-MAJOR',
+                query: 'retex_responses?select=*&order=created_at.desc,id.desc&limit=2000',
+                questions: [
+                    ['specialty', 'Spécialité BM4'], ['themes', 'Zones les plus ciblées'],
+                    ['navigation', 'Navigation dans la console'], ['design', 'Design visuel'],
+                    ['best_mode', 'Mode de combat le plus utile'], ['scoring_opinion', 'Barème d’évaluation'],
+                    ['used_report_form', 'Utilisation du signalement tactique'],
+                    ['recommendation', 'Recommandation de l’application']
+                ]
+            },
+            guide: {
+                table: 'guide_retex_reports',
+                title: 'RETEX des Officiers Guides OG',
+                query: 'guide_retex_reports?select=id,user_id,guide_email,payload,priority,status,admin_response,created_at,updated_at&order=created_at.desc&limit=2000',
+                questions: [
+                    ['situation', 'Situation ou contexte'], ['problem', 'Problématique rencontrée'],
+                    ['facts', 'Faits constatés et conséquences'], ['actions', 'Mesures déjà prises'],
+                    ['lessons', 'Enseignements et bonnes pratiques'], ['improvements', 'Améliorations proposées'],
+                    ['priority', 'Priorité']
+                ]
+            }
+        };
+        var activeSource = 'qcm';
+        var datasets = { qcm: null, guide: null };
+        var currentRows = [];
         function answer(row, field) {
-            var value = row[field];
-            return Array.isArray(value) ? value.filter(Boolean).join(', ') : (value == null || value === '' ? 'Non renseigné' : String(value));
+            var value = activeSource === 'guide' ? (row.payload || {})[field] : row[field];
+            return Array.isArray(value) ? value.filter(Boolean).join(', ') :
+                (value === null || value === undefined || value === '' ? 'Non renseigné' : String(value));
+        }
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, function (char) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+            });
         }
         function render() {
+            var source = sources[activeSource];
+            var questions = source.questions;
+            currentRows = datasets[activeSource] || [];
+            heading.querySelector('h2').textContent = source.title;
             charts.replaceChildren();
             questions.forEach(function (question) {
                 var counts = Object.create(null);
-                rows.forEach(function (row) {
-                    var value = row[question[0]];
-                    (Array.isArray(value) ? value : [value]).filter(Boolean).forEach(function (entry) {
+                currentRows.forEach(function (row) {
+                    var value = activeSource === 'guide' ? (row.payload || {})[question[0]] : row[question[0]];
+                    (Array.isArray(value) ? value : [value]).filter(function (entry) {
+                        return entry !== null && entry !== undefined && entry !== '';
+                    }).forEach(function (entry) {
                         var label = String(entry);
                         counts[label] = (counts[label] || 0) + 1;
                     });
@@ -1084,11 +1125,11 @@
                 var entries = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
                 if (!entries.length) card.append(node('p', 'og-dashboard-muted', 'Aucune réponse.'));
                 entries.forEach(function (label) {
-                    var line = node('div', 'og-admin-retex-bar-row');
                     var count = counts[label];
+                    var line = node('div', 'og-admin-retex-bar-row');
                     var track = node('span', 'og-admin-retex-bar-track');
                     var bar = node('span', 'og-admin-retex-bar');
-                    bar.style.width = Math.max(2, count / Math.max(1, rows.length) * 100) + '%';
+                    bar.style.width = Math.max(2, count / Math.max(1, currentRows.length) * 100) + '%';
                     track.append(bar);
                     line.append(node('span', '', label), track, node('strong', '', String(count)));
                     card.append(line);
@@ -1096,36 +1137,81 @@
                 charts.append(card);
             });
             responseList.replaceChildren();
-            rows.forEach(function (row, index) {
+            currentRows.forEach(function (row, index) {
+                var identity = activeSource === 'guide' ? (row.guide_email || 'Officier Guide non identifié') :
+                    (row.pseudo || 'Anonyme') + (row.specialty ? ' (' + row.specialty + ')' : '');
                 var item = node('article', 'og-admin-retex-response');
-                item.append(node('h4', '', 'Retour ' + (index + 1) + ' — ' + (row.pseudo || 'Anonyme') +
-                    (row.specialty ? ' (' + row.specialty + ')' : '')));
+                item.append(node('h4', '', 'Retour ' + (index + 1) + ' — ' + identity));
                 item.append(node('p', 'og-dashboard-muted', 'Transmis le ' +
                     (row.created_at ? new Date(row.created_at).toLocaleString('fr-FR') : 'Date inconnue')));
                 var details = node('dl');
                 questions.forEach(function (question) {
                     details.append(node('dt', '', question[1]), node('dd', '', answer(row, question[0])));
                 });
-                details.append(node('dt', '', 'Commentaire libre'), node('dd', '', answer(row, 'comment')));
+                if (activeSource === 'guide') {
+                    details.append(node('dt', '', 'Statut de traitement'), node('dd', '', answer(row, 'status')));
+                    details.append(node('dt', '', 'Réponse de l’administration'), node('dd', '', answer(row, 'admin_response')));
+                } else {
+                    details.append(node('dt', '', 'Commentaire libre'), node('dd', '', answer(row, 'comment')));
+                }
                 item.append(details);
                 responseList.append(item);
             });
-            meta.textContent = rows.length + ' retour(s) RETEX enregistré(s).' +
-                (rows.length ? ' Période : ' + new Date(Math.min.apply(null, rows.map(function (row) { return Date.parse(row.created_at) || Date.now(); }))).toLocaleDateString('fr-FR') +
-                    ' au ' + new Date(Math.max.apply(null, rows.map(function (row) { return Date.parse(row.created_at) || Date.now(); }))).toLocaleDateString('fr-FR') : '');
-            pdf.disabled = !rows.length;
+            var dates = currentRows.map(function (row) { return Date.parse(row.created_at); }).filter(Number.isFinite);
+            meta.textContent = currentRows.length + ' RETEX enregistré(s).' +
+                (currentRows.length ? ' Période : ' + new Date(Math.min.apply(null, dates)).toLocaleDateString('fr-FR') +
+                    ' au ' + new Date(Math.max.apply(null, dates)).toLocaleDateString('fr-FR') : '');
+            pdf.disabled = !currentRows.length;
+            responsesTitle.textContent = 'Tous les retours enregistrés (' + currentRows.length + ')';
         }
-        pdf.addEventListener('click', function () {
-            // L'export est déclenché par l'administrateur et utilise uniquement les données déjà autorisées.
+        function load(sourceKey) {
+            activeSource = sourceKey;
+            qcmTab.classList.toggle('is-active', sourceKey === 'qcm');
+            guideTab.classList.toggle('is-active', sourceKey === 'guide');
+            qcmTab.setAttribute('aria-pressed', String(sourceKey === 'qcm'));
+            guideTab.setAttribute('aria-pressed', String(sourceKey === 'guide'));
+            status.textContent = 'Vérification des droits administrateur…';
+            charts.replaceChildren();
+            responseList.replaceChildren();
+            pdf.disabled = true;
+            if (datasets[sourceKey]) {
+                render();
+                status.textContent = '';
+                return;
+            }
+            adminAccess().then(function (allowed) {
+                if (!allowed || dashboardMode !== 'admin') throw new Error('Une session administrateur est requise.');
+                // Chaque table est interrogée uniquement après validation explicite du rôle administrateur.
+                return api(sources[sourceKey].query);
+            }).then(function (data) {
+                if (!Array.isArray(data)) throw new Error('Réponse RETEX invalide.');
+                datasets[sourceKey] = data;
+                if (activeSource === sourceKey) {
+                    render();
+                    status.textContent = '';
+                }
+            }).catch(function (error) {
+                if (activeSource !== sourceKey) return;
+                status.textContent = 'Consultation ' + sources[sourceKey].title + ' refusée ou indisponible : ' +
+                    (error.message || 'erreur inconnue');
+                charts.replaceChildren();
+                responses.hidden = true;
+            });
+        }
+        function exportPdf() {
+            if (!currentRows.length) return;
+            var source = sources[activeSource];
+            var questions = source.questions;
             var printable = window.open('', '_blank');
             if (!printable) { status.textContent = 'Autorisez les fenêtres contextuelles pour exporter le PDF.'; return; }
             var report = printable.document;
-            report.open();
             var printableCharts = questions.map(function (question) {
                 var counts = Object.create(null);
-                rows.forEach(function (row) {
-                    var value = row[question[0]];
-                    (Array.isArray(value) ? value : [value]).filter(Boolean).forEach(function (entry) {
+                currentRows.forEach(function (row) {
+                    var value = activeSource === 'guide' ? (row.payload || {})[question[0]] : row[question[0]];
+                    (Array.isArray(value) ? value : [value]).filter(function (entry) {
+                        return entry !== null && entry !== undefined && entry !== '';
+                    }).forEach(function (entry) {
                         var label = String(entry);
                         counts[label] = (counts[label] || 0) + 1;
                     });
@@ -1134,41 +1220,36 @@
                 return '<article><h3>' + escapeHtml(question[1]) + '</h3>' +
                     (entries.length ? entries.map(function (label) {
                         var count = counts[label];
-                        var percentage = Math.round(count / Math.max(1, rows.length) * 100);
+                        var percentage = Math.round(count / Math.max(1, currentRows.length) * 100);
                         return '<p>' + escapeHtml(label) + ' — ' + count + ' (' + percentage + ' %)<br><span class="print-bar" style="display:block;width:' + percentage + '%;height:8px;background:#647d68"></span></p>';
                     }).join('') : '<p>Aucune réponse.</p>') + '</article>';
             }).join('');
-            report.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Synthèse RETEX QCM-MAJOR</title><style>body{font:14px Arial,sans-serif;color:#17231d;margin:28px}h1{font-size:22px}h2{font-size:17px;margin-top:24px}h3{font-size:15px}article{break-inside:avoid;border:1px solid #bbb;padding:12px;margin:12px 0}dt{font-weight:bold;margin-top:8px}dd{margin:2px 0 8px;white-space:pre-wrap} .print-bar{max-width:100%}</style></head><body><h1>Synthèse RETEX QCM-MAJOR — Administration</h1><p>' + rows.length + ' retour(s) enregistré(s)</p><h2>Statistiques et graphiques</h2>' + printableCharts + '<h2>Réponses détaillées</h2>' +
-                rows.map(function (row, index) {
-                    return '<article><h2>Retour ' + (index + 1) + ' — ' + escapeHtml(row.pseudo || 'Anonyme') + '</h2><p>' +
-                        escapeHtml(row.created_at ? new Date(row.created_at).toLocaleString('fr-FR') : 'Date inconnue') +
-                        '</p><dl>' + questions.map(function (question) {
-                            return '<dt>' + escapeHtml(question[1]) + '</dt><dd>' + escapeHtml(answer(row, question[0])) + '</dd>';
-                        }).join('') + '<dt>Commentaire libre</dt><dd>' + escapeHtml(answer(row, 'comment')) + '</dd></dl></article>';
-                }).join('') + '</body></html>');
+            var printableRows = currentRows.map(function (row, index) {
+                var identity = activeSource === 'guide' ? (row.guide_email || 'Officier Guide non identifié') : (row.pseudo || 'Anonyme');
+                return '<article><h2>Retour ' + (index + 1) + ' — ' + escapeHtml(identity) + '</h2><p>' +
+                    escapeHtml(row.created_at ? new Date(row.created_at).toLocaleString('fr-FR') : 'Date inconnue') +
+                    '</p><dl>' + questions.map(function (question) {
+                        return '<dt>' + escapeHtml(question[1]) + '</dt><dd>' + escapeHtml(answer(row, question[0])) + '</dd>';
+                    }).join('') + (activeSource === 'guide'
+                        ? '<dt>Statut de traitement</dt><dd>' + escapeHtml(answer(row, 'status')) +
+                            '</dd><dt>Réponse de l’administration</dt><dd>' + escapeHtml(answer(row, 'admin_response')) + '</dd>'
+                        : '<dt>Commentaire libre</dt><dd>' + escapeHtml(answer(row, 'comment')) + '</dd>') +
+                    '</dl></article>';
+            }).join('');
+            report.open();
+            report.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>' + escapeHtml(source.title) +
+                '</title><style>body{font:14px Arial,sans-serif;color:#17231d;margin:28px}h1{font-size:22px}h2{font-size:17px;margin-top:24px}h3{font-size:15px}article{break-inside:avoid;border:1px solid #bbb;padding:12px;margin:12px 0}dt{font-weight:bold;margin-top:8px}dd{margin:2px 0 8px;white-space:pre-wrap}.print-bar{max-width:100%}</style></head><body><h1>' +
+                escapeHtml(source.title) + ' — Administration</h1><p>' + currentRows.length +
+                ' retour(s) enregistré(s)</p><h2>Statistiques et graphiques</h2>' + printableCharts +
+                '<h2>Réponses détaillées</h2>' + printableRows + '</body></html>');
             report.close();
             printable.focus();
             printable.print();
-        });
-        function escapeHtml(value) {
-            return String(value).replace(/[&<>"']/g, function (char) {
-                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
-            });
         }
-        adminAccess().then(function (allowed) {
-            if (!allowed || dashboardMode !== 'admin') throw new Error('Une session administrateur est requise.');
-            // Aucun appel à retex_responses n'est effectué avant cette validation.
-            return api('retex_responses?select=*&order=created_at.desc,id.desc&limit=2000');
-        }).then(function (data) {
-            if (!Array.isArray(data)) throw new Error('Réponse RETEX invalide.');
-            rows = data;
-            render();
-            status.textContent = '';
-        }).catch(function (error) {
-            status.textContent = 'Consultation RETEX refusée ou indisponible : ' + (error.message || 'erreur inconnue');
-            charts.replaceChildren();
-            responses.hidden = true;
-        });
+        qcmTab.addEventListener('click', function () { load('qcm'); });
+        guideTab.addEventListener('click', function () { load('guide'); });
+        pdf.addEventListener('click', exportPdf);
+        load('qcm');
     }
 
     function guideFeedbackDialog(kind) {
