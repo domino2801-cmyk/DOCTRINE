@@ -1110,7 +1110,7 @@
             heading.querySelector('h2').textContent = source.title;
             charts.replaceChildren();
             var chartColors = ['#4f7052', '#c9a227', '#2876a8', '#a63d3d', '#8060a8', '#3d9b8d', '#e17b22', '#777777'];
-            questions.forEach(function (question) {
+            (activeSource === 'guide' ? [['priority', 'Priorité des signalements'], ['status', 'Statut de traitement']] : questions).forEach(function (question) {
                 var counts = Object.create(null);
                 currentRows.forEach(function (row) {
                     var value = activeSource === 'guide' ? (row.payload || {})[question[0]] : row[question[0]];
@@ -1219,16 +1219,24 @@
         }
         function exportPdf() {
             if (!currentRows.length) return;
-            var source = sources[activeSource];
-            var questions = source.questions;
             var printable = window.open('', '_blank');
             if (!printable) { status.textContent = 'Autorisez les fenêtres contextuelles pour exporter le PDF.'; return; }
             var report = printable.document;
             var chartColors = ['#4f7052', '#c9a227', '#2876a8', '#a63d3d', '#8060a8', '#3d9b8d', '#e17b22', '#777777'];
+            var isQcm = activeSource === 'qcm';
+            var questions = sources[activeSource].questions;
+            function rawValue(row, field) {
+                return activeSource === 'guide' ? (row.payload || {})[field] : row[field];
+            }
+            function displayValue(row, field) {
+                var value = rawValue(row, field);
+                return Array.isArray(value) ? value.filter(Boolean).join(', ') :
+                    (value === null || value === undefined || value === '' ? 'Non renseigné' : String(value));
+            }
             function makeChart(question) {
                 var counts = Object.create(null);
                 currentRows.forEach(function (row) {
-                    var value = activeSource === 'guide' ? (row.payload || {})[question[0]] : row[question[0]];
+                    var value = rawValue(row, question[0]);
                     (Array.isArray(value) ? value : [value]).filter(function (entry) {
                         return entry !== null && entry !== undefined && entry !== '';
                     }).forEach(function (entry) {
@@ -1237,7 +1245,7 @@
                     });
                 });
                 var entries = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
-                if (!entries.length) return '<section class="chart"><h2>' + escapeHtml(question[1]) + '</h2><p>Aucune réponse.</p></section>';
+                if (!entries.length) return '<section class="chart"><h2>' + escapeHtml(question[1]) + '</h2><p>Aucune réponse renseignée.</p></section>';
                 var total = entries.reduce(function (sum, label) { return sum + counts[label]; }, 0);
                 var angle = 0;
                 var stops = [];
@@ -1247,32 +1255,42 @@
                     angle = next;
                 });
                 var legend = entries.map(function (label, index) {
-                    var percentage = Math.round(counts[label] / total * 100);
                     return '<li><i style="background:' + chartColors[index % chartColors.length] + '"></i><span>' +
-                        escapeHtml(label) + ' : ' + counts[label] + ' (' + percentage + ' %)</span></li>';
+                        escapeHtml(label) + ' : ' + counts[label] + ' (' + Math.round(counts[label] / total * 100) + ' %)</span></li>';
                 }).join('');
                 return '<section class="chart"><h2>' + escapeHtml(question[1]) + '</h2><div class="chart-content">' +
-                    '<div class="pie" style="background:conic-gradient(' + stops.join(',') + ')"></div><ul>' + legend +
-                    '</ul></div></section>';
+                    '<div class="pie" style="background:conic-gradient(' + stops.join(',') + ')"></div><ul>' + legend + '</ul></div></section>';
             }
             var dates = currentRows.map(function (row) { return Date.parse(row.created_at); }).filter(Number.isFinite);
             var period = dates.length ? new Date(Math.min.apply(null, dates)).toLocaleDateString('fr-FR') +
                 ' au ' + new Date(Math.max.apply(null, dates)).toLocaleDateString('fr-FR') : 'Période non renseignée';
             var edited = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
-            var isQcm = activeSource === 'qcm';
-            var title = isQcm ? 'RETEX QCM-MAJOR.fr' : 'RETEX Officier Guide OG';
+            var title = isQcm ? 'RETEX QCM-MAJOR.fr' : 'RETEX des Officiers Guides OG';
             var subtitle = isQcm ? 'Synthèse pour le commandement' : 'Synthèse des retours Officiers Guides';
-            var chartPages = isQcm
-                ? '<div class="page page-one">' + questions.slice(0, 5).map(makeChart).join('') + '</div>' +
-                    '<div class="page page-two">' + questions.slice(5).map(makeChart).join('') + commentsSection() + '</div>'
-                : '<div class="page">' + questions.map(makeChart).join('') + commentsSection() + '</div>';
             function commentsSection() {
-                if (!isQcm) return '';
-                var comments = currentRows.map(function (row) { return row.comment; })
-                    .filter(function (value) { return value !== null && value !== undefined && String(value).trim(); });
-                return '<section class="comments"><h2>Commentaires libres</h2>' +
-                    (comments.length ? comments.map(function (comment) { return '<p>' + escapeHtml(comment) + '</p>'; }).join('') :
-                        '<p>Aucun commentaire libre.</p>') + '</section>';
+                if (isQcm) {
+                    var comments = currentRows.map(function (row) { return row.comment; })
+                        .filter(function (value) { return value !== null && value !== undefined && String(value).trim(); });
+                    return '<section class="comments"><h2>Commentaires libres</h2>' +
+                        (comments.length ? comments.map(function (comment) { return '<p>' + escapeHtml(comment) + '</p>'; }).join('') :
+                            '<p>Aucun commentaire libre.</p>') + '</section>';
+                }
+                return '<section class="comments"><h2>Retours détaillés des Officiers Guides</h2>' +
+                    currentRows.map(function (row, index) {
+                        var identity = row.guide_email || 'Officier Guide non identifié';
+                        var fields = questions.filter(function (question) { return question[0] !== 'priority'; })
+                            .map(function (question) {
+                                return '<div class="detail"><strong>' + escapeHtml(question[1]) + '</strong><p>' +
+                                    escapeHtml(displayValue(row, question[0])) + '</p></div>';
+                            }).join('');
+                        return '<article class="og-entry"><h3>Retour ' + (index + 1) + ' — ' + escapeHtml(identity) +
+                            '</h3><p class="date">Transmis le ' + escapeHtml(row.created_at ?
+                                new Date(row.created_at).toLocaleDateString('fr-FR') : 'Date inconnue') +
+                            ' · Priorité : ' + escapeHtml(displayValue(row, 'priority')) +
+                            ' · Statut : ' + escapeHtml(displayValue(row, 'status')) + '</p>' + fields +
+                            '<div class="detail"><strong>Réponse de l’administration</strong><p>' +
+                            escapeHtml(displayValue(row, 'admin_response')) + '</p></div></article>';
+                    }).join('') + '</section>';
             }
             report.open();
             report.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>' + escapeHtml(title) +
@@ -1286,17 +1304,30 @@
                 '.pie{width:32mm;height:32mm;min-width:32mm;border-radius:50%;margin:0}' +
                 '.chart ul{list-style:none;margin:0;padding:1mm 0 0;flex:1}.chart li{display:flex;align-items:flex-start;gap:2mm;margin:0 0 1.1mm;font-size:9pt;line-height:1.2}' +
                 '.chart li i{display:block;width:3mm;height:3mm;min-width:3mm;margin-top:.4mm}' +
-                '.comments{margin-top:3mm;break-inside:avoid}.comments p{font-size:9pt;line-height:1.35;margin:0 3mm 3mm;white-space:pre-wrap}' +
-                '.page-one header{padding-top:0}.page-one .chart{margin-bottom:4mm}.page-two{padding-top:0}.page-two .chart{margin-bottom:5mm}' +
+                '.comments{margin-top:3mm}.comments>p{font-size:9pt;line-height:1.35;margin:0 3mm 3mm;white-space:pre-wrap}' +
+                '.og-entry{margin:0 0 5mm;break-inside:avoid}.og-entry h3{font-size:10pt;margin:0 0 1mm}.date{font-size:8pt;color:#444;margin:0 0 2mm}' +
+                '.detail{margin:0 0 2mm;break-inside:avoid}.detail strong{font-size:8.5pt}.detail p{font-size:9pt;line-height:1.3;margin:1mm 0 0;white-space:pre-wrap}' +
                 '.page-number{position:absolute;right:0;bottom:-7mm;font-size:8pt}' +
-                '</style></head><body>' +
-                '<div class="page page-one"><header><h1>' + escapeHtml(title) + '</h1><p class="subtitle">' + escapeHtml(subtitle) +
-                '</p><p class="meta">' + currentRows.length + ' retour(s) analysé(s) - édité le ' + escapeHtml(edited) +
-                ' - période du ' + escapeHtml(period) + '</p></header>' + (isQcm ? questions.slice(0, 5).map(makeChart).join('') :
-                    questions.map(makeChart).join('')) + '<span class="page-number">Page 1 / ' + (isQcm ? '2' : '1') + '</span></div>' +
-                (isQcm ? '<div class="page page-two">' + questions.slice(5).map(makeChart).join('') + commentsSection() +
-                    '<span class="page-number">Page 2 / 2</span></div>' : '') +
-                '</body></html>');
+                '</style></head><body>');
+            if (isQcm) {
+                report.write('<div class="page"><header><h1>' + escapeHtml(title) + '</h1><p class="subtitle">' + escapeHtml(subtitle) +
+                    '</p><p class="meta">' + currentRows.length + ' retour(s) analysé(s) - édité le ' + escapeHtml(edited) +
+                    ' - période du ' + escapeHtml(period) + '</p></header>' + questions.slice(0, 5).map(makeChart).join('') +
+                    '<span class="page-number">Page 1 / 2</span></div><div class="page"><header><h1>' +
+                    escapeHtml(title) + '</h1><p class="subtitle">' + escapeHtml(subtitle) + '</p></header>' +
+                    questions.slice(5).map(makeChart).join('') + commentsSection() +
+                    '<span class="page-number">Page 2 / 2</span></div>');
+            } else {
+                report.write('<div class="page"><header><h1>' + escapeHtml(title) + '</h1><p class="subtitle">' + escapeHtml(subtitle) +
+                    '</p><p class="meta">' + currentRows.length + ' retour(s) analysé(s) - édité le ' + escapeHtml(edited) +
+                    ' - période du ' + escapeHtml(period) + '</p></header>' +
+                    makeChart(['priority', 'Priorité des signalements']) + makeChart(['status', 'Statut de traitement']) +
+                    '<span class="page-number">Page 1 / 2</span></div><div class="page"><header><h1>' +
+                    escapeHtml(title) + '</h1><p class="subtitle">' + escapeHtml(subtitle) +
+                    '</p><p class="meta">' + currentRows.length + ' retour(s) analysé(s)</p></header>' + commentsSection() +
+                    '<span class="page-number">Page 2 / 2</span></div>');
+            }
+            report.write('</body></html>');
             report.close();
             printable.focus();
             printable.print();
