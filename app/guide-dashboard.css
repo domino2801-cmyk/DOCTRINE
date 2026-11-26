@@ -812,3 +812,21 @@ body.og-guide-entry-only #guideDashboardNav > button {
 .og-dashboard-course-proposal-area > .og-dashboard-course-proposals {
   margin-top:0;
 }
+
+
+/* Navigation individuelle des candidats Officier Guide dans le suivi global administrateur. */
+.og-qcm-og-navigator { display:grid; gap:8px; padding:12px; }
+.og-qcm-og-navigation { display:grid; grid-template-columns:42px minmax(0,1fr) 42px; align-items:center; gap:10px; width:100%; min-width:0; }
+.og-qcm-og-arrow { display:flex; align-items:center; justify-content:center; width:42px; height:42px; border:1px solid rgba(216,184,91,.55); border-radius:8px; background:#293d32; color:#f2f5ee; font-size:30px; line-height:1; cursor:pointer; }
+.og-qcm-og-arrow:hover:not(:disabled),.og-qcm-og-arrow:focus-visible { border-color:#e6c96f; outline:2px solid rgba(216,184,91,.3); outline-offset:2px; }
+.og-qcm-og-arrow:disabled { opacity:.35; cursor:not-allowed; }
+.og-qcm-og-identity { display:grid; gap:5px; min-width:0; text-align:center; }
+.og-qcm-og-identity strong { color:#f5f7ef; font-size:15px; overflow-wrap:anywhere; }
+.og-qcm-og-identity span { color:#b8c8bb; font-size:11px; overflow-wrap:anywhere; }
+.og-qcm-og-identity small { color:#e6c96f; font-size:11px; font-weight:800; }
+@media(max-width:520px) {
+  .og-qcm-og-navigator { padding:8px 4px; }
+  .og-qcm-og-navigation { grid-template-columns:38px minmax(0,1fr) 38px; gap:6px; }
+  .og-qcm-og-arrow { width:38px; height:38px; }
+  .og-qcm-og-identity strong { font-size:13px; }
+}
