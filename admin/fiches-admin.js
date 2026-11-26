@@ -668,16 +668,26 @@
     }
 
     var ouvrirSignalementsApresConnexion = false;
+    var ouvrirSignalementsGuideApresConnexion = false;
 
     function ouvrirSignalementsDepuisNotification() {
         var url = new URL(window.location.href);
-        var demandee = url.searchParams.get('admin-section') === 'signalements';
-        if (!demandee && !ouvrirSignalementsApresConnexion) return;
+        var sectionDemandee = url.searchParams.get('admin-section');
+        var demandee = sectionDemandee === 'signalements' || sectionDemandee === 'guide-signalements';
+        if (!demandee && !ouvrirSignalementsApresConnexion && !ouvrirSignalementsGuideApresConnexion) return;
         if (!auth() || !auth().estAdmin() || document.documentElement.classList.contains('auth-locked')) return;
+        var ouvrirGuide = sectionDemandee === 'guide-signalements' || ouvrirSignalementsGuideApresConnexion;
         ouvrirSignalementsApresConnexion = false;
-        url.searchParams.delete('admin-section');
-        window.history.replaceState(window.history.state, '', url.href);
-        ouvrir('signalements');
+        ouvrirSignalementsGuideApresConnexion = false;
+        if (demandee) {
+            url.searchParams.delete('admin-section');
+            window.history.replaceState(window.history.state, '', url.href);
+        }
+        if (ouvrirGuide) {
+            document.dispatchEvent(new CustomEvent('doctrine:admin-fiches', { detail: 'guide-signalements' }));
+        } else {
+            ouvrir('signalements');
+        }
     }
 
     document.addEventListener('doctrine:admin-fiches', function (event) {
@@ -691,12 +701,15 @@
     document.addEventListener('doctrine:login', ouvrirSignalementsDepuisNotification);
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.addEventListener('message', function (event) {
-            if (!event.data || event.data.type !== 'doctrine-open-signalements') return;
-            if (auth() && auth().estAdmin() && !document.documentElement.classList.contains('auth-locked')) {
-                ouvrir('signalements');
-            } else {
+            if (!event.data) return;
+            if (event.data.type === 'doctrine-open-guide-signalements') {
+                ouvrirSignalementsGuideApresConnexion = true;
+            } else if (event.data.type === 'doctrine-open-signalements') {
                 ouvrirSignalementsApresConnexion = true;
+            } else {
+                return;
             }
+            ouvrirSignalementsDepuisNotification();
         });
     }
     ouvrirSignalementsDepuisNotification();
