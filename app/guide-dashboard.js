@@ -440,6 +440,7 @@
         var ogList = null;
         if (dashboardMode === 'admin') {
             ogDetails = node('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group');
+            ogDetails.open = true;
             var ogSummary = node('summary', 'og-dashboard-candidate-group-heading', 'CANDIDATS OFFICIER GUIDE');
             ogDetails.append(ogSummary);
             ogList = node('div', 'og-dashboard-candidate-group-items');
