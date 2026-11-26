@@ -21,6 +21,9 @@ test("un signalement Officier Guide déclenche une notification push sécurisée
 test("l'Edge Function accepte les signalements candidats et Officier Guide", () => {
     assert.ok(push.includes('reportTable !== "doctrine_signalements" && reportTable !== "guide_signalements"'));
     assert.ok(push.includes("from(reportTable)"));
+    assert.ok(push.includes("typeof signalementId === \"string\""));
+    assert.ok(push.includes("validSignalementId"));
+    assert.ok(push.includes(".eq(\"id\", signalementId)"));
     assert.ok(push.includes('"doctrine-guide-signalement"'));
     assert.ok(push.includes('from("guide_signalements")'));
     assert.ok(push.includes("return candidateCount + guideCount"));
