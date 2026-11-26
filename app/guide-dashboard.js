@@ -1187,7 +1187,11 @@
                     (row.created_at ? new Date(row.created_at).toLocaleString('fr-FR') : 'Date inconnue')));
                 var details = node('dl');
                 questions.filter(function (question) {
-                    if (activeSource !== 'qcm') return true;
+                    if (activeSource === 'guide') {
+                        return !sources.guide.chartQuestions.some(function (chartQuestion) {
+                            return chartQuestion[0] === question[0];
+                        });
+                    }
                     return !['themes', 'navigation', 'design', 'best_mode', 'scoring_opinion',
                         'used_report_form', 'recommendation'].includes(question[0]);
                 }).forEach(function (question) {
@@ -1327,8 +1331,12 @@
                 return '<section class="comments"><h2>Retours détaillés des Officiers Guides</h2>' +
                     currentRows.map(function (row, index) {
                         var identity = row.guide_email || 'Officier Guide non identifié';
-                        var fields = questions.filter(function (question) { return question[0] !== 'priority'; })
-                            .map(function (question) {
+                        var fields = questions.filter(function (question) {
+                            if (question[0] === 'priority') return false;
+                            return !sources.guide.chartQuestions.some(function (chartQuestion) {
+                                return chartQuestion[0] === question[0];
+                            });
+                        }).map(function (question) {
                                 return '<div class="detail"><strong>' + escapeHtml(question[1]) + '</strong><p>' +
                                     escapeHtml(displayValue(row, question[0])) + '</p></div>';
                             }).join('');
