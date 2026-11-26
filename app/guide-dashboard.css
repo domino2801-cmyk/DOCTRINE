@@ -943,3 +943,9 @@ body.og-guide-entry-only #guideDashboardNav > button {
   .og-admin-retex-charts,.og-admin-retex-response-list { grid-template-columns:minmax(0,1fr); }
   .og-admin-retex-bar-row { grid-template-columns:minmax(80px,1fr) minmax(45px,1fr) 24px; gap:6px; }
 }
+
+
+.og-admin-retex-tabs { display:flex; flex-wrap:wrap; gap:8px; min-width:0; }
+.og-admin-retex-tab { min-height:42px; padding:9px 14px; border:1px solid rgba(216,184,91,.45); border-radius:7px; background:rgba(255,255,255,.04); color:#e9eee7; font:inherit; font-weight:750; cursor:pointer; }
+.og-admin-retex-tab.is-active,.og-admin-retex-tab[aria-pressed="true"] { background:#d8b85b; border-color:#d8b85b; color:#1c2a20; }
+.og-admin-retex-tab:focus-visible { outline:2px solid #e6c96f; outline-offset:2px; }
