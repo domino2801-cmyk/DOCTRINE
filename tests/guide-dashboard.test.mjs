@@ -667,7 +667,7 @@ test('la consultation administrateur distingue les RETEX QCM-MAJOR et les RETEX 
     assert.match(adminRetex, /Enseignements et bonnes pratiques/);
     assert.match(adminRetex, /Réponse de l’administration/);
     assert.match(adminRetex, /Exporter la synthèse en PDF/);
-    assert.match(adminRetex, /Statistiques et graphiques/);
+    assert.match(adminRetex, /function makeChart\(question\)/);
     assert.match(adminRetex, /adminAccess\(\)\.then\(function \(allowed\)/);
     assert.match(adminRetex, /if \(!allowed \|\| dashboardMode !== 'admin'\)/);
     assert.match(adminRetex, /responses\.hidden = false/);
