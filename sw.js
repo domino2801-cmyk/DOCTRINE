@@ -16,7 +16,7 @@ const SHELL_ASSETS = [
   new URL('./app/styles.css', self.location.href).toString(),
   new URL('./app/app.js', self.location.href).toString(),
   new URL('./app/guide-dashboard.css', self.location.href).toString(),
-  new URL('./app/guide-dashboard.js?v=20261126-OG-NAV-3', self.location.href).toString(),
+  new URL('./app/guide-dashboard.js?v=20261126-QCM-42-1', self.location.href).toString(),
   new URL('./app/module2-documents.js?v=20261125-3', self.location.href).toString(),
   new URL('./app/guide-module8.html', self.location.href).toString(),
   new URL('./app/guide-module8.css', self.location.href).toString(),
