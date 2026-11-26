@@ -18,7 +18,7 @@ test('les supports historiques sont explicitement déclarés et accessibles aux 
 });
 
 test('un identifiant Drive non répertorié est refusé par défaut', () => {
-  assert.match(proxy, /if \(!supportHistorique && accesBibliotheque !== true && requis === null\) return erreur\(403, 'Ressource Drive non autorisée'\)/);
+  assert.match(proxy, /if \(!supportHistorique && accesBibliotheque !== true && requis === null\)\\s*\\{\\s*return erreur\\(403, 'Ressource Drive non autorisée'\\)/);
   assert.doesNotMatch(proxy, /null = document historique : conserver ses contrôles d'accès existants/);
 });
 
