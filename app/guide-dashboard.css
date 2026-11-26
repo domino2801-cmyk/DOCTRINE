@@ -826,6 +826,22 @@ body.og-guide-entry-only #guideDashboardNav > button {
 }
 
 
+/* Suivi QCM-MAJOR administrateur : sélecteur et Officiers Guides à gauche, fiche à droite. */
+.og-qcm-global-follow-up-layout { grid-template-columns:minmax(260px,.72fr) minmax(0,1.8fr); align-items:start; }
+.og-qcm-global-follow-up-sidebar { display:grid; align-content:start; gap:12px; min-width:0; }
+.og-qcm-global-follow-up-sidebar > .og-dashboard-candidate-group { margin-top:0; min-width:0; }
+.og-qcm-global-follow-up-layout > .og-candidate-profile-detail { min-width:0; display:grid; gap:12px; }
+.og-qcm-global-follow-up-dialog .og-candidate-profile-hero { display:flex; flex-direction:column; gap:10px; margin:0; }
+.og-qcm-global-follow-up-dialog .og-candidate-profile-summary-card { order:0; grid-template-columns:repeat(2,minmax(0,1fr)); }
+.og-qcm-global-follow-up-dialog .og-candidate-profile-identity { order:1; }
+.og-qcm-global-follow-up-dialog .og-candidate-profile-progress-card { margin:0; }
+@media(max-width:850px) {
+  .og-qcm-global-follow-up-layout { grid-template-columns:minmax(0,1fr); }
+}
+@media(max-width:520px) {
+  .og-qcm-global-follow-up-dialog .og-candidate-profile-summary-card { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+
 /* Navigation individuelle des candidats Officier Guide dans le suivi global administrateur. */
 .og-qcm-og-navigator { display:grid; gap:8px; padding:12px; }
 .og-qcm-og-navigation { display:grid; grid-template-columns:42px minmax(0,1fr) 42px; align-items:center; gap:10px; width:100%; min-width:0; }
