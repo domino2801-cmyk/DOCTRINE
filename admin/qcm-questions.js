@@ -45,7 +45,7 @@
             });
         }).then(function (response) {
             return response.json().catch(function () { return []; }).then(function (payload) {
-                if (!response.ok) throw new Error(payload.message || payload.details || payload.hint || 'Erreur HTTP ' + response.status);
+                if (!response.ok) throw new Error((payload && (payload.message || payload.details || payload.hint)) || 'Erreur HTTP ' + response.status);
                 return payload;
             });
         });
@@ -168,8 +168,10 @@
             return;
         }
         button.disabled = true;
-        statusNode.textContent = editingId ? 'Modification en cours…' : 'Ajout en cours…';
-        var path = editingId ? 'question_bank?id=eq.' + encodeURIComponent(editingId) : 'question_bank';
+        var isEditing = editingId !== null;
+        var currentEditingId = editingId;
+        statusNode.textContent = isEditing ? 'Modification en cours…' : 'Ajout en cours…';
+        var path = isEditing ? 'question_bank?id=eq.' + encodeURIComponent(currentEditingId) : 'question_bank';
         var payload = {
             theme_id: question.themeId,
             question: question.q,
@@ -180,14 +182,14 @@
             correct_answer: question.r[question.correct]
         };
         api(path, {
-            method: editingId ? 'PATCH' : 'POST',
-            body: editingId ? payload : [payload],
+            method: isEditing ? 'PATCH' : 'POST',
+            body: isEditing ? payload : [payload],
             prefer: 'return=representation'
         }).then(function (rows) {
             if (!Array.isArray(rows) || rows.length !== 1) throw new Error('Supabase n’a pas confirmé l’enregistrement.');
             resetForm();
             return loadQuestions().then(function () {
-                statusNode.textContent = editingId ? 'Question modifiée.' : 'Question ajoutée.';
+                statusNode.textContent = isEditing ? 'Question modifiée.' : 'Question ajoutée.';
             });
         }).catch(function (error) {
             statusNode.textContent = 'Enregistrement impossible : ' + error.message;
