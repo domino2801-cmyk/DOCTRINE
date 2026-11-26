@@ -1,37 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-
 const proxy = await readFile(new URL('../supabase/functions/drive-proxy/index.ts', import.meta.url), 'utf8');
-
-test('drive-proxy identifie un Officier Guide depuis le rôle sécurisé et la spécialité OG', () => {
-  assert.match(proxy, /type Candidat = \\{ id: string; admin: boolean; officierGuide: boolean \\}/);
-  assert.match(proxy, /const role = String\\(meta\\.role \\|\\| ''\\)\\.trim\\(\\)\\.toLowerCase\\(\\)/);
-  assert.match(proxy, /role === 'guide' \\|\\| role === 'officier_guide'/);
-  assert.match(proxy, /profiles\\?id=eq\\.\\$\\{encodeURIComponent\\(u\\.id\\)\\}\\&select=speciality/);
-  assert.match(proxy, /String\\(p\\.speciality \\|\\| ''\\)\\.trim\\(\\)\\.toUpperCase\\(\\) === 'OG'/);
-  assert.match(proxy, /return \\{ id: u\\.id, admin, officierGuide \\}/);
+test('identité Officier Guide sécurisée', () => {
+  for (const fragment of ['type Candidat = { id: string; admin: boolean; officierGuide: boolean }',"const role = String(meta.role || '').trim().toLowerCase()","role === 'guide' || role === 'officier_guide'",'profiles?id=eq.','&select=speciality',"String(p.speciality || '').trim().toUpperCase() === 'OG'",'return { id: u.id, admin, officierGuide }']) assert.ok(proxy.includes(fragment), fragment);
 });
-
-test('un Officier Guide peut consulter les corrigés sans soumission préalable', () => {
-  assert.match(proxy, /!candidat\\.admin && !candidat\\.officierGuide && requis !== null/);
-  assert.match(proxy, /Les corrigés conservent leur contrôle dédié/);
+test('Officier Guide conserve l’accès aux corrigés sans soumission', () => {
+  assert.ok(proxy.includes('!candidat.admin && !candidat.officierGuide && requis !== null'));
+  assert.ok(proxy.includes('Les corrigés conservent leur contrôle dédié'));
 });
-
-test('les contrôles de publication et la liste blanche sont vérifiés pour tous les profils', () => {
-  assert.match(proxy, /const chemin = await chaineParentsDrive/);
-  assert.match(proxy, /const accesBibliotheque = await accesBibliothequePubliee\\(chemin, false\\)/);
-  assert.match(proxy, /if \\(accesBibliotheque === false\\)/);
-  assert.match(proxy, /const supportHistorique = await supportsHistoriquesAutorises\\(chemin\\)/);
+test('les chemins parents et publications sont contrôlés pour tous les profils', () => {
+  for (const fragment of ['const chemin = await chaineParentsDrive','const accesBibliotheque = await accesBibliothequePubliee(chemin, false)','if (accesBibliotheque === false)','const supportHistorique = await supportsHistoriquesAutorises(chemin)']) assert.ok(proxy.includes(fragment), fragment);
 });
-
-test('les candidats conservent la restriction de transmission préalable des fiches', () => {
-  assert.match(proxy, /const requis = await dossierRequis\\(id, fichier\\.parents \\|\\| \\[\\], jeton\\)/);
-  assert.match(proxy, /fichesTransmises\\(candidat\\.id\\)/);
-  assert.match(proxy, /Transmettez votre fiche du dossier/);
+test('les candidats conservent le contrôle de transmission préalable', () => {
+  for (const fragment of ['const requis = await dossierRequis(id, fichier.parents || [], jeton)','fichesTransmises(candidat.id)','Transmettez votre fiche du dossier']) assert.ok(proxy.includes(fragment), fragment);
 });
-
-test('le proxy refuse par défaut les ressources Drive non enregistrées', () => {
-  assert.match(proxy, /if \\(!supportHistorique && accesBibliotheque !== true && requis === null\\)/);
-  assert.match(proxy, /Ressource Drive non autorisée/);
+test('le proxy refuse les ressources Drive non enregistrées', () => {
+  assert.ok(proxy.includes('if (!supportHistorique && accesBibliotheque !== true && requis === null)'));
+  assert.ok(proxy.includes("return erreur(403, 'Ressource Drive non autorisée')"));
 });
