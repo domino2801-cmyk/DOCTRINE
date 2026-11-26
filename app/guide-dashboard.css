@@ -967,3 +967,33 @@ body.og-guide-entry-only #guideDashboardNav > button {
   .og-admin-retex-chart-body { grid-template-columns:1fr; }
   .og-admin-retex-pie { margin:0 auto; }
 }
+
+
+/* RETEX Officier Guide — formulaire de suivi des candidats BM4. */
+.og-dashboard-feedback-section-title {
+  grid-column:1 / -1;
+  margin:18px 0 2px;
+  padding:0 0 9px;
+  border-bottom:1px solid rgba(216,184,91,.32);
+  color:#e6c96f;
+  font-size:14px;
+  letter-spacing:.04em;
+}
+.og-dashboard-feedback-form select[multiple] {
+  min-height:112px;
+  padding:8px;
+}
+.og-dashboard-feedback-form select[multiple] option {
+  padding:6px 8px;
+}
+.og-dashboard-feedback-form select,
+.og-dashboard-feedback-form textarea,
+.og-dashboard-feedback-form input {
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+}
+@media(max-width:520px) {
+  .og-dashboard-feedback-section-title { margin-top:12px; }
+  .og-dashboard-feedback-form select[multiple] { min-height:126px; }
+}
