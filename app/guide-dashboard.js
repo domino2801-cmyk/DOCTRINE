@@ -705,8 +705,13 @@
         var groupItems = node('div', 'og-dashboard-candidate-group-items');
         var list = node('nav', 'og-qcm-candidate-list');
         list.setAttribute('aria-label', dashboardMode === 'admin' ? 'Candidats hors spécialité OG' : 'Tous les candidats de ma cohorte');
+        var searchInput = node('input', 'og-dashboard-search');
+        searchInput.type = 'search';
+        searchInput.placeholder = 'Rechercher un candidat par pseudo, spécialité ou adresse e-mail';
+        searchInput.setAttribute('aria-label', 'Rechercher un candidat');
         var detail = node('section', 'og-qcm-candidate-detail og-candidate-profile-detail');
         detail.setAttribute('aria-live', 'polite');
+        detail.append(node('p', 'og-dashboard-muted', 'Sélectionnez un compte dans la liste pour afficher sa fiche individuelle.'));
         function appendCandidateButton(candidate, targetList) {
             var identity = candidate.candidate || {};
             var button = node('button', 'og-qcm-candidate-button');
@@ -717,6 +722,7 @@
             identityRow.append(node('span', 'og-candidate-follow-up-status ' + followUp.className, followUp.label));
             button.append(identityRow);
             button.append(node('span', '', [identity.specialty, identity.email].filter(Boolean).join(' · ') || 'Profil à compléter'));
+            button.dataset.searchText = [identity.name, identity.specialty, identity.email].filter(Boolean).join(' ').toLocaleLowerCase('fr');
             button.setAttribute('aria-pressed', 'false');
             button.addEventListener('click', function () {
                 workspace.querySelectorAll('.og-qcm-candidate-button').forEach(function (item) {
@@ -731,7 +737,7 @@
         }
         regularCandidates.forEach(function (candidate) { appendCandidateButton(candidate, list); });
         if (!regularCandidates.length) list.append(node('p', 'og-qcm-empty', dashboardMode === 'admin' ? 'Aucun candidat hors spécialité OG.' : 'Aucun candidat n’est rattaché à votre cohorte.'));
-        groupItems.append(list);
+        groupItems.append(searchInput, list);
         group.append(groupItems);
         workspace.append(group);
         if (dashboardMode === 'admin') {
@@ -748,9 +754,12 @@
         }
         workspace.append(detail);
         panel.append(workspace);
-        // Ouvrir directement la fiche du premier candidat à l’arrivée.
-        var firstCandidateButton = list.querySelector('.og-qcm-candidate-button');
-        if (firstCandidateButton) firstCandidateButton.click();
+        searchInput.addEventListener('input', function () {
+            var query = searchInput.value.trim().toLocaleLowerCase('fr');
+            workspace.querySelectorAll('.og-qcm-candidate-button').forEach(function (button) {
+                button.hidden = !!query && !button.dataset.searchText.includes(query);
+            });
+        });
         dialog.append(panel);
         dialog.addEventListener('click', function (event) {
             if (event.target === dialog) { dialog.close(); dialog.remove(); }
