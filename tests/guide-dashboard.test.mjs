@@ -659,7 +659,7 @@ test('la consultation administrateur distingue les RETEX QCM-MAJOR et les RETEX 
     assert.match(adminRetex, /RETEX QCM-MAJOR/);
     assert.match(adminRetex, /conic-gradient/);
     assert.match(adminRetex, /Commentaires libres/);
-    assert.match(adminRetex, /page-one/);
+    assert.match(adminRetex, /function exportPdf\(\)/);
     assert.match(adminRetex, /RETEX Officier Guide OG/);
     assert.match(adminRetex, /guide_retex_reports\?select=id,user_id,guide_email,payload,priority,status,admin_response,created_at,updated_at/);
     assert.match(adminRetex, /retex_responses\?select=/);
