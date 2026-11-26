@@ -666,7 +666,8 @@ test('la consultation administrateur distingue les RETEX QCM-MAJOR et les RETEX 
     assert.match(adminRetex, /guide_retex_reports\?select=id,user_id,guide_email,payload,priority,status,admin_response,created_at,updated_at/);
     assert.match(adminRetex, /retex_responses\?select=/);
     assert.match(adminRetex, /row\.payload \|\| \{\}/);
-    assert.match(adminRetex, /Enseignements et bonnes pratiques/);
+    assert.match(adminRetex, /Q11 — Principal point fort de l’application/);
+    assert.match(adminRetex, /Q14 — Recommandations pour l’accompagnement BM4/);
     assert.match(adminRetex, /Réponse de l’administration/);
     assert.match(adminRetex, /!\['themes', 'navigation', 'design', 'best_mode', 'scoring_opinion'/);
     assert.match(adminRetex, /'used_report_form', 'recommendation'/);
@@ -676,7 +677,8 @@ test('la consultation administrateur distingue les RETEX QCM-MAJOR et les RETEX 
     assert.match(adminRetex, /<svg class="pie-svg"/);
     assert.match(adminRetex, /<path d=/);
     assert.match(adminRetex, /print-color-adjust:exact/);
-    assert.match(adminRetex, /Priorité des signalements/);
+    assert.match(adminRetex, /Facilité d’utilisation/);
+    assert.match(adminRetex, /Suivi des candidats/);
     assert.match(adminRetex, /Retours détaillés des Officiers Guides/);
     assert.match(adminRetex, /Statut de traitement/);
     assert.match(adminRetex, /Réponse de l’administration/);
