@@ -479,10 +479,9 @@ test('les indicateurs administratifs sont regroupés dans une carte responsive d
     assert.match(profile, /Fiches validées/);
     assert.match(profile, /Dernière activité/);
     assert.doesNotMatch(profile, /Moyenne QCM|Tentatives QCM/);
-    assert.match(css, /\.og-candidate-profile-summary-card\s*\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/s);
-    assert.match(css, /@media\(max-width:760px\)[\s\S]*?\.og-candidate-profile-summary-card\s*\{\s*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
-    assert.match(css, /@media\(max-width:520px\)[\s\S]*?\.og-candidate-profile-summary-card\s*\{\s*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
-    assert.match(css, /@media\(max-width:390px\)[\s\S]*?\.og-candidate-profile-summary-card\s*\{\s*grid-template-columns:minmax\(0,1fr\)/);
+    assert.match(css, /\.og-candidate-profile-summary-card\s*\{[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/s);
+    assert.match(css, /@media\(max-width:520px\)[\s\S]*?\.og-candidate-profile-summary-card\s*\{\s*grid-template-columns:minmax\(0,1fr\)/);
+    assert.ok(profile.indexOf("['Fiches validées'") < profile.indexOf("['Dernière activité'"));
 });
 
 
