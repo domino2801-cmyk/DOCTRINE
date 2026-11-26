@@ -131,6 +131,14 @@ test('la fiche de chaque candidat administrateur permet de modifier sa spéciali
     assert.match(script, /identity\.specialty = newSpecialty/);
 });
 
+test('le suivi global administrateur permet de retirer un candidat du cache local', () => {
+    assert.match(script, /var removeCacheButton = node\('button', 'admin-delete-btn', 'Retirer du cache'\)/);
+    assert.match(script, /Retirer .* du cache local \? Le compte Supabase ne sera pas supprimé\./);
+    assert.match(script, /adminOgCandidates\.splice\(adminOgIndex, 1\)/);
+    assert.match(script, /renderAdminOgNavigator\(\)/);
+    assert.match(script, /Aucun candidat QCM-MAJOR disponible\./);
+});
+
 test('la fiche de chaque candidat de la vue administrateur permet de bloquer ou débloquer son compte', () => {
     assert.match(script, /if \(dashboardMode === 'admin'\) \{[\s\S]*?var blockButton = node\('button', 'admin-account-block-btn admin-delete-btn'/);
     assert.match(script, /api\('rpc\/get_admin_blocked_accounts', \{ method: 'POST', body: \{\} \}\)/);
