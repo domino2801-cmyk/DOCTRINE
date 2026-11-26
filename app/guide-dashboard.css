@@ -405,6 +405,10 @@ body.og-guide-entry-only #guideDashboardNav > button {
 /* Liste de cohorte et fiche individuelle CANDIDATS — espace Officier Guide. */
 .og-dashboard-candidates-tracking { min-width:0; }
 .og-candidate-profile-detail { min-width:0; }
+.og-candidate-profile-columns { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(320px,.85fr); align-items:start; gap:16px; min-width:0; }
+.og-candidate-profile-main,.og-candidate-profile-ai-column { display:grid; gap:12px; min-width:0; }
+.og-candidate-profile-ai-column .og-candidate-profile-ai { position:sticky; top:10px; }
+@media(max-width:1050px) { .og-candidate-profile-columns { grid-template-columns:minmax(0,1fr); } .og-candidate-profile-ai-column .og-candidate-profile-ai { position:static; } }
 .og-candidate-profile-title { margin:0 0 12px; color:#f2f5ee; }
 .og-candidate-profile-hero { display:grid; grid-template-columns:minmax(0,1fr) minmax(280px,1.15fr); align-items:stretch; gap:12px; margin-bottom:16px; }
 .og-candidate-profile-identity { display:flex; align-items:center; min-width:0; margin:0; padding:16px; border:1px solid rgba(216,184,91,.35); border-radius:9px; background:linear-gradient(135deg,rgba(216,184,91,.11),rgba(255,255,255,.025)); }
