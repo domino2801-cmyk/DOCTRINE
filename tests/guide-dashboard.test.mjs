@@ -170,6 +170,16 @@ test('le RPC administrateur inclut les profils OG même avec un rôle guide, san
 });
 
 
+
+test('les signalements de questions QCM-MAJOR sont intégrés à la fenêtre administrative unifiée', () => {
+    assert.match(script, /question_reports\?select=id,question_id,question_text,answers,correct_answer_index,quiz_theme,details,reporter_id,status,admin_response,created_at/);
+    assert.match(script, /Questions QCM-MAJOR/);
+    assert.match(script, /question_text:'Question signalée'/);
+    assert.match(script, /answers:'Réponses proposées'/);
+    assert.match(script, /record\.origin === 'questions' \? \[\['pending','À traiter'\],\['resolved','Résolu'\]\]/);
+    assert.match(script, /record\.origin === 'questions' \? 'question_reports'/);
+});
+
 test('le tableau de bord utilise les données filtrées par le RPC guide', () => {
     assert.match(script, /rpc\/get_guide_candidate_dashboard/);
     assert.match(script, /body:\s*\{\s*p_candidate_id:\s*null\s*\}/);
