@@ -398,14 +398,15 @@ test('les cartes proposition et support oral affichent les commentaires complets
 });
 
 
-test('les accordéons de la fiche candidat et la correction IA partagent le même style +/− avec une colonne IA dédiée', () => {
+test('la correction IA est placée sous Dossier et documents demandés dans la fiche candidat', () => {
     const start = script.indexOf('function renderCandidateProfileDetail(target, candidate)');
     const end = script.indexOf('function openGuideCandidates()', start);
     const profile = script.slice(start, end);
     assert.match(profile, /og-candidate-profile-accordion/);
-    assert.ok(profile.includes('profileAi.append(renderAiCorrection(candidate))'));
-    assert.ok(profile.includes("node('aside', 'og-candidate-profile-ai-column')"));
-    assert.ok(profile.includes("node('div', 'og-candidate-profile-main')"));
+    assert.ok(profile.includes("accordion('Dossier et documents demandés'"));
+    assert.ok(profile.includes("target.append(renderAiCorrection(candidate))"));
+    assert.ok(profile.indexOf("accordion('Dossier et documents demandés'") < profile.indexOf('target.append(renderAiCorrection(candidate))'));
+    assert.ok(!profile.includes('og-candidate-profile-ai-column'));
     const aiStart = script.indexOf('function renderAiCorrection(candidate)');
     const aiEnd = script.indexOf('\n    function ', aiStart + 20);
     const ai = script.slice(aiStart, aiEnd);
@@ -441,7 +442,7 @@ test('la fiche candidat utilise des accordéons repliés et ne duplique pas les 
     assert.match(profile, /Dossier et documents demandés/);
     assert.doesNotMatch(profile, /Activité documentaire|og-candidate-profile-activity|doctrine\.documents/);
     assert.doesNotMatch(profile, /accordion\('Correction assistée par IA'/);
-    assert.match(profile, /profileAi\.append\(renderAiCorrection\(candidate\)\)/);
+    assert.match(profile, /target\.append\(renderAiCorrection\(candidate\)\)/);
     assert.match(profile, /renderOralTracking\(candidate\)/);
     assert.match(profile, /renderCcpmTracking\(candidate\)/);
     assert.match(profile, /renderAiCorrection\(candidate\)/);
