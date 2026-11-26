@@ -42,14 +42,22 @@ function validEndpoint(endpoint: unknown): endpoint is string {
 }
 
 async function pendingSignalements(database: ReturnType<typeof createClient>) {
-    const { count, error } = await database.from("doctrine_signalements")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "pending");
-    if (error) throw error;
-    if (typeof count !== "number" || !Number.isSafeInteger(count)) {
-        throw new Error("Could not count pending signalements");
+    const [candidateReports, guideReports] = await Promise.all([
+        database.from("doctrine_signalements")
+            .select("id", { count: "exact", head: true })
+            .eq("status", "pending"),
+        database.from("guide_signalements")
+            .select("id", { count: "exact", head: true })
+            .in("status", ["submitted", "in_review", "action_required"])
+    ]);
+    if (candidateReports.error) throw candidateReports.error;
+    if (guideReports.error) throw guideReports.error;
+    const candidateCount = candidateReports.count;
+    const guideCount = guideReports.count;
+    if (!Number.isSafeInteger(candidateCount) || !Number.isSafeInteger(guideCount)) {
+        throw new Error("Could not count pending candidate and Officier Guide reports");
     }
-    return count;
+    return candidateCount + guideCount;
 }
 
 async function envoyerNotifications(
@@ -171,17 +179,29 @@ Deno.serve(async request => {
                 return response({ error: "Invalid signalement event" }, 400);
             }
             const signalementId = Number((record as Record<string, unknown>).id);
+            const reportTable = payload.table;
             if (payload.type !== "INSERT" || payload.schema !== "public"
-                || payload.table !== "doctrine_signalements"
+                || (reportTable !== "doctrine_signalements" && reportTable !== "guide_signalements")
                 || !Number.isSafeInteger(signalementId) || signalementId <= 0) {
                 return response({ error: "Invalid signalement event" }, 400);
             }
-            const { data: signalement, error } = await database.from("doctrine_signalements")
+            const { data: signalement, error } = await database.from(reportTable)
                 .select("id,status").eq("id", signalementId).maybeSingle();
             if (error) throw error;
-            if (!signalement || signalement.status !== "pending") return response({ sent: 0 });
+            const isPending = reportTable === "doctrine_signalements"
+                ? signalement?.status === "pending"
+                : ["submitted", "in_review", "action_required"].includes(signalement?.status || "");
+            if (!signalement || !isPending) return response({ sent: 0 });
 
-            const result = await envoyerNotifications(database, await pendingSignalements(database));
+            const notificationType = reportTable === "guide_signalements"
+                ? "doctrine-guide-signalement"
+                : "doctrine-signalement";
+            const result = await envoyerNotifications(
+                database,
+                await pendingSignalements(database),
+                undefined,
+                notificationType
+            );
             if (result.failed > 0) return response({ error: "Some notifications could not be sent", ...result }, 502);
             return response(result);
         }
