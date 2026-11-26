@@ -95,11 +95,14 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
 
 test('la carte CANDIDATS ouvre la cohorte puis une fiche individuelle limitée au pseudo, à la spécialité et à l’e-mail', () => {
     assert.match(script, /function openGuideCandidates\(\)/);
+    assert.match(script, /COMPTES UTILISATEURS/);
+    assert.match(script, /candidats et Officiers Guides/);
+    assert.match(script, /OFFICIERS GUIDES — /);
     assert.match(script, /dataset\.guideAction = 'candidates-tracking'/);
     assert.match(script, /card\.addEventListener\('click', openGuideCandidates\)/);
     assert.match(script, /function renderCandidateProfileDetail\(target, candidate\)/);
     assert.match(script, /CANDIDATS — COHORTE RATTACHÉE/);
-    assert.match(script, /\(dashboardMode === 'admin' \? 'CANDIDATS — ' : 'TOUS — '\) \+ regularCandidates\.length/);
+    assert.match(script, /\(dashboardMode === 'admin' \? 'CANDIDATS HORS OG — ' : 'TOUS — '\) \+ regularCandidates\.length/);
     assert.match(script, /og-dashboard-candidate-group-open/);
     assert.match(script, /og-dashboard-candidate-group-heading/);
     assert.match(script, /og-dashboard-candidate-group-items/);
