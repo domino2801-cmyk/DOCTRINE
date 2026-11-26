@@ -136,9 +136,8 @@
     if (started || !admin()) return;
     started = true;
     addStyles();
-    var button = el('button', { id: 'doctrine-drive-admin', type: 'button' }, 'Supports Drive');
-    button.addEventListener('click', open);
-    document.body.appendChild(button);
+    var button = document.getElementById('doctrine-drive-admin');
+    if (button) button.remove();
   }
   document.addEventListener('doctrine:login', init);
   document.addEventListener('doctrine:logout', function () {
