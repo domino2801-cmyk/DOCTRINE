@@ -729,7 +729,8 @@
             var followUp = candidateFollowUpStatus(candidate);
             currentName.textContent = identity.pseudo || identity.name || identity.email || 'Pseudo non renseigné';
             currentStatus.className = 'og-candidate-stepper-status og-candidate-follow-up-status ' + followUp.className;
-            currentStatus.textContent = dossierCount ? dossierCount + ' fiche(s) soumise(s) · ' + dossierCount + ' résultat(s)' : 'Aucune fiche soumise · 0 résultat(s)';
+            currentStatus.hidden = dossierCount === 0;
+            currentStatus.textContent = dossierCount ? dossierCount + ' fiche(s) soumise(s) · ' + dossierCount + ' résultat(s)' : '';
             currentPosition.textContent = 'Candidat ' + (selectedIndex + 1) + ' / ' + regularCandidates.length;
             previousButton.disabled = selectedIndex === 0; nextButton.disabled = selectedIndex === regularCandidates.length - 1;
             renderCandidateProfileDetail(detail, candidate);
