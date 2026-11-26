@@ -3349,7 +3349,17 @@
         var closeButton = node('button', 'og-dashboard-close', 'Fermer');
         closeButton.type = 'button';
         closeButton.addEventListener('click', close);
-        header.append(intro, closeButton);
+        if (dashboardMode === 'admin') {
+            var pushEnableButton = node('button', 'admin-edit-btn admin-state-ready', 'Activer notification');
+            pushEnableButton.id = 'admin-push-enable-btn';
+            pushEnableButton.type = 'button';
+            pushEnableButton.setAttribute('aria-pressed', 'true');
+            pushEnableButton.setAttribute('data-enabled', 'true');
+            pushEnableButton.title = 'Désactiver les notifications';
+            header.append(intro, pushEnableButton, closeButton);
+        } else {
+            header.append(intro, closeButton);
+        }
         panel.append(header);
         metricsNode = node('div', 'og-dashboard-metrics');
         panel.append(metricsNode);
