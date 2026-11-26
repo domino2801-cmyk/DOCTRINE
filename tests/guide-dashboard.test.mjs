@@ -639,6 +639,16 @@ test('la carte Signalement admin affiche une pastille globale pour les trois ori
     assert.match(script, /pending === 0/);
 });
 
+test('la carte RETEX admin affiche une pastille globale pour tous les types de RETEX et actualise le compteur', () => {
+    assert.match(script, /function refreshAdminRetexBadge\(badge\)/);
+    assert.match(script, /retex_responses\?select=id&limit=2000/);
+    assert.match(script, /guide_retex_reports\?select=id&limit=2000/);
+    assert.match(script, /og-dashboard-retex-badge/);
+    assert.match(script, /refreshAdminRetexBadge\(retexBadge\)/);
+    assert.match(script, /adminRetexRefreshTimer = setInterval/);
+    assert.match(script, /tous types confondus/);
+});
+
 test('la consultation RETEX QCM-MAJOR est réservée aux administrateurs', () => {
     assert.match(script, /function openAdminRetex\(\)/);
     const start = script.indexOf('function openAdminRetex()');
