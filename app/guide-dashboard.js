@@ -506,6 +506,23 @@
                 renderAdminOgNavigator();
                 selectQcmCandidate(adminOgCandidates[adminOgIndex]);
             });
+            if (dashboardMode === 'admin') {
+                var removeCacheButton = node('button', 'admin-delete-btn', 'Retirer du cache');
+                removeCacheButton.type = 'button';
+                removeCacheButton.addEventListener('click', function () {
+                    var name = candidateName(candidate);
+                    if (!window.confirm('Retirer ' + name + ' du cache local ? Le compte Supabase ne sera pas supprimé.')) return;
+                    adminOgCandidates.splice(adminOgIndex, 1);
+                    if (adminOgIndex >= adminOgCandidates.length) adminOgIndex = Math.max(0, adminOgCandidates.length - 1);
+                    renderAdminOgNavigator();
+                    if (adminOgCandidates.length) {
+                        selectQcmCandidate(adminOgCandidates[adminOgIndex]);
+                    } else {
+                        detail.replaceChildren(node('p', 'og-qcm-empty', 'Aucun candidat QCM-MAJOR disponible.'));
+                    }
+                });
+                controls.append(removeCacheButton);
+            }
             controls.append(previous, identity, next);
             adminOgNavigator.append(controls);
         }
