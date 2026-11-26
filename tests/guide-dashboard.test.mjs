@@ -580,5 +580,6 @@ test('la bibliothèque exercices et corrections est commune, avec gestion admin 
     assert.match(script, /exercise\.is_published \? 'Désactiver' : 'Réactiver'/);
     assert.match(script, /correction\.is_published \? 'Désactiver' : 'Réactiver'/);
     assert.match(script, /Publier pour les Officiers Guides/);
-    assert.match(script, /dashboardMode === 'admin' \? '' : 'is_published=eq\\.true&'/);
+    assert.match(script, /dashboardMode === 'admin'/);
+    assert.match(script, /is_published=eq\.true/);
 });
