@@ -346,7 +346,7 @@ test('les deux bibliothèques utilisent des cartes de largeur identique, titres 
 
 
 test('la page principale recharge la version du tableau de bord contenant les bibliothèques', () => {
-    assert.ok(html.includes('app/guide-dashboard.js?v=20261126-ADMIN-RETEX-2'));
+    assert.ok(html.includes('app/guide-dashboard.js?v=20261126-ADMIN-RETEX-3'));
     assert.ok(html.includes('pdf-lib@1.17.1/dist/pdf-lib.min.js'));
     assert.ok(html.indexOf('pdf-lib@1.17.1/dist/pdf-lib.min.js') < html.indexOf('app/guide-dashboard.js'));
     assert.ok(script.includes("await import('./bm4-official-pdf.mjs')"));
@@ -643,7 +643,7 @@ test('la consultation RETEX QCM-MAJOR est réservée aux administrateurs', () =>
     const end = script.indexOf('function guideFeedbackDialog(kind)', start);
     const adminRetex = script.slice(start, end);
     assert.match(adminRetex, /adminAccess\(\)\.then\(function \(allowed\)/);
-    assert.ok(adminRetex.indexOf('if (!allowed || dashboardMode !== \'admin\')') < adminRetex.indexOf("api('retex_responses?select=*"));
+    assert.ok(adminRetex.indexOf('if (!allowed || dashboardMode !== \'admin\')') < adminRetex.indexOf('return api(sources[sourceKey].query)'));
     assert.match(adminRetex, /Consultation RETEX refusée ou indisponible/);
     assert.match(adminRetex, /Exporter la synthèse en PDF/);
     assert.match(adminRetex, /Tous les retours enregistrés/);
