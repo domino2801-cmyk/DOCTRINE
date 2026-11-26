@@ -838,16 +838,16 @@
         var header = node('header', 'og-dashboard-feedback-header');
         var heading = node('div');
         heading.append(node('p', 'og-dashboard-kicker', 'ADMINISTRATION ANC'));
-        heading.append(node('h2', '', 'Signalements — Officiers Guides et candidats'));
+        heading.append(node('h2', '', 'Signalements — Officiers Guides, candidats et questions'));
         var close = node('button', 'og-dashboard-close', 'Fermer');
         close.type = 'button';
         close.addEventListener('click', function () { dialog.close(); });
         header.append(heading, close);
-        var intro = node('p', 'og-dashboard-feedback-help', 'Vue centralisée des signalements transmis depuis les espaces Officier Guide et candidat. Ouvrez une fiche pour consulter son contenu, répondre et enregistrer son traitement.');
+        var intro = node('p', 'og-dashboard-feedback-help', 'Vue centralisée des signalements des Officiers Guides, des candidats et des questions QCM-MAJOR. Ouvrez une fiche pour consulter son contenu, répondre et enregistrer son traitement.');
         var toolbar = node('div', 'og-dashboard-admin-signalements-toolbar');
         var origin = document.createElement('select');
         origin.setAttribute('aria-label', 'Filtrer par origine');
-        [['all','Toutes les origines'],['guide','Officiers Guides'],['candidate','Candidats']].forEach(function (entry) {
+        [['all','Toutes les origines'],['guide','Officiers Guides'],['candidate','Candidats'],['questions','Questions QCM-MAJOR']].forEach(function (entry) {
             var option = node('option', '', entry[1]); option.value = entry[0]; origin.append(option);
         });
         var refresh = node('button', 'og-dashboard-close', 'Actualiser');
@@ -868,20 +868,25 @@
             visible.forEach(function (record) {
                 var card = node('article', 'og-dashboard-admin-signalement-card');
                 var top = node('div', 'og-dashboard-admin-signalement-top');
-                var title = record.origin === 'guide' ? 'Officier Guide' : 'Candidat';
+                var title = record.origin === 'guide' ? 'Officier Guide' : (record.origin === 'candidate' ? 'Candidat' : 'Question QCM-MAJOR');
                 top.append(node('strong', '', title + ' · n°' + record.id));
                 top.append(node('span', 'og-dashboard-admin-signalement-date', new Date(record.created_at).toLocaleString('fr-FR')));
                 card.append(top);
-                var identity = record.origin === 'guide' ? (record.guide_email || 'Officier Guide non identifié') : (record.candidate_email || 'Candidat non identifié');
+                var identity = record.origin === 'guide' ? (record.guide_email || 'Officier Guide non identifié') : (record.origin === 'candidate' ? (record.candidate_email || 'Candidat non identifié') : ('Signalant : ' + (record.reporter_id || 'non identifié')));
                 card.append(node('p', 'og-dashboard-admin-signalement-identity', identity));
                 var priorityLabels = {low:'Faible',normal:'Normale',medium:'Normale',high:'Élevée',urgent:'Urgente'};
                 var priority = priorityLabels[String(record.priority || '').toLowerCase()] || record.priority || 'Normale';
                 card.append(node('p', 'og-dashboard-admin-signalement-meta', 'Priorité : ' + priority + ' · Statut : ' + (labels[record.status] || record.status || 'Nouveau')));
                 var detail = node('dl', 'og-dashboard-admin-signalement-details');
-                var values = record.origin === 'guide' ? (record.payload || {}) : {
+                var values = record.origin === 'guide' ? (record.payload || {}) : (record.origin === 'candidate' ? {
                     'incident_type':record.incident_type, 'module_id':record.module_id, 'resource':record.resource, 'details':record.details
-                };
+                } : {
+                    'question_id':record.question_id, 'quiz_theme':record.quiz_theme, 'question_text':record.question_text,
+                    'answers':record.answers, 'correct_answer_index':record.correct_answer_index, 'details':record.details
+                });
                 var fieldLabels = {
+                    question_id:'Identifiant de la question', quiz_theme:'Thème QCM-MAJOR', question_text:'Question signalée',
+                    answers:'Réponses proposées', correct_answer_index:'Index de la bonne réponse',
                     facts:'Faits constatés', actions:'Mesures déjà prises', request:'Intervention ou décision attendue',
                     category:'Catégorie', priority:'Priorité', occurred_at:'Date ou période des faits',
                     stakeholders:'Personnes ou services concernés', lessons:'Enseignements et bonnes pratiques',
@@ -899,17 +904,18 @@
                     var value = values[key];
                     if (value === null || value === undefined || String(value).trim() === '') return;
                     var label = fieldLabels[key] || key.replace(/_/g, ' ').replace(/^./, function (letter) { return letter.toUpperCase(); });
-                    var displayValue = valueLabels[String(value).toLowerCase()] || String(value);
+                    var displayValue = valueLabels[String(value).toLowerCase()] || (typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value));
                     detail.append(node('dt', '', label), node('dd', '', displayValue));
                 });
                 card.append(detail);
                 var controls = node('div', 'og-dashboard-admin-signalement-controls');
                 var statusSelect = document.createElement('select');
                 statusSelect.setAttribute('aria-label', 'Statut du signalement');
-                [['submitted','Nouveau'],['in_review','En cours'],['action_required','Action demandée'],['resolved','Résolu'],['closed','Clôturé']].forEach(function (entry) {
+                var statusOptions = record.origin === 'questions' ? [['pending','À traiter'],['resolved','Résolu']] : [['submitted','Nouveau'],['in_review','En cours'],['action_required','Action demandée'],['resolved','Résolu'],['closed','Clôturé']];
+                statusOptions.forEach(function (entry) {
                     var option = node('option', '', entry[1]); option.value = entry[0]; statusSelect.append(option);
                 });
-                statusSelect.value = record.status === 'pending' ? 'submitted' : (record.status || 'submitted');
+                statusSelect.value = record.origin === 'questions' ? (record.status || 'pending') : (record.status === 'pending' ? 'submitted' : (record.status || 'submitted'));
                 var response = document.createElement('textarea');
                 response.rows = 3; response.maxLength = 3000;
                 response.placeholder = 'Réponse / décision de l’administration';
@@ -921,7 +927,7 @@
                     status.textContent = 'Enregistrement du traitement…';
                     auth().jeton().then(function (jwt) {
                         var claims = decodeClaims(jwt);
-                        var table = record.origin === 'guide' ? 'guide_signalements' : 'doctrine_signalements';
+                        var table = record.origin === 'guide' ? 'guide_signalements' : (record.origin === 'candidate' ? 'doctrine_signalements' : 'question_reports');
                         var id = encodeURIComponent(record.id);
                         return api(table + '?id=eq.' + id, {
                             method:'PATCH',
@@ -954,17 +960,19 @@
             list.replaceChildren();
             Promise.all([
                 api('guide_signalements?select=id,guide_email,payload,priority,status,admin_response,created_at&order=created_at.desc&limit=200'),
-                api('doctrine_signalements?select=id,candidate_email,incident_type,module_id,resource,details,priority,status,admin_response,created_at&order=created_at.desc&limit=200')
+                api('doctrine_signalements?select=id,candidate_email,incident_type,module_id,resource,details,priority,status,admin_response,created_at&order=created_at.desc&limit=200'),
+                api('question_reports?select=id,question_id,question_text,answers,correct_answer_index,quiz_theme,details,reporter_id,status,admin_response,created_at&order=created_at.desc&limit=200')
             ]).then(function (results) {
                 records = (Array.isArray(results[0]) ? results[0].map(function (row) { row.origin = 'guide'; return row; }) : [])
                     .concat(Array.isArray(results[1]) ? results[1].map(function (row) { row.origin = 'candidate'; return row; }) : [])
+                    .concat(Array.isArray(results[2]) ? results[2].map(function (row) { row.origin = 'questions'; return row; }) : [])
                     .sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
                 status.textContent = records.length + ' signalement(s) — ' +
                     records.filter(function (row) { return !['resolved','closed'].includes(row.status); }).length + ' à suivre.';
                 render();
             }).catch(function (error) {
                 status.textContent = error.message || 'Chargement impossible. Vérifiez les droits et la migration Supabase.';
-                list.replaceChildren(node('p', 'og-dashboard-feedback-status', 'Les deux sources de signalements n’ont pas pu être chargées.'));
+                list.replaceChildren(node('p', 'og-dashboard-feedback-status', 'Les trois sources de signalements n’ont pas pu être chargées.'));
             }).finally(function () { refresh.disabled = false; });
         }
         origin.addEventListener('change', render);
