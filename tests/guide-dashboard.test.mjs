@@ -134,7 +134,9 @@ test('la fiche de chaque candidat administrateur permet de modifier sa spéciali
 test('le suivi global administrateur permet de retirer un candidat du cache local', () => {
     assert.match(script, /var removeCacheButton = node\('button', 'admin-delete-btn', 'Retirer du cache'\)/);
     assert.match(script, /Retirer .* du cache local \? Le compte Supabase ne sera pas supprimé\./);
-    assert.match(script, /adminOgCandidates\.splice\(adminOgIndex, 1\)/);
+    assert.match(script, /detail: \{ id: identity\.id \}/);
+    assert.match(script, /adminOgCandidates\.findIndex\(function \(item\)/);
+    assert.match(script, /adminOgCandidates\.splice\(removedIndex, 1\)/);
     assert.match(script, /renderAdminOgNavigator\(\)/);
     assert.match(script, /Aucun candidat QCM-MAJOR disponible\./);
 });
