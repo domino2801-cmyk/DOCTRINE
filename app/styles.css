@@ -2415,3 +2415,57 @@ body.og-guide-entry-only #guideDashboardNav .og-guide-entry-button:focus-visible
         animation: none !important;
     }
 }
+
+    
+    .main-wrapper > header .brand-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(10px, 2vw, 22px);
+        width: 100%;
+    }
+
+    .main-wrapper > header .anc-exit-button {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        border: 1px solid rgba(255, 255, 255, 0.58);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.09);
+        color: #fff;
+        font: 700 28px/1 Arial, sans-serif;
+        cursor: pointer;
+        transition: background .2s ease, transform .2s ease, border-color .2s ease;
+    }
+
+    .main-wrapper > header .anc-exit-button:hover,
+    .main-wrapper > header .anc-exit-button:focus-visible {
+        border-color: #fff;
+        background: #a83232;
+        color: #fff;
+        transform: scale(1.06);
+    }
+
+    .main-wrapper > header .anc-exit-button:focus-visible {
+        outline: 3px solid #f4d35e;
+        outline-offset: 3px;
+    }
+
+    @media (max-width: 560px) {
+        .main-wrapper > header .brand-title-row {
+            gap: 8px;
+        }
+        .main-wrapper > header .brand-title-row h1 {
+            font-size: clamp(.9rem, 4.2vw, 1.25rem);
+            letter-spacing: .045em;
+        }
+        .main-wrapper > header .anc-exit-button {
+            width: 34px;
+            height: 34px;
+            font-size: 25px;
+        }
+    }
