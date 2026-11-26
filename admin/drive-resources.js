@@ -84,12 +84,24 @@
         details.appendChild(el('strong', {}, item.title));
         details.appendChild(el('div', { class: 'ddr-muted' }, item.drive_folder_id + (item.is_active ? ' · Actif' : ' · Désactivé')));
         row.appendChild(details);
+        var actions = el('div');
+        var edit = el('button', { type: 'button' }, 'Modifier');
+        edit.addEventListener('click', function () {
+          var title = window.prompt('Nouvel intitulé du support :', item.title);
+          if (title === null) return;
+          title = title.trim();
+          if (title.length < 2 || title.length > 160) { showError(new Error('L’intitulé doit contenir entre 2 et 160 caractères.')); return; }
+          api(TABLE + '?id=eq.' + encodeURIComponent(item.id), 'PATCH', { title: title, updated_at: new Date().toISOString() })
+            .then(load).catch(showError);
+        });
+        actions.appendChild(edit);
         var toggle = el('button', { type: 'button' }, item.is_active ? 'Désactiver' : 'Réactiver');
         toggle.addEventListener('click', function () {
           api(TABLE + '?id=eq.' + encodeURIComponent(item.id), 'PATCH', { is_active: !item.is_active, updated_at: new Date().toISOString() })
             .then(load).catch(showError);
         });
-        row.appendChild(toggle);
+        actions.appendChild(toggle);
+        row.appendChild(actions);
         list.appendChild(row);
       });
     }).catch(showError);
