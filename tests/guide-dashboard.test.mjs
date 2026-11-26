@@ -670,6 +670,10 @@ test('la consultation administrateur distingue les RETEX QCM-MAJOR et les RETEX 
     assert.match(adminRetex, /'used_report_form', 'recommendation'/);
     assert.match(adminRetex, /Exporter la synthèse en PDF/);
     assert.match(adminRetex, /function makeChart\(question\)/);
+    assert.match(adminRetex, /pie-svg/);
+    assert.match(adminRetex, /<svg class="pie-svg"/);
+    assert.match(adminRetex, /<path d=/);
+    assert.match(adminRetex, /print-color-adjust:exact/);
     assert.match(adminRetex, /Priorité des signalements/);
     assert.match(adminRetex, /Retours détaillés des Officiers Guides/);
     assert.match(adminRetex, /Statut de traitement/);
