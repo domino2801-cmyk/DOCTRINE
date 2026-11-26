@@ -439,6 +439,18 @@
         list.setAttribute('aria-label', dashboardMode === 'admin' ? 'Tous les candidats' : 'Candidats de ma cohorte');
         var detail = node('section', 'og-qcm-candidate-detail');
         detail.setAttribute('aria-live', 'polite');
+        detail.addEventListener('og-admin-remove-candidate-cache', function (event) {
+            if (dashboardMode !== 'admin' || !event.detail || !event.detail.id) return;
+            var removedIndex = adminOgCandidates.findIndex(function (item) {
+                return String((item.candidate || {}).id || '') === String(event.detail.id);
+            });
+            if (removedIndex < 0) return;
+            adminOgCandidates.splice(removedIndex, 1);
+            if (adminOgIndex >= adminOgCandidates.length) adminOgIndex = Math.max(0, adminOgCandidates.length - 1);
+            renderAdminOgNavigator();
+            if (adminOgCandidates.length) selectQcmCandidate(adminOgCandidates[adminOgIndex]);
+            else detail.replaceChildren(node('p', 'og-qcm-empty', 'Aucun candidat QCM-MAJOR disponible.'));
+        });
         detail.append(node('p', 'og-qcm-empty', 'Sélectionnez le nom d’un candidat pour afficher ses notes par thème et son historique.'));
         var ogDetails = null;
         var ogList = null;
@@ -506,23 +518,6 @@
                 renderAdminOgNavigator();
                 selectQcmCandidate(adminOgCandidates[adminOgIndex]);
             });
-            if (dashboardMode === 'admin') {
-                var removeCacheButton = node('button', 'admin-delete-btn', 'Retirer du cache');
-                removeCacheButton.type = 'button';
-                removeCacheButton.addEventListener('click', function () {
-                    var name = candidateName(candidate);
-                    if (!window.confirm('Retirer ' + name + ' du cache local ? Le compte Supabase ne sera pas supprimé.')) return;
-                    adminOgCandidates.splice(adminOgIndex, 1);
-                    if (adminOgIndex >= adminOgCandidates.length) adminOgIndex = Math.max(0, adminOgCandidates.length - 1);
-                    renderAdminOgNavigator();
-                    if (adminOgCandidates.length) {
-                        selectQcmCandidate(adminOgCandidates[adminOgIndex]);
-                    } else {
-                        detail.replaceChildren(node('p', 'og-qcm-empty', 'Aucun candidat QCM-MAJOR disponible.'));
-                    }
-                });
-                controls.append(removeCacheButton);
-            }
             controls.append(previous, identity, next);
             adminOgNavigator.append(controls);
         }
@@ -647,6 +642,17 @@
             });
             blockButton.classList.toggle('is-blocked', Boolean(identity.blocked));
             identityCard.append(blockButton);
+            var removeCacheButton = node('button', 'admin-delete-btn', 'Retirer du cache');
+            removeCacheButton.type = 'button';
+            removeCacheButton.addEventListener('click', function () {
+                var accountName = identity.pseudo || identity.name || identity.email || 'ce candidat';
+                if (!window.confirm('Retirer ' + accountName + ' du cache local ? Le compte Supabase ne sera pas supprimé.')) return;
+                removeCacheButton.disabled = true;
+                target.dispatchEvent(new CustomEvent('og-admin-remove-candidate-cache', {
+                    detail: { id: identity.id }
+                }));
+            });
+            identityCard.append(removeCacheButton);
         }
         var summary = node('div', 'og-candidate-profile-summary-card');
         var lastActivityDate = lastActivity && Number.isFinite(Date.parse(lastActivity))
