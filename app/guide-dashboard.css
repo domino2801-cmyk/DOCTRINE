@@ -918,3 +918,28 @@ body.og-guide-entry-only #guideDashboardNav > button {
   .og-dashboard-admin-signalement-details { grid-template-columns:minmax(0,1fr); gap:3px; }
   .og-dashboard-admin-signalement-details dd { margin-bottom:7px; }
 }
+
+
+/* Synthèse RETEX QCM-MAJOR intégrée à l'espace administrateur. */
+.og-dashboard-admin-retex-dialog { width:min(1120px,calc(100vw - 24px)); max-width:1120px; }
+.og-dashboard-admin-retex-dialog .og-dashboard-feedback-shell { display:grid; gap:14px; min-width:0; }
+.og-admin-retex-charts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; min-width:0; }
+.og-admin-retex-chart { display:grid; align-content:start; gap:10px; min-width:0; padding:14px; border:1px solid rgba(183,207,185,.24); border-radius:9px; background:rgba(255,255,255,.035); }
+.og-admin-retex-chart h3,.og-admin-retex-response h4 { margin:0; color:#e6c96f; font-size:14px; }
+.og-admin-retex-bar-row { display:grid; grid-template-columns:minmax(90px,1fr) minmax(55px,1.2fr) 28px; align-items:center; gap:8px; min-width:0; color:#f2f5ee; font-size:12px; }
+.og-admin-retex-bar-row > span:first-child { overflow-wrap:anywhere; }
+.og-admin-retex-bar-track { display:block; height:9px; overflow:hidden; border-radius:99px; background:rgba(183,207,185,.16); }
+.og-admin-retex-bar { display:block; height:100%; border-radius:99px; background:#d8b85b; }
+.og-admin-retex-bar-row strong { text-align:right; color:#e6c96f; }
+.og-admin-retex-responses { display:grid; gap:10px; min-width:0; }
+.og-admin-retex-response-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; min-width:0; }
+.og-admin-retex-response { min-width:0; padding:13px; border:1px solid rgba(183,207,185,.2); border-radius:8px; background:rgba(255,255,255,.025); }
+.og-admin-retex-response > p { color:#bdcbbb; font-size:12px; }
+.og-admin-retex-response dl { display:grid; grid-template-columns:minmax(0,1fr); gap:3px; margin:10px 0 0; }
+.og-admin-retex-response dt { color:#e6c96f; font-size:12px; font-weight:800; }
+.og-admin-retex-response dd { margin:0 0 8px; color:#f2f5ee; white-space:pre-wrap; overflow-wrap:anywhere; }
+.og-dashboard-admin-retex-dialog :is(h2,h3,h4,p,dt,dd,span,strong) { overflow-wrap:anywhere; }
+@media(max-width:700px) {
+  .og-admin-retex-charts,.og-admin-retex-response-list { grid-template-columns:minmax(0,1fr); }
+  .og-admin-retex-bar-row { grid-template-columns:minmax(80px,1fr) minmax(45px,1fr) 24px; gap:6px; }
+}
