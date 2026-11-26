@@ -1044,8 +1044,22 @@ begin
         left join public.profiles profile on profile.id = user_account.id
         where (public.doctrine_is_admin() or assignment.assigned_at is not null)
               and user_account.email_confirmed_at is not null
-          and coalesce(user_account.raw_app_meta_data ->> 'role', 'candidat')
-                not in ('admin', 'guide', 'officier_guide')
+          and (
+                coalesce(user_account.raw_app_meta_data ->> 'role', 'candidat')
+                    not in ('admin', 'guide', 'officier_guide')
+                or upper(trim(coalesce(
+                    to_jsonb(profile) ->> 'specialty',
+                    to_jsonb(profile) ->> 'speciality',
+                    to_jsonb(profile) ->> 'specialite',
+                    user_account.raw_app_meta_data ->> 'specialty',
+                    user_account.raw_app_meta_data ->> 'speciality',
+                    user_account.raw_app_meta_data ->> 'specialite',
+                    user_account.raw_user_meta_data ->> 'specialty',
+                    user_account.raw_user_meta_data ->> 'speciality',
+                    user_account.raw_user_meta_data ->> 'specialite',
+                    ''
+                ))) = 'OG'
+          )
           and not coalesce(
                 lower(user_account.raw_app_meta_data ->> 'bm4_admin') in ('true', '1'),
                 false
