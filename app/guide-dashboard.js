@@ -2586,7 +2586,11 @@
         exerciseLibraryNode = node('div', 'og-dashboard-library');
         exerciseContent.append(exerciseLibraryNode);
         exerciseSection.append(exerciseContent);
-        libraryGrid.append(courseSection, exerciseSection);
+        // L'ancien catalogue Supports Drive reste disponible dans l'espace Administrateur,
+        // mais n'est plus présenté aux Officiers Guides : leur bibliothèque dédiée
+        // est désormais celle des dossiers d'exercices et corrections.
+        if (dashboardMode === 'admin') libraryGrid.append(courseSection);
+        libraryGrid.append(exerciseSection);
 
         // Carte de proposition documentaire, placée sous les deux bibliothèques.
         // Aucune ressource du Module 2.1 n'est affichée dans cet espace.
