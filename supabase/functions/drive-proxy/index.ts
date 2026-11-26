@@ -167,7 +167,7 @@ async function accesBibliothequePubliee(ids: string[], admin: boolean): Promise<
       return true;
     }
   }
-  // null = document historique : conserver ses contrôles d'accès existants.
+  // Aucun identifiant non répertorié n'est considéré comme un document historique.
   return null;
 }
 
