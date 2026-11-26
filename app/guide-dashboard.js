@@ -857,7 +857,7 @@
         status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
         var list = node('div', 'og-dashboard-admin-signalements-list');
         var records = [];
-        var labels = {submitted:'Nouveau',pending:'Nouveau',in_review:'En cours',action_required:'Action demandée',resolved:'Résolu',closed:'Clôturé'};
+        var labels = {submitted:'Nouveau',pending:'À traiter',in_review:'En cours',action_required:'Action demandée',resolved:'Résolu',closed:'Clôturé'};
         function render() {
             list.replaceChildren();
             var visible = records.filter(function (record) { return origin.value === 'all' || record.origin === origin.value; });
