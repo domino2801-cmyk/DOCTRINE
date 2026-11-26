@@ -657,6 +657,16 @@ body.og-guide-entry-only #guideDashboardNav > button {
   border-radius:10px;
   background:rgba(255,255,255,.035);
 }
+.og-dashboard-exercise-library-entry {
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  min-height:112px;
+}
+.og-dashboard-exercise-library-entry > .og-dashboard-library-entry-toggle {
+  display:flex !important;
+  visibility:visible !important;
+}
 .og-dashboard-library-entry-toggle {
   display:flex;
   align-items:center;
