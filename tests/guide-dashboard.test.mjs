@@ -649,7 +649,7 @@ test('la consultation RETEX QCM-MAJOR est réservée aux administrateurs', () =>
     assert.match(adminRetex, /Tous les retours enregistrés/);
     assert.match(script, /else if \(definition\.kind === 'retex' && dashboardMode === 'admin'\) openAdminRetex\(\)/);
     assert.match(script, /else openGuideFeedback\(definition\.kind\)/);
-    assert.doesNotMatch(adminRetex, /guide_retex_reports/);
+    assert.match(adminRetex, /guide_retex_reports/);
 });
 
 test('la consultation administrateur distingue les RETEX QCM-MAJOR et les RETEX des Officiers Guides OG', () => {
