@@ -825,7 +825,10 @@
             card.append(node('span', 'og-dashboard-metric-label', definition.title));
             card.append(node('strong', 'og-dashboard-metric-value', definition.symbol));
             card.append(node('small', '', definition.subtitle));
-            card.addEventListener('click', function () {\n                if (definition.kind === 'signalement' && dashboardMode === 'admin') openAdminSignalements();\n                else openGuideFeedback(definition.kind);\n            });
+            card.addEventListener('click', function () {
+                if (definition.kind === 'signalement' && dashboardMode === 'admin') openAdminSignalements();
+                else openGuideFeedback(definition.kind);
+            });
             metricsNode.append(card);
         });
     }
