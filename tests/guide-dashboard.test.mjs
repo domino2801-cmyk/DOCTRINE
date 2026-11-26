@@ -564,3 +564,17 @@ test('la navigation globale des candidats utilise les flèches précédent et su
     assert.match(navigation, /showCandidate\(selectedIndex \+ 1\)/);
     assert.match(navigation, /Candidat ' \+ \(selectedIndex \+ 1\) \+ ' \/ '/);
 });
+
+
+test('la bibliothèque historique Supports Drive est réservée à l’espace Administrateur', () => {
+    const start = script.indexOf("var libraryGrid = node('div', 'og-dashboard-pedagogical-libraries')");
+    const end = script.indexOf('// Carte de proposition documentaire', start);
+    const libraries = script.slice(start, end);
+    assert.match(libraries, /if \(dashboardMode === 'admin'\) libraryGrid\.append\(courseSection\)/);
+    assert.match(libraries, /libraryGrid\.append\(exerciseSection\)/);
+    assert.doesNotMatch(libraries, /libraryGrid\.append\(courseSection,\s*exerciseSection\)/);
+    assert.match(script, /guide_course_catalog\?select=id,title,category,description,drive_url/);
+    assert.match(script, /function renderCourses\(\)/);
+    assert.match(script, /dashboardMode === 'admin'/);
+    assert.match(script, /BIBLIOTHÈQUE DES DOSSIERS D’EXERCICES ET CORRECTIONS/);
+});
