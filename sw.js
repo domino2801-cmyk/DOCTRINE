@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'bm4-shell-v142';
+const CACHE_NAME = 'bm4-shell-v143';
 
 const APP_SHELL_URL = new URL('./index.html', self.location.href).toString();
 const LEGACY_APP_URL = new URL('./INDEX%20BM4V2.HTML', self.location.href).toString();
@@ -113,6 +113,7 @@ self.addEventListener('push', event => {
 
   const pendingCount = payload && payload.pendingCount;
   const isTest = payload && payload.type === 'doctrine-test';
+  const isGuideReport = payload && payload.type === 'doctrine-guide-signalement';
   let badgeUpdate = Promise.resolve();
   if (typeof self.navigator.setAppBadge === 'function' && Number.isSafeInteger(pendingCount) && pendingCount >= 0) {
     badgeUpdate = Promise.resolve().then(() => pendingCount > 0
@@ -121,15 +122,22 @@ self.addEventListener('push', event => {
   }
 
   event.waitUntil(Promise.all([
-    self.registration.showNotification('DOCTRINE — Signalements', {
-      body: isTest ? 'Notification de test : les alertes de signalement sont activées.' :
-        'Un nouveau signalement nécessite votre attention.',
-      icon: new URL('./icons/icon-192.png', self.registration.scope).href,
-      badge: new URL('./icons/icon-192.png', self.registration.scope).href,
-      tag: 'doctrine-signalements',
-      renotify: true,
-      data: { url: self.registration.scope }
-    }),
+    self.registration.showNotification(
+      isGuideReport ? 'DOCTRINE — Signalement Officier Guide' : 'DOCTRINE — Signalements',
+      {
+        body: isTest ? 'Notification de test : les alertes de signalement sont activées.' :
+          isGuideReport ? 'Un Officier Guide a transmis un signalement à traiter.' :
+            'Un candidat a transmis un signalement à traiter.',
+        icon: new URL('./icons/icon-192.png', self.registration.scope).href,
+        badge: new URL('./icons/icon-192.png', self.registration.scope).href,
+        tag: isGuideReport ? 'doctrine-guide-signalements' : 'doctrine-signalements',
+        renotify: true,
+        data: {
+          url: self.registration.scope,
+          reportType: isGuideReport ? 'guide-signalements' : 'signalements'
+        }
+      }
+    ),
     Promise.resolve(badgeUpdate).catch(error => {
       console.warn('Mise à jour du badge de l’application impossible.', error);
     })
@@ -139,8 +147,11 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil((async () => {
+    const reportType = event.notification.data?.reportType === 'guide-signalements'
+      ? 'guide-signalements'
+      : 'signalements';
     const appUrl = new URL('./index.html', self.registration.scope);
-    appUrl.searchParams.set('admin-section', 'signalements');
+    appUrl.searchParams.set('admin-section', reportType);
     const scopeUrl = new URL(self.registration.scope);
     const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     const appClient = clients.find(client => {
@@ -148,7 +159,11 @@ self.addEventListener('notificationclick', event => {
       return url.origin === scopeUrl.origin && url.pathname.startsWith(scopeUrl.pathname);
     });
     if (appClient) {
-      appClient.postMessage({ type: 'doctrine-open-signalements' });
+      appClient.postMessage({
+        type: reportType === 'guide-signalements'
+          ? 'doctrine-open-guide-signalements'
+          : 'doctrine-open-signalements'
+      });
       return appClient.focus();
     }
     return self.clients.openWindow(appUrl.href);
