@@ -973,7 +973,7 @@ begin
                         ) order by event.created_at desc)
                         from public.doctrine_progress_events event
                         where event.user_id = user_account.id
-                          and event.module_id in ('1', '2', '3', '4')
+                          and event.module_id in ('1', '2', '3', '4', '5', '6', '7')
                     ), '[]'::jsonb),
                     'documents', coalesce((
                         select jsonb_agg(jsonb_build_object(
