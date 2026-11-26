@@ -244,7 +244,7 @@ Deno.serve(async (req) => {
 
     const chemin = await chaineParentsDrive(id, fichier.parents || [], jeton);
     const supportHistorique = await supportsHistoriquesAutorises(chemin);
-    const accesBibliotheque = await accesBibliothequePubliee(chemin, false);
+    const accesBibliotheque = await accesBibliothequePubliee(chemin, candidat.admin);
     if (accesBibliotheque === false) {
       return erreur(403, 'Ce dossier ou document n’est pas publié pour les Officiers Guides');
     }
