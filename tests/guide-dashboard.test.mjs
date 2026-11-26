@@ -550,7 +550,6 @@ test('le suivi QCM-MAJOR global exclut les 8 profils Officier Guide du total des
     assert.match(tracking, /CANDIDATS QCM-MAJOR/);
 });
 
-
 test('la navigation globale des candidats utilise les flèches précédent et suivant comme QCM-MAJOR', () => {
     const start = script.indexOf('function openGuideCandidates()');
     const end = script.indexOf('function renderMetrics()', start);
