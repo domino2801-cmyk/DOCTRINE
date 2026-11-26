@@ -527,7 +527,9 @@
             renderAdminOgNavigator();
             if (adminOgCandidates.length) selectQcmCandidate(adminOgCandidates[0]);
         }
-        if (firstVisibleQcmButton) firstVisibleQcmButton.click();
+        if (dashboardMode !== 'admin' || !adminOgCandidates.length) {
+            if (firstVisibleQcmButton) firstVisibleQcmButton.click();
+        }
         if (!candidates.length) list.append(node('p', 'og-qcm-empty', 'Aucun candidat disponible.'));
         if (dashboardMode === 'admin' && !firstVisibleQcmButton && adminOgCandidates.length) {
             selectQcmCandidate(adminOgCandidates[0]);
