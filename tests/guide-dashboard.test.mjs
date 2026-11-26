@@ -346,7 +346,7 @@ test('les deux bibliothèques utilisent des cartes de largeur identique, titres 
 
 
 test('la page principale recharge la version du tableau de bord contenant les bibliothèques', () => {
-    assert.ok(html.includes('app/guide-dashboard.js?v=20261126-ADMIN-RETEX-4'));
+    assert.ok(html.includes('app/guide-dashboard.js?v=20261126-ADMIN-RETEX-5'));
     assert.ok(html.includes('pdf-lib@1.17.1/dist/pdf-lib.min.js'));
     assert.ok(html.indexOf('pdf-lib@1.17.1/dist/pdf-lib.min.js') < html.indexOf('app/guide-dashboard.js'));
     assert.ok(script.includes("await import('./bm4-official-pdf.mjs')"));
@@ -668,6 +668,10 @@ test('la consultation administrateur distingue les RETEX QCM-MAJOR et les RETEX 
     assert.match(adminRetex, /Réponse de l’administration/);
     assert.match(adminRetex, /Exporter la synthèse en PDF/);
     assert.match(adminRetex, /function makeChart\(question\)/);
+    assert.match(adminRetex, /Priorité des signalements/);
+    assert.match(adminRetex, /Retours détaillés des Officiers Guides/);
+    assert.match(adminRetex, /Statut de traitement/);
+    assert.match(adminRetex, /Réponse de l’administration/);
     assert.match(adminRetex, /adminAccess\(\)\.then\(function \(allowed\)/);
     assert.match(adminRetex, /if \(!allowed \|\| dashboardMode !== 'admin'\)/);
     assert.match(adminRetex, /responses\.hidden = false/);
