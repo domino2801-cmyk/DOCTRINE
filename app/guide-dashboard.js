@@ -3350,17 +3350,18 @@
         closeButton.type = 'button';
         closeButton.addEventListener('click', close);
         if (dashboardMode === 'admin') {
-            var pushEnableButton = node('button', 'admin-edit-btn admin-state-ready', 'Activer notification');
+            var headerActions = node('div', 'og-dashboard-header-actions');
+            var pushEnableButton = node('button', 'og-dashboard-close', 'Activer notification');
             pushEnableButton.id = 'admin-push-enable-btn';
             pushEnableButton.type = 'button';
-            pushEnableButton.setAttribute('aria-pressed', 'true');
+            pushEnableButton.setAttribute('aria-pressed', 'false');
             pushEnableButton.setAttribute('data-enabled', 'true');
             pushEnableButton.title = 'Gérer les notifications de cet appareil';
-            pushEnableButton.setAttribute('aria-pressed', 'false');
             pushEnableButton.addEventListener('click', function () {
                 document.dispatchEvent(new CustomEvent('doctrine:admin-fiches', { detail: 'notifications' }));
             });
-            header.append(intro, pushEnableButton, closeButton);
+            headerActions.append(closeButton, pushEnableButton);
+            header.append(intro, headerActions);
         } else {
             header.append(intro, closeButton);
         }
