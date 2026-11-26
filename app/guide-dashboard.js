@@ -874,16 +874,33 @@
                 card.append(top);
                 var identity = record.origin === 'guide' ? (record.guide_email || 'Officier Guide non identifié') : (record.candidate_email || 'Candidat non identifié');
                 card.append(node('p', 'og-dashboard-admin-signalement-identity', identity));
-                var priority = record.priority || 'Normale';
+                var priorityLabels = {low:'Faible',normal:'Normale',medium:'Normale',high:'Élevée',urgent:'Urgente'};
+                var priority = priorityLabels[String(record.priority || '').toLowerCase()] || record.priority || 'Normale';
                 card.append(node('p', 'og-dashboard-admin-signalement-meta', 'Priorité : ' + priority + ' · Statut : ' + (labels[record.status] || record.status || 'Nouveau')));
                 var detail = node('dl', 'og-dashboard-admin-signalement-details');
                 var values = record.origin === 'guide' ? (record.payload || {}) : {
-                    'Type':record.incident_type, 'Module':record.module_id, 'Ressource':record.resource, 'Description':record.details
+                    'incident_type':record.incident_type, 'module_id':record.module_id, 'resource':record.resource, 'details':record.details
+                };
+                var fieldLabels = {
+                    facts:'Faits constatés', actions:'Mesures déjà prises', request:'Intervention ou décision attendue',
+                    category:'Catégorie', priority:'Priorité', occurred_at:'Date ou période des faits',
+                    stakeholders:'Personnes ou services concernés', lessons:'Enseignements et bonnes pratiques',
+                    improvements:'Améliorations proposées', situation:'Situation ou contexte',
+                    problem:'Problématique rencontrée', incident_type:'Type de signalement',
+                    module_id:'Module concerné', resource:'Ressource concernée', details:'Description'
+                };
+                var valueLabels = {
+                    organisation:'Organisation / moyens', accompagnement:'Accompagnement', comportement:'Comportement / discipline',
+                    travail_bm4:'Travail BM4', informatique:'Outil informatique', administration:'Administration / dossier',
+                    relationnel:'Relationnel', confidentialite:'Sécurité / confidentialité', sensible:'Situation sensible',
+                    autre:'Autre', low:'Faible', normal:'Normale', medium:'Normale', high:'Élevée', urgent:'Urgente'
                 };
                 Object.keys(values).forEach(function (key) {
                     var value = values[key];
                     if (value === null || value === undefined || String(value).trim() === '') return;
-                    detail.append(node('dt', '', key.replace(/_/g, ' ')), node('dd', '', String(value)));
+                    var label = fieldLabels[key] || key.replace(/_/g, ' ').replace(/^./, function (letter) { return letter.toUpperCase(); });
+                    var displayValue = valueLabels[String(value).toLowerCase()] || String(value);
+                    detail.append(node('dt', '', label), node('dd', '', displayValue));
                 });
                 card.append(detail);
                 var controls = node('div', 'og-dashboard-admin-signalement-controls');
