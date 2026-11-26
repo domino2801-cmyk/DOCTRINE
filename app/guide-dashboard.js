@@ -418,22 +418,12 @@
         target.append(historySection);
     }
         function openGuideQcmTracking() {
-        var qcmCandidates = dashboardMode === 'admin'
-            ? candidates.filter(function (candidate) { return !isOgCandidate(candidate); })
-            : candidates.slice();
-        qcmCandidates.sort(function (first, second) {
-            var a = first.candidate || {}; var b = second.candidate || {};
-            return String(a.pseudo || a.name || a.email || '').localeCompare(
-                String(b.pseudo || b.name || b.email || ''), 'fr', { sensitivity: 'base' }
-            );
-        });
-        var ogCandidates = dashboardMode === 'admin' ? candidates.filter(isOgCandidate) : [];
-        var dialog = node('dialog', 'og-qcm-tracking-dialog og-qcm-global-follow-up-dialog');
+        var qcmCandidates = dashboardMode === 'admin' ? candidates.filter(function (candidate) { return !isOgCandidate(candidate); }) : candidates;
+        var dialog = node('dialog', 'og-qcm-tracking-dialog');
         var panel = node('section', 'og-qcm-tracking-panel');
         var header = node('header', 'og-qcm-tracking-header');
         var heading = node('div');
-        heading.append(node('p', 'og-dashboard-kicker', dashboardMode === 'admin'
-            ? 'ESPACE ADMINISTRATEUR / SUIVI GLOBAL' : 'ESPACE OFFICIER GUIDE / COHORTE'));
+        heading.append(node('p', 'og-dashboard-kicker', dashboardMode === 'admin' ? 'ESPACE ADMINISTRATEUR / SUIVI GLOBAL' : 'ESPACE OFFICIER GUIDE / COHORTE'));
         heading.append(node('h2', '', 'Suivi QCM-MAJOR'));
         heading.append(node('p', 'og-dashboard-muted', qcmCandidates.length + ' candidat(s) dans ' + dashboardScope()));
         var closeButton = node('button', 'og-dashboard-close', 'Fermer');
@@ -441,74 +431,112 @@
         closeButton.addEventListener('click', function () { dialog.close(); dialog.remove(); });
         header.append(heading, closeButton);
         panel.append(header);
-
-        var layout = node('div', 'og-qcm-tracking-layout og-qcm-global-follow-up-layout');
-        var sidebar = node('div', 'og-qcm-global-follow-up-sidebar');
-        var candidateGroup = node('section', 'og-dashboard-candidate-group og-dashboard-admin-candidate-group');
-        candidateGroup.append(node('div', 'og-dashboard-candidate-group-heading',
-            'CANDIDATS QCM-MAJOR — ' + qcmCandidates.length + ' candidat(s)'));
-        var navigator = node('div', 'og-candidate-stepper');
-        var previousButton = node('button', 'og-candidate-stepper-arrow', '‹');
-        previousButton.type = 'button';
-        previousButton.setAttribute('aria-label', 'Candidat précédent');
-        var current = node('div', 'og-candidate-stepper-current');
-        var currentName = node('strong', 'og-candidate-stepper-name', 'Aucun candidat');
-        var currentPosition = node('span', 'og-candidate-stepper-position', 'Candidat 0 / 0');
-        current.append(currentName, currentPosition);
-        var nextButton = node('button', 'og-candidate-stepper-arrow', '›');
-        nextButton.type = 'button';
-        nextButton.setAttribute('aria-label', 'Candidat suivant');
-        navigator.append(previousButton, current, nextButton);
-        candidateGroup.append(navigator);
-        sidebar.append(candidateGroup);
-
-        var detail = node('section', 'og-qcm-candidate-detail og-candidate-profile-detail');
+        var layout = node('div', 'og-qcm-tracking-layout');
+        var list = node('nav', 'og-qcm-candidate-list');
+        list.setAttribute('aria-label', dashboardMode === 'admin' ? 'Tous les candidats' : 'Candidats de ma cohorte');
+        var detail = node('section', 'og-qcm-candidate-detail');
         detail.setAttribute('aria-live', 'polite');
-        var selectedIndex = 0;
-        function showCandidate(index) {
-            if (!qcmCandidates.length) {
-                currentName.textContent = 'Aucun candidat';
-                currentPosition.textContent = 'Candidat 0 / 0';
-                previousButton.disabled = true;
-                nextButton.disabled = true;
-                detail.replaceChildren(node('p', 'og-qcm-empty', 'Aucun candidat QCM-MAJOR disponible.'));
+        detail.append(node('p', 'og-qcm-empty', 'Sélectionnez le nom d’un candidat pour afficher ses notes par thème et son historique.'));
+        var ogDetails = null;
+        var ogList = null;
+        if (dashboardMode === 'admin') {
+            ogDetails = node('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group');
+            ogDetails.open = true;
+            var ogSummary = node('summary', 'og-dashboard-candidate-group-heading', 'CANDIDATS QCM-MAJOR');
+            ogDetails.append(ogSummary);
+            ogList = node('div', 'og-dashboard-candidate-group-items');
+            ogDetails.append(ogList);
+            list.append(ogDetails);
+        }
+        var firstVisibleQcmButton = null;
+        var adminOgCandidates = dashboardMode === 'admin' ? qcmCandidates : [];
+        var adminOgIndex = 0;
+        var adminOgNavigator = null;
+
+        function selectQcmCandidate(candidate, selectedButton) {
+            list.querySelectorAll('.og-qcm-candidate-button').forEach(function (item) {
+                item.classList.remove('is-selected');
+                item.setAttribute('aria-pressed', 'false');
+            });
+            if (selectedButton) {
+                selectedButton.classList.add('is-selected');
+                selectedButton.setAttribute('aria-pressed', 'true');
+            }
+            renderQcmCandidateDetail(detail, candidate);
+        }
+
+        function renderAdminOgNavigator() {
+            if (!adminOgNavigator) return;
+            adminOgNavigator.replaceChildren();
+            if (!adminOgCandidates.length) {
+                adminOgNavigator.append(node('p', 'og-qcm-empty', 'Aucun candidat QCM-MAJOR disponible.'));
                 return;
             }
-            selectedIndex = Math.max(0, Math.min(index, qcmCandidates.length - 1));
-            var candidate = qcmCandidates[selectedIndex];
-            var identity = candidate.candidate || {};
-            currentName.textContent = identity.pseudo || identity.name || identity.email || 'Pseudo non renseigné';
-            currentPosition.textContent = 'Candidat ' + (selectedIndex + 1) + ' / ' + qcmCandidates.length;
-            previousButton.disabled = selectedIndex === 0;
-            nextButton.disabled = selectedIndex === qcmCandidates.length - 1;
-            renderCandidateProfileDetail(detail, candidate);
-        }
-        previousButton.addEventListener('click', function () { showCandidate(selectedIndex - 1); });
-        nextButton.addEventListener('click', function () { showCandidate(selectedIndex + 1); });
-
-        if (dashboardMode === 'admin') {
-            var ogGroup = node('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group');
-            ogGroup.append(node('summary', 'og-dashboard-candidate-group-heading',
-                'OFFICIERS GUIDES — ' + ogCandidates.length + ' compte(s)'));
-            var ogGroupItems = node('div', 'og-dashboard-candidate-group-items');
-            var ogCandidateList = node('nav', 'og-qcm-candidate-list');
-            ogCandidateList.setAttribute('aria-label', 'Officiers Guides');
-            ogCandidates.forEach(function (candidate) {
-                var identity = candidate.candidate || {};
-                var button = node('button', 'og-qcm-candidate-button');
-                button.type = 'button';
-                button.append(node('strong', '', identity.pseudo || identity.name || identity.email || 'Pseudo non renseigné'));
-                button.append(node('span', '', identity.email || identity.specialty || 'Profil à compléter'));
-                button.addEventListener('click', function () { renderCandidateProfileDetail(detail, candidate); });
-                ogCandidateList.append(button);
+            var candidate = adminOgCandidates[adminOgIndex];
+            var average = qcmAverage(candidate);
+            var results = qcmResults(candidate);
+            var controls = node('div', 'og-qcm-og-navigation');
+            var previous = node('button', 'og-qcm-og-arrow', '‹');
+            previous.type = 'button';
+            previous.setAttribute('aria-label', 'Candidat précédent');
+            previous.disabled = adminOgIndex === 0;
+            previous.addEventListener('click', function () {
+                if (adminOgIndex <= 0) return;
+                adminOgIndex -= 1;
+                renderAdminOgNavigator();
+                selectQcmCandidate(adminOgCandidates[adminOgIndex]);
             });
-            if (!ogCandidates.length) ogCandidateList.append(node('p', 'og-qcm-empty', 'Aucun Officier Guide.'));
-            ogGroupItems.append(ogCandidateList);
-            ogGroup.append(ogGroupItems);
-            sidebar.append(ogGroup);
+            var identity = node('div', 'og-qcm-og-identity');
+            identity.append(
+                node('strong', '', candidateName(candidate)),
+                node('span', '', (average === null ? 'Aucune note' : average.toFixed(2) + ' / 20') +
+                    ' · ' + results.length + ' résultat(s)'),
+                node('small', '', 'Candidat ' + (adminOgIndex + 1) + ' / ' + adminOgCandidates.length)
+            );
+            var next = node('button', 'og-qcm-og-arrow', '›');
+            next.type = 'button';
+            next.setAttribute('aria-label', 'Candidat suivant');
+            next.disabled = adminOgIndex >= adminOgCandidates.length - 1;
+            next.addEventListener('click', function () {
+                if (adminOgIndex >= adminOgCandidates.length - 1) return;
+                adminOgIndex += 1;
+                renderAdminOgNavigator();
+                selectQcmCandidate(adminOgCandidates[adminOgIndex]);
+            });
+            controls.append(previous, identity, next);
+            adminOgNavigator.append(controls);
         }
 
-        layout.append(sidebar, detail);
+        candidates.forEach(function (candidate) {
+            if (dashboardMode === 'admin' || isOgCandidate(candidate)) return;
+            var average = qcmAverage(candidate);
+            var results = qcmResults(candidate);
+            var button = node('button', 'og-qcm-candidate-button');
+            button.type = 'button';
+            button.append(node('strong', '', candidateName(candidate)));
+            button.append(node('span', '', (average === null ? 'Aucune note' : average.toFixed(2) + ' / 20') + ' · ' + results.length + ' résultat(s)'));
+            if (!firstVisibleQcmButton) firstVisibleQcmButton = button;
+            button.setAttribute('aria-pressed', 'false');
+            button.addEventListener('click', function () {
+                selectQcmCandidate(candidate, button);
+            });
+            list.append(button);
+        });
+
+        if (dashboardMode === 'admin' && ogList) {
+            adminOgNavigator = node('div', 'og-qcm-og-navigator');
+            ogList.append(adminOgNavigator);
+            renderAdminOgNavigator();
+            if (adminOgCandidates.length) selectQcmCandidate(adminOgCandidates[0]);
+        }
+        if (dashboardMode !== 'admin' || !adminOgCandidates.length) {
+            if (firstVisibleQcmButton) firstVisibleQcmButton.click();
+        }
+        if (!qcmCandidates.length) list.append(node('p', 'og-qcm-empty', 'Aucun candidat QCM-MAJOR disponible.'));
+        if (dashboardMode === 'admin' && !firstVisibleQcmButton && adminOgCandidates.length) {
+            selectQcmCandidate(adminOgCandidates[0]);
+        }
+        layout.append(list, detail);
         panel.append(layout);
         dialog.append(panel);
         dialog.addEventListener('click', function (event) {
@@ -516,7 +544,6 @@
         });
         document.body.append(dialog);
         dialog.showModal();
-        showCandidate(0);
     }
     // Fiche individuelle : données issues des sources DOCTRINE, sans dupliquer les statistiques QCM.
     // Les indicateurs de la fiche sont calculés à partir des événements et dépôts réellement chargés.
@@ -673,7 +700,8 @@
         closeButton.addEventListener('click', function () { dialog.close(); dialog.remove(); });
         header.append(heading, closeButton);
         panel.append(header);
-        var workspace = node('div', 'og-candidate-workspace');
+        var workspace = node('div', 'og-candidate-workspace og-admin-users-layout');
+        var sidebar = node('div', 'og-admin-users-sidebar');
         var regularCandidates = dashboardMode === 'admin' ? candidates.filter(function (candidate) { return !isOgCandidate(candidate); }) : candidates.slice();
         var ogCandidates = dashboardMode === 'admin' ? candidates.filter(isOgCandidate) : [];
         regularCandidates.sort(function (first, second) {
@@ -694,7 +722,7 @@
         current.append(currentName, currentStatus, currentPosition);
         var nextButton = node('button', 'og-candidate-stepper-arrow', '›');
         nextButton.type = 'button'; nextButton.setAttribute('aria-label', 'Candidat suivant');
-        navigator.append(previousButton, current, nextButton); group.append(navigator); workspace.append(group);
+        navigator.append(previousButton, current, nextButton); group.append(navigator); sidebar.append(group);
         var selectedIndex = 0;
         function showCandidate(index) {
             if (!regularCandidates.length) {
@@ -728,9 +756,9 @@
                 button.addEventListener('click', function () { renderCandidateProfileDetail(detail, candidate); }); ogCandidateList.append(button);
             });
             if (!ogCandidates.length) ogCandidateList.append(node('p', 'og-qcm-empty', 'Aucun Officier Guide.'));
-            ogGroupItems.append(ogCandidateList); ogGroup.append(ogGroupItems); workspace.append(ogGroup);
+            ogGroupItems.append(ogCandidateList); ogGroup.append(ogGroupItems); sidebar.append(ogGroup);
         }
-        workspace.append(detail); panel.append(workspace); showCandidate(0);
+        workspace.append(sidebar, detail); panel.append(workspace); showCandidate(0);
         dialog.append(panel);
         dialog.addEventListener('click', function (event) { if (event.target === dialog) { dialog.close(); dialog.remove(); } });
         document.body.append(dialog); dialog.showModal();
