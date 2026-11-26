@@ -447,27 +447,91 @@
             list.append(ogDetails);
         }
         var firstVisibleQcmButton = null;
-        candidates.forEach(function (candidate, index) {
+        var adminOgCandidates = dashboardMode === 'admin' ? candidates.filter(isOgCandidate) : [];
+        var adminOgIndex = 0;
+        var adminOgNavigator = null;
+
+        function selectQcmCandidate(candidate, selectedButton) {
+            list.querySelectorAll('.og-qcm-candidate-button').forEach(function (item) {
+                item.classList.remove('is-selected');
+                item.setAttribute('aria-pressed', 'false');
+            });
+            if (selectedButton) {
+                selectedButton.classList.add('is-selected');
+                selectedButton.setAttribute('aria-pressed', 'true');
+            }
+            renderQcmCandidateDetail(detail, candidate);
+        }
+
+        function renderAdminOgNavigator() {
+            if (!adminOgNavigator) return;
+            adminOgNavigator.replaceChildren();
+            if (!adminOgCandidates.length) {
+                adminOgNavigator.append(node('p', 'og-qcm-empty', 'Aucun candidat Officier Guide.'));
+                return;
+            }
+            var candidate = adminOgCandidates[adminOgIndex];
+            var average = qcmAverage(candidate);
+            var results = qcmResults(candidate);
+            var controls = node('div', 'og-qcm-og-navigation');
+            var previous = node('button', 'og-qcm-og-arrow', '‹');
+            previous.type = 'button';
+            previous.setAttribute('aria-label', 'Candidat Officier Guide précédent');
+            previous.disabled = adminOgIndex === 0;
+            previous.addEventListener('click', function () {
+                if (adminOgIndex <= 0) return;
+                adminOgIndex -= 1;
+                renderAdminOgNavigator();
+                selectQcmCandidate(adminOgCandidates[adminOgIndex]);
+            });
+            var identity = node('div', 'og-qcm-og-identity');
+            identity.append(
+                node('strong', '', candidateName(candidate)),
+                node('span', '', (average === null ? 'Aucune note' : average.toFixed(2) + ' / 20') +
+                    ' · ' + results.length + ' résultat(s)'),
+                node('small', '', 'Candidat ' + (adminOgIndex + 1) + ' / ' + adminOgCandidates.length)
+            );
+            var next = node('button', 'og-qcm-og-arrow', '›');
+            next.type = 'button';
+            next.setAttribute('aria-label', 'Candidat Officier Guide suivant');
+            next.disabled = adminOgIndex >= adminOgCandidates.length - 1;
+            next.addEventListener('click', function () {
+                if (adminOgIndex >= adminOgCandidates.length - 1) return;
+                adminOgIndex += 1;
+                renderAdminOgNavigator();
+                selectQcmCandidate(adminOgCandidates[adminOgIndex]);
+            });
+            controls.append(previous, identity, next);
+            adminOgNavigator.append(controls);
+        }
+
+        candidates.forEach(function (candidate) {
+            if (dashboardMode === 'admin' && isOgCandidate(candidate)) return;
             var average = qcmAverage(candidate);
             var results = qcmResults(candidate);
             var button = node('button', 'og-qcm-candidate-button');
             button.type = 'button';
             button.append(node('strong', '', candidateName(candidate)));
             button.append(node('span', '', (average === null ? 'Aucune note' : average.toFixed(2) + ' / 20') + ' · ' + results.length + ' résultat(s)'));
-            var targetList = dashboardMode === 'admin' && isOgCandidate(candidate) ? ogList : list;
-            if (!firstVisibleQcmButton && targetList === list) firstVisibleQcmButton = button;
+            if (!firstVisibleQcmButton) firstVisibleQcmButton = button;
             button.setAttribute('aria-pressed', 'false');
             button.addEventListener('click', function () {
-                list.querySelectorAll('.og-qcm-candidate-button').forEach(function (item) {
-                    item.classList.remove('is-selected'); item.setAttribute('aria-pressed', 'false');
-                });
-                button.classList.add('is-selected'); button.setAttribute('aria-pressed', 'true');
-                renderQcmCandidateDetail(detail, candidate);
+                selectQcmCandidate(candidate, button);
             });
-            targetList.append(button);
+            list.append(button);
         });
+
+        if (dashboardMode === 'admin' && ogList) {
+            adminOgNavigator = node('div', 'og-qcm-og-navigator');
+            ogList.append(adminOgNavigator);
+            renderAdminOgNavigator();
+            if (adminOgCandidates.length) selectQcmCandidate(adminOgCandidates[0]);
+        }
         if (firstVisibleQcmButton) firstVisibleQcmButton.click();
         if (!candidates.length) list.append(node('p', 'og-qcm-empty', 'Aucun candidat disponible.'));
+        if (dashboardMode === 'admin' && !firstVisibleQcmButton && adminOgCandidates.length) {
+            selectQcmCandidate(adminOgCandidates[0]);
+        }
         layout.append(list, detail);
         panel.append(layout);
         dialog.append(panel);
