@@ -1012,6 +1012,16 @@
         dialog.showModal();
         input.focus();
     }
+    function extractModuleProgressEvents(payload) {
+        return (payload && Array.isArray(payload.candidates) ? payload.candidates : []).reduce(function (all, candidate) {
+            var userId = candidate.candidate && candidate.candidate.id;
+            var events = candidate.doctrine && Array.isArray(candidate.doctrine.progress_events)
+                ? candidate.doctrine.progress_events : [];
+            return all.concat(events.map(function (event) {
+                return Object.assign({}, event, { user_id: userId });
+            }));
+        }, []);
+    }
     function moduleState(candidate, moduleId) {
         if (!moduleEventsAvailable) return { label: 'Non vérifiable', className: 'is-unknown' };
         var events = candidate.doctrine && Array.isArray(candidate.doctrine.progress_events)
@@ -2376,9 +2386,8 @@
                 return candidate.candidate && candidate.candidate.id;
             }).filter(Boolean);
         });
-        var progressRequest = idsRequest.then(function (ids) {
-            if (!ids.length) return [];
-            return api('doctrine_progress_events?select=user_id,module_id,event_type,created_at&user_id=in.(' + ids.map(encodeURIComponent).join(',') + ')&event_type=in.(module_started,module_completed)&module_id=in.(1,2,3,4,5,6,7)&order=created_at.desc');
+        var progressRequest = candidateRequest.then(function (payload) {
+            return extractModuleProgressEvents(payload);
         });
         var cvRequest = idsRequest.then(function (ids) {
             if (!ids.length) return [];
@@ -2477,9 +2486,10 @@
         }).filter(Boolean);
         if (!ids.length) return Promise.resolve();
         progressRefreshInFlight = true;
-        return api('doctrine_progress_events?select=user_id,module_id,event_type,created_at&user_id=in.(' +
-            ids.map(encodeURIComponent).join(',') + ')&event_type=in.(module_started,module_completed)&module_id=in.(1,2,3,4,5,6,7)&order=created_at.desc').then(function (events) {
-            var rows = Array.isArray(events) ? events : [];
+        return api('rpc/get_guide_candidate_dashboard', {
+            method: 'POST', body: { p_candidate_id: null }
+        }).then(function (payload) {
+            var rows = extractModuleProgressEvents(payload);
             candidates.forEach(function (candidate) {
                 candidate.doctrine = candidate.doctrine || {};
                 candidate.doctrine.progress_events = rows.filter(function (event) {
