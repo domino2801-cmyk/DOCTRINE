@@ -418,13 +418,14 @@
         target.append(historySection);
     }
         function openGuideQcmTracking() {
+        var qcmCandidates = dashboardMode === 'admin' ? candidates.filter(function (candidate) { return !isOgCandidate(candidate); }) : candidates;
         var dialog = node('dialog', 'og-qcm-tracking-dialog');
         var panel = node('section', 'og-qcm-tracking-panel');
         var header = node('header', 'og-qcm-tracking-header');
         var heading = node('div');
         heading.append(node('p', 'og-dashboard-kicker', dashboardMode === 'admin' ? 'ESPACE ADMINISTRATEUR / SUIVI GLOBAL' : 'ESPACE OFFICIER GUIDE / COHORTE'));
         heading.append(node('h2', '', 'Suivi QCM-MAJOR'));
-        heading.append(node('p', 'og-dashboard-muted', candidates.length + ' candidat(s) dans ' + dashboardScope()));
+        heading.append(node('p', 'og-dashboard-muted', qcmCandidates.length + ' candidat(s) dans ' + dashboardScope()));
         var closeButton = node('button', 'og-dashboard-close', 'Fermer');
         closeButton.type = 'button';
         closeButton.addEventListener('click', function () { dialog.close(); dialog.remove(); });
@@ -441,14 +442,14 @@
         if (dashboardMode === 'admin') {
             ogDetails = node('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group');
             ogDetails.open = true;
-            var ogSummary = node('summary', 'og-dashboard-candidate-group-heading', 'CANDIDATS OFFICIER GUIDE');
+            var ogSummary = node('summary', 'og-dashboard-candidate-group-heading', 'CANDIDATS QCM-MAJOR');
             ogDetails.append(ogSummary);
             ogList = node('div', 'og-dashboard-candidate-group-items');
             ogDetails.append(ogList);
             list.append(ogDetails);
         }
         var firstVisibleQcmButton = null;
-        var adminOgCandidates = dashboardMode === 'admin' ? candidates.slice() : [];
+        var adminOgCandidates = dashboardMode === 'admin' ? qcmCandidates : [];
         var adminOgIndex = 0;
         var adminOgNavigator = null;
 
@@ -468,7 +469,7 @@
             if (!adminOgNavigator) return;
             adminOgNavigator.replaceChildren();
             if (!adminOgCandidates.length) {
-                adminOgNavigator.append(node('p', 'og-qcm-empty', 'Aucun candidat Officier Guide.'));
+                adminOgNavigator.append(node('p', 'og-qcm-empty', 'Aucun candidat QCM-MAJOR disponible.'));
                 return;
             }
             var candidate = adminOgCandidates[adminOgIndex];
@@ -477,7 +478,7 @@
             var controls = node('div', 'og-qcm-og-navigation');
             var previous = node('button', 'og-qcm-og-arrow', '‹');
             previous.type = 'button';
-            previous.setAttribute('aria-label', 'Candidat Officier Guide précédent');
+            previous.setAttribute('aria-label', 'Candidat précédent');
             previous.disabled = adminOgIndex === 0;
             previous.addEventListener('click', function () {
                 if (adminOgIndex <= 0) return;
@@ -494,7 +495,7 @@
             );
             var next = node('button', 'og-qcm-og-arrow', '›');
             next.type = 'button';
-            next.setAttribute('aria-label', 'Candidat Officier Guide suivant');
+            next.setAttribute('aria-label', 'Candidat suivant');
             next.disabled = adminOgIndex >= adminOgCandidates.length - 1;
             next.addEventListener('click', function () {
                 if (adminOgIndex >= adminOgCandidates.length - 1) return;
@@ -507,7 +508,7 @@
         }
 
         candidates.forEach(function (candidate) {
-            if (dashboardMode === 'admin') return;
+            if (dashboardMode === 'admin' || isOgCandidate(candidate)) return;
             var average = qcmAverage(candidate);
             var results = qcmResults(candidate);
             var button = node('button', 'og-qcm-candidate-button');
@@ -531,7 +532,7 @@
         if (dashboardMode !== 'admin' || !adminOgCandidates.length) {
             if (firstVisibleQcmButton) firstVisibleQcmButton.click();
         }
-        if (!candidates.length) list.append(node('p', 'og-qcm-empty', 'Aucun candidat disponible.'));
+        if (!qcmCandidates.length) list.append(node('p', 'og-qcm-empty', 'Aucun candidat QCM-MAJOR disponible.'));
         if (dashboardMode === 'admin' && !firstVisibleQcmButton && adminOgCandidates.length) {
             selectQcmCandidate(adminOgCandidates[0]);
         }
