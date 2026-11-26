@@ -53,12 +53,21 @@
     function loadQuestions() {
         statusNode.textContent = 'Chargement de la banque QCM-MAJOR…';
         listNode.replaceChildren();
-        return api('rpc/get_admin_question_bank', {
-            method: 'POST',
-            body: { p_limit: 1000, p_offset: 0 },
-            prefer: 'return=representation'
-        }).then(function (rows) {
-            if (!Array.isArray(rows)) throw new Error('La banque de questions a renvoyé un format invalide.');
+
+        // Le RPC plafonne chaque réponse à 1 000 lignes : parcourir toutes les pages.
+        function loadPage(offset, collected) {
+            return api('rpc/get_admin_question_bank', {
+                method: 'POST',
+                body: { p_limit: 1000, p_offset: offset },
+                prefer: 'return=representation'
+            }).then(function (rows) {
+                if (!Array.isArray(rows)) throw new Error('La banque de questions a renvoyé un format invalide.');
+                var allRows = collected.concat(rows);
+                return rows.length === 1000 ? loadPage(offset + 1000, allRows) : allRows;
+            });
+        }
+
+        return loadPage(0, []).then(function (rows) {
             questions = rows.map(function (row) {
                 return {
                     id: String(row.id),
