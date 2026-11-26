@@ -691,6 +691,10 @@
     }
 
     document.addEventListener('doctrine:admin-fiches', function (event) {
+        if (event.detail === 'notifications') {
+            ouvrir('notifications');
+            return;
+        }
         if (event.detail === 'guide-retex' || event.detail === 'guide-signalements') {
             if (!auth() || !auth().estAdmin()) return;
             construire(); mode = event.detail; dialogue.hidden = false; chargerFichesGuide(event.detail);
