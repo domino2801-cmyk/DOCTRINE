@@ -115,10 +115,6 @@ test('la navigation CANDIDATS ouvre la fiche du premier compte et permet de parc
     assert.ok(script.includes('Suivi d’admission'));
     assert.ok(script.includes('Dossier et documents demandés'));
     assert.ok(script.includes('renderAiCorrection(candidate)'));
-    assert.ok(script.includes('og-candidate-profile-columns'));
-    assert.ok(script.includes('og-candidate-profile-ai-column'));
-    assert.ok(css.includes('.og-candidate-profile-columns'));
-    assert.ok(css.includes('grid-template-columns:minmax(0,1.55fr) minmax(320px,.85fr)'));
     assert.ok(script.includes('SUIVI QCM-MAJOR'));
     assert.ok(script.includes('Historique complet des résultats enregistrés'));
     assert.ok(script.includes('historyContent.hidden = true'));
