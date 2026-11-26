@@ -3355,7 +3355,11 @@
             pushEnableButton.type = 'button';
             pushEnableButton.setAttribute('aria-pressed', 'true');
             pushEnableButton.setAttribute('data-enabled', 'true');
-            pushEnableButton.title = 'Désactiver les notifications';
+            pushEnableButton.title = 'Gérer les notifications de cet appareil';
+            pushEnableButton.setAttribute('aria-pressed', 'false');
+            pushEnableButton.addEventListener('click', function () {
+                document.dispatchEvent(new CustomEvent('doctrine:admin-fiches', { detail: 'notifications' }));
+            });
             header.append(intro, pushEnableButton, closeButton);
         } else {
             header.append(intro, closeButton);
