@@ -467,7 +467,9 @@ test('la fiche candidat est alimentée par les sources réelles et expose les é
     assert.match(profile, /Documents transmis/);
     assert.doesNotMatch(profile, /doctrine\.documents|activité documentaire/i);
     assert.match(profile, /renderAiCorrection\(candidate\)/);
-    assert.match(script, /api\('doctrine_progress_events\?select=user_id,module_id,event_type,created_at/);
+    assert.match(script, /function extractModuleProgressEvents\(payload\)/);
+    assert.match(script, /rpc\/get_guide_candidate_dashboard/);
+    assert.doesNotMatch(script, /api\('doctrine_progress_events\?select=user_id,module_id,event_type,created_at/);
     assert.match(script, /api\('doctrine_candidate_cvs\?select=candidate_id,storage_path,original_filename,uploaded_at/);
     assert.match(script, /api\('candidate_admission_tracking\?on_conflict=candidate_id/);
     assert.doesNotMatch(profile, /Moyenne QCM|Tentatives QCM|qcmAverage\(/);
