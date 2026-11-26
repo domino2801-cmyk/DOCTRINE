@@ -3724,7 +3724,7 @@
         // Ouvrir aussi le tableau de bord si la session administrateur était
         // déjà restaurée avant l'initialisation de cet écran. Le paramètre
         // admin=1 reste pris en charge pour le bouton ADMIN ANC de QCM-MAJOR.
-        // La validation définitive des droits reste effectuée par adminAccess().
+        // La validation définitive des droits reste effectuée par adminAccess() côté serveur.
         if (adminLaunchRequested() || (auth() && auth().estAdmin())) openAdminDashboard();
         document.addEventListener('doctrine:logout', function () {
             stopProgressRefresh();
