@@ -340,7 +340,7 @@ test('la page principale recharge la version du tableau de bord contenant les bi
     assert.ok(html.includes('pdf-lib@1.17.1/dist/pdf-lib.min.js'));
     assert.ok(html.indexOf('pdf-lib@1.17.1/dist/pdf-lib.min.js') < html.indexOf('app/guide-dashboard.js'));
     assert.ok(script.includes("await import('./bm4-official-pdf.mjs')"));
-    assert.match(script, /libraryGrid\.append\(exerciseSection\)/);
+    assert.match(script, /libraryGrid\.append\(courseSection, exerciseSection\)/);
     assert.match(script, /BIBLIOTHÈQUE DES DOSSIERS D’EXERCICES ET CORRECTIONS/);
 });
 
