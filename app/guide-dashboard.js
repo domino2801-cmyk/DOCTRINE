@@ -1080,13 +1080,36 @@
             },
             guide: {
                 table: 'guide_retex_reports',
-                title: 'RETEX des Officiers Guides OG',
+                title: 'RETEX des Officiers Guides — Suivi BM4',
                 query: 'guide_retex_reports?select=id,user_id,guide_email,payload,priority,status,admin_response,created_at,updated_at&order=created_at.desc&limit=2000',
                 questions: [
-                    ['situation', 'Situation ou contexte'], ['problem', 'Problématique rencontrée'],
-                    ['facts', 'Faits constatés et conséquences'], ['actions', 'Mesures déjà prises'],
-                    ['lessons', 'Enseignements et bonnes pratiques'], ['improvements', 'Améliorations proposées'],
-                    ['priority', 'Priorité']
+                    ['cohort', 'Cohorte suivie'], ['candidate_count', 'Nombre de candidats accompagnés'], ['period', 'Période du RETEX'],
+                    ['ease', 'Q1 — Facilité d’utilisation de l’espace Officier Guide'],
+                    ['access', 'Q2 — Accessibilité des fonctionnalités de suivi'],
+                    ['features', 'Q3 — Fonctionnalités les plus utilisées'],
+                    ['tracking', 'Q4 — Suivi de la progression individuelle'],
+                    ['early_detection', 'Q5 — Repérage des candidats en difficulté'],
+                    ['difficulties', 'Q6 — Difficultés rencontrées par les candidats'],
+                    ['ai_help', 'Q7 — Utilité de l’assistance par IA'],
+                    ['ai_relevance', 'Q8 — Pertinence des observations et axes IA'],
+                    ['validation', 'Q9 — Pertinence de la validation finale Officier Guide'],
+                    ['global', 'Q10 — Apport global de l’application à la mission'],
+                    ['strength', 'Q11 — Principal point fort de l’application'],
+                    ['anomalies', 'Q12 — Difficultés ou anomalies rencontrées'],
+                    ['improvements', 'Q13 — Améliorations prioritaires souhaitées'],
+                    ['recommendation', 'Q14 — Recommandations pour l’accompagnement BM4']
+                ],
+                chartQuestions: [
+                    ['ease', 'Facilité d’utilisation'], ['access', 'Accessibilité des fonctionnalités'],
+                    ['features', 'Fonctionnalités utilisées'], ['tracking', 'Suivi des candidats'],
+                    ['early_detection', 'Repérage des difficultés'], ['difficulties', 'Difficultés des candidats'],
+                    ['ai_help', 'Utilité de l’assistance IA'], ['ai_relevance', 'Pertinence des retours IA'],
+                    ['validation', 'Validation Officier Guide'], ['global', 'Apport global de l’application']
+                ],
+                pdfChartQuestions: [
+                    ['ease', 'Facilité d’utilisation'], ['tracking', 'Suivi des candidats'],
+                    ['ai_help', 'Utilité de l’assistance IA'], ['validation', 'Validation Officier Guide'],
+                    ['global', 'Apport global de l’application']
                 ]
             }
         };
@@ -1110,7 +1133,7 @@
             heading.querySelector('h2').textContent = source.title;
             charts.replaceChildren();
             var chartColors = ['#4f7052', '#c9a227', '#2876a8', '#a63d3d', '#8060a8', '#3d9b8d', '#e17b22', '#777777'];
-            (activeSource === 'guide' ? [['priority', 'Priorité des signalements'], ['status', 'Statut de traitement']] : questions).forEach(function (question) {
+            (activeSource === 'guide' ? sources.guide.chartQuestions : questions).forEach(function (question) {
                 var counts = Object.create(null);
                 currentRows.forEach(function (row) {
                     var value = activeSource === 'guide' ? (row.payload || {})[question[0]] : row[question[0]];
@@ -1349,8 +1372,8 @@
                 report.write('<div class="page"><header><h1>' + escapeHtml(title) + '</h1><p class="subtitle">' + escapeHtml(subtitle) +
                     '</p><p class="meta">' + currentRows.length + ' retour(s) analysé(s) - édité le ' + escapeHtml(edited) +
                     ' - période du ' + escapeHtml(period) + '</p></header>' +
-                    makeChart(['priority', 'Priorité des signalements']) + makeChart(['status', 'Statut de traitement']) +
-                    '<span class="page-number">Page 1 / 2</span></div><div class="page"><header><h1>' +
+                    sources.guide.pdfChartQuestions.map(makeChart).join('') +
+                    '<span class="page-number">Page 1 / 2</span></div><div class="page"><header><h1>'
                     escapeHtml(title) + '</h1><p class="subtitle">' + escapeHtml(subtitle) +
                     '</p><p class="meta">' + currentRows.length + ' retour(s) analysé(s)</p></header>' + commentsSection() +
                     '<span class="page-number">Page 2 / 2</span></div>');
@@ -1387,8 +1410,9 @@
         function field(labelText, name, type, options) {
             var label = node('label', 'og-dashboard-feedback-field', labelText);
             var input;
-            if (type === 'select') {
+            if (type === 'select' || type === 'multiselect') {
                 input = document.createElement('select');
+                if (type === 'multiselect') { input.multiple = true; input.size = Math.min(5, (options || []).length); }
                 (options || []).forEach(function (option) {
                     var item = node('option', '', option[1]); item.value = option[0]; input.append(item);
                 });
@@ -1402,18 +1426,70 @@
             return input;
         }
         if (isRetex) {
-            field('Situation ou contexte', 'situation', 'textarea');
-            field('Problématique rencontrée', 'problem', 'select', [
-                ['', '— Choisir —'], ['accompagnement','Accompagnement du candidat'], ['echeances','Échéances et disponibilité'],
-                ['bm4','Attendus et préparation BM4'], ['communication','Communication / relationnel'],
-                ['outils','Outils numériques et suivi'], ['documentation','Documentation et consignes'],
-                ['coordination','Coordination des intervenants'], ['autre','Autre']
+            intro.textContent = 'Ce retour d’expérience porte sur l’utilisation de DOCTRINE pour accompagner les candidats BM4. Répondez à partir de votre pratique réelle ; vos observations permettront d’améliorer le suivi et les outils.';
+            form.append(node('h3', 'og-dashboard-feedback-section-title', 'Identification du suivi'));
+            field('Cohorte suivie', 'cohort', 'text');
+            field('Nombre de candidats accompagnés', 'candidate_count', 'select', [
+                ['', '— Choisir —'], ['1 candidat', '1 candidat'], ['2 à 5 candidats', '2 à 5 candidats'],
+                ['6 à 10 candidats', '6 à 10 candidats'], ['Plus de 10 candidats', 'Plus de 10 candidats']
             ]);
-            field('Faits constatés et conséquences', 'facts', 'textarea');
-            field('Mesures déjà prises', 'actions', 'textarea');
-            field('Enseignements et bonnes pratiques', 'lessons', 'textarea');
-            field('Améliorations proposées', 'improvements', 'textarea');
-            field('Priorité', 'priority', 'select', [['low','Faible'],['normal','Normale'],['high','Élevée']]);
+            field('Période du RETEX', 'period', 'text');
+            form.append(node('h3', 'og-dashboard-feedback-section-title', 'Utilisation de l’application'));
+            field('Q1. Comment évaluez-vous la facilité d’utilisation de l’espace Officier Guide ?', 'ease', 'select', [
+                ['', '— Choisir —'], ['Très facile', 'Très facile'], ['Facile', 'Facile'],
+                ['Moyennement facile', 'Moyennement facile'], ['Difficile', 'Difficile'], ['Très difficile', 'Très difficile']
+            ]);
+            field('Q2. Les fonctionnalités nécessaires au suivi sont-elles facilement accessibles ?', 'access', 'select', [
+                ['', '— Choisir —'], ['Oui, toutes', 'Oui, toutes'], ['La plupart', 'La plupart'],
+                ['Quelques-unes seulement', 'Quelques-unes seulement'], ['Non', 'Non']
+            ]);
+            field('Q3. Quelles fonctionnalités utilisez-vous le plus souvent ? (sélection multiple)', 'features', 'multiselect', [
+                ['Suivi QCM-MAJOR', 'Suivi QCM-MAJOR'], ['Progression des candidats', 'Progression des candidats'],
+                ['Consultation des fiches déposées', 'Consultation des fiches déposées'],
+                ['Correction assistée par IA', 'Correction assistée par IA'],
+                ['Validation des fiches proposition et oral', 'Validation des fiches proposition et oral'],
+                ['Bibliothèque cours et exercices', 'Bibliothèque cours et exercices'],
+                ['RETEX et signalements', 'RETEX et signalements']
+            ]);
+            form.append(node('h3', 'og-dashboard-feedback-section-title', 'Accompagnement des candidats BM4'));
+            field('Q4. L’application permet-elle de suivre efficacement la progression individuelle ?', 'tracking', 'select', [
+                ['', '— Choisir —'], ['Oui, pleinement', 'Oui, pleinement'], ['Oui, partiellement', 'Oui, partiellement'],
+                ['Difficilement', 'Difficilement'], ['Non', 'Non']
+            ]);
+            field('Q5. Les indicateurs permettent-ils d’identifier rapidement les candidats en difficulté ?', 'early_detection', 'select', [
+                ['', '— Choisir —'], ['Toujours', 'Toujours'], ['Souvent', 'Souvent'], ['Parfois', 'Parfois'], ['Jamais', 'Jamais']
+            ]);
+            field('Q6. Quelles difficultés rencontrez-vous chez les candidats ? (sélection multiple)', 'difficulties', 'multiselect', [
+                ['Connexion ou accès', 'Connexion ou accès'], ['Trouver les cours et exercices', 'Trouver les cours et exercices'],
+                ['Comprendre les consignes', 'Comprendre les consignes'], ['Résultats insuffisants aux QCM', 'Résultats insuffisants aux QCM'],
+                ['Rédaction de la fiche de proposition', 'Rédaction de la fiche de proposition'],
+                ['Préparation de la fiche support oral', 'Préparation de la fiche support oral'],
+                ['Manque d’assiduité ou de régularité', 'Manque d’assiduité ou de régularité'],
+                ['Aucun problème particulier', 'Aucun problème particulier'], ['Autre', 'Autre']
+            ]);
+            form.append(node('h3', 'og-dashboard-feedback-section-title', 'Correction et évaluation'));
+            field('Q7. L’assistance par IA est-elle utile pour corriger les fiches ?', 'ai_help', 'select', [
+                ['', '— Choisir —'], ['Très utile', 'Très utile'], ['Utile', 'Utile'],
+                ['Peu utile', 'Peu utile'], ['Inutile', 'Inutile'], ['Non utilisée', 'Non utilisée']
+            ]);
+            field('Q8. Les observations et axes d’amélioration de l’IA sont-ils pertinents ?', 'ai_relevance', 'select', [
+                ['', '— Choisir —'], ['Oui, tout à fait', 'Oui, tout à fait'], ['Oui, en partie', 'Oui, en partie'],
+                ['Peu pertinents', 'Peu pertinents'], ['Pas pertinents', 'Pas pertinents'], ['Sans objet', 'Sans objet']
+            ]);
+            field('Q9. La validation finale par l’Officier Guide vous paraît-elle adaptée ?', 'validation', 'select', [
+                ['', '— Choisir —'], ['Tout à fait', 'Tout à fait'], ['Oui, avec quelques ajustements', 'Oui, avec quelques ajustements'],
+                ['Non', 'Non']
+            ]);
+            form.append(node('h3', 'og-dashboard-feedback-section-title', 'Bilan et propositions'));
+            field('Q10. Globalement, l’application facilite-t-elle votre mission ?', 'global', 'select', [
+                ['', '— Choisir —'], ['Très largement', 'Très largement'], ['Oui, dans l’ensemble', 'Oui, dans l’ensemble'],
+                ['Partiellement', 'Partiellement'], ['Peu', 'Peu'], ['Pas du tout', 'Pas du tout']
+            ]);
+            field('Q11. Quel est le principal point fort de l’application ?', 'strength', 'textarea');
+            field('Q12. Quelles difficultés ou anomalies avez-vous rencontrées ?', 'anomalies', 'textarea');
+            field('Q13. Quelles améliorations vous semblent prioritaires ?', 'improvements', 'textarea');
+            field('Q14. Quelle recommandation feriez-vous pour améliorer l’accompagnement BM4 ?', 'recommendation', 'textarea');
+            field('Priorité du retour', 'priority', 'select', [['low','Faible'],['normal','Normale'],['high','Élevée']]);
         } else {
             field('Catégorie du signalement', 'category', 'select', [
                 ['', '— Choisir —'], ['accompagnement','Accompagnement'], ['comportement','Comportement / discipline'],
@@ -1439,10 +1515,20 @@
         form.addEventListener('submit', function (event) {
             event.preventDefault();
             var payload = {};
-            new FormData(form).forEach(function (value, key) { payload[key] = String(value).trim(); });
-            var requiredKeys = isRetex ? ['situation','problem','facts'] : ['category','facts','request'];
+            new FormData(form).forEach(function (value, key) {
+                var cleanValue = String(value).trim();
+                if (Object.prototype.hasOwnProperty.call(payload, key)) {
+                    if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
+                    payload[key].push(cleanValue);
+                } else {
+                    payload[key] = cleanValue;
+                }
+            });
+            var requiredKeys = isRetex ? ['ease','access','tracking','global'] : ['category','facts','request'];
             if (requiredKeys.some(function (key) { return !payload[key]; })) {
-                status.textContent = 'Renseignez au minimum le contexte, la catégorie et les faits ; pour un signalement, précisez aussi l’intervention attendue.';
+                status.textContent = isRetex
+                    ? 'Renseignez les réponses aux questions 1, 2, 4 et 10 avant de transmettre.'
+                    : 'Renseignez au minimum la catégorie, les faits et l’intervention attendue.';
                 return;
             }
             var token;
