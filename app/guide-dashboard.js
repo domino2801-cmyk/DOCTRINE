@@ -1109,6 +1109,7 @@
             currentRows = datasets[activeSource] || [];
             heading.querySelector('h2').textContent = source.title;
             charts.replaceChildren();
+            var chartColors = ['#4f7052', '#c9a227', '#2876a8', '#a63d3d', '#8060a8', '#3d9b8d', '#e17b22', '#777777'];
             questions.forEach(function (question) {
                 var counts = Object.create(null);
                 currentRows.forEach(function (row) {
@@ -1123,17 +1124,34 @@
                 var card = node('article', 'og-admin-retex-chart');
                 card.append(node('h3', '', question[1]));
                 var entries = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
-                if (!entries.length) card.append(node('p', 'og-dashboard-muted', 'Aucune réponse.'));
-                entries.forEach(function (label) {
-                    var count = counts[label];
-                    var line = node('div', 'og-admin-retex-bar-row');
-                    var track = node('span', 'og-admin-retex-bar-track');
-                    var bar = node('span', 'og-admin-retex-bar');
-                    bar.style.width = Math.max(2, count / Math.max(1, currentRows.length) * 100) + '%';
-                    track.append(bar);
-                    line.append(node('span', '', label), track, node('strong', '', String(count)));
-                    card.append(line);
-                });
+                if (!entries.length) {
+                    card.append(node('p', 'og-dashboard-muted', 'Aucune réponse.'));
+                } else {
+                    var total = entries.reduce(function (sum, label) { return sum + counts[label]; }, 0);
+                    var angle = 0;
+                    var stops = [];
+                    entries.forEach(function (label, index) {
+                        var next = angle + counts[label] / total * 360;
+                        stops.push(chartColors[index % chartColors.length] + ' ' + angle.toFixed(2) + 'deg ' + next.toFixed(2) + 'deg');
+                        angle = next;
+                    });
+                    var chartBody = node('div', 'og-admin-retex-chart-body');
+                    var pie = node('span', 'og-admin-retex-pie');
+                    pie.style.background = 'conic-gradient(' + stops.join(',') + ')';
+                    pie.setAttribute('role', 'img');
+                    pie.setAttribute('aria-label', 'Répartition des réponses pour ' + question[1]);
+                    var legend = node('div', 'og-admin-retex-legend');
+                    entries.forEach(function (label, index) {
+                        var line = node('div', 'og-admin-retex-legend-row');
+                        var swatch = node('span', 'og-admin-retex-swatch');
+                        swatch.style.backgroundColor = chartColors[index % chartColors.length];
+                        var percentage = Math.round(counts[label] / total * 100);
+                        line.append(swatch, node('span', '', label + ' : ' + counts[label] + ' (' + percentage + ' %)'));
+                        legend.append(line);
+                    });
+                    chartBody.append(pie, legend);
+                    card.append(chartBody);
+                }
                 charts.append(card);
             });
             responseList.replaceChildren();
@@ -1159,7 +1177,7 @@
             });
             var dates = currentRows.map(function (row) { return Date.parse(row.created_at); }).filter(Number.isFinite);
             meta.textContent = currentRows.length + ' RETEX enregistré(s).' +
-                (currentRows.length ? ' Période : ' + new Date(Math.min.apply(null, dates)).toLocaleDateString('fr-FR') +
+                (currentRows.length && dates.length ? ' Période : ' + new Date(Math.min.apply(null, dates)).toLocaleDateString('fr-FR') +
                     ' au ' + new Date(Math.max.apply(null, dates)).toLocaleDateString('fr-FR') : '');
             pdf.disabled = !currentRows.length;
             responsesTitle.textContent = 'Tous les retours enregistrés (' + currentRows.length + ')';
@@ -1206,7 +1224,8 @@
             var printable = window.open('', '_blank');
             if (!printable) { status.textContent = 'Autorisez les fenêtres contextuelles pour exporter le PDF.'; return; }
             var report = printable.document;
-            var printableCharts = questions.map(function (question) {
+            var chartColors = ['#4f7052', '#c9a227', '#2876a8', '#a63d3d', '#8060a8', '#3d9b8d', '#e17b22', '#777777'];
+            function makeChart(question) {
                 var counts = Object.create(null);
                 currentRows.forEach(function (row) {
                     var value = activeSource === 'guide' ? (row.payload || {})[question[0]] : row[question[0]];
@@ -1218,31 +1237,66 @@
                     });
                 });
                 var entries = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
-                return '<article><h3>' + escapeHtml(question[1]) + '</h3>' +
-                    (entries.length ? entries.map(function (label) {
-                        var count = counts[label];
-                        var percentage = Math.round(count / Math.max(1, currentRows.length) * 100);
-                        return '<p>' + escapeHtml(label) + ' — ' + count + ' (' + percentage + ' %)<br><span class="print-bar" style="display:block;width:' + percentage + '%;height:8px;background:#647d68"></span></p>';
-                    }).join('') : '<p>Aucune réponse.</p>') + '</article>';
-            }).join('');
-            var printableRows = currentRows.map(function (row, index) {
-                var identity = activeSource === 'guide' ? (row.guide_email || 'Officier Guide non identifié') : (row.pseudo || 'Anonyme');
-                return '<article><h2>Retour ' + (index + 1) + ' — ' + escapeHtml(identity) + '</h2><p>' +
-                    escapeHtml(row.created_at ? new Date(row.created_at).toLocaleString('fr-FR') : 'Date inconnue') +
-                    '</p><dl>' + questions.map(function (question) {
-                        return '<dt>' + escapeHtml(question[1]) + '</dt><dd>' + escapeHtml(answer(row, question[0])) + '</dd>';
-                    }).join('') + (activeSource === 'guide'
-                        ? '<dt>Statut de traitement</dt><dd>' + escapeHtml(answer(row, 'status')) +
-                            '</dd><dt>Réponse de l’administration</dt><dd>' + escapeHtml(answer(row, 'admin_response')) + '</dd>'
-                        : '<dt>Commentaire libre</dt><dd>' + escapeHtml(answer(row, 'comment')) + '</dd>') +
-                    '</dl></article>';
-            }).join('');
+                if (!entries.length) return '<section class="chart"><h2>' + escapeHtml(question[1]) + '</h2><p>Aucune réponse.</p></section>';
+                var total = entries.reduce(function (sum, label) { return sum + counts[label]; }, 0);
+                var angle = 0;
+                var stops = [];
+                entries.forEach(function (label, index) {
+                    var next = angle + counts[label] / total * 360;
+                    stops.push(chartColors[index % chartColors.length] + ' ' + angle.toFixed(2) + 'deg ' + next.toFixed(2) + 'deg');
+                    angle = next;
+                });
+                var legend = entries.map(function (label, index) {
+                    var percentage = Math.round(counts[label] / total * 100);
+                    return '<li><i style="background:' + chartColors[index % chartColors.length] + '"></i><span>' +
+                        escapeHtml(label) + ' : ' + counts[label] + ' (' + percentage + ' %)</span></li>';
+                }).join('');
+                return '<section class="chart"><h2>' + escapeHtml(question[1]) + '</h2><div class="chart-content">' +
+                    '<div class="pie" style="background:conic-gradient(' + stops.join(',') + ')"></div><ul>' + legend +
+                    '</ul></div></section>';
+            }
+            var dates = currentRows.map(function (row) { return Date.parse(row.created_at); }).filter(Number.isFinite);
+            var period = dates.length ? new Date(Math.min.apply(null, dates)).toLocaleDateString('fr-FR') +
+                ' au ' + new Date(Math.max.apply(null, dates)).toLocaleDateString('fr-FR') : 'Période non renseignée';
+            var edited = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+            var isQcm = activeSource === 'qcm';
+            var title = isQcm ? 'RETEX QCM-MAJOR.fr' : 'RETEX Officier Guide OG';
+            var subtitle = isQcm ? 'Synthèse pour le commandement' : 'Synthèse des retours Officiers Guides';
+            var chartPages = isQcm
+                ? '<div class="page page-one">' + questions.slice(0, 5).map(makeChart).join('') + '</div>' +
+                    '<div class="page page-two">' + questions.slice(5).map(makeChart).join('') + commentsSection() + '</div>'
+                : '<div class="page">' + questions.map(makeChart).join('') + commentsSection() + '</div>';
+            function commentsSection() {
+                if (!isQcm) return '';
+                var comments = currentRows.map(function (row) { return row.comment; })
+                    .filter(function (value) { return value !== null && value !== undefined && String(value).trim(); });
+                return '<section class="comments"><h2>Commentaires libres</h2>' +
+                    (comments.length ? comments.map(function (comment) { return '<p>' + escapeHtml(comment) + '</p>'; }).join('') :
+                        '<p>Aucun commentaire libre.</p>') + '</section>';
+            }
             report.open();
-            report.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>' + escapeHtml(source.title) +
-                '</title><style>body{font:14px Arial,sans-serif;color:#17231d;margin:28px}h1{font-size:22px}h2{font-size:17px;margin-top:24px}h3{font-size:15px}article{break-inside:avoid;border:1px solid #bbb;padding:12px;margin:12px 0}dt{font-weight:bold;margin-top:8px}dd{margin:2px 0 8px;white-space:pre-wrap}.print-bar{max-width:100%}</style></head><body><h1>' +
-                escapeHtml(source.title) + ' — Administration</h1><p>' + currentRows.length +
-                ' retour(s) enregistré(s)</p><h2>Statistiques et graphiques</h2>' + printableCharts +
-                '<h2>Réponses détaillées</h2>' + printableRows + '</body></html>');
+            report.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>' + escapeHtml(title) +
+                '</title><style>' +
+                '@page{size:A4;margin:15mm 15mm 14mm}*{box-sizing:border-box}body{font:9.5pt Arial,sans-serif;color:#111;margin:0}' +
+                '.page{position:relative;min-height:267mm;page-break-after:always}.page:last-child{page-break-after:auto}' +
+                'header{padding:0 0 5mm}h1{font-size:20pt;margin:0 0 2mm;font-weight:700}header .subtitle{font-size:12pt;margin:0 0 3mm}' +
+                'header .meta{font-size:9pt;margin:0 0 4mm;line-height:1.35}.chart{margin:0 0 4.5mm;break-inside:avoid}' +
+                '.chart h2,.comments h2{font-size:11pt;margin:0 0 2mm;padding:0 0 1.5mm;border-bottom:1px solid #c9c9c9}' +
+                '.chart-content{display:flex;align-items:flex-start;gap:7mm;min-height:34mm;padding:0 0 1mm}' +
+                '.pie{width:32mm;height:32mm;min-width:32mm;border-radius:50%;margin:0}' +
+                '.chart ul{list-style:none;margin:0;padding:1mm 0 0;flex:1}.chart li{display:flex;align-items:flex-start;gap:2mm;margin:0 0 1.1mm;font-size:9pt;line-height:1.2}' +
+                '.chart li i{display:block;width:3mm;height:3mm;min-width:3mm;margin-top:.4mm}' +
+                '.comments{margin-top:3mm;break-inside:avoid}.comments p{font-size:9pt;line-height:1.35;margin:0 3mm 3mm;white-space:pre-wrap}' +
+                '.page-one header{padding-top:0}.page-one .chart{margin-bottom:4mm}.page-two{padding-top:0}.page-two .chart{margin-bottom:5mm}' +
+                '.page-number{position:absolute;right:0;bottom:-7mm;font-size:8pt}' +
+                '</style></head><body>' +
+                '<div class="page page-one"><header><h1>' + escapeHtml(title) + '</h1><p class="subtitle">' + escapeHtml(subtitle) +
+                '</p><p class="meta">' + currentRows.length + ' retour(s) analysé(s) - édité le ' + escapeHtml(edited) +
+                ' - période du ' + escapeHtml(period) + '</p></header>' + (isQcm ? questions.slice(0, 5).map(makeChart).join('') :
+                    questions.map(makeChart).join('')) + '<span class="page-number">Page 1 / ' + (isQcm ? '2' : '1') + '</span></div>' +
+                (isQcm ? '<div class="page page-two">' + questions.slice(5).map(makeChart).join('') + commentsSection() +
+                    '<span class="page-number">Page 2 / 2</span></div>' : '') +
+                '</body></html>');
             report.close();
             printable.focus();
             printable.print();
