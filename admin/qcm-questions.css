@@ -1,0 +1,42 @@
+/* Gestion des questions QCM-MAJOR dans l'administration ANC. */
+.anc-qcm-overlay { position:fixed; inset:0; z-index:9600; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(3,9,6,.82); color:#e8efe8; }
+.anc-qcm-overlay[hidden], .anc-qcm-form[hidden] { display:none; }
+.anc-qcm-panel { box-sizing:border-box; width:min(1120px,100%); max-height:92vh; overflow:auto; padding:clamp(16px,3vw,28px); border:1px solid rgba(183,207,185,.32); border-radius:12px; background:#101c17; box-shadow:0 24px 80px rgba(0,0,0,.6); font:14px 'Helvetica Neue',Arial,sans-serif; }
+.anc-qcm-header { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding-bottom:18px; border-bottom:1px solid rgba(183,207,185,.2); }
+.anc-qcm-kicker { margin:0 0 7px; color:#d8b85b; font-size:11px; font-weight:800; letter-spacing:.13em; }
+.anc-qcm-header h2 { margin:0; color:#f2f5ee; font-size:clamp(21px,3vw,29px); }
+.anc-qcm-subtitle { margin:7px 0 0; color:#b8c8bb; }
+.anc-qcm-toolbar { display:grid; grid-template-columns:auto minmax(180px,1fr) minmax(190px,.65fr); gap:10px; margin:18px 0; }
+.anc-qcm-control { box-sizing:border-box; width:100%; min-width:0; padding:10px 11px; border:1px solid rgba(183,207,185,.35); border-radius:6px; background:#0b1510; color:#f2f5ee; font:inherit; }
+.anc-qcm-primary,.anc-qcm-secondary,.anc-qcm-danger { min-height:38px; padding:9px 13px; border:1px solid rgba(183,207,185,.35); border-radius:6px; background:#24382d; color:#eef5ef; font:inherit; font-weight:700; cursor:pointer; }
+.anc-qcm-primary { border-color:#829b77; background:#526b4e; }
+.anc-qcm-danger { border-color:rgba(231,128,112,.55); background:#482923; color:#ffe6df; }
+.anc-qcm-primary:disabled,.anc-qcm-secondary:disabled,.anc-qcm-danger:disabled { opacity:.55; cursor:wait; }
+.anc-qcm-status { min-height:20px; margin:10px 0; color:#c8dfc9; }
+.anc-qcm-list { display:grid; gap:10px; }
+.anc-qcm-question { min-width:0; padding:14px; border:1px solid rgba(183,207,185,.2); border-radius:8px; background:rgba(255,255,255,.035); }
+.anc-qcm-question-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.anc-qcm-question-heading strong { min-width:0; overflow-wrap:anywhere; color:#f2f5ee; }
+.anc-qcm-theme { flex:0 0 auto; color:#d8b85b; font-size:12px; }
+.anc-qcm-answers { margin:12px 0; padding-left:22px; color:#c5d1c7; }
+.anc-qcm-answers li { margin:4px 0; overflow-wrap:anywhere; }
+.anc-qcm-answers .is-correct { color:#d9edcf; }
+.anc-qcm-question-actions { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.anc-qcm-move-theme { width:auto; max-width:100%; }
+.anc-qcm-inactive,.anc-qcm-empty { color:#d8b85b; }
+.anc-qcm-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:18px 0; padding:16px; border:1px solid rgba(216,184,91,.35); border-radius:8px; background:rgba(216,184,91,.045); }
+.anc-qcm-form h3 { grid-column:1/-1; margin:0; color:#f2f5ee; }
+.anc-qcm-field { display:grid; gap:6px; min-width:0; color:#dce5dd; font-weight:700; }
+.anc-qcm-field:nth-of-type(2) { grid-column:1/-1; }
+.anc-qcm-field textarea { resize:vertical; }
+.anc-qcm-form-actions { grid-column:1/-1; display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px; }
+@media(max-width:700px) {
+ .anc-qcm-overlay { padding:6px; }
+ .anc-qcm-panel { max-height:96vh; padding:14px; }
+ .anc-qcm-header { align-items:flex-start; }
+ .anc-qcm-toolbar { grid-template-columns:1fr; }
+ .anc-qcm-form { grid-template-columns:1fr; }
+ .anc-qcm-field:nth-of-type(2),.anc-qcm-form h3,.anc-qcm-form-actions { grid-column:1; }
+ .anc-qcm-question-heading { display:grid; }
+ .anc-qcm-theme { white-space:normal; }
+}
