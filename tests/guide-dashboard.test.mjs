@@ -651,3 +651,21 @@ test('la consultation RETEX QCM-MAJOR est réservée aux administrateurs', () =>
     assert.match(script, /else openGuideFeedback\(definition\.kind\)/);
     assert.doesNotMatch(adminRetex, /guide_retex_reports/);
 });
+
+test('la consultation administrateur distingue les RETEX QCM-MAJOR et les RETEX des Officiers Guides OG', () => {
+    const start = script.indexOf('function openAdminRetex()');
+    const end = script.indexOf('function guideFeedbackDialog(kind)', start);
+    const adminRetex = script.slice(start, end);
+    assert.match(adminRetex, /RETEX QCM-MAJOR/);
+    assert.match(adminRetex, /RETEX Officier Guide OG/);
+    assert.match(adminRetex, /guide_retex_reports\?select=id,user_id,guide_email,payload,priority,status,admin_response,created_at,updated_at/);
+    assert.match(adminRetex, /retex_responses\?select=/);
+    assert.match(adminRetex, /row\.payload \|\| \{\}/);
+    assert.match(adminRetex, /Enseignements et bonnes pratiques/);
+    assert.match(adminRetex, /Réponse de l’administration/);
+    assert.match(adminRetex, /Exporter la synthèse en PDF/);
+    assert.match(adminRetex, /Statistiques et graphiques/);
+    assert.match(adminRetex, /adminAccess\(\)\.then\(function \(allowed\)/);
+    assert.match(adminRetex, /if \(!allowed \|\| dashboardMode !== 'admin'\)/);
+    assert.match(adminRetex, /responses\.hidden = false/);
+});
