@@ -10,7 +10,7 @@ test('Officier Guide conserve l’accès aux corrigés sans soumission', () => {
   assert.ok(proxy.includes('Les corrigés conservent leur contrôle dédié'));
 });
 test('les chemins parents et publications sont contrôlés pour tous les profils', () => {
-  for (const fragment of ['const chemin = await chaineParentsDrive','const accesBibliotheque = await accesBibliothequePubliee(chemin, false)','if (accesBibliotheque === false)','const supportHistorique = await supportsHistoriquesAutorises(chemin)']) assert.ok(proxy.includes(fragment), fragment);
+  for (const fragment of ['const chemin = await chaineParentsDrive','const accesBibliotheque = await accesBibliothequePubliee(chemin, candidat.admin)','if (accesBibliotheque === false)','const supportHistorique = await supportsHistoriquesAutorises(chemin)']) assert.ok(proxy.includes(fragment), fragment);
 });
 test('les candidats conservent le contrôle de transmission préalable', () => {
   for (const fragment of ['const requis = await dossierRequis(id, fichier.parents || [], jeton)','fichesTransmises(candidat.id)','Transmettez votre fiche du dossier']) assert.ok(proxy.includes(fragment), fragment);
