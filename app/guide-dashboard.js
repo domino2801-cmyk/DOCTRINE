@@ -2473,7 +2473,7 @@
             renderCourses();
             loadExerciseLibraries();
             if (results.every(function (result) { return result.status === 'fulfilled'; })) {
-                setStatus(candidates.length + ' candidat(s) suivi(s) · ' + courses.length + ' support(s) pédagogique(s) disponibles.');
+                setStatus('');
             } else if (results[2].status === 'rejected') {
                 setStatus('Suivi des modules indisponible : ' + results[2].reason.message, true);
             }
