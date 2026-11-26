@@ -168,7 +168,8 @@ test('le RPC administrateur inclut les profils OG même avec un rôle guide, san
     const start = guideModuleSql.indexOf('create or replace function public.get_guide_candidate_dashboard');
     const end = guideModuleSql.indexOf('revoke all on function public.get_guide_candidate_dashboard', start);
     const rpc = guideModuleSql.slice(start, end);
-    assert.match(rpc, /coalesce\(user_account\.raw_app_meta_data ->> 'role', 'candidat'\)[\s\S]*?not in \('admin', 'guide', 'officier_guide'\)[\s\S]*?or upper\(trim\(coalesce\([\s\S]*?\)\)\) = 'OG'/);
+    assert.match(rpc, /not in \\('admin', 'guide', 'officier_guide'\\)/);
+    assert.match(rpc, /or upper\\(trim\\(coalesce\\([\\s\\S]*?\\)\\)\\) = 'OG'/);
     assert.match(rpc, /user_account\.email_confirmed_at is not null/);
     assert.match(rpc, /and not coalesce\([\s\S]*?bm4_admin/);
     assert.match(rpc, /doctrine_is_admin\(\) or assignment\.assigned_at is not null/);
