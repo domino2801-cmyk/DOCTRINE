@@ -2023,7 +2023,7 @@
                     if (exercise.category) card.append(node('span', 'og-dashboard-library-category', exercise.category));
                     if (exercise.description) card.append(node('p', '', exercise.description));
                     var actions = node('div', 'og-dashboard-library-actions');
-                    var open = node('button', 'og-dashboard-download', 'Ouvrir l’exercice');
+                    var open = node('button', 'og-dashboard-download', 'Télécharger');
                     open.type = 'button';
                     open.addEventListener('click', function () {
                         openDriveInViewer(exercise.drive_url, exercise.title);
@@ -2058,7 +2058,7 @@
                                 '★'.repeat(correctionLevel) + ' · ' + EXERCISE_LEVELS[correctionLevel - 1].name));
                             var title = node('strong', '', correction.title);
                             var correctionActions = node('div', 'og-dashboard-library-actions');
-                            var link = node('button', 'og-dashboard-download', 'Visualiser la correction');
+                            var link = node('button', 'og-dashboard-download', 'Télécharger');
                             link.type = 'button';
                             link.addEventListener('click', function () {
                                 openDriveInViewer(correction.drive_url, correction.title);
@@ -2073,18 +2073,6 @@
                                 deleteCorrection.addEventListener('click', function () { deleteExerciseLibraryItem('correction', correction); });
                                 correctionActions.append(editCorrection, deleteCorrection);
                             }
-                            var downloadUrl = driveDownload(correction.drive_url);
-                            var download = node('a', 'og-dashboard-download og-dashboard-library-download', 'Télécharger la correction');
-                            if (downloadUrl) {
-                                download.href = downloadUrl;
-                                download.target = '_blank';
-                                download.rel = 'noopener noreferrer';
-                                download.setAttribute('download', '');
-                            } else {
-                                download.setAttribute('aria-disabled', 'true');
-                                download.textContent = 'Téléchargement indisponible';
-                            }
-                            correctionActions.append(download);
                             line.append(title, correctionActions);
                             if (correction.description) line.append(node('p', '', correction.description));
                             details.append(line);

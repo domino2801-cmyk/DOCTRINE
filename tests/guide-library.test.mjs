@@ -71,9 +71,12 @@ test('l’espace Officier Guide affiche uniquement les contenus publiés et leur
     assert.match(guide, /★★★ — Approfondissement/);
     assert.match(guide, /★★★★ — Défi/);
     assert.match(guide, /og-dashboard-library-correction-stars/);
-    assert.match(guide, /Visualiser la correction/);
-    assert.match(guide, /Télécharger la correction/);
-    assert.match(guide, /driveDownload\(correction\.drive_url\)/);
+    assert.match(guide, /node\('button', 'og-dashboard-download', 'Télécharger'\)/);
+    assert.match(guide, /node\('button', 'og-dashboard-download', 'Télécharger'\)/);
+    assert.match(guide, /openDriveInViewer\(exercise\.drive_url, exercise\.title\)/);
+    assert.match(guide, /openDriveInViewer\(correction\.drive_url, correction\.title\)/);
+    assert.doesNotMatch(guide, /driveDownload\(correction\.drive_url\)/);
+    assert.equal((guide.match(/node\('button', 'og-dashboard-download', 'Télécharger'\)/g) || []).length, 2);
     assert.match(guideCss, /\.og-dashboard-pedagogical-libraries/);
 });
 
