@@ -1171,6 +1171,7 @@
             qcmTab.setAttribute('aria-pressed', String(sourceKey === 'qcm'));
             guideTab.setAttribute('aria-pressed', String(sourceKey === 'guide'));
             status.textContent = 'Vérification des droits administrateur…';
+            responses.hidden = false;
             charts.replaceChildren();
             responseList.replaceChildren();
             pdf.disabled = true;
