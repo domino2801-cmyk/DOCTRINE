@@ -1071,11 +1071,7 @@
                 title: 'RETEX QCM-MAJOR',
                 query: 'retex_responses?select=*&order=created_at.desc,id.desc&limit=2000',
                 questions: [
-                    ['specialty', 'Spécialité BM4'], ['themes', 'Zones les plus ciblées'],
-                    ['navigation', 'Navigation dans la console'], ['design', 'Design visuel'],
-                    ['best_mode', 'Mode de combat le plus utile'], ['scoring_opinion', 'Barème d’évaluation'],
-                    ['used_report_form', 'Utilisation du signalement tactique'],
-                    ['recommendation', 'Recommandation de l’application']
+                    ['specialty', 'Spécialité BM4']
                 ]
             },
             guide: {
