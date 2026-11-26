@@ -178,11 +178,19 @@ Deno.serve(async request => {
             if (!record || typeof record !== "object" || Array.isArray(record)) {
                 return response({ error: "Invalid signalement event" }, 400);
             }
-            const signalementId = Number((record as Record<string, unknown>).id);
+            const rawSignalementId = (record as Record<string, unknown>).id;
             const reportTable = payload.table;
+            const isGuideReport = reportTable === "guide_signalements";
+            const signalementId = isGuideReport && typeof rawSignalementId === "string"
+                ? rawSignalementId
+                : Number(rawSignalementId);
+            const validSignalementId = isGuideReport
+                ? typeof signalementId === "string"
+                    && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(signalementId)
+                : Number.isSafeInteger(signalementId) && signalementId > 0;
             if (payload.type !== "INSERT" || payload.schema !== "public"
-                || (reportTable !== "doctrine_signalements" && reportTable !== "guide_signalements")
-                || !Number.isSafeInteger(signalementId) || signalementId <= 0) {
+                || (reportTable !== "doctrine_signalements" && !isGuideReport)
+                || !validSignalementId) {
                 return response({ error: "Invalid signalement event" }, 400);
             }
             const { data: signalement, error } = await database.from(reportTable)
