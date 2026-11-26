@@ -448,7 +448,7 @@
             list.append(ogDetails);
         }
         var firstVisibleQcmButton = null;
-        var adminOgCandidates = dashboardMode === 'admin' ? candidates.filter(isOgCandidate) : [];
+        var adminOgCandidates = dashboardMode === 'admin' ? candidates.slice() : [];
         var adminOgIndex = 0;
         var adminOgNavigator = null;
 
@@ -507,7 +507,7 @@
         }
 
         candidates.forEach(function (candidate) {
-            if (dashboardMode === 'admin' && isOgCandidate(candidate)) return;
+            if (dashboardMode === 'admin') return;
             var average = qcmAverage(candidate);
             var results = qcmResults(candidate);
             var button = node('button', 'og-qcm-candidate-button');
