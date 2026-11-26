@@ -863,6 +863,7 @@
             }
             card.addEventListener('click', function () {
                 if (definition.kind === 'signalement' && dashboardMode === 'admin') openAdminSignalements();
+                else if (definition.kind === 'retex' && dashboardMode === 'admin') openAdminRetex();
                 else openGuideFeedback(definition.kind);
             });
             metricsNode.append(card);
@@ -1020,6 +1021,137 @@
         dialog.addEventListener('close', function () { dialog.remove(); });
         dialog.showModal();
         load();
+    }
+
+    // Consultation du RETEX QCM-MAJOR : exclusivement réservée aux administrateurs.
+    function openAdminRetex() {
+        var dialog = node('dialog', 'og-dashboard-feedback-dialog og-dashboard-admin-retex-dialog');
+        var shell = node('section', 'og-dashboard-feedback-shell');
+        var header = node('header', 'og-dashboard-feedback-header');
+        var heading = node('div');
+        heading.append(node('p', 'og-dashboard-kicker', 'CONSULTATION ADMINISTRATEUR'));
+        heading.append(node('h2', '', 'Synthèse RETEX QCM-MAJOR'));
+        var close = node('button', 'og-dashboard-close', 'Fermer');
+        close.type = 'button';
+        close.addEventListener('click', function () { dialog.close(); });
+        header.append(heading, close);
+        var status = node('p', 'og-dashboard-feedback-status', 'Vérification des droits administrateur…');
+        status.setAttribute('role', 'status');
+        status.setAttribute('aria-live', 'polite');
+        var meta = node('p', 'og-dashboard-muted');
+        var charts = node('div', 'og-admin-retex-charts');
+        var responses = node('section', 'og-admin-retex-responses');
+        responses.append(node('h3', '', 'Tous les retours enregistrés'));
+        var responseList = node('div', 'og-admin-retex-response-list');
+        responses.append(responseList);
+        var actions = node('div', 'og-dashboard-ai-actions');
+        var pdf = node('button', 'og-dashboard-close og-dashboard-assign-primary', 'Exporter la synthèse en PDF');
+        pdf.type = 'button';
+        pdf.disabled = true;
+        actions.append(pdf);
+        shell.append(header, status, meta, charts, responses, actions);
+        dialog.append(shell);
+        root.append(dialog);
+        dialog.addEventListener('click', function (event) { if (event.target === dialog) dialog.close(); });
+        dialog.addEventListener('close', function () { dialog.remove(); });
+        dialog.showModal();
+
+        var questions = [
+            ['specialty', 'Spécialité BM4'], ['themes', 'Zones les plus ciblées'],
+            ['navigation', 'Navigation dans la console'], ['design', 'Design visuel'],
+            ['best_mode', 'Mode de combat le plus utile'], ['scoring_opinion', 'Barème d’évaluation'],
+            ['used_report_form', 'Utilisation du signalement tactique'],
+            ['recommendation', 'Recommandation de l’application']
+        ];
+        var rows = [];
+        function answer(row, field) {
+            var value = row[field];
+            return Array.isArray(value) ? value.filter(Boolean).join(', ') : (value == null || value === '' ? 'Non renseigné' : String(value));
+        }
+        function render() {
+            charts.replaceChildren();
+            questions.forEach(function (question) {
+                var counts = Object.create(null);
+                rows.forEach(function (row) {
+                    var value = row[question[0]];
+                    (Array.isArray(value) ? value : [value]).filter(Boolean).forEach(function (entry) {
+                        var label = String(entry);
+                        counts[label] = (counts[label] || 0) + 1;
+                    });
+                });
+                var card = node('article', 'og-admin-retex-chart');
+                card.append(node('h3', '', question[1]));
+                var entries = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
+                if (!entries.length) card.append(node('p', 'og-dashboard-muted', 'Aucune réponse.'));
+                entries.forEach(function (label) {
+                    var line = node('div', 'og-admin-retex-bar-row');
+                    var count = counts[label];
+                    var track = node('span', 'og-admin-retex-bar-track');
+                    var bar = node('span', 'og-admin-retex-bar');
+                    bar.style.width = Math.max(2, count / Math.max(1, rows.length) * 100) + '%';
+                    track.append(bar);
+                    line.append(node('span', '', label), track, node('strong', '', String(count)));
+                    card.append(line);
+                });
+                charts.append(card);
+            });
+            responseList.replaceChildren();
+            rows.forEach(function (row, index) {
+                var item = node('article', 'og-admin-retex-response');
+                item.append(node('h4', '', 'Retour ' + (index + 1) + ' — ' + (row.pseudo || 'Anonyme') +
+                    (row.specialty ? ' (' + row.specialty + ')' : '')));
+                item.append(node('p', 'og-dashboard-muted', 'Transmis le ' +
+                    (row.created_at ? new Date(row.created_at).toLocaleString('fr-FR') : 'Date inconnue')));
+                var details = node('dl');
+                questions.forEach(function (question) {
+                    details.append(node('dt', '', question[1]), node('dd', '', answer(row, question[0])));
+                });
+                details.append(node('dt', '', 'Commentaire libre'), node('dd', '', answer(row, 'comment')));
+                item.append(details);
+                responseList.append(item);
+            });
+            meta.textContent = rows.length + ' retour(s) RETEX enregistré(s).' +
+                (rows.length ? ' Période : ' + new Date(Math.min.apply(null, rows.map(function (row) { return Date.parse(row.created_at) || Date.now(); }))).toLocaleDateString('fr-FR') +
+                    ' au ' + new Date(Math.max.apply(null, rows.map(function (row) { return Date.parse(row.created_at) || Date.now(); }))).toLocaleDateString('fr-FR') : '');
+            pdf.disabled = !rows.length;
+        }
+        pdf.addEventListener('click', function () {
+            // L'export est déclenché par l'administrateur et utilise uniquement les données déjà autorisées.
+            var printable = window.open('', '_blank');
+            if (!printable) { status.textContent = 'Autorisez les fenêtres contextuelles pour exporter le PDF.'; return; }
+            var report = printable.document;
+            report.open();
+            report.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Synthèse RETEX QCM-MAJOR</title><style>body{font:14px Arial,sans-serif;color:#17231d;margin:28px}h1{font-size:22px}h2{font-size:17px;margin-top:24px}h3{font-size:15px}article{break-inside:avoid;border:1px solid #bbb;padding:12px;margin:12px 0}dt{font-weight:bold;margin-top:8px}dd{margin:2px 0 8px;white-space:pre-wrap} .bar{font-weight:bold}</style></head><body><h1>Synthèse RETEX QCM-MAJOR — Administration</h1><p>' + rows.length + ' retour(s) enregistré(s)</p>' +
+                rows.map(function (row, index) {
+                    return '<article><h2>Retour ' + (index + 1) + ' — ' + escapeHtml(row.pseudo || 'Anonyme') + '</h2><p>' +
+                        escapeHtml(row.created_at ? new Date(row.created_at).toLocaleString('fr-FR') : 'Date inconnue') +
+                        '</p><dl>' + questions.map(function (question) {
+                            return '<dt>' + escapeHtml(question[1]) + '</dt><dd>' + escapeHtml(answer(row, question[0])) + '</dd>';
+                        }).join('') + '<dt>Commentaire libre</dt><dd>' + escapeHtml(answer(row, 'comment')) + '</dd></dl></article>';
+                }).join('') + '</body></html>');
+            report.close();
+            printable.focus();
+            printable.print();
+        });
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, function (char) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+            });
+        }
+        adminAccess().then(function (allowed) {
+            if (!allowed || dashboardMode !== 'admin') throw new Error('Une session administrateur est requise.');
+            // Aucun appel à retex_responses n'est effectué avant cette validation.
+            return api('retex_responses?select=*&order=created_at.desc,id.desc&limit=2000');
+        }).then(function (data) {
+            if (!Array.isArray(data)) throw new Error('Réponse RETEX invalide.');
+            rows = data;
+            render();
+            status.textContent = '';
+        }).catch(function (error) {
+            status.textContent = 'Consultation RETEX refusée ou indisponible : ' + (error.message || 'erreur inconnue');
+            charts.replaceChildren();
+            responses.hidden = true;
+        });
     }
 
     function guideFeedbackDialog(kind) {
