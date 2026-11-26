@@ -107,7 +107,11 @@ test('la carte CANDIDATS ouvre la cohorte puis une fiche individuelle limitée a
     assert.match(script, /og-dashboard-candidate-group-heading/);
     assert.match(script, /og-dashboard-candidate-group-items/);
     assert.match(script, /renderCandidateProfileDetail\(detail, candidate\)/);
-    assert.match(script, /firstCandidateButton\.click\(\)/);
+    assert.match(script, /og-dashboard-search/);
+    assert.match(script, /Rechercher un candidat par pseudo, spécialité ou adresse e-mail/);
+    assert.match(script, /button\.dataset\.searchText/);
+    assert.match(script, /button\.hidden = !!query/);
+    assert.match(script, /Sélectionnez un compte dans la liste pour afficher sa fiche individuelle/);
     assert.match(script.slice(script.indexOf('function openGuideCandidates'), script.indexOf('function renderMetrics')), /if \(dashboardMode === 'admin'\) \{[\s\S]*?var ogGroup = node\('details', 'og-dashboard-candidate-group/);
     assert.match(script, /identity\.name \|\| 'Pseudo non renseigné'/);
     assert.match(script, /identity\.specialty, identity\.email/);
