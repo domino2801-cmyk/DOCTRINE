@@ -636,3 +636,19 @@ test('la carte Signalement admin affiche une pastille globale pour les trois ori
     assert.match(script, /setInterval\(function \(\) \{[\s\S]*?refreshAdminSignalementBadge\(signalementBadge\)/);
     assert.match(script, /pending === 0/);
 });
+
+test('la consultation RETEX QCM-MAJOR est réservée aux administrateurs', () => {
+    assert.match(script, /function openAdminRetex\(\)/);
+    const start = script.indexOf('function openAdminRetex()');
+    const end = script.indexOf('function guideFeedbackDialog(kind)', start);
+    const adminRetex = script.slice(start, end);
+    assert.match(adminRetex, /adminAccess\(\)\.then\(function \(allowed\)/);
+    assert.ok(adminRetex.indexOf('if (!allowed || dashboardMode !== \'admin\')') < adminRetex.indexOf("api('retex_responses?select=*"));
+    assert.match(adminRetex, /Consultation RETEX refusée ou indisponible/);
+    assert.match(adminRetex, /Exporter la synthèse en PDF/);
+    assert.match(adminRetex, /Tous les retours enregistrés/);
+    assert.match(script, /else if \(definition\.kind === 'retex' && dashboardMode === 'admin'\) openAdminRetex\(\)/);
+    assert.match(script, /else openGuideFeedback\(definition\.kind\)/);
+    assert.match(adminRetex, /guide_retex_reports/);
+    assert.doesNotMatch(adminRetex, /guide_retex_reports/);
+});
