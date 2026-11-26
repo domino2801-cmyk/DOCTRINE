@@ -1071,7 +1071,11 @@
                 title: 'RETEX QCM-MAJOR',
                 query: 'retex_responses?select=*&order=created_at.desc,id.desc&limit=2000',
                 questions: [
-                    ['specialty', 'Spécialité BM4']
+                    ['specialty', 'Spécialité BM4'], ['themes', 'Zones les plus ciblées'],
+                    ['navigation', 'Navigation dans la console'], ['design', 'Design visuel'],
+                    ['best_mode', 'Mode de combat le plus utile'], ['scoring_opinion', 'Barème d’évaluation'],
+                    ['used_report_form', 'Utilisation du signalement tactique'],
+                    ['recommendation', 'Recommandation de l’application']
                 ]
             },
             guide: {
@@ -1159,7 +1163,11 @@
                 item.append(node('p', 'og-dashboard-muted', 'Transmis le ' +
                     (row.created_at ? new Date(row.created_at).toLocaleString('fr-FR') : 'Date inconnue')));
                 var details = node('dl');
-                questions.forEach(function (question) {
+                questions.filter(function (question) {
+                    if (activeSource !== 'qcm') return true;
+                    return !['themes', 'navigation', 'design', 'best_mode', 'scoring_opinion',
+                        'used_report_form', 'recommendation'].includes(question[0]);
+                }).forEach(function (question) {
                     details.append(node('dt', '', question[1]), node('dd', '', answer(row, question[0])));
                 });
                 if (activeSource === 'guide') {
