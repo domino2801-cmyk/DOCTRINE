@@ -1949,6 +1949,17 @@
             .then(function () { form.hidden = true; return loadExerciseLibraries(); })
             .catch(function (error) { setStatus('Enregistrement impossible : ' + (error.message || 'erreur inconnue'), true); });
     }
+    function setExerciseLibraryPublished(type, item, published) {
+        if (dashboardMode !== 'admin') return;
+        var table = type === 'exercise' ? 'guide_exercise_library' : 'guide_correction_library';
+        api(table + '?id=eq.' + encodeURIComponent(item.id), {
+            method: 'PATCH',
+            prefer: 'return=representation',
+            body: { is_published: !!published, updated_at: new Date().toISOString() }
+        }).then(loadExerciseLibraries).catch(function (error) {
+            setStatus('Modification de la publication impossible : ' + (error.message || 'erreur inconnue'), true);
+        });
+    }
     function deleteExerciseLibraryItem(type, item) {
         if (dashboardMode !== 'admin') return;
         var label = type === 'exercise' ? 'ce dossier et ses corrections associées' : 'cette correction';
@@ -2020,6 +2031,9 @@
                     );
                     card.append(starsBadge);
                     card.append(node('h4', '', exercise.title));
+                    if (dashboardMode === 'admin' && !exercise.is_published) {
+                        card.append(node('span', 'og-dashboard-library-status is-disabled', 'Désactivé — non visible par les Officiers Guides'));
+                    }
                     if (exercise.category) card.append(node('span', 'og-dashboard-library-category', exercise.category));
                     if (exercise.description) card.append(node('p', '', exercise.description));
                     var actions = node('div', 'og-dashboard-library-actions');
@@ -2033,6 +2047,11 @@
                         var editExercise = node('button', 'og-dashboard-download', 'Modifier');
                         editExercise.type = 'button';
                         editExercise.addEventListener('click', function () { exerciseLibraryAdminForm('exercise', exercise); });
+                        var publishExercise = node('button', 'og-dashboard-download', exercise.is_published ? 'Désactiver' : 'Réactiver');
+                        publishExercise.type = 'button';
+                        publishExercise.addEventListener('click', function () {
+                            setExerciseLibraryPublished('exercise', exercise, !exercise.is_published);
+                        });
                         var deleteExercise = node('button', 'og-dashboard-download', 'Supprimer');
                         deleteExercise.type = 'button';
                         deleteExercise.addEventListener('click', function () { deleteExerciseLibraryItem('exercise', exercise); });
@@ -2042,7 +2061,7 @@
                             exerciseLibrarySelectedId = exercise.id;
                             exerciseLibraryAdminForm('correction', null);
                         });
-                        actions.append(editExercise, deleteExercise, addRelatedCorrection);
+                        actions.append(editExercise, publishExercise, deleteExercise, addRelatedCorrection);
                     }
                     var related = correctionLibraryItems.filter(function (correction) {
                         return correction.exercise_id === exercise.id;
@@ -2057,6 +2076,9 @@
                             line.append(node('span', 'og-dashboard-library-correction-stars',
                                 '★'.repeat(correctionLevel) + ' · ' + EXERCISE_LEVELS[correctionLevel - 1].name));
                             var title = node('strong', '', correction.title);
+                            if (dashboardMode === 'admin' && !correction.is_published) {
+                                title.append(node('span', 'og-dashboard-library-status is-disabled', ' · Désactivée'));
+                            }
                             var correctionActions = node('div', 'og-dashboard-library-actions');
                             var link = node('button', 'og-dashboard-download', 'Télécharger');
                             link.type = 'button';
@@ -2068,10 +2090,15 @@
                                 var editCorrection = node('button', 'og-dashboard-download', 'Modifier');
                                 editCorrection.type = 'button';
                                 editCorrection.addEventListener('click', function () { exerciseLibraryAdminForm('correction', correction); });
+                                var publishCorrection = node('button', 'og-dashboard-download', correction.is_published ? 'Désactiver' : 'Réactiver');
+                                publishCorrection.type = 'button';
+                                publishCorrection.addEventListener('click', function () {
+                                    setExerciseLibraryPublished('correction', correction, !correction.is_published);
+                                });
                                 var deleteCorrection = node('button', 'og-dashboard-download', 'Supprimer');
                                 deleteCorrection.type = 'button';
                                 deleteCorrection.addEventListener('click', function () { deleteExerciseLibraryItem('correction', correction); });
-                                correctionActions.append(editCorrection, deleteCorrection);
+                                correctionActions.append(editCorrection, publishCorrection, deleteCorrection);
                             }
                             line.append(title, correctionActions);
                             if (correction.description) line.append(node('p', '', correction.description));
@@ -2586,8 +2613,8 @@
         exerciseLibraryNode = node('div', 'og-dashboard-library');
         exerciseContent.append(exerciseLibraryNode);
         exerciseSection.append(exerciseContent);
-        // La bibliothèque Supports Drive reste visible pour les Officiers Guides,
-        // mais elle est masquée dans l'espace Administrateur.
+        // Supports Drive reste réservé aux Officiers Guides.
+        // La bibliothèque des exercices et corrections est commune aux deux espaces.
         if (dashboardMode !== 'admin') libraryGrid.append(courseSection);
         libraryGrid.append(exerciseSection);
 
