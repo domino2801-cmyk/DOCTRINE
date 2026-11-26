@@ -687,90 +687,71 @@
         var header = node('header', 'og-qcm-tracking-header');
         var heading = node('div');
         heading.append(node('p', 'og-dashboard-kicker', dashboardMode === 'admin' ? 'ESPACE ADMINISTRATEUR / SUIVI GLOBAL' : 'ESPACE OFFICIER GUIDE / COHORTE'));
-        heading.append(node('h2', '', dashboardMode === 'admin' ? 'COMPTES UTILISATEURS — TOUS LES COMPTES' : 'CANDIDATS — COHORTE RATTACHÉE'));
-        heading.append(node('p', 'og-dashboard-muted', 'Sélectionnez un candidat pour ouvrir sa fiche individuelle.'));
+        heading.append(node('h2', '', dashboardMode === 'admin' ? 'CANDIDATS — TOUS LES COMPTES' : 'CANDIDATS — COHORTE RATTACHÉE'));
+        heading.append(node('p', 'og-dashboard-muted', 'Utilisez les flèches pour passer d’un candidat à l’autre et afficher sa fiche individuelle.'));
         var closeButton = node('button', 'og-dashboard-close', 'Fermer');
         closeButton.type = 'button';
         closeButton.addEventListener('click', function () { dialog.close(); dialog.remove(); });
         header.append(heading, closeButton);
         panel.append(header);
-
-        // La liste est affichée immédiatement, sans écran d’accordéon intermédiaire.
         var workspace = node('div', 'og-candidate-workspace');
-        var group = node('details', 'og-dashboard-candidate-group og-dashboard-admin-candidate-group');
-        var regularCandidates = dashboardMode === 'admin' ? candidates.filter(function (candidate) { return !isOgCandidate(candidate); }) : candidates;
+        var regularCandidates = dashboardMode === 'admin' ? candidates.filter(function (candidate) { return !isOgCandidate(candidate); }) : candidates.slice();
         var ogCandidates = dashboardMode === 'admin' ? candidates.filter(isOgCandidate) : [];
-        var regularSummary = node('summary', 'og-dashboard-candidate-group-heading',
-            (dashboardMode === 'admin' ? 'CANDIDATS HORS OG — ' : 'TOUS — ') + regularCandidates.length + ' compte(s)');
-        group.append(regularSummary);
-        var groupItems = node('div', 'og-dashboard-candidate-group-items');
-        var list = node('nav', 'og-qcm-candidate-list');
-        list.setAttribute('aria-label', dashboardMode === 'admin' ? 'Candidats hors spécialité OG' : 'Tous les candidats de ma cohorte');
-        var searchInput = node('input', 'og-dashboard-search');
-        searchInput.type = 'search';
-        searchInput.placeholder = 'Rechercher un candidat par pseudo, spécialité ou adresse e-mail';
-        searchInput.setAttribute('aria-label', 'Rechercher un candidat');
+        regularCandidates.sort(function (first, second) {
+            var a = first.candidate || {}; var b = second.candidate || {};
+            return String(a.pseudo || a.name || a.email || '').localeCompare(String(b.pseudo || b.name || b.email || ''), 'fr', { sensitivity: 'base' });
+        });
+        var group = node('section', 'og-dashboard-candidate-group og-dashboard-admin-candidate-group');
+        group.append(node('div', 'og-dashboard-candidate-group-heading', (dashboardMode === 'admin' ? 'CANDIDATS QCM-MAJOR — ' : 'CANDIDATS DE LA COHORTE — ') + regularCandidates.length + ' candidat(s)'));
         var detail = node('section', 'og-qcm-candidate-detail og-candidate-profile-detail');
         detail.setAttribute('aria-live', 'polite');
-        detail.append(node('p', 'og-dashboard-muted', 'Sélectionnez un compte dans la liste pour afficher sa fiche individuelle.'));
-        function appendCandidateButton(candidate, targetList) {
-            var identity = candidate.candidate || {};
-            var button = node('button', 'og-qcm-candidate-button');
-            button.type = 'button';
-            var identityRow = node('span', 'og-qcm-candidate-identity');
-            identityRow.append(node('strong', '', identity.name || 'Pseudo non renseigné'));
-            var followUp = candidateFollowUpStatus(candidate);
-            identityRow.append(node('span', 'og-candidate-follow-up-status ' + followUp.className, followUp.label));
-            button.append(identityRow);
-            button.append(node('span', '', [identity.specialty, identity.email].filter(Boolean).join(' · ') || 'Profil à compléter'));
-            button.dataset.searchText = [identity.name, identity.specialty, identity.email].filter(Boolean).join(' ').toLocaleLowerCase('fr');
-            button.setAttribute('aria-pressed', 'false');
-            button.addEventListener('click', function () {
-                workspace.querySelectorAll('.og-qcm-candidate-button').forEach(function (item) {
-                    item.classList.remove('is-selected');
-                    item.setAttribute('aria-pressed', 'false');
-                });
-                button.classList.add('is-selected');
-                button.setAttribute('aria-pressed', 'true');
-                renderCandidateProfileDetail(detail, candidate);
-            });
-            targetList.append(button);
+        var navigator = node('div', 'og-candidate-stepper');
+        var previousButton = node('button', 'og-candidate-stepper-arrow', '‹');
+        previousButton.type = 'button'; previousButton.setAttribute('aria-label', 'Candidat précédent');
+        var current = node('div', 'og-candidate-stepper-current');
+        var currentName = node('strong', 'og-candidate-stepper-name', 'Aucun candidat');
+        var currentStatus = node('span', 'og-candidate-stepper-status', 'Aucun compte à afficher');
+        var currentPosition = node('span', 'og-candidate-stepper-position', 'Candidat 0 / 0');
+        current.append(currentName, currentStatus, currentPosition);
+        var nextButton = node('button', 'og-candidate-stepper-arrow', '›');
+        nextButton.type = 'button'; nextButton.setAttribute('aria-label', 'Candidat suivant');
+        navigator.append(previousButton, current, nextButton); group.append(navigator); workspace.append(group);
+        var selectedIndex = 0;
+        function showCandidate(index) {
+            if (!regularCandidates.length) {
+                currentName.textContent = 'Aucun candidat'; currentStatus.textContent = 'Aucun compte à afficher'; currentPosition.textContent = 'Candidat 0 / 0';
+                previousButton.disabled = true; nextButton.disabled = true;
+                detail.replaceChildren(node('p', 'og-qcm-empty', 'Aucun candidat n’est disponible.')); return;
+            }
+            selectedIndex = Math.max(0, Math.min(index, regularCandidates.length - 1));
+            var candidate = regularCandidates[selectedIndex]; var identity = candidate.candidate || {};
+            var dossierCount = submissions(candidate).length;
+            currentName.textContent = identity.pseudo || identity.name || identity.email || 'Pseudo non renseigné';
+            currentStatus.textContent = dossierCount ? dossierCount + ' fiche(s) soumise(s) · ' + dossierCount + ' résultat(s)' : 'Aucune fiche soumise · 0 résultat(s)';
+            currentPosition.textContent = 'Candidat ' + (selectedIndex + 1) + ' / ' + regularCandidates.length;
+            previousButton.disabled = selectedIndex === 0; nextButton.disabled = selectedIndex === regularCandidates.length - 1;
+            renderCandidateProfileDetail(detail, candidate);
         }
-        regularCandidates.forEach(function (candidate) { appendCandidateButton(candidate, list); });
-        if (!regularCandidates.length) list.append(node('p', 'og-qcm-empty', dashboardMode === 'admin' ? 'Aucun candidat hors spécialité OG.' : 'Aucun candidat n’est rattaché à votre cohorte.'));
-        groupItems.append(searchInput, list);
-        group.append(groupItems);
-        workspace.append(group);
+        previousButton.addEventListener('click', function () { showCandidate(selectedIndex - 1); });
+        nextButton.addEventListener('click', function () { showCandidate(selectedIndex + 1); });
         if (dashboardMode === 'admin') {
             var ogGroup = node('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group');
             ogGroup.append(node('summary', 'og-dashboard-candidate-group-heading', 'OFFICIERS GUIDES — ' + ogCandidates.length + ' compte(s)'));
             var ogGroupItems = node('div', 'og-dashboard-candidate-group-items');
-            var ogCandidateList = node('nav', 'og-qcm-candidate-list');
-            ogCandidateList.setAttribute('aria-label', 'Officiers Guides');
-            ogCandidates.forEach(function (candidate) { appendCandidateButton(candidate, ogCandidateList); });
-            if (!ogCandidates.length) ogCandidateList.append(node('p', 'og-qcm-empty', 'Aucun candidat Officier Guide.'));
-            ogGroupItems.append(ogCandidateList);
-            ogGroup.append(ogGroupItems);
-            workspace.append(ogGroup);
-        }
-        workspace.append(detail);
-        panel.append(workspace);
-        searchInput.addEventListener('input', function () {
-            var query = searchInput.value.trim().toLocaleLowerCase('fr');
-            if (query) {
-                group.open = true;
-                if (ogGroup) ogGroup.open = true;
-            }
-            workspace.querySelectorAll('.og-qcm-candidate-button').forEach(function (button) {
-                button.hidden = !!query && !button.dataset.searchText.includes(query);
+            var ogCandidateList = node('nav', 'og-qcm-candidate-list'); ogCandidateList.setAttribute('aria-label', 'Officiers Guides');
+            ogCandidates.forEach(function (candidate) {
+                var identity = candidate.candidate || {}; var button = node('button', 'og-qcm-candidate-button'); button.type = 'button';
+                button.append(node('strong', '', identity.pseudo || identity.name || identity.email || 'Pseudo non renseigné'));
+                button.append(node('span', '', identity.email || identity.specialty || 'Profil à compléter'));
+                button.addEventListener('click', function () { renderCandidateProfileDetail(detail, candidate); }); ogCandidateList.append(button);
             });
-        });
+            if (!ogCandidates.length) ogCandidateList.append(node('p', 'og-qcm-empty', 'Aucun Officier Guide.'));
+            ogGroupItems.append(ogCandidateList); ogGroup.append(ogGroupItems); workspace.append(ogGroup);
+        }
+        workspace.append(detail); panel.append(workspace); showCandidate(0);
         dialog.append(panel);
-        dialog.addEventListener('click', function (event) {
-            if (event.target === dialog) { dialog.close(); dialog.remove(); }
-        });
-        document.body.append(dialog);
-        dialog.showModal();
+        dialog.addEventListener('click', function (event) { if (event.target === dialog) { dialog.close(); dialog.remove(); } });
+        document.body.append(dialog); dialog.showModal();
     }
 
     function renderMetrics() {
