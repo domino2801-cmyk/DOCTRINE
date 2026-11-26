@@ -21,7 +21,9 @@ test('la carte de proposition est placée sous la bibliothèque d’exercices sa
     const card = guide.slice(cardStart, cardEnd);
     assert.ok(cardStart >= 0 && cardEnd > cardStart, 'la carte doit être insérée sous les deux bibliothèques');
     assert.match(index, /app\/guide-dashboard\.js/);
-    assert.match(guide, /if \(dashboardMode === 'admin'\) libraryGrid\.append\(courseSection\)/);\n    assert.match(guide, /libraryGrid\.append\(exerciseSection\)/);\n    assert.doesNotMatch(guide, /libraryGrid\.append\(courseSection, exerciseSection\)/);
+    assert.match(guide, /if \(dashboardMode === 'admin'\) libraryGrid\.append\(courseSection\)/);
+    assert.match(guide, /libraryGrid\.append\(exerciseSection\)/);
+    assert.doesNotMatch(guide, /libraryGrid\.append\(courseSection, exerciseSection\)/);
     assert.match(guide, /libraryGrid\.append\(proposalEntry\)/);
     assert.match(guide, /PROPOSITION DE DOCUMENTS À AJOUTER POUR LES CANDIDATS/);
     assert.match(guide, /Titre du document/);
