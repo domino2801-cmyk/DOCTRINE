@@ -573,8 +573,11 @@ test('la bibliothèque exercices et corrections est commune, avec gestion admin 
     const start = script.indexOf("var libraryGrid = node('div', 'og-dashboard-pedagogical-libraries')");
     const end = script.indexOf('// Carte de proposition documentaire', start);
     const libraries = script.slice(start, end);
-    assert.match(libraries, /if \(dashboardMode !== 'admin'\) libraryGrid\.append\(courseSection\)/);
-    assert.match(libraries, /libraryGrid\.append\(exerciseSection\)/);
+    assert.match(libraries, /libraryGrid\.append\(courseSection, exerciseSection\)/);
+    assert.match(libraries, /6 catégories · Supports consultables et téléchargeables\./);
+    assert.match(script, /if \(dashboardMode === 'admin'\) \{[\s\S]*?\+ Ajouter un cours/);
+    assert.match(script, /if \(dashboardMode === 'admin'\) \{[\s\S]*?'Modifier'/);
+    assert.match(script, /if \(dashboardMode === 'admin'\) \{[\s\S]*?'Supprimer'/);
     assert.match(script, /if \(root && root\.dataset\.dashboardMode === dashboardMode\) return/);
     assert.match(script, /root\.dataset\.dashboardMode = dashboardMode/);
     assert.match(script, /exerciseSection\.id = 'ogExerciseLibraryEntry'/);
