@@ -2378,7 +2378,7 @@
         });
         var progressRequest = idsRequest.then(function (ids) {
             if (!ids.length) return [];
-            return api('doctrine_progress_events?select=user_id,module_id,event_type,created_at&user_id=in.(' + ids.join(',') + ')&order=created_at.desc');
+            return api('doctrine_progress_events?select=user_id,module_id,event_type,created_at&user_id=in.(' + ids.map(encodeURIComponent).join(',') + ')&event_type=in.(module_started,module_completed)&module_id=in.(1,2,3,4,5,6,7)&order=created_at.desc');
         });
         var cvRequest = idsRequest.then(function (ids) {
             if (!ids.length) return [];
@@ -2478,7 +2478,7 @@
         if (!ids.length) return Promise.resolve();
         progressRefreshInFlight = true;
         return api('doctrine_progress_events?select=user_id,module_id,event_type,created_at&user_id=in.(' +
-            ids.map(encodeURIComponent).join(',') + ')&order=created_at.desc').then(function (events) {
+            ids.map(encodeURIComponent).join(',') + ')&event_type=in.(module_started,module_completed)&module_id=in.(1,2,3,4,5,6,7)&order=created_at.desc').then(function (events) {
             var rows = Array.isArray(events) ? events : [];
             candidates.forEach(function (candidate) {
                 candidate.doctrine = candidate.doctrine || {};
