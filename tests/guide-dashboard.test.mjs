@@ -561,3 +561,16 @@ test('le suivi QCM-MAJOR global exclut les 8 profils Officier Guide du total des
     assert.match(tracking, /dashboardMode === 'admin' \|\| isOgCandidate\(candidate\)/);
     assert.match(tracking, /CANDIDATS QCM-MAJOR/);
 });
+
+
+test('la navigation globale des candidats utilise les flèches précédent et suivant comme QCM-MAJOR', () => {
+    const start = script.indexOf('function openGuideCandidates()');
+    const end = script.indexOf('function renderMetrics()', start);
+    const navigation = script.slice(start, end);
+    assert.match(navigation, /og-candidate-stepper/);
+    assert.match(navigation, /Candidat précédent/);
+    assert.match(navigation, /Candidat suivant/);
+    assert.match(navigation, /showCandidate\(selectedIndex - 1\)/);
+    assert.match(navigation, /showCandidate\(selectedIndex \+ 1\)/);
+    assert.match(navigation, /Candidat ' \+ \(selectedIndex \+ 1\) \+ ' \/ '/);
+});
