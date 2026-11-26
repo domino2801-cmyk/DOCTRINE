@@ -949,3 +949,21 @@ body.og-guide-entry-only #guideDashboardNav > button {
 .og-admin-retex-tab { min-height:42px; padding:9px 14px; border:1px solid rgba(216,184,91,.45); border-radius:7px; background:rgba(255,255,255,.04); color:#e9eee7; font:inherit; font-weight:750; cursor:pointer; }
 .og-admin-retex-tab.is-active,.og-admin-retex-tab[aria-pressed="true"] { background:#d8b85b; border-color:#d8b85b; color:#1c2a20; }
 .og-admin-retex-tab:focus-visible { outline:2px solid #e6c96f; outline-offset:2px; }
+
+
+/* Graphiques RETEX en secteurs et légende : reproduction du rapport de référence. */
+.og-admin-retex-chart-body { display:grid; grid-template-columns:126px minmax(0,1fr); align-items:center; gap:16px; min-width:0; }
+.og-admin-retex-pie { display:block; width:126px; height:126px; min-width:126px; border-radius:50%; }
+.og-admin-retex-legend { display:grid; gap:6px; min-width:0; }
+.og-admin-retex-legend-row { display:grid; grid-template-columns:10px minmax(0,1fr); align-items:start; gap:8px; color:#f2f5ee; font-size:12px; line-height:1.35; }
+.og-admin-retex-swatch { display:block; width:10px; height:10px; margin-top:2px; }
+.og-admin-retex-chart { background:rgba(255,255,255,.025); }
+@media(max-width:700px) {
+  .og-admin-retex-chart-body { grid-template-columns:108px minmax(0,1fr); gap:12px; }
+  .og-admin-retex-pie { width:108px; height:108px; min-width:108px; }
+  .og-admin-retex-legend-row { font-size:11px; }
+}
+@media(max-width:390px) {
+  .og-admin-retex-chart-body { grid-template-columns:1fr; }
+  .og-admin-retex-pie { margin:0 auto; }
+}
