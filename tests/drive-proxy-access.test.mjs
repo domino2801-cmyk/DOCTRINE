@@ -15,7 +15,7 @@ test('drive-proxy identifie un Officier Guide depuis le rôle sécurisé et la s
 
 test('un Officier Guide peut consulter les corrigés sans soumission préalable', () => {
     assert.match(proxy, /!candidat\.admin && !candidat\.officierGuide && requis !== null/);
-    assert.match(proxy, /La règle de transmission préalable ne concerne que les candidats/);
+    assert.match(proxy, /Les corrigés conservent leur contrôle dédié/);
 });
 
 test('les contrôles de publication restent obligatoires pour les Officiers Guides', () => {
