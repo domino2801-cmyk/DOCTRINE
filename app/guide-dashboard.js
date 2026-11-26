@@ -550,12 +550,6 @@
     // Les indicateurs de la fiche sont calculés à partir des événements et dépôts réellement chargés.
     function renderCandidateProfileDetail(target, candidate) {
         target.replaceChildren();
-        var profileColumns = node('div', 'og-candidate-profile-columns');
-        var profileMain = node('div', 'og-candidate-profile-main');
-        var profileAi = node('aside', 'og-candidate-profile-ai-column');
-        profileColumns.append(profileMain, profileAi);
-        target.append(profileColumns);
-        target = profileMain;
         var identity = candidate.candidate || {};
         var pseudo = String(identity.pseudo || identity.name || '').trim() || 'Pseudo non renseigné';
         var doctrine = candidate.doctrine || {};
@@ -684,8 +678,8 @@
             content.append(documents);
         });
 
-        // La correction IA reste dans une colonne dédiée à droite de la fiche.
-        profileAi.append(renderAiCorrection(candidate));
+        // La correction IA apparaît immédiatement sous « Dossier et documents demandés ».
+        target.append(renderAiCorrection(candidate));
     }
 
     function openGuideCandidates() {
