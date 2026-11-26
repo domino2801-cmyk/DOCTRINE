@@ -680,6 +680,9 @@ test('la consultation administrateur distingue les RETEX QCM-MAJOR et les RETEX 
     assert.match(adminRetex, /Facilité d’utilisation/);
     assert.match(adminRetex, /Suivi des candidats/);
     assert.match(adminRetex, /Retours détaillés des Officiers Guides/);
+    assert.match(adminRetex, /sources\.guide\.chartQuestions\.some/);
+    assert.match(adminRetex, /question\[0\] === chartQuestion\[0\]/);
+    assert.match(adminRetex, /pdfChartQuestions\.map\(makeChart\)/);
     assert.match(adminRetex, /Statut de traitement/);
     assert.match(adminRetex, /Réponse de l’administration/);
     assert.match(adminRetex, /adminAccess\(\)\.then\(function \(allowed\)/);
