@@ -108,6 +108,9 @@ test('la carte CANDIDATS ouvre la cohorte puis une fiche individuelle limitée a
     assert.match(script, /og-dashboard-candidate-group-items/);
     assert.match(script, /renderCandidateProfileDetail\(detail, candidate\)/);
     assert.match(script, /og-dashboard-search/);
+    assert.match(script, /og-dashboard-admin-candidate-group/);
+    assert.match(script, /regularSummary/);
+    assert.match(script, /ogGroup\.open = true/);
     assert.match(script, /Rechercher un candidat par pseudo, spécialité ou adresse e-mail/);
     assert.match(script, /button\.dataset\.searchText/);
     assert.match(script, /button\.hidden = !!query/);
