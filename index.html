@@ -1086,7 +1086,7 @@
 
 <footer class="anc-legal-footer" aria-label="Informations légales">
     <div class="anc-legal-disclosures">
-        <details class="anc-legal-disclosure">
+        <details id="mentions-legales" class="anc-legal-disclosure">
             <summary>Mentions légales</summary>
             <div class="anc-legal-content">
                 <h2>Mentions légales</h2>
@@ -1097,7 +1097,7 @@
                 <p class="anc-legal-note">Les coordonnées officielles de l’éditeur et du responsable de publication doivent être renseignées avant la mise en ligne définitive.</p>
             </div>
         </details>
-        <details class="anc-legal-disclosure">
+        <details id="confidentialite" class="anc-legal-disclosure">
             <summary>Confidentialité</summary>
             <div class="anc-legal-content">
                 <h2>Confidentialité et données personnelles</h2>
@@ -1111,6 +1111,30 @@
     <p class="anc-legal-copyright">Armoire numérique de campagne · Informations et confidentialité</p>
 </footer>
 
+<script>
+document.addEventListener('click', function (event) {
+    const link = event.target.closest('a[href="#mentions-legales"], a[href="#confidentialite"]');
+    if (!link) return;
+    const target = document.getElementById(link.getAttribute('href').slice(1));
+    if (!target) return;
+    event.preventDefault();
+    const wasOpen = target.open;
+    document.querySelectorAll('.anc-legal-disclosure[open]').forEach(function (item) {
+        item.open = false;
+    });
+    if (wasOpen) {
+        history.replaceState(null, '', location.pathname + location.search);
+    } else {
+        target.open = true;
+        history.pushState(null, '', '#' + target.id);
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+});
+window.addEventListener('DOMContentLoaded', function () {
+    const target = document.getElementById(location.hash.slice(1));
+    if (target && target.matches('.anc-legal-disclosure')) target.open = true;
+});
+</script>
 <script src="app/app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js" defer crossorigin="anonymous"></script>
 <script src="app/guide-module8.js" defer></script>
