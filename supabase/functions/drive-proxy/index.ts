@@ -140,7 +140,7 @@ async function chaineParentsDrive(id: string, parents: string[], jeton: string):
 // Les dossiers de la nouvelle bibliothèque suivent la publication Supabase,
 // y compris lorsque l'utilisateur demande directement un sous-dossier ou un fichier.
 async function accesBibliothequePubliee(ids: string[], admin: boolean): Promise<boolean | null> {
-  if (admin) return true;
+  // Même les administrateurs ne contournent pas la liste blanche Drive.
   const url = Deno.env.get('SUPABASE_URL');
   const cle = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   if (!url || !cle) throw new Error('Configuration Supabase manquante');
@@ -150,15 +150,15 @@ async function accesBibliothequePubliee(ids: string[], admin: boolean): Promise<
     const ex = await fetch(`${url}/rest/v1/guide_exercise_library?drive_url=like.${driveIdFilter}&select=id,is_published`, { headers });
     if (!ex.ok) throw new Error('Vérification de publication des exercices impossible');
     const exercices: { id: string; is_published: boolean }[] = await ex.json();
-    if (exercices.length) return exercices.some((e) => e.is_published);
+    if (exercices.length) return admin || exercices.some((e) => e.is_published);
 
     const co = await fetch(`${url}/rest/v1/guide_correction_library?drive_url=like.${driveIdFilter}&select=id,exercise_id,is_published`, { headers });
     if (!co.ok) throw new Error('Vérification de publication des corrections impossible');
     const corrections: { id: string; exercise_id: string; is_published: boolean }[] = await co.json();
     if (corrections.length) {
-      if (!corrections.some((c) => c.is_published)) return false;
+      if (!admin && !corrections.some((c) => c.is_published)) return false;
       const exerciseIds = [...new Set(corrections.map((c) => c.exercise_id))];
-      for (const exerciseId of exerciseIds) {
+      for (const exerciseId of (admin ? [] : exerciseIds)) {
         const parent = await fetch(`${url}/rest/v1/guide_exercise_library?id=eq.${encodeURIComponent(exerciseId)}&select=is_published`, { headers });
         if (!parent.ok) throw new Error('Vérification de publication de l’exercice associé impossible');
         const parents: { is_published: boolean }[] = await parent.json();
@@ -167,8 +167,25 @@ async function accesBibliothequePubliee(ids: string[], admin: boolean): Promise<
       return true;
     }
   }
-  // null = document historique : conserver ses contrôles d'accès existants.
+  // Aucun identifiant non répertorié n'est considéré comme un document historique.
   return null;
+}
+
+// Autorisation explicite des dossiers documentaires historiques enregistrés en base.
+async function supportsHistoriquesAutorises(ids: string[]): Promise<boolean> {
+  const url = Deno.env.get('SUPABASE_URL');
+  const cle = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !cle) throw new Error('Configuration Supabase manquante');
+  const uniques = [...new Set(ids)].filter((id) => /^[\w-]{10,80}$/.test(id));
+  if (!uniques.length) return false;
+  const filtre = uniques.map((id) => '"' + id + '"').join(',');
+  const r = await fetch(
+    `${url}/rest/v1/doctrine_drive_resources?drive_folder_id=in.(${encodeURIComponent(filtre)})&is_active=eq.true&select=drive_folder_id`,
+    { headers: { apikey: cle, Authorization: `Bearer ${cle}` } },
+  );
+  if (!r.ok) throw new Error('Vérification de la liste des supports autorisés impossible');
+  const lignes: { drive_folder_id: string }[] = await r.json();
+  return lignes.length > 0;
 }
 
 async function jetonDrive() {
@@ -225,19 +242,21 @@ Deno.serve(async (req) => {
     if (!meta.ok) return erreur(502, 'Erreur Google Drive');
     const fichier = await meta.json();
 
-    let accesBibliotheque: boolean | null = null;
-    if (!candidat.admin) {
-      const chemin = await chaineParentsDrive(id, fichier.parents || [], jeton);
-      accesBibliotheque = await accesBibliothequePubliee(chemin, false);
-      if (accesBibliotheque === false) return erreur(403, 'Ce dossier ou document n’est pas publié pour les Officiers Guides');
+    const chemin = await chaineParentsDrive(id, fichier.parents || [], jeton);
+    const supportHistorique = await supportsHistoriquesAutorises(chemin);
+    const accesBibliotheque = await accesBibliothequePubliee(chemin, candidat.admin);
+    if (accesBibliotheque === false) {
+      return erreur(403, 'Ce dossier ou document n’est pas publié pour les Officiers Guides');
     }
 
-    // La règle de transmission préalable ne concerne que les candidats.
-    // Un Officier Guide OG consulte les corrigés sans soumettre de fiche,
-    // tout en restant soumis au contrôle de publication de la bibliothèque.
-    if (!candidat.admin && !candidat.officierGuide && accesBibliotheque === null) {
-      const requis = await dossierRequis(id, fichier.parents || [], jeton);
-      if (requis !== null && !(await fichesTransmises(candidat.id)).has(requis)) {
+    // Les corrigés conservent leur contrôle dédié : candidat après transmission,
+    // Officier Guide et administrateur selon leurs droits habituels.
+    const requis = await dossierRequis(id, fichier.parents || [], jeton);
+    if (!supportHistorique && accesBibliotheque !== true && requis === null) {
+      return erreur(403, 'Ressource Drive non autorisée');
+    }
+    if (!candidat.admin && !candidat.officierGuide && requis !== null) {
+      if (!(await fichesTransmises(candidat.id)).has(requis)) {
         return erreur(403, 'Transmettez votre fiche du dossier ' + requis + ' pour ouvrir ce corrigé');
       }
     }

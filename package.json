@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:bm4-pdf": "node --test tests/bm4-official-pdf.test.mjs"
+    "test:bm4-pdf": "node --test tests/bm4-official-pdf.test.mjs",
+    "test:drive-security": "node --test tests/drive-proxy-access.test.mjs tests/drive-resource-allowlist.test.mjs"
   },
   "devDependencies": {
     "pdf-lib": "1.17.1"
