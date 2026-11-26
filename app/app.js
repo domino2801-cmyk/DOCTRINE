@@ -722,13 +722,9 @@ const module1Key = 'module1_validated';
     }
 
     function enregistrerDossierTermine(id) {
+        // L'avancement des dossiers reste indépendant de la validation du module 3.
+        // Le module 3 est validé une seule fois à sa première ouverture.
         enregistrerEvenementProgression('dossier_completed', '3', id);
-        const dossiers = Array.from(document.querySelectorAll('.mod-body[data-mod="3"] input[data-dossier]'));
-        if (dossiers.length > 0 && dossiers.every(function(box) {
-            return box.closest('.dossier-item')?.querySelector('[data-study-status]')?.value === 'mastered';
-        })) {
-            enregistrerEvenementProgression('module_completed', '3');
-        }
     }
 
     function setModule1State(value) {

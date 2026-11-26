@@ -69,6 +69,8 @@ test("module 3 is completed automatically when the candidate opens it", () => {
     assert.match(app, /enregistrerEvenementProgression\('module_completed', '3'\)/);
     assert.match(app, /doctrine-module3-auto-validated/);
     assert.match(app, /Le suivi des dossiers « Fait » reste indépendant/);
+    assert.match(app, /L'avancement des dossiers reste indépendant de la validation du module 3/);
+    assert.doesNotMatch(app, /enregistrerEvenementProgression\('module_completed', '3'\);\s*\}/);
     assert.doesNotMatch(readme, /module 3 est validé lorsque tous ses dossiers sont marqués/);
 });
 
