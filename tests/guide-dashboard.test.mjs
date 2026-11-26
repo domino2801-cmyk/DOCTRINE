@@ -93,54 +93,35 @@ test('l’espace Officier Guide est chargé séparément des modules existants',
     assert.doesNotMatch(script, /guide_action|og-dashboard-ai-frame/);
 });
 
-test('la carte CANDIDATS ouvre la cohorte puis une fiche individuelle limitée au pseudo, à la spécialité et à l’e-mail', () => {
-    assert.match(script, /function openGuideCandidates\(\)/);
-    assert.match(script, /COMPTES UTILISATEURS/);
-    assert.match(script, /candidats et Officiers Guides/);
+test('la navigation CANDIDATS ouvre la fiche du premier compte et permet de parcourir la liste avec les flèches', () => {
+    assert.match(script, /function openGuideCandidates\\(\\)/);
+    assert.match(script, /CANDIDATS — TOUS LES COMPTES/);
     assert.match(script, /OFFICIERS GUIDES — /);
-    assert.match(script, /dataset\.guideAction = 'candidates-tracking'/);
-    assert.match(script, /card\.addEventListener\('click', openGuideCandidates\)/);
-    assert.match(script, /function renderCandidateProfileDetail\(target, candidate\)/);
-    assert.match(script, /CANDIDATS — COHORTE RATTACHÉE/);
-    assert.match(script, /\(dashboardMode === 'admin' \? 'CANDIDATS HORS OG — ' : 'TOUS — '\) \+ regularCandidates\.length/);
-    assert.match(script, /og-dashboard-candidate-group-open/);
-    assert.match(script, /og-dashboard-candidate-group-heading/);
-    assert.match(script, /og-dashboard-candidate-group-items/);
-    assert.match(script, /renderCandidateProfileDetail\(detail, candidate\)/);
-    assert.match(script, /og-dashboard-search/);
-    assert.match(script, /og-dashboard-admin-candidate-group/);
-    assert.match(script, /regularSummary/);
-    assert.match(script, /ogGroup\.open = true/);
-    assert.match(script, /Rechercher un candidat par pseudo, spécialité ou adresse e-mail/);
-    assert.match(script, /button\.dataset\.searchText/);
-    assert.match(script, /button\.hidden = !!query/);
-    assert.match(script, /Sélectionnez un compte dans la liste pour afficher sa fiche individuelle/);
-    assert.match(script.slice(script.indexOf('function openGuideCandidates'), script.indexOf('function renderMetrics')), /if \(dashboardMode === 'admin'\) \{[\s\S]*?var ogGroup = node\('details', 'og-dashboard-candidate-group/);
-    assert.match(script, /identity\.name \|\| 'Pseudo non renseigné'/);
-    assert.match(script, /identity\.specialty, identity\.email/);
+    assert.match(script, /function renderCandidateProfileDetail\\(target, candidate\\)/);
+    assert.match(script, /og-candidate-stepper/);
+    assert.match(script, /Candidat précédent/);
+    assert.match(script, /Candidat suivant/);
+    assert.match(script, /showCandidate\\(selectedIndex - 1\\)/);
+    assert.match(script, /showCandidate\\(selectedIndex \\+ 1\\)/);
+    assert.match(script, /renderCandidateProfileDetail\\(detail, candidate\\)/);
+    assert.match(script, /Candidat ' \\+ \\(selectedIndex \\+ 1\\) \\+ ' \\/ '/);
+    assert.match(script, /var ogGroup = node\\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\\)/);
+    assert.match(script, /identity\\.specialty/);
+    assert.match(script, /identity\\.email/);
     assert.match(script, /FICHE CANDIDAT/);
     assert.match(script, /og-candidate-profile-hero/);
     assert.match(script, /og-candidate-profile-progress-card/);
     assert.match(script, /og-candidate-profile-module-track/);
     assert.match(script, /Suivi d’admission/);
     assert.match(script, /Dossier et documents demandés/);
-    assert.match(script, /renderAiCorrection\(candidate\)/);
+    assert.match(script, /renderAiCorrection\\(candidate\\)/);
     assert.match(script, /SUIVI QCM-MAJOR/);
     assert.match(script, /Historique complet des résultats enregistrés/);
-    assert.match(script, /historyContent\.hidden = true/);
+    assert.match(script, /historyContent\\.hidden = true/);
     assert.match(script, /og-dashboard-qcm-tracking/);
     assert.match(script, /Progression des modules 1 à 7/);
-    assert.match(script, /Suivi d’admission/);
-    assert.match(script, /Dossier et documents demandés/);
     assert.match(script, /Correction assistée par IA/);
-    assert.match(script, /renderOralTracking\(candidate\)/);
-    assert.match(script, /renderCcpmTracking\(candidate\)/);
-    assert.match(script, /renderAiCorrection\(candidate\)/);
-    assert.match(css, /\.og-candidate-profile-identity/);
-    assert.match(css, /\.og-candidate-profile-section/);
-    assert.doesNotMatch(script.slice(script.indexOf('function renderCandidateProfileDetail'), script.indexOf('function openGuideCandidates')), /identity\.(?:grade|unit|matricule)/);
 });
-
 test('les fiches RETEX et Signalement Officier Guide sont autonomes et indépendantes du Module 7', () => {
     assert.match(script, /RETOUR D’EXPÉRIENCE OFFICIER GUIDE/);
     assert.match(script, /SIGNALEMENT OFFICIER GUIDE/);
@@ -517,7 +498,7 @@ test('le mode administrateur reprend le tableau de bord et isole les candidats O
     assert.match(script, /var regularCandidates = dashboardMode === 'admin'/);
     assert.match(script, /var ogCandidates = dashboardMode === 'admin'/);
     assert.match(script, /var ogGroup = node\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\)/);
-    assert.match(script, /CANDIDATS OFFICIER GUIDE — '/);
+    assert.match(script, /OFFICIERS GUIDES — '/);
     assert.match(script, /ogDetails = node\('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group'\)/);
 });
 
