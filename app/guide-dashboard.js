@@ -1121,7 +1121,24 @@
             if (!printable) { status.textContent = 'Autorisez les fenêtres contextuelles pour exporter le PDF.'; return; }
             var report = printable.document;
             report.open();
-            report.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Synthèse RETEX QCM-MAJOR</title><style>body{font:14px Arial,sans-serif;color:#17231d;margin:28px}h1{font-size:22px}h2{font-size:17px;margin-top:24px}h3{font-size:15px}article{break-inside:avoid;border:1px solid #bbb;padding:12px;margin:12px 0}dt{font-weight:bold;margin-top:8px}dd{margin:2px 0 8px;white-space:pre-wrap} .bar{font-weight:bold}</style></head><body><h1>Synthèse RETEX QCM-MAJOR — Administration</h1><p>' + rows.length + ' retour(s) enregistré(s)</p>' +
+            var printableCharts = questions.map(function (question) {
+                var counts = Object.create(null);
+                rows.forEach(function (row) {
+                    var value = row[question[0]];
+                    (Array.isArray(value) ? value : [value]).filter(Boolean).forEach(function (entry) {
+                        var label = String(entry);
+                        counts[label] = (counts[label] || 0) + 1;
+                    });
+                });
+                var entries = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
+                return '<article><h3>' + escapeHtml(question[1]) + '</h3>' +
+                    (entries.length ? entries.map(function (label) {
+                        var count = counts[label];
+                        var percentage = Math.round(count / Math.max(1, rows.length) * 100);
+                        return '<p>' + escapeHtml(label) + ' — ' + count + ' (' + percentage + ' %)<br><span class="print-bar" style="display:block;width:' + percentage + '%;height:8px;background:#647d68"></span></p>';
+                    }).join('') : '<p>Aucune réponse.</p>') + '</article>';
+            }).join('');
+            report.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Synthèse RETEX QCM-MAJOR</title><style>body{font:14px Arial,sans-serif;color:#17231d;margin:28px}h1{font-size:22px}h2{font-size:17px;margin-top:24px}h3{font-size:15px}article{break-inside:avoid;border:1px solid #bbb;padding:12px;margin:12px 0}dt{font-weight:bold;margin-top:8px}dd{margin:2px 0 8px;white-space:pre-wrap} .print-bar{max-width:100%}</style></head><body><h1>Synthèse RETEX QCM-MAJOR — Administration</h1><p>' + rows.length + ' retour(s) enregistré(s)</p><h2>Statistiques et graphiques</h2>' + printableCharts + '<h2>Réponses détaillées</h2>' +
                 rows.map(function (row, index) {
                     return '<article><h2>Retour ' + (index + 1) + ' — ' + escapeHtml(row.pseudo || 'Anonyme') + '</h2><p>' +
                         escapeHtml(row.created_at ? new Date(row.created_at).toLocaleString('fr-FR') : 'Date inconnue') +
