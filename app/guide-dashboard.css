@@ -1052,3 +1052,23 @@ body.og-guide-entry-only #guideDashboardNav > button {
   opacity:.55;
   cursor:not-allowed;
 }
+
+
+/* Retrait du candidat du cache local dans le suivi global administrateur. */
+.og-qcm-og-navigation .admin-delete-btn {
+  min-height:36px;
+  padding:7px 12px;
+  border:1px solid rgba(224,116,103,.65);
+  border-radius:8px;
+  background:rgba(125,38,32,.2);
+  color:#ffe3df;
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
+}
+.og-qcm-og-navigation .admin-delete-btn:hover,
+.og-qcm-og-navigation .admin-delete-btn:focus-visible {
+  background:rgba(160,48,40,.38);
+  outline:2px solid rgba(224,116,103,.6);
+  outline-offset:2px;
+}
