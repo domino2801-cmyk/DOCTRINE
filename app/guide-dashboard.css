@@ -1027,3 +1027,28 @@ body.og-guide-entry-only #guideDashboardNav > button {
   opacity:.55;
   cursor:not-allowed;
 }
+
+
+/* Modification de la spécialité depuis la fiche candidat administrateur. */
+.og-candidate-profile-identity .admin-edit-btn {
+  align-self:flex-start;
+  min-height:38px;
+  padding:8px 14px;
+  border:1px solid rgba(216,184,91,.62);
+  border-radius:8px;
+  background:rgba(216,184,91,.12);
+  color:#f5df9b;
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
+}
+.og-candidate-profile-identity .admin-edit-btn:hover,
+.og-candidate-profile-identity .admin-edit-btn:focus-visible {
+  background:rgba(216,184,91,.24);
+  outline:2px solid rgba(216,184,91,.6);
+  outline-offset:2px;
+}
+.og-candidate-profile-identity .admin-edit-btn:disabled {
+  opacity:.55;
+  cursor:not-allowed;
+}
