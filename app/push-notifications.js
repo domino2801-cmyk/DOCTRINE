@@ -122,7 +122,7 @@
         }
         button.textContent = 'Vérifier à nouveau';
         setStatus('Autorisez les notifications pour ' + window.location.hostname +
-          dans les paramètres Chrome, puis revenez ici et touchez « Vérifier à nouveau ». ' +
+          ' dans les paramètres Chrome, puis revenez ici et touchez « Vérifier à nouveau ». ' +
           'Si nécessaire : Chrome > Paramètres > Paramètres des sites > Notifications.');
       }, false);
     } else {
