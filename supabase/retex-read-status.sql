@@ -3,13 +3,13 @@
 begin;
 
 -- Vérifier explicitement la fonction d'autorisation attendue avant de créer les politiques RLS.
-do $
+do $check$
 begin
     if to_regprocedure('public.doctrine_is_admin()') is null then
         raise exception 'Fonction public.doctrine_is_admin() absente : exécuter les migrations de rôle administrateur avant retex-read-status.sql.';
     end if;
 end;
-$;
+$check$;
 
 create table if not exists public.doctrine_retex_reads (
     admin_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
