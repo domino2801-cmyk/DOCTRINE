@@ -1171,7 +1171,7 @@ body.og-guide-entry-only #guideDashboardNav > button {
     justify-self: end !important;
     align-self: start !important;
   }
-  .og-candidate-profile-identity > button.admin-delete-btn {
+  .og-candidate-profile-identity > button.admin-delete-btn:not(.admin-account-block-btn) {
     grid-column: 2 !important;
     grid-row: 3 !important;
     justify-self: end !important;
