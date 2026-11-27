@@ -1188,3 +1188,11 @@ body.og-guide-entry-only #guideDashboardNav > button {
     align-self: start !important;
   }
 }
+
+
+/* Signal visuel administrateur : candidat sans activité depuis au moins 17 jours. */
+.og-candidate-profile-pseudo.is-inactive-17-days {
+  color:#ff2020 !important;
+  font-weight:900 !important;
+  text-shadow:0 0 7px rgba(255,32,32,.38);
+}
