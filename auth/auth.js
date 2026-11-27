@@ -570,20 +570,6 @@
     }
 
 
-            sessionRelais = s;
-            relaisActif = !!s;
-            return s;
-        }).catch(function (err) {
-            console.warn('Connexion via QCM-MAJOR impossible.', err);
-            return null;
-        }) : verifier();
-        sessionInitiale.then(function (s) {
-            if (s) deverrouiller();
-            else if (accesQcm) afficherEchecRelaisQcm();
-            else montrerFormulaire();
-        });
-    }
-
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', demarrer);
     } else {
