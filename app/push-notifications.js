@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  var button, status, currentSubscription = null;
+  var button, status;
   function auth() { return window.DoctrineAuth; }
   function request(method, payload) {
     return auth().jeton().then(function (token) {
@@ -18,6 +18,17 @@
     });
   }
   function setStatus(message) { if (status) status.textContent = message; }
+  function saveSubscription(sub) {
+    return request('POST', { type: 'subscribe', subscription: sub.toJSON() });
+  }
+  function createSubscription(registration) {
+    return request('GET').then(function (config) {
+      var key = config.publicKey.replace(/-/g, '+').replace(/_/g, '/');
+      while (key.length % 4) key += '=';
+      var appKey = Uint8Array.from(atob(key), function (c) { return c.charCodeAt(0); });
+      return registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: appKey });
+    }).then(saveSubscription);
+  }
   function render() {
     if (!auth() || !auth().jeton || !('serviceWorker' in navigator) || !('PushManager' in window) ||
         !('Notification' in window) || !window.isSecureContext) return;
@@ -34,37 +45,56 @@
     panel.append(heading, status, button); document.body.appendChild(panel);
     navigator.serviceWorker.ready.then(function (registration) {
       return registration.pushManager.getSubscription().then(function (sub) {
-        currentSubscription = sub;
-        button.textContent = sub ? 'Désactiver sur cet appareil' : 'Activer les notifications';
-        setStatus(sub ? 'Les alertes push sont actives sur cet appareil.' : 'Recevez les alertes même lorsque DOCTRINE est fermé.');
-        button.onclick = function () { button.disabled = true; enableOrDisable(registration, sub); };
+        if (sub) {
+          setStatus('Synchronisation des alertes sur cet appareil…');
+          return saveSubscription(sub).then(function () {
+            button.textContent = 'Désactiver sur cet appareil';
+            setStatus('Les alertes push sont actives et synchronisées.');
+            button.onclick = function () {
+              button.disabled = true;
+              request('POST', { type: 'unsubscribe', endpoint: sub.endpoint })
+                .then(function () { return sub.unsubscribe(); })
+                .then(render).catch(function (error) { setStatus(error.message); button.disabled = false; });
+            };
+          });
+        }
+        if (Notification.permission === 'granted') {
+          button.hidden = true;
+          setStatus('Activation automatique des alertes…');
+          return createSubscription(registration).then(function () {
+            setStatus('Les alertes push sont maintenant actives sur cet appareil.');
+            button.hidden = false;
+            button.textContent = 'Actualiser';
+            button.onclick = render;
+          });
+        }
+        if (Notification.permission === 'denied') {
+          button.hidden = true;
+          setStatus('Notifications bloquées par le navigateur. Réactivez-les dans les paramètres du site.');
+          return;
+        }
+        button.hidden = false;
+        button.textContent = 'Autoriser les notifications';
+        setStatus('Autorisez une première fois les alertes. Elles seront ensuite activées automatiquement à chaque ouverture.');
+        button.onclick = function () {
+          button.disabled = true;
+          Notification.requestPermission().then(function (permission) {
+            if (permission !== 'granted') throw new Error('Autorisation non accordée.');
+            return createSubscription(registration);
+          }).then(render).catch(function (error) {
+            setStatus(error.message);
+            button.disabled = false;
+          });
+        };
       });
     }).catch(function (error) { setStatus(error.message); });
-  }
-  function enableOrDisable(registration, existing) {
-    if (existing) {
-      request('POST', { type: 'unsubscribe', endpoint: existing.endpoint })
-        .then(function () { return existing.unsubscribe(); })
-        .then(render).catch(function (error) { setStatus(error.message); if (button) button.disabled = false; });
-      return;
-    }
-    Notification.requestPermission().then(function (permission) {
-      if (permission !== 'granted') throw new Error('Autorisez les notifications dans les réglages du navigateur.');
-      return request('GET').then(function (config) {
-        var key = config.publicKey.replace(/-/g, '+').replace(/_/g, '/');
-        while (key.length % 4) key += '=';
-        var appKey = Uint8Array.from(atob(key), function (c) { return c.charCodeAt(0); });
-        return registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: appKey });
-      });
-    }).then(function (sub) {
-      currentSubscription = sub;
-      return request('POST', { type: 'subscribe', subscription: sub.toJSON() });
-    }).then(render).catch(function (error) { setStatus(error.message); if (button) button.disabled = false; });
   }
   function init() {
     if (!auth() || typeof auth().jeton !== 'function') return;
     auth().jeton().then(function (token) { if (token) render(); }).catch(function () {});
-    document.addEventListener('doctrine:login', render);
+    document.addEventListener('doctrine:login', function () {
+      auth().jeton().then(function (token) { if (token) render(); }).catch(function () {});
+    });
     document.addEventListener('doctrine:logout', function () {
       var panel = document.getElementById('doctrine-push-settings'); if (panel) panel.remove();
     });
