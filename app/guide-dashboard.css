@@ -491,12 +491,13 @@ body.og-guide-entry-only #guideDashboardNav > button {
 .og-candidate-workspace > .og-dashboard-candidate-group { margin-top:0; min-width:0; }
 .og-candidate-workspace > .og-candidate-profile-detail { min-width:0; display:grid; gap:12px; }
 .og-candidate-workspace .og-candidate-profile-hero { display:flex; flex-direction:column; gap:10px; margin:0; }
-.og-candidate-workspace .og-candidate-profile-summary-card { order:0; grid-template-columns:repeat(2,minmax(0,1fr)); }
+.og-candidate-workspace .og-candidate-profile-summary-card { order:0; grid-template-columns:repeat(3,minmax(0,1fr)); }
 .og-candidate-workspace .og-candidate-profile-identity { order:1; }
 .og-candidate-workspace .og-candidate-profile-progress-card { margin:0; }
 .og-candidate-workspace .og-candidate-profile-module-row { grid-template-columns: minmax(34px,48px) minmax(0,1fr) auto; }
 @media(max-width:850px) { .og-candidate-workspace { grid-template-columns:minmax(0,1fr); } .og-candidate-workspace > .og-dashboard-candidate-group { order:0; } .og-candidate-workspace > .og-candidate-profile-detail { order:1; } }
 @media(max-width:520px) { .og-candidate-workspace .og-candidate-profile-summary-card { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:360px) { .og-candidate-workspace .og-candidate-profile-summary-card { grid-template-columns:minmax(0,1fr); } }
 
 
 /* Responsive renforcé de la vue CANDIDATS — cohorte Officier Guide. */
