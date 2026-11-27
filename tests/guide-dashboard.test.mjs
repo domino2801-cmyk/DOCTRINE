@@ -766,7 +766,8 @@ test('le pseudo candidat passe en rouge vif uniquement après rappel QCM envoyé
     assert.match(profile, /dashboardMode === 'admin' && inactiveFor17Days/);
     assert.match(profile, /pseudoNode\.classList\.add\('is-inactive-17-days'\)/);
     assert.match(script, /qcm_inactivity_emails\?select=user_id,activity_at,status,sent_at/);
-    assert.match(script, /status=eq\.sent&sent_at=not\.is\.null/);
+    assert.match(script, /order=activity_at\.desc/);
+    assert.doesNotMatch(script, /status=eq\.sent&sent_at=not\.is\.null/);
     assert.match(css, /\.og-candidate-profile-pseudo\.is-inactive-17-days/);
     assert.match(css, /color:#ff2020/);
 });
