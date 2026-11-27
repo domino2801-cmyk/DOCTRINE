@@ -51,7 +51,9 @@ test("l'interface permet d'activer ou désactiver les notifications sur chaque a
   assert.match(client, /Enregistrement sécurisé de l’appareil/);
   assert.match(client, /Notification\.permission === 'granted'/);
   assert.equal((client.match(/function request\(method, payload\)/g) || []).length, 1);
-  assert.doesNotMatch(client, /navigator\.serviceWorker\.ready\.then\(function \(registration\)/);
+  assert.match(client, /function hideWhenActivated\(\)/);
+  assert.match(client, /hideWhenActivated\(\);/);
+  assert.match(client, /pushManager\.getSubscription\(\)/);
   assert.match(html, /app\/push-notifications\.js/);
   assert.match(worker, /addEventListener\('push'/);
   assert.match(worker, /notificationclick/);
