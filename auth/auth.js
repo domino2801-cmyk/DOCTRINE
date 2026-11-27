@@ -11,7 +11,7 @@
     var SIGNUP_URL = 'https://qcm-major.fr';
     var STORAGE_KEY = 'doctrine-auth';
     var MARGE_S = 60;
-    var ORIGINES_QCM = ['https://domino2801-cmyk.github.io', 'https://qcm-major.fr', 'https://www.qcm-major.fr'];
+    var ORIGINES_QCM = ['https://qcm-major.fr', 'https://www.qcm-major.fr'];
     var accesQcm = new URLSearchParams(window.location.search).get('from') === 'qcm-major';
     var accesIntegre = new URLSearchParams(window.location.search).get('embedded') === '1';
     var sessionRelais = null;
