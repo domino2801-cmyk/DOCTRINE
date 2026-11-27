@@ -1171,6 +1171,16 @@ body.og-guide-entry-only #guideDashboardNav > button {
     justify-self: end !important;
     align-self: start !important;
   }
+  /* Le bouton de blocage doit rester visible malgré sa classe secondaire admin-delete-btn. */
+  .og-candidate-profile-identity > button.admin-account-block-btn.admin-delete-btn {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 2 !important;
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+  }
   .og-candidate-profile-identity > button.admin-delete-btn:not(.admin-account-block-btn) {
     grid-column: 2 !important;
     grid-row: 3 !important;
