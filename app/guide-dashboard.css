@@ -1111,3 +1111,32 @@ body.og-guide-entry-only #guideDashboardNav > button {
     min-width:0;
   }
 }
+
+/* Harmonisation des actions administrateur sur ordinateur uniquement.
+   Le rendu mobile existant (<= 520px) reste inchangé. */
+@media (min-width: 521px) {
+  .og-candidate-profile-identity > button.admin-edit-btn,
+  .og-candidate-profile-identity > button.admin-account-block-btn,
+  .og-candidate-profile-identity > button.admin-delete-btn {
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-self: flex-start !important;
+    width: 170px !important;
+    min-width: 170px !important;
+    max-width: 170px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    margin: 0 !important;
+    padding: 8px 12px !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    border-radius: 8px !important;
+  }
+}
