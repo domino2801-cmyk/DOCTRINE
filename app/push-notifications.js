@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  var button, status;
+  var button, status, activationStarted = false;
   function auth() { return window.DoctrineAuth; }
   function request(method, payload) {
     return auth().jeton().then(function (token) {
@@ -66,12 +66,15 @@
         : (/Failed to fetch|NetworkError|Load failed/i.test(message)
           ? 'Service push inaccessible. Vérifiez la connexion puis réessayez.'
           : (message || 'Activation impossible. Réessayez.')));
+      activationStarted = false;
       button.disabled = false;
       button.textContent = 'Réessayer';
     }
 
-    function activateFromTap() {
-      if (button.disabled) return;
+    function activateFromTap(event) {
+      if (event && event.preventDefault) event.preventDefault();
+      if (button.disabled || activationStarted) return;
+      activationStarted = true;
       button.disabled = true;
       button.textContent = 'Activation…';
       setStatus('Demande d’autorisation en cours…');
@@ -95,6 +98,7 @@
       }).then(function (result) {
         if (result === null) return;
         setStatus('Les alertes push sont activées sur cet appareil.');
+        activationStarted = false;
         button.disabled = false;
         button.textContent = 'Actualiser';
         button.onclick = render;
@@ -108,6 +112,8 @@
       button.hidden = false;
       button.disabled = false;
       button.onclick = activateFromTap;
+      button.addEventListener('pointerup', activateFromTap, { passive: false });
+      button.addEventListener('touchend', activateFromTap, { passive: false });
       setStatus(Notification.permission === 'granted'
         ? 'Touchez le bouton pour finaliser l’activation des alertes sur cet appareil.'
         : 'Touchez le bouton pour autoriser les alertes DOCTRINE.');
