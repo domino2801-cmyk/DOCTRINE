@@ -19,14 +19,14 @@ test("les nouveaux RETEX candidats et Officier Guide déclenchent des push vers 
 });
 
 test("une nouvelle fiche est notifiée uniquement aux Officiers Guides rattachés", () => {
-  assert.match(sql, /after insert on public\.doctrine_fiche_submissions/);
+  assert.match(sql, /after insert or update on public\.doctrine_fiche_submissions/);
   assert.match(edge, /from\("guide_candidates"\)/);
   assert.match(edge, /\.eq\("candidate_id", candidateId\)/);
   assert.match(edge, /fiche-submitted/);
 });
 
 test("la validation d'une fiche notifie le candidat propriétaire", () => {
-  assert.match(sql, /after insert or update of status on public\.fiche_reviews/);
+  assert.match(sql, /after insert or update on public\.fiche_reviews/);
   assert.match(sql, /new\.status <> 'valide'/);
   assert.match(edge, /fiche-validated/);
   assert.match(edge, /ids: \[submission\.user_id\]/);
