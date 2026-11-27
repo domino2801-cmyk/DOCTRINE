@@ -755,13 +755,18 @@ test('les trois indicateurs Fiches soumises, Fiches validées et Dernière activ
 });
 
 
-test('le pseudo candidat passe en rouge vif dans la fiche administrateur après 17 jours sans activité', () => {
+test('le pseudo candidat passe en rouge vif uniquement après rappel QCM envoyé et 17 jours sans reprise', () => {
     const start = script.indexOf('function renderCandidateProfileDetail(target, candidate)');
     const end = script.indexOf('function openGuideCandidates()', start);
     const profile = script.slice(start, end);
-    assert.match(profile, /Date\.now\(\) - lastActivityTimestamp >= 17 \* 24 \* 60 \* 60 \* 1000/);
+    assert.match(profile, /inactivityEmail\.status === 'sent'/);
+    assert.match(profile, /inactivityEmail\.sent_at/);
+    assert.match(profile, /lastActivityTimestamp <= notificationActivityTimestamp/);
+    assert.match(profile, /Date\.now\(\) - notificationActivityTimestamp >= 17 \* 24 \* 60 \* 60 \* 1000/);
     assert.match(profile, /dashboardMode === 'admin' && inactiveFor17Days/);
     assert.match(profile, /pseudoNode\.classList\.add\('is-inactive-17-days'\)/);
+    assert.match(script, /qcm_inactivity_emails\?select=user_id,activity_at,status,sent_at/);
+    assert.match(script, /status=eq\.sent&sent_at=not\.is\.null/);
     assert.match(css, /\.og-candidate-profile-pseudo\.is-inactive-17-days/);
     assert.match(css, /color:#ff2020/);
 });
