@@ -161,15 +161,10 @@
           if (!document.getElementById('doctrine-push-settings')) return;
           button.hidden = false;
           button.disabled = false;
-          button.textContent = 'Désactiver sur cet appareil';
           setStatus('Les alertes push sont actives et synchronisées.');
-          button.onclick = function () {
-            button.disabled = true;
-            request('POST', { type: 'unsubscribe', endpoint: sub.endpoint })
-              .then(function () { return sub.unsubscribe(); })
-              .then(render)
-              .catch(showError);
-          };
+          // L’abonnement est déjà actif : masquer entièrement le panneau.
+          // La carte ne doit pas rester affichée avec l’action « Désactiver ».
+          panel.remove();
         });
       });
     }).catch(function (error) {
