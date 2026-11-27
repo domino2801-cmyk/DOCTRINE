@@ -700,7 +700,7 @@ test('la consultation RETEX QCM-MAJOR est réservée aux administrateurs', () =>
     const end = script.indexOf('function guideFeedbackDialog(kind)', start);
     const adminRetex = script.slice(start, end);
     assert.match(adminRetex, /adminAccess\(\)\.then\(function \(allowed\)/);
-    assert.ok(adminRetex.indexOf('if (!allowed || dashboardMode !== \'admin\')') < adminRetex.indexOf('return api(sources[sourceKey].query)'));
+    assert.ok(adminRetex.indexOf('if (!allowed || dashboardMode !== \'admin\')') < adminRetex.indexOf('Promise.all([api(sources[sourceKey].query), refreshReadEntries()])'));
     assert.match(adminRetex, /refusée ou indisponible/);
     assert.match(adminRetex, /Exporter la synthèse en PDF/);
     assert.match(adminRetex, /Tous les retours enregistrés/);
