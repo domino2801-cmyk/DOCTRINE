@@ -186,19 +186,26 @@
 
     // La vérification du Service Worker se fait en arrière-plan :
     // elle ne bloque plus l’affichage ni le toucher du bouton.
+    // La détection automatique ne doit jamais concurrencer une activation lancée
+    // par l'utilisateur. La carte n'est masquée qu'après confirmation du serveur.
     navigator.serviceWorker.ready.then(function (registration) {
-      return registration.pushManager.getSubscription().then(function (sub) {
-        if (!sub) return null;
-        // Abonnement déjà présent dans Android : masquer immédiatement la carte.
-        panel.remove();
-        saveSubscription(sub).catch(function (error) {
-          console.warn('Synchronisation push différée :', error);
+      return withTimeout(registration.pushManager.getSubscription(), 8000,
+        'Vérification de l’abonnement impossible.').then(function (sub) {
+        if (!sub || activationStarted) return null;
+        return withTimeout(saveSubscription(sub), 20000,
+          'La synchronisation de l’abonnement existant prend trop de temps.').then(function () {
+          if (!activationStarted && panel.isConnected) panel.remove();
+          return null;
         });
-        return null;
       });
     }).catch(function (error) {
-      // Ne pas désactiver le bouton : l’utilisateur doit pouvoir relancer l’activation.
+      // En cas d'échec, conserver la carte et son bouton de reprise.
       console.warn('Vérification push différée :', error);
+      if (panel.isConnected && !activationStarted) {
+        setStatus('Abonnement non confirmé : touchez « Réessayer » pour terminer la synchronisation.');
+        button.disabled = false;
+        button.textContent = 'Réessayer';
+      }
     });
   }
   function init() {
