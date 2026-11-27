@@ -106,8 +106,25 @@
     }
 
     if (Notification.permission === 'denied') {
-      button.hidden = true;
-      setStatus('Notifications bloquées par le navigateur. Autorisez-les dans les réglages du site.');
+      // Une permission refusée ne peut pas être redemandée par JavaScript.
+      // Garder le bouton visible et guider l’utilisateur vers les réglages
+      // du domaine réellement utilisé (QCM-MAJOR.FR ou autre).
+      button.hidden = false;
+      button.disabled = false;
+      button.textContent = 'Comment débloquer ?';
+      setStatus('Chrome bloque les notifications pour ' + window.location.hostname +
+        '. Dans Chrome : icône à gauche de l’adresse > Autorisations > Notifications > Autoriser. ' +
+        'Puis rechargez DOCTRINE.');
+      button.addEventListener('click', function () {
+        if (Notification.permission !== 'denied') {
+          render();
+          return;
+        }
+        button.textContent = 'Vérifier à nouveau';
+        setStatus('Autorisez les notifications pour ' + window.location.hostname +
+          dans les paramètres Chrome, puis revenez ici et touchez « Vérifier à nouveau ». ' +
+          'Si nécessaire : Chrome > Paramètres > Paramètres des sites > Notifications.');
+      }, false);
     } else {
       button.hidden = false;
       button.disabled = false;
