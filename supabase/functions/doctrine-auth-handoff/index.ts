@@ -66,6 +66,9 @@ Deno.serve(async request => {
       if (authError || !user?.id || !user.email || !user.email_confirmed_at) {
         return response(request, { error: "A confirmed QCM-MAJOR session is required" }, 401);
       }
+      const { error: cleanupError } = await admin.from("doctrine_auth_handoffs")
+        .delete().lte("expires_at", new Date().toISOString());
+      if (cleanupError) throw cleanupError;
       const code = base64Url(crypto.getRandomValues(new Uint8Array(32)));
       const tokenHash = await sha256(code);
       const expiresAt = new Date(Date.now() + TTL_SECONDS * 1000).toISOString();
