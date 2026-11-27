@@ -87,7 +87,14 @@
           });
         };
       });
-    }).catch(function (error) { setStatus(error.message); });
+    }).catch(function (error) {
+      var message = error && error.message ? error.message : '';
+      if (/Failed to fetch|NetworkError|Load failed/i.test(message)) {
+        setStatus('Service push inaccessible : la fonction doctrine-event-push doit être déployée dans Supabase et ses secrets configurés.');
+      } else {
+        setStatus(message || 'Service de notification indisponible.');
+      }
+    });
   }
   function init() {
     if (!auth() || typeof auth().jeton !== 'function') return;
