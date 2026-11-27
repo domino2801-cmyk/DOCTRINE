@@ -76,9 +76,9 @@ create trigger doctrine_push_retex_guide after insert on public.guide_retex_repo
 for each row execute function public.doctrine_emit_push_event();
 
 drop trigger if exists doctrine_push_fiche_submission on public.doctrine_fiche_submissions;
-create trigger doctrine_push_fiche_submission after insert on public.doctrine_fiche_submissions
+create trigger doctrine_push_fiche_submission after insert or update on public.doctrine_fiche_submissions
 for each row execute function public.doctrine_emit_push_event();
 
 drop trigger if exists doctrine_push_fiche_validated on public.fiche_reviews;
-create trigger doctrine_push_fiche_validated after insert or update of status on public.fiche_reviews
+create trigger doctrine_push_fiche_validated after insert or update on public.fiche_reviews
 for each row execute function public.doctrine_emit_push_event();
