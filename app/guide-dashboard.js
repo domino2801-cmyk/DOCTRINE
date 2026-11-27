@@ -3416,22 +3416,7 @@
         var closeButton = node('button', 'og-dashboard-close', 'Fermer');
         closeButton.type = 'button';
         closeButton.addEventListener('click', close);
-        if (dashboardMode === 'admin') {
-            var headerActions = node('div', 'og-dashboard-header-actions');
-            var pushEnableButton = node('button', 'og-dashboard-close', 'Activer notification');
-            pushEnableButton.id = 'admin-push-enable-btn';
-            pushEnableButton.type = 'button';
-            pushEnableButton.setAttribute('aria-pressed', 'false');
-            pushEnableButton.setAttribute('data-enabled', 'true');
-            pushEnableButton.title = 'Gérer les notifications de cet appareil';
-            pushEnableButton.addEventListener('click', function () {
-                document.dispatchEvent(new CustomEvent('doctrine:admin-fiches', { detail: 'notifications' }));
-            });
-            headerActions.append(closeButton, pushEnableButton);
-            header.append(intro, headerActions);
-        } else {
-            header.append(intro, closeButton);
-        }
+        header.append(intro, closeButton);
         panel.append(header);
         metricsNode = node('div', 'og-dashboard-metrics');
         panel.append(metricsNode);
