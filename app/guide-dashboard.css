@@ -1083,3 +1083,31 @@ body.og-guide-entry-only #guideDashboardNav > button {
 .og-admin-retex-response.is-read .og-admin-retex-read-state { color:#9ed4a6; }
 .og-admin-retex-read-button { min-height:32px; padding:6px 10px; }
 .og-admin-retex-read-button:disabled { opacity:.7; cursor:default; }
+
+/* Format uniforme des trois actions administrateur de la fiche candidat. */
+.og-candidate-profile-identity > .admin-edit-btn,
+.og-candidate-profile-identity > .admin-account-block-btn,
+.og-candidate-profile-identity > .admin-delete-btn {
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:170px;
+  min-width:170px;
+  min-height:40px;
+  padding:8px 12px;
+  border-radius:8px;
+  font:inherit;
+  font-weight:700;
+  line-height:1.2;
+  text-align:center;
+  white-space:nowrap;
+}
+@media(max-width:520px) {
+  .og-candidate-profile-identity > .admin-edit-btn,
+  .og-candidate-profile-identity > .admin-account-block-btn,
+  .og-candidate-profile-identity > .admin-delete-btn {
+    width:100%;
+    min-width:0;
+  }
+}
