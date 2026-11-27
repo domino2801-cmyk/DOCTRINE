@@ -1255,7 +1255,7 @@
             button.textContent = 'Enregistrement…';
             return api('doctrine_retex_reads?on_conflict=admin_id%2Csource%2Cretex_id', {
                 method: 'POST',
-                prefer: 'resolution=merge-duplicates,return=minimal',
+                prefer: 'resolution=ignore-duplicates,return=minimal',
                 body: { source: sourceKey, retex_id: String(row.id) }
             }).then(function () {
                 readMap[key] = true;
