@@ -57,6 +57,10 @@
     }).then(saveSubscription);
   }
   function render() {
+    // Chaque carte possède son propre état : un second rendu (connexion,
+    // actualisation ou reprise) ne peut plus piloter le bouton d'un autre rendu.
+    var button, status, activationStarted = false;
+    function setStatus(message) { if (status) status.textContent = message; }
     if (!auth() || !auth().jeton || !('serviceWorker' in navigator) || !('PushManager' in window) ||
         !('Notification' in window) || !window.isSecureContext) return;
 
