@@ -506,8 +506,8 @@
     };
 
     function recupererSessionHandoff() {
-        var fragment = window.location.hash.charAt(0) === '#'
-            ? window.location.hash.slice(1) : window.location.hash;
+        var hash = window.location.hash || '';
+        var fragment = hash.charAt(0) === '#' ? hash.slice(1) : hash;
         var params = new URLSearchParams(fragment);
         var code = params.get('anc_handoff');
         if (!code) return Promise.resolve(null);
