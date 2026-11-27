@@ -2,14 +2,26 @@
   'use strict';
   var button, status, activationStarted = false;
   function auth() { return window.DoctrineAuth; }
+  function withTimeout(promise, milliseconds, message) {
+    var timer;
+    return Promise.race([
+      Promise.resolve(promise),
+      new Promise(function (_, reject) {
+        timer = setTimeout(function () { reject(new Error(message)); }, milliseconds);
+      })
+    ]).then(function (value) { clearTimeout(timer); return value; }, function (error) {
+      clearTimeout(timer);
+      throw error;
+    });
+  }
   function request(method, payload) {
-    return auth().jeton().then(function (token) {
+    return withTimeout(auth().jeton(), 12000, 'La session met trop de temps à répondre. Reconnectez-vous puis réessayez.').then(function (token) {
       if (!token) throw new Error('Session expirée.');
-      return fetch(auth().url + '/functions/v1/doctrine-event-push', {
+      return withTimeout(fetch(auth().url + '/functions/v1/doctrine-event-push', {
         method: method,
         headers: { apikey: auth().key, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: payload ? JSON.stringify(payload) : undefined
-      });
+      }), 15000, 'Le serveur de notifications ne répond pas. Vérifiez la connexion puis réessayez.');
     }).then(function (response) {
       return response.json().catch(function () { return {}; }).then(function (data) {
         if (!response.ok) {
@@ -80,7 +92,7 @@
       setStatus('Demande d’autorisation en cours…');
 
       // La demande de permission est déclenchée directement par le toucher utilisateur.
-      Promise.resolve(Notification.requestPermission()).then(function (permission) {
+      withTimeout(Notification.requestPermission(), 20000, 'Chrome ne répond pas à la demande. Vérifiez l’autorisation du site puis réessayez.').then(function (permission) {
         if (permission !== 'granted') {
           if (permission === 'denied') {
             button.hidden = true;
@@ -90,9 +102,9 @@
           throw new Error('Autorisation non accordée.');
         }
         setStatus('Préparation des alertes sur cet appareil…');
-        return navigator.serviceWorker.ready.then(function (registration) {
+        return withTimeout(navigator.serviceWorker.ready, 12000, 'Le service de notifications du navigateur ne démarre pas. Fermez puis rouvrez le site, et réessayez.').then(function (registration) {
           return registration.pushManager.getSubscription().then(function (sub) {
-            return (sub ? saveSubscription(sub) : createSubscription(registration));
+            return withTimeout(sub ? saveSubscription(sub) : createSubscription(registration), 20000, 'La création de l’abonnement prend trop de temps. Vérifiez le réseau et réessayez.');
           });
         });
       }).then(function (result) {
