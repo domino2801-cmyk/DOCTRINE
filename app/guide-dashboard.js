@@ -869,24 +869,27 @@
 
     function refreshAdminRetexBadge(badge) {
         if (dashboardMode !== 'admin' || !badge) return;
-        // Compter ensemble les RETEX QCM-MAJOR et Officier Guide :
-        // la notification est indépendante de leur origine ou de leur statut.
         Promise.all([
             api('retex_responses?select=id&limit=2000'),
-            api('guide_retex_reports?select=id&limit=2000')
-        ]).then(function (sources) {
-            var total = sources.reduce(function (count, rows) {
-                return count + (Array.isArray(rows) ? rows.length : 0);
-            }, 0);
+            api('guide_retex_reports?select=id&limit=2000'),
+            api('doctrine_retex_reads?select=source,retex_id&limit=10000')
+        ]).then(function (results) {
+            var readMap = Object.create(null);
+            (Array.isArray(results[2]) ? results[2] : []).forEach(function (entry) {
+                readMap[String(entry.source) + ':' + String(entry.retex_id)] = true;
+            });
+            var total = 0;
+            (Array.isArray(results[0]) ? results[0] : []).forEach(function (row) {
+                if (!readMap['qcm:' + String(row.id)]) total += 1;
+            });
+            (Array.isArray(results[1]) ? results[1] : []).forEach(function (row) {
+                if (!readMap['guide:' + String(row.id)]) total += 1;
+            });
             badge.textContent = String(total);
             badge.hidden = total === 0;
-            badge.setAttribute('aria-label', total + ' retour(s) d’expérience enregistré(s), tous types confondus');
-        }).catch(function () {
-            // Ne pas afficher de compteur potentiellement erroné si une source est indisponible.
-            badge.hidden = true;
-        });
+            badge.setAttribute('aria-label', total + ' RETEX non lu(s)');
+        }).catch(function () { badge.hidden = true; });
     }
-
     function renderMetrics() {
         metricsNode.replaceChildren();
         var ready = candidates.filter(function (candidate) { return !attention(candidate); }).length;
@@ -1235,6 +1238,39 @@
         var activeSource = 'qcm';
         var datasets = { qcm: null, guide: null };
         var currentRows = [];
+        var readMap = Object.create(null);
+        function readKey(sourceKey, id) { return sourceKey + ':' + String(id); }
+        function refreshReadEntries() {
+            return api('doctrine_retex_reads?select=source,retex_id&limit=10000').then(function (entries) {
+                readMap = Object.create(null);
+                (Array.isArray(entries) ? entries : []).forEach(function (entry) {
+                    readMap[readKey(entry.source, entry.retex_id)] = true;
+                });
+            });
+        }
+        function markRetexRead(row, sourceKey, button, state) {
+            var key = readKey(sourceKey, row.id);
+            if (readMap[key]) return Promise.resolve();
+            button.disabled = true;
+            button.textContent = 'Enregistrement…';
+            return api('doctrine_retex_reads?on_conflict=admin_id%2Csource%2Cretex_id', {
+                method: 'POST',
+                prefer: 'resolution=merge-duplicates,return=minimal',
+                body: { source: sourceKey, retex_id: String(row.id) }
+            }).then(function () {
+                readMap[key] = true;
+                button.textContent = 'Lu';
+                button.disabled = true;
+                button.setAttribute('aria-label', 'RETEX marqué comme lu');
+                if (state) state.textContent = 'Lu';
+                var badge = root && root.querySelector('.og-dashboard-retex-badge');
+                if (badge) refreshAdminRetexBadge(badge);
+            }).catch(function (error) {
+                button.disabled = false;
+                button.textContent = 'Marquer comme lu';
+                if (state) state.textContent = 'Échec de l’enregistrement : ' + error.message;
+            });
+        }
         function answer(row, field) {
             var value = activeSource === 'guide' ? (row.payload || {})[field] : row[field];
             return Array.isArray(value) ? value.filter(Boolean).join(', ') :
@@ -1304,6 +1340,16 @@
                 item.append(node('h4', '', 'Retour ' + (index + 1) + ' — ' + identity));
                 item.append(node('p', 'og-dashboard-muted', 'Transmis le ' +
                     (row.created_at ? new Date(row.created_at).toLocaleString('fr-FR') : 'Date inconnue')));
+                var isRead = !!readMap[readKey(activeSource, row.id)];
+                var readControls = node('div', 'og-admin-retex-read-controls');
+                var readState = node('span', 'og-admin-retex-read-state', isRead ? 'Lu' : 'Non lu');
+                var readButton = node('button', 'og-dashboard-ai-action og-admin-retex-read-button', isRead ? 'Lu' : 'Marquer comme lu');
+                readButton.type = 'button';
+                readButton.disabled = isRead;
+                if (!isRead) readButton.addEventListener('click', function () { markRetexRead(row, activeSource, readButton, readState); });
+                readControls.append(readState, readButton);
+                item.append(readControls);
+                item.classList.add(isRead ? 'is-read' : 'is-unread');
                 var details = node('dl');
                 questions.filter(function (question) {
                     if (activeSource === 'guide') {
@@ -1351,8 +1397,9 @@
             adminAccess().then(function (allowed) {
                 if (!allowed || dashboardMode !== 'admin') throw new Error('Une session administrateur est requise.');
                 // Chaque table est interrogée uniquement après validation explicite du rôle administrateur.
-                return api(sources[sourceKey].query);
-            }).then(function (data) {
+                return Promise.all([api(sources[sourceKey].query), refreshReadEntries()]);
+            }).then(function (results) {
+                var data = results[0];
                 if (!Array.isArray(data)) throw new Error('Réponse RETEX invalide.');
                 datasets[sourceKey] = data;
                 if (activeSource === sourceKey) {
