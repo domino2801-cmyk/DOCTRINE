@@ -36,7 +36,7 @@ test("les abonnements sont privés et les événements sont transmis par webhook
   assert.match(sql, /enable row level security/);
   assert.match(sql, /grant all on public\.doctrine_push_subscriptions to service_role/);
   assert.match(sql, /x-doctrine-webhook-secret/);
-  assert.match(edge, /DOCTRINE_REPORT_PUSH_WEBHOOK_SECRET/);
+  assert.match(edge, /DOCTRINE_EVENT_PUSH_WEBHOOK_SECRET/);
   assert.match(edge, /DOCTRINE_VAPID_PRIVATE_KEY/);
 });
 
