@@ -753,3 +753,15 @@ test('les trois indicateurs Fiches soumises, Fiches validées et Dernière activ
     assert.match(css, /@media\(max-width:520px\)[\s\S]*?\.og-candidate-workspace \.og-candidate-profile-summary-card \{ grid-template-columns:repeat\(2,minmax\(0,1fr\)\); \}/);
     assert.match(css, /@media\(max-width:360px\)[\s\S]*?\.og-candidate-workspace \.og-candidate-profile-summary-card \{ grid-template-columns:minmax\(0,1fr\); \}/);
 });
+
+
+test('le pseudo candidat passe en rouge vif dans la fiche administrateur après 17 jours sans activité', () => {
+    const start = script.indexOf('function renderCandidateProfileDetail(target, candidate)');
+    const end = script.indexOf('function openGuideCandidates()', start);
+    const profile = script.slice(start, end);
+    assert.match(profile, /Date\.now\(\) - lastActivityTimestamp >= 17 \* 24 \* 60 \* 60 \* 1000/);
+    assert.match(profile, /dashboardMode === 'admin' && inactiveFor17Days/);
+    assert.match(profile, /pseudoNode\.classList\.add\('is-inactive-17-days'\)/);
+    assert.match(css, /\.og-candidate-profile-pseudo\.is-inactive-17-days/);
+    assert.match(css, /color:#ff2020/);
+});
