@@ -1142,11 +1142,11 @@ body.og-guide-entry-only #guideDashboardNav > button {
 }
 
 
-/* Placer les trois actions en haut à droite de la fiche candidat sur ordinateur. */
+/* Actions administrateur en haut à droite ; identité en haut à gauche. */
 @media (min-width: 521px) {
   .og-candidate-profile-identity {
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) 170px !important;
+    grid-template-columns: minmax(0, 1fr) 212px !important;
     grid-auto-flow: row !important;
     align-content: start !important;
     align-items: start !important;
@@ -1155,15 +1155,26 @@ body.og-guide-entry-only #guideDashboardNav > button {
   }
   .og-candidate-profile-identity > .og-candidate-profile-identity-copy {
     grid-column: 1 !important;
-    grid-row: 1 / span 3 !important;
+    grid-row: 1 / 4 !important;
+    align-self: start !important;
     min-width: 0;
   }
-  .og-candidate-profile-identity > button.admin-edit-btn,
-  .og-candidate-profile-identity > button.admin-account-block-btn,
-  .og-candidate-profile-identity > button.admin-delete-btn {
+  .og-candidate-profile-identity > button.admin-edit-btn {
     grid-column: 2 !important;
+    grid-row: 1 !important;
     justify-self: end !important;
     align-self: start !important;
-    margin: 0 !important;
+  }
+  .og-candidate-profile-identity > button.admin-account-block-btn {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    justify-self: end !important;
+    align-self: start !important;
+  }
+  .og-candidate-profile-identity > button.admin-delete-btn {
+    grid-column: 2 !important;
+    grid-row: 3 !important;
+    justify-self: end !important;
+    align-self: start !important;
   }
 }
