@@ -578,7 +578,15 @@
         var identityCard = node('div', 'og-candidate-profile-identity');
         var identityCopy = node('div', 'og-candidate-profile-identity-copy');
         identityCopy.append(node('p', 'og-dashboard-kicker', 'FICHE CANDIDAT'));
-        identityCopy.append(node('strong', 'og-candidate-profile-pseudo', pseudo));
+        var pseudoNode = node('strong', 'og-candidate-profile-pseudo', pseudo);
+        var lastActivityTimestamp = lastActivity ? Date.parse(lastActivity) : NaN;
+        var inactiveFor17Days = Number.isFinite(lastActivityTimestamp) &&
+            Date.now() - lastActivityTimestamp >= 17 * 24 * 60 * 60 * 1000;
+        if (dashboardMode === 'admin' && inactiveFor17Days) {
+            pseudoNode.classList.add('is-inactive-17-days');
+            pseudoNode.title = 'Aucune activité depuis au moins 17 jours';
+        }
+        identityCopy.append(pseudoNode);
         var specialtyLine = node('p', '', 'Spécialité : ' + (identity.specialty || 'Non renseignée'));
         identityCopy.append(specialtyLine);
         if (identity.email) identityCopy.append(node('p', '', 'E-mail : ' + identity.email));
