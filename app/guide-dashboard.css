@@ -1142,13 +1142,28 @@ body.og-guide-entry-only #guideDashboardNav > button {
 }
 
 
-/* Aligner les trois actions à droite de la fiche candidat sur ordinateur. */
+/* Placer les trois actions en haut à droite de la fiche candidat sur ordinateur. */
 @media (min-width: 521px) {
+  .og-candidate-profile-identity {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 170px !important;
+    grid-auto-flow: row !important;
+    align-content: start !important;
+    align-items: start !important;
+    column-gap: 18px !important;
+    row-gap: 8px !important;
+  }
+  .og-candidate-profile-identity > .og-candidate-profile-identity-copy {
+    grid-column: 1 !important;
+    grid-row: 1 / span 3 !important;
+    min-width: 0;
+  }
   .og-candidate-profile-identity > button.admin-edit-btn,
   .og-candidate-profile-identity > button.admin-account-block-btn,
   .og-candidate-profile-identity > button.admin-delete-btn {
+    grid-column: 2 !important;
     justify-self: end !important;
-    align-self: end !important;
-    margin-left: auto !important;
+    align-self: start !important;
+    margin: 0 !important;
   }
 }
