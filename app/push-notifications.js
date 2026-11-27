@@ -62,8 +62,8 @@
     }).then(render).catch(function (error) { setStatus(error.message); if (button) button.disabled = false; });
   }
   function init() {
-    if (!auth()) return;
-    render();
+    if (!auth() || typeof auth().jeton !== 'function') return;
+    auth().jeton().then(function (token) { if (token) render(); }).catch(function () {});
     document.addEventListener('doctrine:login', render);
     document.addEventListener('doctrine:logout', function () {
       var panel = document.getElementById('doctrine-push-settings'); if (panel) panel.remove();
