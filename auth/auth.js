@@ -505,9 +505,71 @@
         specialite: chargerSpecialite
     };
 
+    function recupererSessionHandoff() {
+        var fragment = window.location.hash.charAt(0) === '#'
+            ? window.location.hash.slice(1) : window.location.hash;
+        var params = new URLSearchParams(fragment);
+        var code = params.get('anc_handoff');
+        if (!code) return Promise.resolve(null);
+
+        // Le code est retiré immédiatement de l'historique avant tout appel réseau.
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+        return fetch(SUPABASE_URL + '/functions/v1/doctrine-auth-handoff', {
+            method: 'POST',
+            headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'redeem', code: code }),
+            cache: 'no-store'
+        }).then(function (response) {
+            return response.json().catch(function () { return {}; }).then(function (data) {
+                if (!response.ok || !data.session || typeof data.session.access_token !== 'string' ||
+                    typeof data.session.refresh_token !== 'string') {
+                    throw new Error(data.error || 'Code de connexion invalide ou expiré.');
+                }
+                return appel('/user', { methode: 'GET', jeton: data.session.access_token }).then(function (user) {
+                    if (!estConfirme(user) || user.id !== data.session.user_id) {
+                        throw new Error('L’identité de la session ANC ne correspond pas au compte QCM-MAJOR.');
+                    }
+                    var session = {
+                        access_token: data.session.access_token,
+                        refresh_token: data.session.refresh_token,
+                        expires_at: Number(data.session.expires_at) || expirationDuJeton(data.session.access_token),
+                        email: user.email || data.session.email || '',
+                        user_id: user.id
+                    };
+                    if (!Number.isFinite(session.expires_at) || session.expires_at <= Date.now() / 1000) {
+                        throw new Error('La session ANC reçue a expiré.');
+                    }
+                    generationRelais++;
+                    relaisActif = false;
+                    sessionRelais = null;
+                    ecrire(session);
+                    return session;
+                });
+            });
+        });
+    }
+
     function demarrer() {
         construire();
-        var sessionInitiale = accesQcm ? demanderSessionQcm().then(function (s) {
+        var sessionInitiale = accesQcm ? recupererSessionHandoff().then(function (session) {
+            if (session) return session;
+            return demanderSessionQcm().then(function (s) {
+                sessionRelais = s;
+                relaisActif = !!s;
+                return s;
+            });
+        }).catch(function (err) {
+            console.warn('Connexion via le relais QCM-MAJOR impossible.', err);
+            return null;
+        }) : verifier();
+        sessionInitiale.then(function (s) {
+            if (s) deverrouiller();
+            else if (accesQcm) afficherEchecRelaisQcm();
+            else montrerFormulaire();
+        });
+    }
+
+
             sessionRelais = s;
             relaisActif = !!s;
             return s;
