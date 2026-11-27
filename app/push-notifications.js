@@ -36,14 +36,24 @@
   }
   function setStatus(message) { if (status) status.textContent = message; }
   function saveSubscription(sub) {
+    setStatus('Enregistrement sécurisé de l’appareil auprès de DOCTRINE…');
     return request('POST', { type: 'subscribe', subscription: sub.toJSON() });
   }
   function createSubscription(registration) {
+    setStatus('Récupération de la clé de sécurité…');
     return request('GET').then(function (config) {
+      if (!config || typeof config.publicKey !== 'string' || !config.publicKey) {
+        throw new Error('La clé de sécurité des notifications est absente du serveur.');
+      }
       var key = config.publicKey.replace(/-/g, '+').replace(/_/g, '/');
       while (key.length % 4) key += '=';
       var appKey = Uint8Array.from(atob(key), function (c) { return c.charCodeAt(0); });
-      return registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: appKey });
+      setStatus('Création de l’abonnement dans Android…');
+      return withTimeout(
+        registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: appKey }),
+        15000,
+        'Android ne termine pas la création de l’abonnement. Vérifiez les notifications du site dans Chrome.'
+      );
     }).then(saveSubscription);
   }
   function render() {
@@ -101,7 +111,9 @@
       setStatus('Demande d’autorisation en cours…');
 
       // La demande de permission est déclenchée directement par le toucher utilisateur.
-      withTimeout(Notification.requestPermission(), 20000, 'Chrome ne répond pas à la demande. Vérifiez l’autorisation du site puis réessayez.').then(function (permission) {
+      (Notification.permission === 'granted'
+        ? Promise.resolve('granted')
+        : withTimeout(Notification.requestPermission(), 20000, 'Chrome ne répond pas à la demande. Vérifiez l’autorisation du site puis réessayez.')).then(function (permission) {
         if (permission !== 'granted') {
           if (permission === 'denied') {
             button.hidden = true;
@@ -110,8 +122,9 @@
           }
           throw new Error('Autorisation non accordée.');
         }
-        setStatus('Préparation des alertes sur cet appareil…');
+        setStatus('Démarrage du service de notifications Android…');
         return withTimeout(navigator.serviceWorker.ready, 12000, 'Le service de notifications du navigateur ne démarre pas. Fermez puis rouvrez le site, et réessayez.').then(function (registration) {
+          setStatus('Vérification de l’abonnement sur le téléphone…');
           return withTimeout(registration.pushManager.getSubscription(), 8000,
             'Android ne répond pas à la vérification de l’abonnement push. Fermez puis rouvrez le site.').then(function (sub) {
             return withTimeout(sub ? saveSubscription(sub) : createSubscription(registration), 20000,
@@ -119,8 +132,12 @@
           });
         });
       }).then(function (result) {
-        if (result === null) return;
-        setStatus('Les alertes push sont activées sur cet appareil.');
+        if (result === null) {
+          clearTimeout(activationWatchdog);
+          activationStarted = false;
+          return;
+        }
+        setStatus('Les alertes push sont activées et synchronisées.');
         clearTimeout(activationWatchdog);
         activationStarted = false;
         button.disabled = false;
