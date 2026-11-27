@@ -51,8 +51,12 @@
     }
 
     function inactiveForAtLeast17Days(candidate) {
-        var activity = Date.parse(lastActivity(candidate));
-        return Number.isFinite(activity) && Date.now() - activity >= 17 * 86400000;
+        var reminder = candidate.qcmInactivityEmail || null;
+        var activity = reminder && reminder.activity_at ? Date.parse(reminder.activity_at) : NaN;
+        var last = Date.parse(lastActivity(candidate));
+        return !!reminder && reminder.status === 'sent' && !!reminder.sent_at &&
+            Number.isFinite(activity) && Number.isFinite(last) && last <= activity &&
+            Date.now() - activity >= 17 * 86400000;
     }
 
     function relativeActivity(value) {
@@ -188,6 +192,26 @@
             body: { p_candidate_id: null }
         }).then(function (result) {
             candidates = Array.isArray(result.candidates) ? result.candidates : [];
+            var ids = candidates.map(function (candidate) {
+                return candidate.candidate && candidate.candidate.id;
+            }).filter(Boolean);
+            if (!ids.length) return [];
+            return api('qcm_inactivity_emails?select=user_id,activity_at,status,sent_at&user_id=in.(' +
+                ids.map(encodeURIComponent).join(',') + ')&order=activity_at.desc').then(function (reminders) {
+                var latestByUser = new Map();
+                (Array.isArray(reminders) ? reminders : []).forEach(function (reminder) {
+                    var userId = String(reminder.user_id || '');
+                    if (userId && !latestByUser.has(userId)) latestByUser.set(userId, reminder);
+                });
+                candidates.forEach(function (candidate) {
+                    var userId = String(candidate.candidate && candidate.candidate.id || '');
+                    candidate.qcmInactivityEmail = latestByUser.get(userId) || null;
+                });
+            }).catch(function (error) {
+                candidates.forEach(function (candidate) { candidate.qcmInactivityEmail = null; });
+                console.warn('Historique des rappels QCM indisponible : alertes rouges désactivées.', error);
+            });
+        }).then(function () {
             render();
         }).catch(function (error) {
             statusNode.textContent = 'Impossible de charger les candidats : ' + error.message;
