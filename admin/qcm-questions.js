@@ -85,6 +85,20 @@
             throw error;
         });
     }
+    function countQuestions() {
+        function loadPage(offset, total) {
+            return api('rpc/get_admin_question_bank', {
+                method: 'POST',
+                body: { p_limit: 1000, p_offset: offset },
+                prefer: 'return=representation'
+            }).then(function (rows) {
+                if (!Array.isArray(rows)) throw new Error('Format de banque invalide.');
+                var nextTotal = total + rows.length;
+                return rows.length === 1000 ? loadPage(offset + 1000, nextTotal) : nextTotal;
+            });
+        }
+        return loadPage(0, 0);
+    }
     function field(labelText, control) {
         var label = make('label', 'anc-qcm-field', labelText);
         label.appendChild(control);
@@ -355,5 +369,5 @@
         document.body.appendChild(dialog);
     }
 
-    window.DoctrineQcmQuestions = { open: open };
+    window.DoctrineQcmQuestions = { open: open, count: countQuestions };
 })();
