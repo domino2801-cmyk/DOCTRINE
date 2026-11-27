@@ -911,8 +911,17 @@
             questionBankCard.type = 'button';
             questionBankCard.dataset.guideAction = 'qcm-major-questions';
             questionBankCard.append(node('span', 'og-dashboard-metric-label', 'GESTION DES QUESTIONS QCM-MAJOR'));
-            questionBankCard.append(node('strong', 'og-dashboard-metric-value', 'Gérer'));
+            var questionCountValue = node('strong', 'og-dashboard-metric-value', '0');
+            questionCountValue.setAttribute('aria-label', 'Nombre de questions dans la base');
+            questionBankCard.append(questionCountValue);
             questionBankCard.append(node('small', '', 'Ajouter, modifier, supprimer, classer et rechercher'));
+            if (window.DoctrineQcmQuestions && typeof window.DoctrineQcmQuestions.count === 'function') {
+                window.DoctrineQcmQuestions.count().then(function (count) {
+                    questionCountValue.textContent = String(count);
+                }).catch(function () {
+                    questionCountValue.textContent = '0';
+                });
+            }
             questionBankCard.addEventListener('click', function () {
                 if (window.DoctrineQcmQuestions && typeof window.DoctrineQcmQuestions.open === 'function') {
                     window.DoctrineQcmQuestions.open();
