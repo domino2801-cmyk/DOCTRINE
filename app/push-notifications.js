@@ -111,9 +111,7 @@
     } else {
       button.hidden = false;
       button.disabled = false;
-      button.onclick = activateFromTap;
-      button.addEventListener('pointerup', activateFromTap, { passive: false });
-      button.addEventListener('touchend', activateFromTap, { passive: false });
+      button.addEventListener('click', activateFromTap, false);
       setStatus(Notification.permission === 'granted'
         ? 'Touchez le bouton pour finaliser l’activation des alertes sur cet appareil.'
         : 'Touchez le bouton pour autoriser les alertes DOCTRINE.');
