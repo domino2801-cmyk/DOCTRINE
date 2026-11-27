@@ -1252,6 +1252,7 @@
             // L'insertion est idempotente grâce à la clé admin/source/ID : plusieurs
             // actualisations ou détections de visibilité ne créent pas de doublons.
             // Le compteur est recalculé après chaque confirmation d'écriture.
+            // Le statut lu reste isolé pour chaque source RETEX.
             var key = readKey(sourceKey, row.id);
             if (readMap[key]) return Promise.resolve();
             button.disabled = true;
