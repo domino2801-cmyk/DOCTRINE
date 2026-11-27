@@ -15,26 +15,6 @@
     });
   }
   function request(method, payload) {
-    return withTimeout(auth().jeton(), 12000, 'La session met trop de temps à répondre. Reconnectez-vous puis réessayez.').then(function (token) {
-      if (!token) throw new Error('Session expirée.');
-      return withTimeout(fetch(auth().url + '/functions/v1/doctrine-event-push', {
-        method: method,
-        headers: { apikey: auth().key, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: payload ? JSON.stringify(payload) : undefined
-      }), 15000, 'Le serveur de notifications ne répond pas. Vérifiez la connexion puis réessayez.');
-    }).then(function (response) {
-      return withTimeout(response.json().catch(function () { return {}; }), 8000,
-        'Le serveur de notifications ne termine pas sa réponse. Réessayez.').then(function (data) {
-        if (!response.ok) {
-          var error = new Error(data.error || 'Service de notification indisponible.');
-          error.status = response.status;
-          throw error;
-        }
-        return data;
-      });
-    });
-  }
-  function request(method, payload) {
     return withTimeout(auth().jeton(), 12000, 'Session non disponible. Reconnectez-vous puis réessayez.').then(function (token) {
       if (!token) throw new Error('Session expirée. Reconnectez-vous à DOCTRINE.');
       return withTimeout(fetch(auth().url + '/functions/v1/doctrine-event-push', {
@@ -205,29 +185,8 @@
         : 'Touchez le bouton pour autoriser les alertes DOCTRINE.');
     }
 
-    // La vérification du Service Worker se fait en arrière-plan :
-    // elle ne bloque plus l’affichage ni le toucher du bouton.
-    // La détection automatique ne doit jamais concurrencer une activation lancée
-    // par l'utilisateur. La carte n'est masquée qu'après confirmation du serveur.
-    navigator.serviceWorker.ready.then(function (registration) {
-      return withTimeout(registration.pushManager.getSubscription(), 8000,
-        'Vérification de l’abonnement impossible.').then(function (sub) {
-        if (!sub || activationStarted) return null;
-        return withTimeout(saveSubscription(sub), 20000,
-          'La synchronisation de l’abonnement existant prend trop de temps.').then(function () {
-          if (!activationStarted && panel.isConnected) panel.remove();
-          return null;
-        });
-      });
-    }).catch(function (error) {
-      // En cas d'échec, conserver la carte et son bouton de reprise.
-      console.warn('Vérification push différée :', error);
-      if (panel.isConnected && !activationStarted) {
-        setStatus('Abonnement non confirmé : touchez « Réessayer » pour terminer la synchronisation.');
-        button.disabled = false;
-        button.textContent = 'Réessayer';
-      }
-    });
+    // Aucun traitement en arrière-plan : l'activation est pilotée uniquement par le bouton.
+
   }
   function init() {
     if (!auth() || typeof auth().jeton !== 'function') return;
