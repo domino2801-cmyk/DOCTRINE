@@ -4,9 +4,11 @@
   "type": "module",
   "scripts": {
     "test:bm4-pdf": "node --test tests/bm4-official-pdf.test.mjs",
-    "test:drive-security": "node --test tests/drive-proxy-access.test.mjs tests/drive-resource-allowlist.test.mjs"
+    "test:drive-security": "node --test tests/drive-proxy-access.test.mjs tests/drive-resource-allowlist.test.mjs",
+    "screenshots:officier-guide": "node scripts/capture-officier-guide.mjs"
   },
   "devDependencies": {
-    "pdf-lib": "1.17.1"
+    "pdf-lib": "1.17.1",
+    "playwright": "^1.56.1"
   }
 }
