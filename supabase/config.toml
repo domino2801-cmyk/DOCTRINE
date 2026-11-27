@@ -15,3 +15,6 @@ verify_jwt = false
 
 [functions.validate-gabarit]
 verify_jwt = false
+
+[functions.doctrine-auth-handoff]
+verify_jwt = false
