@@ -47,6 +47,9 @@ test("l'interface permet d'activer ou désactiver les notifications sur chaque a
   assert.match(client, /panel\.remove\(\)/);
   assert.match(client, /activationWatchdog/);
   assert.match(client, /Réessayer/);
+  assert.match(client, /Création de l’abonnement dans Android/);
+  assert.match(client, /Enregistrement sécurisé de l’appareil/);
+  assert.match(client, /Notification\.permission === 'granted'/);
   assert.match(html, /app\/push-notifications\.js/);
   assert.match(worker, /addEventListener\('push'/);
   assert.match(worker, /notificationclick/);
