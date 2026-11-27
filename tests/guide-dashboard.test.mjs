@@ -678,6 +678,8 @@ test('la pastille RETEX ne compte que les fiches non lues et conserve la lecture
     assert.match(script, /function markRetexRead\(row, sourceKey, button, state\)/);
     assert.match(script, /on_conflict=admin_id%2Csource%2Cretex_id/);
     assert.match(script, /Marquer comme lu/);
+    assert.match(script, /IntersectionObserver/);
+    assert.match(script, /intersectionRatio < 0\.6/);
     assert.match(script, /RETEX non lu/);
     assert.match(script, /adminRetexRefreshTimer = setInterval/);
 });
