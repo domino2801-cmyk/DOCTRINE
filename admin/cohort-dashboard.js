@@ -50,6 +50,11 @@
         return candidate.doctrine && candidate.doctrine.last_activity || '';
     }
 
+    function inactiveForAtLeast17Days(candidate) {
+        var activity = Date.parse(lastActivity(candidate));
+        return Number.isFinite(activity) && Date.now() - activity >= 17 * 86400000;
+    }
+
     function relativeActivity(value) {
         if (!value) return 'Aucune activité enregistrée';
         var timestamp = Date.parse(value);
@@ -106,7 +111,7 @@
         var production = productionSummary(candidate);
         var card = node('article', 'anc-cohort-candidate');
         var heading = node('div', 'anc-cohort-candidate-heading');
-        heading.appendChild(node('strong', 'anc-cohort-name', candidateName(candidate.candidate || {})));
+        heading.appendChild(node('strong', 'anc-cohort-name' + (inactiveForAtLeast17Days(candidate) ? ' anc-cohort-name-inactive-17d' : ''), candidateName(candidate.candidate || {})));
         heading.appendChild(node('span', 'anc-cohort-pill anc-cohort-pill-' + status.key, status.label));
         card.appendChild(heading);
 
