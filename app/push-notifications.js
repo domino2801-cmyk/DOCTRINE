@@ -1,6 +1,5 @@
 (function () {
   'use strict';
-  var button, status, activationStarted = false;
   function auth() { return window.DoctrineAuth; }
   function withTimeout(promise, milliseconds, message) {
     var timer;
@@ -35,10 +34,12 @@
       });
     });
   }
-  function saveSubscription(sub) {
+  function saveSubscription(sub, onStage) {
+    if (onStage) onStage('Enregistrement sécurisé de l’appareil auprès de DOCTRINE…');
     return request('POST', { type: 'subscribe', subscription: sub.toJSON() });
   }
-  function createSubscription(registration) {
+  function createSubscription(registration, onStage) {
+    if (onStage) onStage('Récupération de la clé de sécurité…');
     return request('GET').then(function (config) {
       if (!config || typeof config.publicKey !== 'string' || !config.publicKey) {
         throw new Error('Clé VAPID absente de la configuration Supabase.');
@@ -46,12 +47,13 @@
       var key = config.publicKey.replace(/-/g, '+').replace(/_/g, '/');
       while (key.length % 4) key += '=';
       var appKey = Uint8Array.from(atob(key), function (ch) { return ch.charCodeAt(0); });
+      if (onStage) onStage('Création de l’abonnement dans Android…');
       return withTimeout(
         registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: appKey }),
         15000,
         'Android ne termine pas la création de l’abonnement.'
       );
-    }).then(saveSubscription);
+    }).then(function (sub) { return saveSubscription(sub, onStage); });
   }
   function render() {
     // Chaque carte possède son propre état : un second rendu (connexion,
@@ -128,7 +130,7 @@
           setStatus('Vérification de l’abonnement sur le téléphone…');
           return withTimeout(registration.pushManager.getSubscription(), 8000,
             'Android ne répond pas à la vérification de l’abonnement push. Fermez puis rouvrez le site.').then(function (sub) {
-            return withTimeout(sub ? saveSubscription(sub) : createSubscription(registration), 20000,
+            return withTimeout(sub ? saveSubscription(sub, setStatus) : createSubscription(registration, setStatus), 20000,
               'La création ou la synchronisation de l’abonnement prend trop de temps. Vérifiez le réseau et réessayez.');
           });
         });
