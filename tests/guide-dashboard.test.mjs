@@ -744,3 +744,10 @@ test('la consultation administrateur distingue les RETEX QCM-MAJOR et les RETEX 
     assert.match(adminRetex, /if \(!allowed \|\| dashboardMode !== 'admin'\)/);
     assert.match(adminRetex, /responses\.hidden = false/);
 });
+
+
+test('les trois indicateurs Fiches soumises, Fiches validées et Dernière activité sont sur une ligne sur ordinateur', () => {
+    assert.match(css, /\.og-candidate-workspace \.og-candidate-profile-summary-card \{ order:0; grid-template-columns:repeat\(3,minmax\(0,1fr\)\); \}/);
+    assert.match(css, /@media\(max-width:520px\)[\s\S]*?\.og-candidate-workspace \.og-candidate-profile-summary-card \{ grid-template-columns:repeat\(2,minmax\(0,1fr\)\); \}/);
+    assert.match(css, /@media\(max-width:360px\)[\s\S]*?\.og-candidate-workspace \.og-candidate-profile-summary-card \{ grid-template-columns:minmax\(0,1fr\); \}/);
+});
