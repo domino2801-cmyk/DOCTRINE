@@ -58,7 +58,11 @@ try {
       if (locator) await locator.waitFor({ state: 'visible', timeout: 5000 });
       await page.waitForTimeout(700);
       const file = path.join(OUTPUT_DIR, String(++counter.saved).padStart(2, '0') + '-' + safeName(name) + '.png');
-      await target.screenshot({ path: file, fullPage: !locator, animations: 'disabled' });
+      if (locator) {
+        await locator.screenshot({ path: file, animations: 'disabled' });
+      } else {
+        await page.screenshot({ path: file, fullPage: true, animations: 'disabled' });
+      }
       console.log('CAPTURE', path.relative(ROOT, file));
       return true;
     } catch (error) {
