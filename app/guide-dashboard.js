@@ -3247,7 +3247,7 @@
         var inactivityEmailsRequest = dashboardMode === 'admin' ? idsRequest.then(function (ids) {
             if (!ids.length) return [];
             return api('qcm_inactivity_emails?select=user_id,activity_at,status,sent_at&user_id=in.(' +
-                ids.map(encodeURIComponent).join(',') + ')&status=eq.sent&sent_at=not.is.null&order=activity_at.desc');
+                ids.map(encodeURIComponent).join(',') + ')&order=activity_at.desc');
         }) : Promise.resolve([]);
         var progressRequest = candidateRequest.then(function (payload) {
             return extractModuleProgressEvents(payload);
