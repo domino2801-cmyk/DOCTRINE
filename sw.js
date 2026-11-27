@@ -133,25 +133,29 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil((async () => {
-    const reportType = event.notification.data?.reportType === 'guide-signalements'
-      ? 'guide-signalements'
-      : 'signalements';
-    const appUrl = new URL('./index.html', self.registration.scope);
-    appUrl.searchParams.set('admin-section', reportType);
+    const data = event.notification.data || {};
     const scopeUrl = new URL(self.registration.scope);
     const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     const appClient = clients.find(client => {
       const url = new URL(client.url);
       return url.origin === scopeUrl.origin && url.pathname.startsWith(scopeUrl.pathname);
     });
+    if (data.reportType) {
+      const reportType = data.reportType === 'guide-signalements' ? 'guide-signalements' : 'signalements';
+      const appUrl = new URL('./index.html', self.registration.scope);
+      appUrl.searchParams.set('admin-section', reportType);
+      if (appClient) {
+        appClient.postMessage({ type: reportType === 'guide-signalements'
+          ? 'doctrine-open-guide-signalements' : 'doctrine-open-signalements' });
+        return appClient.focus();
+      }
+      return self.clients.openWindow(appUrl.href);
+    }
+    const target = new URL(typeof data.url === 'string' ? data.url : './index.html', self.registration.scope);
     if (appClient) {
-      appClient.postMessage({
-        type: reportType === 'guide-signalements'
-          ? 'doctrine-open-guide-signalements'
-          : 'doctrine-open-signalements'
-      });
+      await appClient.navigate(target.href);
       return appClient.focus();
     }
-    return self.clients.openWindow(appUrl.href);
+    return self.clients.openWindow(target.href);
   })());
 });
