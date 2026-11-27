@@ -106,24 +106,30 @@
     }
 
     if (Notification.permission === 'denied') {
-      // Une permission refusée ne peut pas être redemandée par JavaScript.
-      // Garder le bouton visible et guider l’utilisateur vers les réglages
-      // du domaine réellement utilisé (QCM-MAJOR.FR ou autre).
+      // Chrome a mémorisé un refus : aucune API web ne peut lever ce blocage.
+      // Afficher une aide persistante et permettre de relancer immédiatement
+      // l’activation après modification de l’autorisation du domaine courant.
       button.hidden = false;
       button.disabled = false;
-      button.textContent = 'Comment débloquer ?';
-      setStatus('Chrome bloque les notifications pour ' + window.location.hostname +
-        '. Dans Chrome : icône à gauche de l’adresse > Autorisations > Notifications > Autoriser. ' +
-        'Puis rechargez DOCTRINE.');
+      button.textContent = 'Débloquer les notifications';
+      setStatus('Notifications bloquées pour ' + window.location.hostname +
+        '. Sur Android : Chrome > ⋮ > Paramètres > Paramètres des sites > Notifications > ' +
+        window.location.hostname + ' > Autoriser.');
       button.addEventListener('click', function () {
-        if (Notification.permission !== 'denied') {
+        var permission = Notification.permission;
+        if (permission === 'granted') {
           render();
           return;
         }
-        button.textContent = 'Vérifier à nouveau';
-        setStatus('Autorisez les notifications pour ' + window.location.hostname +
-          ' dans les paramètres Chrome, puis revenez ici et touchez « Vérifier à nouveau ». ' +
-          'Si nécessaire : Chrome > Paramètres > Paramètres des sites > Notifications.');
+        if (permission === 'default') {
+          activateFromTap();
+          return;
+        }
+        button.textContent = 'J’ai autorisé — vérifier';
+        setStatus('Dans Chrome, ouvrez ⋮ > Paramètres > Paramètres des sites > Notifications. ' +
+          'Sélectionnez ' + window.location.hostname + ' puis choisissez « Autoriser ». ' +
+          'Revenez sur cette page et touchez « J’ai autorisé — vérifier ». ' +
+          'Si le domaine n’apparaît pas, ouvrez les paramètres du site depuis l’icône à gauche de son adresse.');
       }, false);
     } else {
       button.hidden = false;
