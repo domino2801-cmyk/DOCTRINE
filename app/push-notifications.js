@@ -34,25 +34,42 @@
       });
     });
   }
-  function setStatus(message) { if (status) status.textContent = message; }
+  function request(method, payload) {
+    return withTimeout(auth().jeton(), 12000, 'Session non disponible. Reconnectez-vous puis réessayez.').then(function (token) {
+      if (!token) throw new Error('Session expirée. Reconnectez-vous à DOCTRINE.');
+      return withTimeout(fetch(auth().url + '/functions/v1/doctrine-event-push', {
+        method: method,
+        headers: { apikey: auth().key, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: payload ? JSON.stringify(payload) : undefined,
+        cache: 'no-store'
+      }), 15000, 'Le serveur de notifications ne répond pas. Vérifiez la connexion.');
+    }).then(function (response) {
+      return withTimeout(response.json().catch(function () { return {}; }), 8000,
+        'Réponse du serveur de notifications incomplète.').then(function (data) {
+        if (!response.ok) {
+          var error = new Error(data.error || ('Erreur du serveur (' + response.status + ').'));
+          error.status = response.status;
+          throw error;
+        }
+        return data;
+      });
+    });
+  }
   function saveSubscription(sub) {
-    setStatus('Enregistrement sécurisé de l’appareil auprès de DOCTRINE…');
     return request('POST', { type: 'subscribe', subscription: sub.toJSON() });
   }
   function createSubscription(registration) {
-    setStatus('Récupération de la clé de sécurité…');
     return request('GET').then(function (config) {
       if (!config || typeof config.publicKey !== 'string' || !config.publicKey) {
-        throw new Error('La clé de sécurité des notifications est absente du serveur.');
+        throw new Error('Clé VAPID absente de la configuration Supabase.');
       }
       var key = config.publicKey.replace(/-/g, '+').replace(/_/g, '/');
       while (key.length % 4) key += '=';
-      var appKey = Uint8Array.from(atob(key), function (c) { return c.charCodeAt(0); });
-      setStatus('Création de l’abonnement dans Android…');
+      var appKey = Uint8Array.from(atob(key), function (ch) { return ch.charCodeAt(0); });
       return withTimeout(
         registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: appKey }),
         15000,
-        'Android ne termine pas la création de l’abonnement. Vérifiez les notifications du site dans Chrome.'
+        'Android ne termine pas la création de l’abonnement.'
       );
     }).then(saveSubscription);
   }
