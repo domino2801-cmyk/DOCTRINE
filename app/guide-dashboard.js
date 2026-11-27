@@ -1372,14 +1372,19 @@
                 responseList.append(item);
                 // Un RETEX devient lu lorsqu'il entre réellement dans la zone visible.
                 if (!isRead && typeof window.IntersectionObserver === 'function') {
-                    var readObserver = new IntersectionObserver(function (entries) {
-                        entries.forEach(function (entry) {
-                            if (!entry.isIntersecting || entry.intersectionRatio < 0.6) return;
-                            readObserver.unobserve(entry.target);
-                            markRetexRead(row, activeSource, readButton, readState);
-                        });
-                    }, { threshold: 0.6 });
-                    readObserver.observe(item);
+                    // Capturer la source de cette ligne : un changement d'onglet ne doit
+                    // jamais enregistrer un RETEX dans la mauvaise catégorie.
+                    (function (observedRow, observedSource, observedButton, observedState, observedItem) {
+                        var readObserver = new IntersectionObserver(function (entries) {
+                            entries.forEach(function (entry) {
+                                if (!entry.isIntersecting || entry.intersectionRatio < 0.1) return;
+                                readObserver.unobserve(entry.target);
+                                markRetexRead(observedRow, observedSource, observedButton, observedState);
+                            });
+                        }, { threshold: 0.1 });
+                        readObserver.observe(observedItem);
+                        dialog.addEventListener('close', function () { readObserver.disconnect(); }, { once: true });
+                    })(row, activeSource, readButton, readState, item);
                 }
             });
             var dates = currentRows.map(function (row) { return Date.parse(row.created_at); }).filter(Number.isFinite);
