@@ -4,6 +4,9 @@ verify_jwt = false
 [functions.doctrine-report-push]
 verify_jwt = false
 
+[functions.doctrine-event-push]
+verify_jwt = false
+
 [functions.doctrine-submit-fiche]
 verify_jwt = false
 
