@@ -116,7 +116,7 @@ Deno.serve(async request => {
       }
       return json({ error: "Invalid request" }, 400);
     }
-    if (request.method !== "POST" || request.headers.get("x-doctrine-webhook-secret") !== secret("DOCTRINE_REPORT_PUSH_WEBHOOK_SECRET"))
+    if (request.method !== "POST" || request.headers.get("x-doctrine-webhook-secret") !== secret("DOCTRINE_EVENT_PUSH_WEBHOOK_SECRET"))
       return json({ error: "Unauthorized" }, 401);
     const body = await request.json();
     if (typeof body.event !== "string" || !body.record || typeof body.record !== "object")
