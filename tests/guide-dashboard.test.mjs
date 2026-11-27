@@ -133,6 +133,8 @@ test('la fiche de chaque candidat administrateur permet de modifier sa spéciali
 
 test('le suivi global administrateur permet de retirer un candidat du cache local', () => {
     assert.match(script, /var removeCacheButton = node\('button', 'admin-delete-btn', 'Retirer du cache'\)/);
+    assert.match(css, /\.og-candidate-profile-identity > \.admin-edit-btn,[\s\S]*?\.og-candidate-profile-identity > \.admin-delete-btn \{[\s\S]*?width:170px[\s\S]*?min-height:40px/);
+    assert.match(css, /@media\(max-width:520px\)[\s\S]*?\.og-candidate-profile-identity > \.admin-delete-btn \{[\s\S]*?width:100%/);
     assert.match(script, /Retirer .* du cache local \? Le compte Supabase ne sera pas supprimé\./);
     assert.match(script, /detail: \{ id: identity\.id \}/);
     assert.match(script, /adminOgCandidates\.findIndex\(function \(item\)/);
