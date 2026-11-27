@@ -112,8 +112,10 @@
         }
         setStatus('Préparation des alertes sur cet appareil…');
         return withTimeout(navigator.serviceWorker.ready, 12000, 'Le service de notifications du navigateur ne démarre pas. Fermez puis rouvrez le site, et réessayez.').then(function (registration) {
-          return registration.pushManager.getSubscription().then(function (sub) {
-            return withTimeout(sub ? saveSubscription(sub) : createSubscription(registration), 20000, 'La création de l’abonnement prend trop de temps. Vérifiez le réseau et réessayez.');
+          return withTimeout(registration.pushManager.getSubscription(), 8000,
+            'Android ne répond pas à la vérification de l’abonnement push. Fermez puis rouvrez le site.').then(function (sub) {
+            return withTimeout(sub ? saveSubscription(sub) : createSubscription(registration), 20000,
+              'La création ou la synchronisation de l’abonnement prend trop de temps. Vérifiez le réseau et réessayez.');
           });
         });
       }).then(function (result) {
