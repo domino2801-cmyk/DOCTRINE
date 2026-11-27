@@ -669,14 +669,25 @@ test('la carte Signalement admin affiche une pastille globale pour les trois ori
     assert.match(script, /pending === 0/);
 });
 
-test('la carte RETEX admin affiche une pastille globale pour tous les types de RETEX et actualise le compteur', () => {
+test('la pastille RETEX ne compte que les fiches non lues et conserve la lecture par administrateur', () => {
     assert.match(script, /function refreshAdminRetexBadge\(badge\)/);
     assert.match(script, /retex_responses\?select=id&limit=2000/);
     assert.match(script, /guide_retex_reports\?select=id&limit=2000/);
-    assert.match(script, /og-dashboard-retex-badge/);
-    assert.match(script, /refreshAdminRetexBadge\(retexBadge\)/);
+    assert.match(script, /doctrine_retex_reads\?select=source,retex_id&limit=10000/);
+    assert.match(script, /badge\.hidden = total === 0/);
+    assert.match(script, /function markRetexRead\(row, sourceKey, button, state\)/);
+    assert.match(script, /on_conflict=admin_id%2Csource%2Cretex_id/);
+    assert.match(script, /Marquer comme lu/);
+    assert.match(script, /RETEX non lu/);
     assert.match(script, /adminRetexRefreshTimer = setInterval/);
-    assert.match(script, /tous types confondus/);
+});
+test('la migration RETEX lus protège les lectures par RLS et ne désactive jamais RLS', async () => {
+    const migration = await readFile(new URL('../supabase/retex-read-status.sql', import.meta.url), 'utf8');
+    assert.match(migration, /admin_id uuid not null default auth\.uid\(\)/);
+    assert.match(migration, /primary key \(admin_id, source, retex_id\)/);
+    assert.match(migration, /enable row level security/);
+    assert.match(migration, /doctrine_is_admin\(\)/);
+    assert.doesNotMatch(migration, /disable row level security/i);
 });
 
 test('la consultation RETEX QCM-MAJOR est réservée aux administrateurs', () => {
