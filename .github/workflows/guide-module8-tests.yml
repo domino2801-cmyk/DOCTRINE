@@ -7,6 +7,9 @@ on:
       - "app/guide-dashboard.js"
       - "app/guide-module8.js"
       - "tests/guide-module8.test.mjs"
+      - "tests/push-notifications.test.mjs"
+      - "app/push-notifications.js"
+      - "sw.js"
       - ".github/workflows/guide-module8-tests.yml"
       - "supabase/**"
   pull_request:
@@ -29,7 +32,9 @@ jobs:
           node-version: 22
       - name: Run Guide Module 8 regression tests
         run: node --test tests/guide-module8.test.mjs
-      - name: Check Officier Guide dashboard and feedback scripts
-        run: node --check app/guide-dashboard.js && node --check admin/fiches-admin.js && node --check admin/admin.js
+      - name: Check Officier Guide and push notification scripts
+        run: node --check app/guide-dashboard.js && node --check admin/fiches-admin.js && node --check admin/admin.js && node --check app/push-notifications.js && node --check sw.js
       - name: Run Officier Guide feedback regression tests
         run: node --test tests/guide-dashboard.test.mjs tests/guide-feedback.test.mjs
+      - name: Run Web Push notification regression tests
+        run: node --test tests/push-notifications.test.mjs
