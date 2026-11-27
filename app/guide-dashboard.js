@@ -579,12 +579,19 @@
         var identityCopy = node('div', 'og-candidate-profile-identity-copy');
         identityCopy.append(node('p', 'og-dashboard-kicker', 'FICHE CANDIDAT'));
         var pseudoNode = node('strong', 'og-candidate-profile-pseudo', pseudo);
+        var inactivityEmail = candidate.qcmInactivityEmail || null;
+        var notificationActivityTimestamp = inactivityEmail && inactivityEmail.activity_at
+            ? Date.parse(inactivityEmail.activity_at) : NaN;
         var lastActivityTimestamp = lastActivity ? Date.parse(lastActivity) : NaN;
-        var inactiveFor17Days = Number.isFinite(lastActivityTimestamp) &&
-            Date.now() - lastActivityTimestamp >= 17 * 24 * 60 * 60 * 1000;
+        var inactivityReminderSent = inactivityEmail && inactivityEmail.status === 'sent' &&
+            !!inactivityEmail.sent_at && Number.isFinite(notificationActivityTimestamp);
+        var noActivitySinceReminder = Number.isFinite(lastActivityTimestamp) &&
+            lastActivityTimestamp <= notificationActivityTimestamp;
+        var inactiveFor17Days = inactivityReminderSent && noActivitySinceReminder &&
+            Date.now() - notificationActivityTimestamp >= 17 * 24 * 60 * 60 * 1000;
         if (dashboardMode === 'admin' && inactiveFor17Days) {
             pseudoNode.classList.add('is-inactive-17-days');
-            pseudoNode.title = 'Aucune activité depuis au moins 17 jours';
+            pseudoNode.title = 'Rappel d’inactivité envoyé et aucune reprise depuis au moins 17 jours';
         }
         identityCopy.append(pseudoNode);
         var specialtyLine = node('p', '', 'Spécialité : ' + (identity.specialty || 'Non renseignée'));
@@ -3235,6 +3242,13 @@
                 return candidate.candidate && candidate.candidate.id;
             }).filter(Boolean);
         });
+        // Le rappel à 15 jours reste géré par son automatisation existante.
+        // Ici, on lit uniquement les rappels effectivement envoyés pour décider du rouge à 17 jours.
+        var inactivityEmailsRequest = dashboardMode === 'admin' ? idsRequest.then(function (ids) {
+            if (!ids.length) return [];
+            return api('qcm_inactivity_emails?select=user_id,activity_at,status,sent_at&user_id=in.(' +
+                ids.map(encodeURIComponent).join(',') + ')&status=eq.sent&sent_at=not.is.null&order=activity_at.desc');
+        }) : Promise.resolve([]);
         var progressRequest = candidateRequest.then(function (payload) {
             return extractModuleProgressEvents(payload);
         });
@@ -3254,7 +3268,7 @@
         var blockedAccountsRequest = dashboardMode === 'admin'
             ? api('rpc/get_admin_blocked_accounts', { method: 'POST', body: {} })
             : Promise.resolve(null);
-        Promise.allSettled([candidateRequest, courseRequest, progressRequest, cvRequest, reviewRequest, blockedAccountsRequest]).then(function (results) {
+        Promise.allSettled([candidateRequest, courseRequest, progressRequest, cvRequest, reviewRequest, blockedAccountsRequest, inactivityEmailsRequest]).then(function (results) {
             if (results[0].status === 'fulfilled') {
                 candidates = Array.isArray(results[0].value.candidates) ? results[0].value.candidates : [];
             } else {
@@ -3273,6 +3287,21 @@
                 });
                 if (!blockedStatusKnown) {
                     console.warn('Statut de blocage des comptes indisponible.', results[5] && results[5].reason);
+                }
+                if (results[6] && results[6].status === 'fulfilled') {
+                    var sentRemindersByUser = new Map();
+                    (Array.isArray(results[6].value) ? results[6].value : []).forEach(function (reminder) {
+                        var userId = String(reminder.user_id || '');
+                        if (userId && !sentRemindersByUser.has(userId)) sentRemindersByUser.set(userId, reminder);
+                    });
+                    candidates.forEach(function (candidate) {
+                        var userId = String(candidate.candidate && candidate.candidate.id || '');
+                        candidate.qcmInactivityEmail = sentRemindersByUser.get(userId) || null;
+                    });
+                } else {
+                    candidates.forEach(function (candidate) { candidate.qcmInactivityEmail = null; });
+                    console.warn('Historique des rappels QCM indisponible : aucun pseudo ne sera coloré sur cette base.',
+                        results[6] && results[6].reason);
                 }
             }
             if (results[4].status === 'fulfilled') {
