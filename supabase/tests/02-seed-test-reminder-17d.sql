@@ -34,10 +34,12 @@ begin
     values
         (v_user_id, now() - interval '18 days', 'test@yopmail.fr',
          'sent', now() - interval '18 days', now() - interval '18 days', null)
-    returning id into strict v_user_id;
-end $$;
+    returning id into strict v_reminder_id;
+
+    raise notice 'REMINDER_ID=%', v_reminder_id;
+end $;
 
 -- IMPORTANT : la transaction est volontairement annulée par défaut.
 -- Pour conserver le scénario de test, remplacer ROLLBACK par COMMIT,
--- puis noter l'identifiant retourné par la requête INSERT.
+-- puis relever la valeur REMINDER_ID affichée dans les messages d'exécution.
 rollback;
