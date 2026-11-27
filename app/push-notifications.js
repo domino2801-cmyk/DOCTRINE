@@ -23,7 +23,8 @@
         body: payload ? JSON.stringify(payload) : undefined
       }), 15000, 'Le serveur de notifications ne répond pas. Vérifiez la connexion puis réessayez.');
     }).then(function (response) {
-      return response.json().catch(function () { return {}; }).then(function (data) {
+      return withTimeout(response.json().catch(function () { return {}; }), 8000,
+        'Le serveur de notifications ne termine pas sa réponse. Réessayez.').then(function (data) {
         if (!response.ok) {
           var error = new Error(data.error || 'Service de notification indisponible.');
           error.status = response.status;
@@ -87,6 +88,14 @@
       if (event && event.preventDefault) event.preventDefault();
       if (button.disabled || activationStarted) return;
       activationStarted = true;
+      // Garde-fou global : aucune attente Android ne doit bloquer l'interface.
+      var activationWatchdog = setTimeout(function () {
+        if (!activationStarted) return;
+        activationStarted = false;
+        button.disabled = false;
+        button.textContent = 'Réessayer';
+        setStatus('Activation interrompue : Android ne répond pas. Fermez puis rouvrez le site et réessayez.');
+      }, 45000);
       button.disabled = true;
       button.textContent = 'Activation…';
       setStatus('Demande d’autorisation en cours…');
@@ -110,11 +119,15 @@
       }).then(function (result) {
         if (result === null) return;
         setStatus('Les alertes push sont activées sur cet appareil.');
+        clearTimeout(activationWatchdog);
         activationStarted = false;
         button.disabled = false;
         button.textContent = 'Actualiser';
         button.onclick = render;
-      }).catch(showError);
+      }).catch(function (error) {
+        clearTimeout(activationWatchdog);
+        showError(error);
+      });
     }
 
     if (Notification.permission === 'denied') {
@@ -157,15 +170,12 @@
     navigator.serviceWorker.ready.then(function (registration) {
       return registration.pushManager.getSubscription().then(function (sub) {
         if (!sub) return null;
-        return saveSubscription(sub).then(function () {
-          if (!document.getElementById('doctrine-push-settings')) return;
-          button.hidden = false;
-          button.disabled = false;
-          setStatus('Les alertes push sont actives et synchronisées.');
-          // L’abonnement est déjà actif : masquer entièrement le panneau.
-          // La carte ne doit pas rester affichée avec l’action « Désactiver ».
-          panel.remove();
+        // Abonnement déjà présent dans Android : masquer immédiatement la carte.
+        panel.remove();
+        saveSubscription(sub).catch(function (error) {
+          console.warn('Synchronisation push différée :', error);
         });
+        return null;
       });
     }).catch(function (error) {
       // Ne pas désactiver le bouton : l’utilisateur doit pouvoir relancer l’activation.
