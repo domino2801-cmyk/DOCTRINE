@@ -213,6 +213,7 @@ body.adm-on .adm-row-tools, body.adm-on .adm-row-tools * { pointer-events: auto;
 .anc-cohort-candidate { padding: 13px; border: 1px solid #dce2d9; border-radius: 7px; background: #fff; }
 .anc-cohort-candidate-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .anc-cohort-name { color: #1d382b; font-size: 15px; }
+.anc-cohort-name-inactive-17d { color: #ff1010 !important; font-weight: 900; text-shadow: 0 0 1px rgba(255,16,16,.35); }
 .anc-cohort-pill { flex: 0 0 auto; padding: 4px 7px; border-radius: 4px; font-size: 10px; font-weight: 800; }
 .anc-cohort-pill-ready { background: #e3f2e7; color: #205b3a; }
 .anc-cohort-pill-watch { background: #fff0d6; color: #795014; }
