@@ -55,3 +55,12 @@ test("le Module 8 intégré réutilise la session DOCTRINE de la page parente", 
     assert.equal(session.expires_at, expiresAt);
     assert.equal(session.email, "guide@example.test");
 });
+
+
+test("le relais autonome retire le code de l’URL et vérifie l’identité avant stockage", () => {
+    assert.match(source, /function recupererSessionHandoff\(\)/);
+    assert.match(source, /history\.replaceState\(\{\}, document\.title, window\.location\.pathname \+ window\.location\.search\)/);
+    assert.match(source, /action: 'redeem', code: code/);
+    assert.match(source, /user\.id !== data\.session\.user_id/);
+    assert.match(source, /ecrire\(session\)/);
+});
