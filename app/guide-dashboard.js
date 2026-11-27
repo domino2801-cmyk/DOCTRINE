@@ -1370,6 +1370,17 @@
                 }
                 item.append(details);
                 responseList.append(item);
+                // Un RETEX devient lu lorsqu'il entre réellement dans la zone visible.
+                if (!isRead && typeof window.IntersectionObserver === 'function') {
+                    var readObserver = new IntersectionObserver(function (entries) {
+                        entries.forEach(function (entry) {
+                            if (!entry.isIntersecting || entry.intersectionRatio < 0.6) return;
+                            readObserver.unobserve(entry.target);
+                            markRetexRead(row, activeSource, readButton, readState);
+                        });
+                    }, { threshold: 0.6 });
+                    readObserver.observe(item);
+                }
             });
             var dates = currentRows.map(function (row) { return Date.parse(row.created_at); }).filter(Number.isFinite);
             meta.textContent = currentRows.length + ' RETEX enregistré(s).' +
