@@ -60,6 +60,9 @@
     // actualisation ou reprise) ne peut plus piloter le bouton d'un autre rendu.
     var button, status, activationStarted = false;
     function setStatus(message) { if (status) status.textContent = message; }
+    function hideWhenActivated() {
+      if (panel && panel.parentNode) panel.remove();
+    }
     if (!auth() || !auth().jeton || !('serviceWorker' in navigator) || !('PushManager' in window) ||
         !('Notification' in window) || !window.isSecureContext) return;
 
@@ -140,12 +143,9 @@
           activationStarted = false;
           return;
         }
-        setStatus('Les alertes push sont activées et synchronisées.');
         clearTimeout(activationWatchdog);
         activationStarted = false;
-        button.disabled = false;
-        button.textContent = 'Actualiser';
-        button.onclick = render;
+        hideWhenActivated();
       }).catch(function (error) {
         clearTimeout(activationWatchdog);
         showError(error);
@@ -187,7 +187,21 @@
         : 'Touchez le bouton pour autoriser les alertes DOCTRINE.');
     }
 
-    // Aucun traitement en arrière-plan : l'activation est pilotée uniquement par le bouton.
+    // Si l'appareil est déjà autorisé et possède un abonnement, on vérifie sa
+    // synchronisation côté serveur puis on masque la carte. Sinon elle reste visible.
+    if (Notification.permission === 'granted') {
+      navigator.serviceWorker.ready.then(function (registration) {
+        return registration.pushManager.getSubscription();
+      }).then(function (sub) {
+        if (!sub) return;
+        return saveSubscription(sub).then(function () {
+          hideWhenActivated();
+        });
+      }).catch(function () {
+        // En cas d'échec de vérification/synchronisation, conserver la carte
+        // pour permettre à l'utilisateur de relancer l'activation.
+      });
+    }
 
   }
   function init() {
