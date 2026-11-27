@@ -28,9 +28,9 @@ declare
     event_name text;
 begin
     select decrypted_secret into webhook_url from vault.decrypted_secrets
-      where name = 'doctrine_report_push_url';
+      where name = 'doctrine_event_push_url';
     select decrypted_secret into webhook_secret from vault.decrypted_secrets
-      where name = 'doctrine_report_push_webhook_secret';
+      where name = 'doctrine_event_push_webhook_secret';
     if webhook_url is null or webhook_secret is null then
         raise warning 'DOCTRINE push: Vault configuration missing';
         return new;
