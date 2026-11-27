@@ -1140,3 +1140,15 @@ body.og-guide-entry-only #guideDashboardNav > button {
     border-radius: 8px !important;
   }
 }
+
+
+/* Aligner les trois actions à droite de la fiche candidat sur ordinateur. */
+@media (min-width: 521px) {
+  .og-candidate-profile-identity > button.admin-edit-btn,
+  .og-candidate-profile-identity > button.admin-account-block-btn,
+  .og-candidate-profile-identity > button.admin-delete-btn {
+    justify-self: end !important;
+    align-self: end !important;
+    margin-left: auto !important;
+  }
+}
