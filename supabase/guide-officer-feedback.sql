@@ -145,8 +145,29 @@ create policy guide_signalements_admin_update on public.guide_signalements
 
 grant select, insert, update on public.guide_retex_reports to authenticated;
 grant select, insert, update on public.guide_signalements to authenticated;
-grant usage, select on sequence public.guide_retex_reports_id_seq to authenticated;
-grant usage, select on sequence public.guide_signalements_id_seq to authenticated;
+
+-- Les tables peuvent préexister avec un id sans séquence (migration historique).
+-- Accorder les droits uniquement si PostgreSQL trouve la séquence réelle.
+do $$
+declare
+    report_seq text;
+    signalement_seq text;
+begin
+    report_seq := pg_get_serial_sequence('public.guide_retex_reports', 'id');
+    if report_seq is not null then
+        execute format('grant usage, select on sequence %s to authenticated', report_seq);
+    else
+        raise notice 'Aucune séquence liée à guide_retex_reports.id : aucun droit de séquence à accorder.';
+    end if;
+
+    signalement_seq := pg_get_serial_sequence('public.guide_signalements', 'id');
+    if signalement_seq is not null then
+        execute format('grant usage, select on sequence %s to authenticated', signalement_seq);
+    else
+        raise notice 'Aucune séquence liée à guide_signalements.id : aucun droit de séquence à accorder.';
+    end if;
+end;
+$$;
 
 create or replace function public.guide_feedback_touch_updated_at()
 returns trigger language plpgsql set search_path = '' as $$
