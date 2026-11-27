@@ -1075,3 +1075,10 @@ body.og-guide-entry-only #guideDashboardNav > button {
   outline:2px solid rgba(224,116,103,.6);
   outline-offset:2px;
 }
+
+/* État de lecture des RETEX dans la consultation administrateur. */
+.og-admin-retex-read-controls { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin:10px 0 12px; }
+.og-admin-retex-read-state { color:#f0c66a; font-size:12px; font-weight:800; }
+.og-admin-retex-response.is-read .og-admin-retex-read-state { color:#9ed4a6; }
+.og-admin-retex-read-button { min-height:32px; padding:6px 10px; }
+.og-admin-retex-read-button:disabled { opacity:.7; cursor:default; }
