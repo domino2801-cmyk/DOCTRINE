@@ -33,4 +33,4 @@ jobs:
             echo "::error::Le secret GitHub SUPABASE_ACCESS_TOKEN est absent."
             exit 1
           fi
-          supabase functions deploy doctrine-event-push --remote=beodiemzrunqjkvylffn --yes
+          supabase functions deploy doctrine-event-push --project-ref beodiemzrunqjkvylffn --yes
