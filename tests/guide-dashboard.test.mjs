@@ -756,6 +756,12 @@ test('les trois indicateurs Fiches soumises, Fiches validées et Dernière activ
 
 
 test('le pseudo candidat passe en rouge vif uniquement après rappel QCM envoyé et 17 jours sans reprise', () => {
+    assert.match(cohortDashboardScript, /qcm_inactivity_emails\?select=user_id,activity_at,status,sent_at/);
+    assert.match(cohortDashboardScript, /reminder\.status === 'sent'/);
+    assert.match(cohortDashboardScript, /reminder\.sent_at/);
+    assert.match(cohortDashboardScript, /last <= activity/);
+    assert.match(cohortDashboardScript, /Date\.now\(\) - activity >= 17 \* 86400000/);
+    assert.match(cohortDashboardScript, /anc-cohort-name-inactive-17d/);
     const start = script.indexOf('function renderCandidateProfileDetail(target, candidate)');
     const end = script.indexOf('function openGuideCandidates()', start);
     const profile = script.slice(start, end);
