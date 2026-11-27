@@ -11,8 +11,12 @@
         body: payload ? JSON.stringify(payload) : undefined
       });
     }).then(function (response) {
-      return response.json().then(function (data) {
-        if (!response.ok) throw new Error(data.error || 'Service de notification indisponible.');
+      return response.json().catch(function () { return {}; }).then(function (data) {
+        if (!response.ok) {
+          var error = new Error(data.error || 'Service de notification indisponible.');
+          error.status = response.status;
+          throw error;
+        }
         return data;
       });
     });
@@ -41,6 +45,8 @@
     var heading = document.createElement('strong'); heading.textContent = 'Notifications DOCTRINE';
     status = document.createElement('p'); status.style.margin = '6px 0';
     button = document.createElement('button'); button.type = 'button';
+    button.textContent = 'Chargement…';
+    button.disabled = true;
     button.style.cssText = 'padding:8px 12px;border:0;border-radius:7px;background:#d7e4ee;color:#172536;font-weight:600;cursor:pointer';
     panel.append(heading, status, button); document.body.appendChild(panel);
     navigator.serviceWorker.ready.then(function (registration) {
@@ -89,10 +95,22 @@
       });
     }).catch(function (error) {
       var message = error && error.message ? error.message : '';
-      if (/Failed to fetch|NetworkError|Load failed/i.test(message)) {
-        setStatus('Service push inaccessible : la fonction doctrine-event-push doit être déployée dans Supabase et ses secrets configurés.');
+      button.hidden = false;
+      button.disabled = false;
+      button.textContent = 'Réessayer';
+      button.onclick = function () {
+        button.disabled = true;
+        button.textContent = 'Vérification…';
+        render();
+      };
+      if (error && error.status === 401) {
+        setStatus('Accès refusé par Supabase : votre session doit être renouvelée. Déconnectez-vous puis reconnectez-vous à DOCTRINE, puis réessayez.');
+      } else if (/Session expirée/i.test(message)) {
+        setStatus('Session expirée. Déconnectez-vous puis reconnectez-vous à DOCTRINE.');
+      } else if (/Failed to fetch|NetworkError|Load failed/i.test(message)) {
+        setStatus('Service push inaccessible : vérifiez le déploiement de doctrine-event-push et sa configuration Supabase.');
       } else {
-        setStatus(message || 'Service de notification indisponible.');
+        setStatus(message || 'Service de notification indisponible. Vous pouvez réessayer.');
       }
     });
   }
