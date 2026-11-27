@@ -1,7 +1,7 @@
 -- Notifications Web Push DOCTRINE pour RETEX, fiches à corriger et validations.
 -- À exécuter après retex-notifications.sql, guide_module8.sql et guide-officer-feedback.sql.
 -- Réutilise les secrets Vault doctrine_event_push_url / doctrine_event_push_webhook_secret
--- et les secrets Edge DOCTRINE_VAPID_PUBLIC_KEY / DOCTRINE_VAPID_PRIVATE_KEY.
+-- et les secrets Edge DOCTRINE_VAPID_PUBLIC_KEY / DOCTRINE_VAPID_PRIVATE_KEY / DOCTRINE_EVENT_PUSH_WEBHOOK_SECRET.
 
 create table if not exists public.doctrine_push_subscriptions (
     user_id uuid not null references auth.users(id) on delete cascade,
