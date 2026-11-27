@@ -44,7 +44,9 @@ test("l'interface permet d'activer ou désactiver les notifications sur chaque a
   assert.match(client, /Notification\.requestPermission/);
   assert.match(client, /pushManager\.subscribe/);
   assert.match(client, /pushManager\.getSubscription/);
-  assert.match(client, /unsubscribe/);
+  assert.match(client, /panel\.remove\(\)/);
+  assert.match(client, /activationWatchdog/);
+  assert.match(client, /Réessayer/);
   assert.match(html, /app\/push-notifications\.js/);
   assert.match(worker, /addEventListener\('push'/);
   assert.match(worker, /notificationclick/);
