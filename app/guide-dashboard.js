@@ -304,6 +304,15 @@
             return (submission.reviews || []).some(function (review) { return review.status === 'valide'; });
         }).length;
     }
+    function pendingAiCorrectionCount(candidate) {
+        return submissions(candidate).filter(function (submission) {
+            if (submission.submission_type !== 'proposition' && submission.submission_type !== 'support_oral') return false;
+            var reviews = Array.isArray(submission.reviews) ? submission.reviews : [];
+            return !reviews.length || reviews.some(function (review) {
+                return !review.status || review.status === 'en_attente';
+            });
+        }).length;
+    }
     function candidateFollowUpStatus(candidate) {
         var score = qcmAverage(candidate);
         var activity = Date.parse(candidate.doctrine && candidate.doctrine.last_activity || '');
@@ -2589,7 +2598,16 @@
     }
     function renderAiCorrection(candidate) {
         var section = node('details', 'og-candidate-profile-accordion og-candidate-profile-ai og-dashboard-ai-correction');
-        section.append(node('summary', '', 'Correction assistée par IA'));
+        var summary = node('summary');
+        summary.append(node('span', 'og-dashboard-ai-summary-label', 'Correction assistée par IA'));
+        var pendingCount = pendingAiCorrectionCount(candidate);
+        var pendingBadge = node('span', 'og-dashboard-ai-pending-badge', String(pendingCount));
+        pendingBadge.hidden = pendingCount === 0;
+        pendingBadge.setAttribute('role', 'status');
+        pendingBadge.setAttribute('aria-live', 'polite');
+        pendingBadge.setAttribute('aria-label', pendingCount + ' fiche(s) à corriger');
+        summary.append(pendingBadge);
+        section.append(summary);
         var content = node('div', 'og-candidate-profile-accordion-content');
         var gridCard = node('article', 'og-dashboard-ai-grid-card');
         var gridContent = node('div', 'og-dashboard-ai-grid-content');
