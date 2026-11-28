@@ -269,7 +269,7 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /Documents transmis/);
     assert.match(script, /candidateCvs\[candidate\.candidate && candidate\.candidate\.id\]/);
     assert.match(script, /Télécharger le document/);
-    assert.match(script, /object\/sign\/doctrine-candidate-cv/);
+    assert.match(script, /storage\\/v1\\/object\\/authenticated\\/doctrine-candidate-cv/);
     assert.match(script, /var fileResponse = await fetch\(downloadUrl\.href\)/);
     assert.match(script, /URL\.createObjectURL\(fileBlob\)/);
     assert.match(script, /localStorage\.getItem\(downloadedCvStorageKey/);
@@ -387,7 +387,7 @@ test('les deux bibliothèques utilisent des cartes de largeur identique, titres 
 
 
 test('la page principale recharge la version du tableau de bord contenant les bibliothèques', () => {
-    assert.match(html, /app\/guide-dashboard\.js\?v=20261128-CV-BUCKET-FIX-1/);
+    assert.match(html, /app\\/guide-dashboard\\.js\\?v=20261128-CV-AUTH-DOWNLOAD-1/);
     assert.ok(html.includes('pdf-lib@1.17.1/dist/pdf-lib.min.js'));
     assert.ok(html.indexOf('pdf-lib@1.17.1/dist/pdf-lib.min.js') < html.indexOf('app/guide-dashboard.js'));
     assert.ok(script.includes("await import('./bm4-official-pdf.mjs')"));
@@ -505,7 +505,7 @@ test('l’Officier Guide peut télécharger le CV transmis depuis la fiche candi
     assert.ok(download.includes('hasDownloadedCv(id, candidateCvs[id])'));
     assert.ok(download.includes('URL.createObjectURL(fileBlob)'));
     assert.ok(download.includes('fileResponse = await fetch(auth().url'));
-    assert.ok(download.includes('fileResponse = await fetch(downloadUrl.href)'));
+    assert.ok(download.includes('fileResponse = await fetch(auth().url'));
     assert.ok(download.includes("metricsNode.querySelector('.og-dashboard-cv-pending-badge')"));
 });
 
