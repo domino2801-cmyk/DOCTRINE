@@ -2198,7 +2198,7 @@
         button.textContent = 'Préparation…';
         try {
             var path = cv.storage_path.split('/').map(encodeURIComponent).join('/');
-            var signed = await storageApi('object/sign/candidate-cvs/' + path, {
+            var signed = await storageApi('object/sign/doctrine-candidate-cv/' + path, {
                 method: 'POST',
                 body: { expiresIn: 300, download: filename }
             });
