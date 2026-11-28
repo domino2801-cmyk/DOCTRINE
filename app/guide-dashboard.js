@@ -2191,14 +2191,21 @@
             if (!signedUrl) throw new Error('Lien de téléchargement sécurisé indisponible.');
             var downloadUrl = new URL(relativeStorageUrl(signedUrl));
             downloadUrl.searchParams.set('download', filename);
+            // Récupérer réellement le fichier avant de déclencher le téléchargement :
+            // l'attribut download seul est ignoré par certains navigateurs sur une URL distante.
+            var fileResponse = await fetch(downloadUrl.href);
+            if (!fileResponse.ok) throw new Error('Le fichier CV est inaccessible (HTTP ' + fileResponse.status + ').');
+            var fileBlob = await fileResponse.blob();
+            if (!fileBlob || !fileBlob.size) throw new Error('Le fichier CV téléchargé est vide.');
+            var objectUrl = URL.createObjectURL(fileBlob);
             var link = node('a');
-            link.href = downloadUrl.href;
+            link.href = objectUrl;
             link.download = filename;
-            link.rel = 'noopener noreferrer';
             link.style.display = 'none';
             document.body.append(link);
             link.click();
             link.remove();
+            window.setTimeout(function () { URL.revokeObjectURL(objectUrl); }, 1000);
             var candidateId = String(candidate && candidate.candidate && candidate.candidate.id || cv.candidate_id || '');
             if (candidateId) downloadedCandidateCvs[candidateId] = true;
             var remainingCvCount = Object.keys(candidateCvs).filter(function (id) {
@@ -2210,6 +2217,7 @@
                 cvBadge.hidden = remainingCvCount === 0;
                 cvBadge.setAttribute('aria-label', remainingCvCount + ' CV restant(s) à télécharger');
             }
+            // Le CV n'est retiré du compteur qu'après récupération effective du fichier.
             setStatus('Téléchargement lancé : ' + filename, false);
         } catch (error) {
             setStatus('Téléchargement du document impossible : ' + (error.message || error), true);
