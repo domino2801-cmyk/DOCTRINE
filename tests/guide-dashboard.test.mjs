@@ -387,7 +387,7 @@ test('les deux bibliothèques utilisent des cartes de largeur identique, titres 
 
 
 test('la page principale recharge la version du tableau de bord contenant les bibliothèques', () => {
-    assert.ok(html.includes('app/guide-dashboard.js?v=20261128-AI-REFERENCES-JURY-1'));
+    assert.ok(html.includes('app/guide-dashboard.js?v=20261128-AI-REFERENCES-JURY-2'));
     assert.ok(html.includes('pdf-lib@1.17.1/dist/pdf-lib.min.js'));
     assert.ok(html.indexOf('pdf-lib@1.17.1/dist/pdf-lib.min.js') < html.indexOf('app/guide-dashboard.js'));
     assert.ok(script.includes("await import('./bm4-official-pdf.mjs')"));
@@ -842,4 +842,10 @@ test('le compte rendu de correction IA affiche les documents réellement transmi
     assert.match(script, /suggestion\.reference_sources/);
     assert.match(script, /reference\.category/);
     assert.match(script, /reference\.name/);
+});
+
+
+test('le lancement de la correction IA annonce le croisement avec le dossier et les trois rapports de jury', () => {
+    assert.match(script, /dossier d’exercice et des rapports du jury 2023, 2024 et 2025 à Google Gemini/);
+    assert.match(script, /Analyse croisée de la fiche avec le dossier d’exercice et les trois rapports officiels du jury/);
 });
