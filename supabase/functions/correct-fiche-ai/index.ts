@@ -908,7 +908,7 @@ Deno.serve(async (request) => {
                 console.warn("Using Gemini secondary model after primary model failed:", model, "->", fallbackModel);
                 outputText = await requestGeminiFallback(
                     apiKey, fallbackModel, pdfBytes, referenceWrittenBytes,
-                    subjectReferences, analysisPrompt, responseSchema
+                    referenceDocuments, analysisPrompt, responseSchema
                 );
                 correctionProvider = "Gemini";
             } catch (error) {
