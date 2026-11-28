@@ -2202,7 +2202,7 @@
             // évite les URL signées relatives et les problèmes de redirection du stockage.
             var token = await auth().jeton();
             if (!token) throw new Error('Session expirée. Reconnectez-vous.');
-            var fileResponse = await fetch(auth().url.replace(/\\/$/, '') +
+            var fileResponse = await fetch(auth().url.replace(/\/$/, '') +
                 '/storage/v1/object/authenticated/doctrine-candidate-cv/' + path, {
                     method: 'GET',
                     headers: { apikey: auth().key, Authorization: 'Bearer ' + token }
