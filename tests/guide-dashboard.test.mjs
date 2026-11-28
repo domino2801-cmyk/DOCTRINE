@@ -804,3 +804,20 @@ test('COMPTES UTILISATEURS affiche les pastilles IA et CV dans les interfaces ad
     assert.match(script, /pendingAiBadge\.hidden = pendingFicheCount === 0/);
     assert.match(script, /pendingCvBadge\.hidden = pendingCvCount === 0/);
 });
+
+
+test('le suivi global administrateur affiche les cohortes par pseudo Officier Guide', async () => {
+    assert.match(script, /rpc\/get_admin_candidate_cohorts/);
+    assert.match(script, /COHORTES PAR OFFICIER GUIDE/);
+    assert.match(script, /COHORTE — '\s*\+ cohort\.pseudo/);
+    assert.match(script, /activeCandidates = cohort\.candidates/);
+    assert.match(script, /CANDIDATS SANS COHORTE/);
+    assert.match(script, /showCandidate\(index\)/);
+    assert.match(css, /\.og-dashboard-admin-cohort/);
+    const migration = await readFile(new URL('../supabase/20261128100000_admin_candidate_cohorts.sql', import.meta.url), 'utf8');
+    assert.match(migration, /create or replace function public\.get_admin_candidate_cohorts\(\)/);
+    assert.match(migration, /not public\.doctrine_is_admin\(\)/);
+    assert.match(migration, /assignment\.guide_id/);
+    assert.match(migration, /enable row level security|security definer/i);
+    assert.doesNotMatch(migration, /disable row level security/i);
+});
