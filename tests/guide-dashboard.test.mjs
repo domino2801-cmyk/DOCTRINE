@@ -493,6 +493,9 @@ test('l’Officier Guide peut télécharger le CV transmis depuis la fiche candi
     assert.ok(download.includes('object/sign/candidate-cvs/'));
     assert.ok(download.includes('download: filename'));
     assert.ok(download.includes('link.click()'));
+    assert.ok(download.includes("downloadUrl.searchParams.set('download', filename)"));
+    assert.ok(download.includes('downloadedCandidateCvs[candidateId] = true'));
+    assert.ok(download.includes("metricsNode.querySelector('.og-dashboard-cv-pending-badge')"));
 });
 
 test('la fiche candidat utilise des accordéons repliés et ne duplique pas les statistiques QCM', () => {
