@@ -446,10 +446,10 @@ test('les cartes proposition et support oral affichent les commentaires complets
 });
 
 
-test('la carte COMPTES UTILISATEURS admin affiche aussi le total des fiches en attente', () => {
-    assert.match(script, /if \(dashboardMode === 'admin'\) \{[\s\S]*?pendingBadge = node\('span', 'og-dashboard-ai-pending-badge'\)/);
+test('la carte COMPTES UTILISATEURS admin affiche une pastille dédiée aux fiches en attente', () => {
+    assert.match(script, /var pendingAiBadge = node\('span', 'og-dashboard-ai-pending-badge'\)/);
     assert.match(script, /candidates\.reduce\(function \(total, candidate\)[\s\S]*?pendingAiCorrectionCount\(candidate\)/);
-    assert.match(script, /pendingBadge\.hidden = pendingCount === 0/);
+    assert.match(script, /pendingAiBadge\.hidden = pendingFicheCount === 0/);
 });
 
 test('la correction IA affiche une pastille rouge pour les fiches proposition et oral en attente', () => {
