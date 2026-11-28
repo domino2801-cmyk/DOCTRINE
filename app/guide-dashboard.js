@@ -2198,18 +2198,19 @@
         button.textContent = 'Préparation…';
         try {
             var path = cv.storage_path.split('/').map(encodeURIComponent).join('/');
-            var signed = await storageApi('object/sign/doctrine-candidate-cv/' + path, {
-                method: 'POST',
-                body: { expiresIn: 300, download: filename }
-            });
-            var signedUrl = signed.signedURL || signed.signedUrl;
-            if (!signedUrl) throw new Error('Lien de téléchargement sécurisé indisponible.');
-            var downloadUrl = new URL(relativeStorageUrl(signedUrl));
-            downloadUrl.searchParams.set('download', filename);
-            // Récupérer réellement le fichier avant de déclencher le téléchargement :
-            // l'attribut download seul est ignoré par certains navigateurs sur une URL distante.
-            var fileResponse = await fetch(downloadUrl.href);
-            if (!fileResponse.ok) throw new Error('Le fichier CV est inaccessible (HTTP ' + fileResponse.status + ').');
+            // Lecture directe du bucket privé avec le jeton de session :
+            // évite les URL signées relatives et les problèmes de redirection du stockage.
+            var token = await auth().jeton();
+            if (!token) throw new Error('Session expirée. Reconnectez-vous.');
+            var fileResponse = await fetch(auth().url.replace(/\\/$/, '') +
+                '/storage/v1/object/authenticated/doctrine-candidate-cv/' + path, {
+                    method: 'GET',
+                    headers: { apikey: auth().key, Authorization: 'Bearer ' + token }
+                });
+            if (!fileResponse.ok) {
+                var storageError = await fileResponse.json().catch(function () { return {}; });
+                throw new Error(storageError.message || storageError.error || 'Le fichier CV est inaccessible (HTTP ' + fileResponse.status + ').');
+            }
             var fileBlob = await fileResponse.blob();
             if (!fileBlob || !fileBlob.size) throw new Error('Le fichier CV téléchargé est vide.');
             var objectUrl = URL.createObjectURL(fileBlob);
