@@ -2369,6 +2369,9 @@
                         formObservation.value = String(suggestion.form_observations || '').trim();
                         formEvidence.value = String(suggestion.form_evidence || '').trim();
                     }
+                    // Recalculer après le report des notes ET des annotations Gemini :
+                    // updateTotal appelé avant ces champs laissait « à compléter » affiché.
+                    updateTotal();
                 }
                 renderAiSuggestion(suggestion);
                 status.textContent = suggestion.readable
