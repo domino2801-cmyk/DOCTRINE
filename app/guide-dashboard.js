@@ -25,6 +25,21 @@
     var moduleEventsAvailable = true;
     var candidateCvs = Object.create(null);
     var downloadedCandidateCvs = Object.create(null);
+    var downloadedCvStorageKey = 'doctrine-og-downloaded-cvs-v1';
+    try {
+        var savedDownloadedCvs = JSON.parse(window.localStorage.getItem(downloadedCvStorageKey) || '{}');
+        if (savedDownloadedCvs && typeof savedDownloadedCvs === 'object' && !Array.isArray(savedDownloadedCvs)) {
+            downloadedCandidateCvs = savedDownloadedCvs;
+        }
+    } catch (_) { downloadedCandidateCvs = Object.create(null); }
+    function hasDownloadedCv(candidateId, cv) {
+        return !!candidateId && !!cv && downloadedCandidateCvs[candidateId] === String(cv.storage_path || '');
+    }
+    function rememberDownloadedCv(candidateId, cv) {
+        if (!candidateId || !cv || !cv.storage_path) return;
+        downloadedCandidateCvs[candidateId] = String(cv.storage_path);
+        try { window.localStorage.setItem(downloadedCvStorageKey, JSON.stringify(downloadedCandidateCvs)); } catch (_) {}
+    }
     var adminCohortAssignments = [];
     var cvStatusAvailable = true;
     var progressRefreshTimer = null;
@@ -1018,7 +1033,7 @@
             card.append(pendingAiBadge);
 
             var pendingCvCount = Object.keys(candidateCvs).filter(function (candidateId) {
-                return !downloadedCandidateCvs[candidateId];
+                return !hasDownloadedCv(candidateId, candidateCvs[candidateId]);
             }).length;
             var pendingCvBadge = node('span', 'og-dashboard-ai-pending-badge og-dashboard-cv-pending-badge');
             pendingCvBadge.textContent = String(pendingCvCount);
@@ -2207,9 +2222,9 @@
             link.remove();
             window.setTimeout(function () { URL.revokeObjectURL(objectUrl); }, 1000);
             var candidateId = String(candidate && candidate.candidate && candidate.candidate.id || cv.candidate_id || '');
-            if (candidateId) downloadedCandidateCvs[candidateId] = true;
+            if (candidateId) rememberDownloadedCv(candidateId, cv);
             var remainingCvCount = Object.keys(candidateCvs).filter(function (id) {
-                return !downloadedCandidateCvs[id];
+                return !hasDownloadedCv(id, candidateCvs[id]);
             }).length;
             var cvBadge = metricsNode && metricsNode.querySelector('.og-dashboard-cv-pending-badge');
             if (cvBadge) {
