@@ -7,6 +7,8 @@ on:
       - "app/guide-dashboard.js"
       - "app/guide-module8.js"
       - "tests/guide-module8.test.mjs"
+      - "tests/guide-dashboard.test.mjs"
+      - "tests/guide-feedback.test.mjs"
       - "tests/push-notifications.test.mjs"
       - "app/push-notifications.js"
       - "sw.js"
