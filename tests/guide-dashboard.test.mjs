@@ -501,7 +501,10 @@ test('l’Officier Guide peut télécharger le CV transmis depuis la fiche candi
     assert.ok(download.includes('download: filename'));
     assert.ok(download.includes('link.click()'));
     assert.ok(download.includes("downloadUrl.searchParams.set('download', filename)"));
-    assert.ok(download.includes('downloadedCandidateCvs[candidateId] = true'));
+    assert.ok(download.includes('rememberDownloadedCv(candidateId, cv)'));
+    assert.ok(download.includes('hasDownloadedCv(id, candidateCvs[id])'));
+    assert.ok(download.includes('URL.createObjectURL(fileBlob)'));
+    assert.ok(download.includes('fileResponse = await fetch(downloadUrl.href)'));
     assert.ok(download.includes("metricsNode.querySelector('.og-dashboard-cv-pending-badge')"));
 });
 
