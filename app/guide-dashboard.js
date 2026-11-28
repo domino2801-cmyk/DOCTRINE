@@ -2426,6 +2426,16 @@
             aiPanel.append(node('h3', '', isOral
                 ? 'Proposition de correction IA — Fichette orale'
                 : 'Proposition de correction IA — Fiche de proposition'));
+            if (Array.isArray(suggestion.reference_sources)) {
+                var referencesHeading = node('h4', '', 'Références documentaires effectivement transmises à l’IA');
+                var referencesList = node('ul', 'og-dashboard-ai-reference-list');
+                suggestion.reference_sources.forEach(function (reference) {
+                    if (!reference || !reference.name) return;
+                    var category = reference.category ? reference.category + ' — ' : '';
+                    referencesList.append(node('li', '', category + reference.name));
+                });
+                aiPanel.append(referencesHeading, referencesList);
+            }
             if (!suggestion.readable) {
                 aiPanel.append(node('p', '', 'Aucune note n’a été reprise : le document doit être vérifié manuellement.'),
                     node('p', '', suggestion.limitations || 'Document incomplet ou illisible.'));
