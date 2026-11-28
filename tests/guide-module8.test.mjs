@@ -217,8 +217,8 @@ test("la correction Gemini est disponible pour les deux types de fiches avec val
     assert.match(aiFunction, /MAX_REFERENCE_TOTAL_BYTES/);
     assert.match(aiFunction, /isCorrectionFileName/);
     assert.match(aiFunction, /corrig[eé]/);
-    assert.match(aiFunction, /subjectReferences\.map/);
-    assert.match(aiFunction, /DOSSIER DOCUMENTAIRE DE RÉFÉRENCE/);
+    assert.match(aiFunction, /referenceDocuments\.map/);
+    assert.match(aiFunction, /RÉFÉRENTIEL DOCUMENTAIRE OBLIGATOIRE/);
     assert.match(aiFunction, /contrôle complet/);
     assert.match(aiFunction, /dossier incomplet/);
     assert.match(aiFunction, /from\("guide_candidates"\)[\s\S]*eq\("guide_id", userData\.user\.id\)[\s\S]*eq\("candidate_id", submission\.user_id\)/);
@@ -710,7 +710,7 @@ test("la correction IA exploite obligatoirement le dossier d’exercice et les r
     assert.match(correctionAiFunction, /juryReferences = await getJuryReferenceDocuments\(\)/);
     assert.match(correctionAiFunction, /referenceDocuments = subjectReferences\.concat\(juryReferences\)/);
     assert.match(correctionAiFunction, /reference_sources: referenceSources/);
-    assert.match(correctionAiFunction, /contrôler le travail aux constats récurrents, aux exigences méthodologiques et aux attentes explicites des jurys/);
+    assert.match(correctionAiFunction, /Exploite les trois rapports du jury pour confronter la méthode/);
     assert.match(correctionAiFunction, /inaccessible dans Google Drive/);
     assert.match(correctionAiFunction, /n’est pas un PDF exploitable/);
 });
