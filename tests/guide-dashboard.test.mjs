@@ -272,7 +272,10 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /object\/sign\/candidate-cvs/);
     assert.match(script, /var fileResponse = await fetch\(downloadUrl\.href\)/);
     assert.match(script, /URL\.createObjectURL\(fileBlob\)/);
-    assert.match(script, /downloadedCandidateCvs\[candidateId\] = true/);
+    assert.match(script, /localStorage\.getItem\(downloadedCvStorageKey/);
+    assert.match(script, /localStorage\.setItem\(downloadedCvStorageKey/);
+    assert.match(script, /rememberDownloadedCv\(candidateId, cv\)/);
+    assert.match(script, /hasDownloadedCv\(candidateId, candidateCvs\[candidateId\]\)/);
     assert.match(script, /remainingCvCount === 0/);
     assert.doesNotMatch(script, /ccpm_date\s*:/);
     assert.match(script, /Progression des modules 1 à 7/);
