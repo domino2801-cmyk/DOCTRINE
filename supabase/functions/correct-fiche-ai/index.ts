@@ -356,7 +356,7 @@ async function requestGeminiFallback(
     model: string,
     pdfBytes: Uint8Array,
     referenceWrittenBytes: Uint8Array | null,
-    subjectReferences: DriveReference[],
+    referenceDocuments: DriveReference[],
     analysisPrompt: string,
     schema: Record<string, unknown>
 ): Promise<string> {
@@ -365,7 +365,7 @@ async function requestGeminiFallback(
         ...(referenceWrittenBytes
             ? [{ inlineData: { mimeType: "application/pdf", data: encodeBase64(referenceWrittenBytes) } }]
             : []),
-        ...subjectReferences.map((item) => ({
+        ...referenceDocuments.map((item) => ({
             inlineData: { mimeType: item.mimeType, data: encodeBase64(item.bytes) }
         })),
         { text: analysisPrompt }
