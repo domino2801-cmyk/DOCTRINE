@@ -270,7 +270,7 @@ test('le tableau de bord utilise les données filtrées par le RPC guide', () =>
     assert.match(script, /candidateCvs\[candidate\.candidate && candidate\.candidate\.id\]/);
     assert.match(script, /Télécharger le document/);
     assert.ok(script.includes('/storage/v1/object/authenticated/doctrine-candidate-cv/'));
-    assert.match(script, /var fileResponse = await fetch\(downloadUrl\.href\)/);
+    assert.ok(script.includes("'/storage/v1/object/authenticated/doctrine-candidate-cv/' + path"));
     assert.match(script, /URL\.createObjectURL\(fileBlob\)/);
     assert.match(script, /localStorage\.getItem\(downloadedCvStorageKey/);
     assert.match(script, /localStorage\.setItem\(downloadedCvStorageKey/);
