@@ -795,8 +795,10 @@ test('le pseudo candidat passe en rouge vif uniquement après rappel QCM envoyé
 });
 
 
-test('la pastille COMPTES UTILISATEURS2 compte aussi les CV déposés', () => {
+test('COMPTES UTILISATEURS2 affiche deux pastilles distinctes pour les fiches IA et les CV', () => {
+    assert.match(script, /var pendingAiBadge = node\('span', 'og-dashboard-ai-pending-badge'\)/);
+    assert.match(script, /pendingAiBadge\.hidden = pendingFicheCount === 0/);
     assert.match(script, /var pendingCvCount = Object\.keys\(candidateCvs\)\.length/);
-    assert.match(script, /var pendingCount = pendingFicheCount \+ pendingCvCount/);
-    assert.match(script, /pendingCvCount \+ ' CV déposé\(s\)'/);
+    assert.match(script, /var pendingCvBadge = node\('span', 'og-dashboard-ai-pending-badge og-dashboard-cv-pending-badge'\)/);
+    assert.match(script, /pendingCvBadge\.hidden = pendingCvCount === 0/);
 });
