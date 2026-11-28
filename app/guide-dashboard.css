@@ -1214,7 +1214,7 @@ body.og-guide-entry-only #guideDashboardNav > button {
 }
 
 
-/* Cohortes Officier Guide dans la colonne latérale du suivi global administrateur. */
+/* Cohortes Officier Guide — même identité visuelle que les autres cartes DOCTRINE. */
 .og-dashboard-admin-cohorts {
     display:grid;
     gap:8px;
@@ -1226,21 +1226,28 @@ body.og-guide-entry-only #guideDashboardNav > button {
 .og-dashboard-admin-cohort,
 .og-dashboard-admin-unassigned {
     min-width:0;
-    border:1px solid var(--og-border, #d8dee8);
-    border-radius:10px;
-    background:var(--og-surface, #fff);
+    border:1px solid rgba(183,207,185,.24);
+    border-radius:8px;
+    background:rgba(255,255,255,.025);
+    color:#e8efe8;
     overflow:hidden;
 }
 .og-dashboard-admin-cohort > summary,
 .og-dashboard-admin-unassigned > summary {
     cursor:pointer;
     padding:11px 12px;
+    background:rgba(83,111,86,.2);
+    color:#f2f5ee;
     font-weight:800;
     overflow-wrap:anywhere;
 }
+.og-dashboard-admin-cohort > summary:hover,
+.og-dashboard-admin-unassigned > summary:hover {
+    background:rgba(83,111,86,.3);
+}
 .og-dashboard-admin-cohort[open] > summary,
 .og-dashboard-admin-unassigned[open] > summary {
-    border-bottom:1px solid var(--og-border, #d8dee8);
+    border-bottom:1px solid rgba(183,207,185,.2);
 }
 .og-dashboard-admin-cohort .og-qcm-candidate-list,
 .og-dashboard-admin-unassigned .og-qcm-candidate-list {
