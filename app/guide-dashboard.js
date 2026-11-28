@@ -927,19 +927,25 @@
             var metricLabel = node('span', 'og-dashboard-metric-label', metric[0]);
             card.append(metricLabel);
             if (dashboardMode === 'admin') {
-                var pendingBadge = node('span', 'og-dashboard-ai-pending-badge');
                 var pendingFicheCount = candidates.reduce(function (total, candidate) {
                     return total + pendingAiCorrectionCount(candidate);
                 }, 0);
+                var pendingAiBadge = node('span', 'og-dashboard-ai-pending-badge');
+                pendingAiBadge.textContent = String(pendingFicheCount);
+                pendingAiBadge.hidden = pendingFicheCount === 0;
+                pendingAiBadge.setAttribute('role', 'status');
+                pendingAiBadge.setAttribute('aria-live', 'polite');
+                pendingAiBadge.setAttribute('aria-label', pendingFicheCount + ' fiche(s) en attente de correction IA');
+                card.append(pendingAiBadge);
+
                 var pendingCvCount = Object.keys(candidateCvs).length;
-                var pendingCount = pendingFicheCount + pendingCvCount;
-                pendingBadge.textContent = String(pendingCount);
-                pendingBadge.hidden = pendingCount === 0;
-                pendingBadge.setAttribute('role', 'status');
-                pendingBadge.setAttribute('aria-live', 'polite');
-                pendingBadge.setAttribute('aria-label', pendingFicheCount + ' fiche(s) en attente de correction IA et ' +
-                    pendingCvCount + ' CV déposé(s)');
-                card.append(pendingBadge);
+                var pendingCvBadge = node('span', 'og-dashboard-ai-pending-badge og-dashboard-cv-pending-badge');
+                pendingCvBadge.textContent = String(pendingCvCount);
+                pendingCvBadge.hidden = pendingCvCount === 0;
+                pendingCvBadge.setAttribute('role', 'status');
+                pendingCvBadge.setAttribute('aria-live', 'polite');
+                pendingCvBadge.setAttribute('aria-label', pendingCvCount + ' CV déposé(s)');
+                card.append(pendingCvBadge);
             }
             card.append(node('strong', 'og-dashboard-metric-value', String(metric[1])));
             card.append(node('small', '', metric[2]));
