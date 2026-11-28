@@ -497,7 +497,8 @@ test('l’Officier Guide peut télécharger le CV transmis depuis la fiche candi
     const downloadStart = script.indexOf('async function downloadCandidateCv(candidate, cv, button)');
     const downloadEnd = script.indexOf('async function openCandidatePdf', downloadStart);
     const download = script.slice(downloadStart, downloadEnd);
-    assert.ok(download.includes('object/sign/candidate-cvs/'));
+    assert.ok(download.includes('object/sign/doctrine-candidate-cv/'));
+    assert.ok(!download.includes('object/sign/candidate-cvs/'));
     assert.ok(download.includes('download: filename'));
     assert.ok(download.includes('link.click()'));
     assert.ok(download.includes("downloadUrl.searchParams.set('download', filename)"));
