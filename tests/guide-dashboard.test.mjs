@@ -835,3 +835,11 @@ test('le suivi global administrateur affiche les cohortes par pseudo Officier Gu
     assert.match(migration, /enable row level security|security definer/i);
     assert.doesNotMatch(migration, /disable row level security/i);
 });
+
+
+test('le compte rendu de correction IA affiche les documents réellement transmis comme références', () => {
+    assert.match(script, /Références documentaires effectivement transmises à l’IA/);
+    assert.match(script, /suggestion\.reference_sources/);
+    assert.match(script, /reference\.category/);
+    assert.match(script, /reference\.name/);
+});
