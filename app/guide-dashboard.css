@@ -440,6 +440,8 @@ body.og-guide-entry-only #guideDashboardNav > button {
 .og-candidate-profile-accordion > summary::after { content:'＋'; color:#d8b85b; font-size:18px; line-height:1; }
 .og-candidate-profile-accordion[open] > summary::after { content:'−'; }
 .og-candidate-profile-accordion > summary:hover { background:rgba(216,184,91,.07); }
+.og-dashboard-ai-pending-badge { display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; min-width:23px; height:23px; padding:0 7px; border-radius:999px; background:#c93636; color:#fff; font-size:12px; font-weight:900; line-height:1; box-sizing:border-box; box-shadow:0 0 0 2px rgba(201,54,54,.16); }
+.og-dashboard-ai-pending-badge[hidden] { display:none; }
 .og-candidate-profile-accordion > summary:focus-visible { outline:2px solid #e6c96f; outline-offset:-2px; }
 .og-candidate-profile-accordion-content { display:grid; gap:12px; padding:12px; border-top:1px solid rgba(183,207,185,.16); }
 .og-candidate-profile-progress-card { margin:0 0 16px; padding:16px; border:1px solid rgba(183,207,185,.22); border-radius:9px; background:rgba(255,255,255,.025); }
