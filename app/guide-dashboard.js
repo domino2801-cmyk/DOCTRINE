@@ -928,14 +928,17 @@
             card.append(metricLabel);
             if (dashboardMode === 'admin') {
                 var pendingBadge = node('span', 'og-dashboard-ai-pending-badge');
-                var pendingCount = candidates.reduce(function (total, candidate) {
+                var pendingFicheCount = candidates.reduce(function (total, candidate) {
                     return total + pendingAiCorrectionCount(candidate);
                 }, 0);
+                var pendingCvCount = Object.keys(candidateCvs).length;
+                var pendingCount = pendingFicheCount + pendingCvCount;
                 pendingBadge.textContent = String(pendingCount);
                 pendingBadge.hidden = pendingCount === 0;
                 pendingBadge.setAttribute('role', 'status');
                 pendingBadge.setAttribute('aria-live', 'polite');
-                pendingBadge.setAttribute('aria-label', pendingCount + ' fiche(s) en attente de correction IA');
+                pendingBadge.setAttribute('aria-label', pendingFicheCount + ' fiche(s) en attente de correction IA et ' +
+                    pendingCvCount + ' CV déposé(s)');
                 card.append(pendingBadge);
             }
             card.append(node('strong', 'og-dashboard-metric-value', String(metric[1])));
