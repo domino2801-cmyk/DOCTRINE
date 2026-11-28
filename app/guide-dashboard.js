@@ -924,7 +924,20 @@
             card.type = 'button';
             card.dataset.guideAction = 'candidates-tracking';
             card.addEventListener('click', openGuideCandidates);
-            card.append(node('span', 'og-dashboard-metric-label', metric[0]));
+            var metricLabel = node('span', 'og-dashboard-metric-label', metric[0]);
+            card.append(metricLabel);
+            if (dashboardMode === 'admin') {
+                var pendingBadge = node('span', 'og-dashboard-ai-pending-badge');
+                var pendingCount = candidates.reduce(function (total, candidate) {
+                    return total + pendingAiCorrectionCount(candidate);
+                }, 0);
+                pendingBadge.textContent = String(pendingCount);
+                pendingBadge.hidden = pendingCount === 0;
+                pendingBadge.setAttribute('role', 'status');
+                pendingBadge.setAttribute('aria-live', 'polite');
+                pendingBadge.setAttribute('aria-label', pendingCount + ' fiche(s) en attente de correction IA');
+                card.append(pendingBadge);
+            }
             card.append(node('strong', 'og-dashboard-metric-value', String(metric[1])));
             card.append(node('small', '', metric[2]));
             metricsNode.append(card);
