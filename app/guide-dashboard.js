@@ -24,6 +24,7 @@
     var loading = false;
     var moduleEventsAvailable = true;
     var candidateCvs = Object.create(null);
+    var downloadedCandidateCvs = Object.create(null);
     var adminCohortAssignments = [];
     var cvStatusAvailable = true;
     var progressRefreshTimer = null;
@@ -1016,7 +1017,9 @@
             pendingAiBadge.setAttribute('aria-label', pendingFicheCount + ' fiche(s) en attente de correction IA');
             card.append(pendingAiBadge);
 
-            var pendingCvCount = Object.keys(candidateCvs).length;
+            var pendingCvCount = Object.keys(candidateCvs).filter(function (candidateId) {
+                return !downloadedCandidateCvs[candidateId];
+            }).length;
             var pendingCvBadge = node('span', 'og-dashboard-ai-pending-badge og-dashboard-cv-pending-badge');
             pendingCvBadge.textContent = String(pendingCvCount);
             pendingCvBadge.hidden = pendingCvCount === 0;
@@ -2186,14 +2189,27 @@
             });
             var signedUrl = signed.signedURL || signed.signedUrl;
             if (!signedUrl) throw new Error('Lien de téléchargement sécurisé indisponible.');
+            var downloadUrl = new URL(relativeStorageUrl(signedUrl));
+            downloadUrl.searchParams.set('download', filename);
             var link = node('a');
-            link.href = relativeStorageUrl(signedUrl);
+            link.href = downloadUrl.href;
             link.download = filename;
             link.rel = 'noopener noreferrer';
             link.style.display = 'none';
             document.body.append(link);
             link.click();
             link.remove();
+            var candidateId = String(candidate && candidate.candidate && candidate.candidate.id || cv.candidate_id || '');
+            if (candidateId) downloadedCandidateCvs[candidateId] = true;
+            var remainingCvCount = Object.keys(candidateCvs).filter(function (id) {
+                return !downloadedCandidateCvs[id];
+            }).length;
+            var cvBadge = metricsNode && metricsNode.querySelector('.og-dashboard-cv-pending-badge');
+            if (cvBadge) {
+                cvBadge.textContent = String(remainingCvCount);
+                cvBadge.hidden = remainingCvCount === 0;
+                cvBadge.setAttribute('aria-label', remainingCvCount + ' CV restant(s) à télécharger');
+            }
             setStatus('Téléchargement lancé : ' + filename, false);
         } catch (error) {
             setStatus('Téléchargement du document impossible : ' + (error.message || error), true);
