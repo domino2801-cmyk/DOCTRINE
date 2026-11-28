@@ -446,8 +446,8 @@ test('les cartes proposition et support oral affichent les commentaires complets
 });
 
 
-test('la carte COMPTES UTILISATEURS admin affiche une pastille dédiée aux fiches en attente', () => {
-    assert.match(script, /var pendingAiBadge = node\('span', 'og-dashboard-ai-pending-badge'\)/);
+test('la carte COMPTES UTILISATEURS affiche la pastille des fiches en attente', () => {
+    assert.match(script, /var pendingAiBadge = node\('span', 'og-dashboard-ai-pending-badge og-dashboard-ai-metric-badge'\)/);
     assert.match(script, /candidates\.reduce\(function \(total, candidate\)[\s\S]*?pendingAiCorrectionCount\(candidate\)/);
     assert.match(script, /pendingAiBadge\.hidden = pendingFicheCount === 0/);
 });
@@ -803,5 +803,5 @@ test('COMPTES UTILISATEURS affiche les pastilles IA et CV dans les interfaces ad
     assert.match(metrics, /var pendingCvBadge = node\('span', 'og-dashboard-ai-pending-badge og-dashboard-cv-pending-badge'\)/);
     assert.match(metrics, /card\.append\(pendingAiBadge\)/);
     assert.match(metrics, /card\.append\(pendingCvBadge\)/);
-    assert.doesNotMatch(metrics, /if \(dashboardMode === 'admin'\) \{[\s\S]*?pendingAiBadge/);
+    assert.match(script, /api\('doctrine_candidate_cvs\?select=candidate_id,storage_path,original_filename,uploaded_at&candidate_id=in\.\('/);
 });
