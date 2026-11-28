@@ -796,12 +796,11 @@ test('le pseudo candidat passe en rouge vif uniquement après rappel QCM envoyé
 
 
 test('COMPTES UTILISATEURS affiche les pastilles IA et CV dans les interfaces admin et Officier Guide', () => {
-    const metricsStart = script.indexOf('function renderMetrics()');
-    const metricsEnd = script.indexOf('function ', metricsStart + 20);
-    const metrics = script.slice(metricsStart, metricsEnd > metricsStart ? metricsEnd : undefined);
-    assert.match(metrics, /var pendingAiBadge = node\('span', 'og-dashboard-ai-pending-badge og-dashboard-ai-metric-badge'\)/);
-    assert.match(metrics, /var pendingCvBadge = node\('span', 'og-dashboard-ai-pending-badge og-dashboard-cv-pending-badge'\)/);
-    assert.match(metrics, /card\.append\(pendingAiBadge\)/);
-    assert.match(metrics, /card\.append\(pendingCvBadge\)/);
-    assert.match(script, /api\('doctrine_candidate_cvs\?select=candidate_id,storage_path,original_filename,uploaded_at&candidate_id=in\.\('/);
+    assert.match(script, /function renderMetrics\(\)[\s\S]*?var pendingAiBadge = node\('span', 'og-dashboard-ai-pending-badge og-dashboard-ai-metric-badge'\)/);
+    assert.match(script, /function renderMetrics\(\)[\s\S]*?var pendingCvBadge = node\('span', 'og-dashboard-ai-pending-badge og-dashboard-cv-pending-badge'\)/);
+    assert.match(script, /card\.append\(pendingAiBadge\)/);
+    assert.match(script, /card\.append\(pendingCvBadge\)/);
+    assert.match(script, /doctrine_candidate_cvs\?select=candidate_id,storage_path,original_filename,uploaded_at&candidate_id=in\.\(/);
+    assert.match(script, /pendingAiBadge\.hidden = pendingFicheCount === 0/);
+    assert.match(script, /pendingCvBadge\.hidden = pendingCvCount === 0/);
 });
