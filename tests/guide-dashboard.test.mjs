@@ -497,14 +497,14 @@ test('l’Officier Guide peut télécharger le CV transmis depuis la fiche candi
     const downloadStart = script.indexOf('async function downloadCandidateCv(candidate, cv, button)');
     const downloadEnd = script.indexOf('async function openCandidatePdf', downloadStart);
     const download = script.slice(downloadStart, downloadEnd);
-    assert.ok(download.includes('object/sign/doctrine-candidate-cv/'));
+    assert.ok(download.includes('/storage/v1/object/authenticated/doctrine-candidate-cv/'));
     assert.ok(!download.includes('object/sign/candidate-cvs/'));
-    assert.ok(download.includes('download: filename'));
+    assert.ok(download.includes("Authorization: 'Bearer ' + token"));
     assert.ok(download.includes('link.click()'));
-    assert.ok(download.includes("downloadUrl.searchParams.set('download', filename)"));
     assert.ok(download.includes('rememberDownloadedCv(candidateId, cv)'));
     assert.ok(download.includes('hasDownloadedCv(id, candidateCvs[id])'));
     assert.ok(download.includes('URL.createObjectURL(fileBlob)'));
+    assert.ok(download.includes('fileResponse = await fetch(auth().url'));
     assert.ok(download.includes('fileResponse = await fetch(downloadUrl.href)'));
     assert.ok(download.includes("metricsNode.querySelector('.og-dashboard-cv-pending-badge')"));
 });
