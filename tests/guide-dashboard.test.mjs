@@ -795,10 +795,13 @@ test('le pseudo candidat passe en rouge vif uniquement après rappel QCM envoyé
 });
 
 
-test('COMPTES UTILISATEURS2 affiche deux pastilles distinctes pour les fiches IA et les CV', () => {
-    assert.match(script, /var pendingAiBadge = node\('span', 'og-dashboard-ai-pending-badge'\)/);
-    assert.match(script, /pendingAiBadge\.hidden = pendingFicheCount === 0/);
-    assert.match(script, /var pendingCvCount = Object\.keys\(candidateCvs\)\.length/);
-    assert.match(script, /var pendingCvBadge = node\('span', 'og-dashboard-ai-pending-badge og-dashboard-cv-pending-badge'\)/);
-    assert.match(script, /pendingCvBadge\.hidden = pendingCvCount === 0/);
+test('COMPTES UTILISATEURS affiche les pastilles IA et CV dans les interfaces admin et Officier Guide', () => {
+    const metricsStart = script.indexOf('function renderMetrics()');
+    const metricsEnd = script.indexOf('function ', metricsStart + 20);
+    const metrics = script.slice(metricsStart, metricsEnd > metricsStart ? metricsEnd : undefined);
+    assert.match(metrics, /var pendingAiBadge = node\('span', 'og-dashboard-ai-pending-badge og-dashboard-ai-metric-badge'\)/);
+    assert.match(metrics, /var pendingCvBadge = node\('span', 'og-dashboard-ai-pending-badge og-dashboard-cv-pending-badge'\)/);
+    assert.match(metrics, /card\.append\(pendingAiBadge\)/);
+    assert.match(metrics, /card\.append\(pendingCvBadge\)/);
+    assert.doesNotMatch(metrics, /if \(dashboardMode === 'admin'\) \{[\s\S]*?pendingAiBadge/);
 });
