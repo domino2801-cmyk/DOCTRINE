@@ -793,3 +793,10 @@ test('le pseudo candidat passe en rouge vif uniquement après rappel QCM envoyé
     assert.match(css, /\.og-candidate-profile-pseudo\.is-inactive-17-days/);
     assert.match(css, /color:#ff2020/);
 });
+
+
+test('la pastille COMPTES UTILISATEURS2 compte aussi les CV déposés', () => {
+    assert.match(script, /var pendingCvCount = Object\.keys\(candidateCvs\)\.length/);
+    assert.match(script, /var pendingCount = pendingFicheCount \+ pendingCvCount/);
+    assert.match(script, /pendingCvCount \+ ' CV déposé\(s\)'/);
+});
