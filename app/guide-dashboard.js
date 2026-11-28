@@ -2408,11 +2408,15 @@
             }
             save.disabled = true;
             status.textContent = 'Enregistrement de l’évaluation…';
-            api('fiche_reviews?on_conflict=submission_id%2Cguide_id', {
+            auth().jeton().then(function (token) {
+                var claims = token && decodeClaims(token);
+                if (!claims || !claims.sub) throw new Error('Identité Officier Guide introuvable. Reconnectez-vous.');
+                return api('fiche_reviews?on_conflict=submission_id%2Cguide_id', {
                 method: 'POST',
                 prefer: 'resolution=merge-duplicates,return=representation',
                 body: {
                     submission_id: submission.id,
+                    guide_id: claims.sub,
                     form_grade: totals.formGrade,
                     content_grade: totals.contentGrade,
                     grade: totals.grade,
@@ -2441,8 +2445,15 @@
                     status: decision.value,
                     comment: comment.value.trim()
                 }
-            }).then(function () {
-                status.textContent = 'Évaluation enregistrée.';
+            });
+            }).then(function (savedReviews) {
+                var savedReview = Array.isArray(savedReviews) ? savedReviews[0] : null;
+                if (!savedReview || savedReview.submission_id !== submission.id ||
+                    savedReview.status !== decision.value) {
+                    throw new Error('Supabase n’a pas confirmé le statut de cette évaluation. Aucune confirmation ne peut être affichée.');
+                }
+                submission.reviews = [savedReview];
+                status.textContent = 'Évaluation enregistrée et confirmée.';
                 dialog.close();
                 load();
             }).catch(function (error) {
