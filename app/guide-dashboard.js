@@ -926,27 +926,25 @@
             card.addEventListener('click', openGuideCandidates);
             var metricLabel = node('span', 'og-dashboard-metric-label', metric[0]);
             card.append(metricLabel);
-            if (dashboardMode === 'admin') {
-                var pendingFicheCount = candidates.reduce(function (total, candidate) {
-                    return total + pendingAiCorrectionCount(candidate);
-                }, 0);
-                var pendingAiBadge = node('span', 'og-dashboard-ai-pending-badge');
-                pendingAiBadge.textContent = String(pendingFicheCount);
-                pendingAiBadge.hidden = pendingFicheCount === 0;
-                pendingAiBadge.setAttribute('role', 'status');
-                pendingAiBadge.setAttribute('aria-live', 'polite');
-                pendingAiBadge.setAttribute('aria-label', pendingFicheCount + ' fiche(s) en attente de correction IA');
-                card.append(pendingAiBadge);
+            var pendingFicheCount = candidates.reduce(function (total, candidate) {
+                return total + pendingAiCorrectionCount(candidate);
+            }, 0);
+            var pendingAiBadge = node('span', 'og-dashboard-ai-pending-badge og-dashboard-ai-metric-badge');
+            pendingAiBadge.textContent = String(pendingFicheCount);
+            pendingAiBadge.hidden = pendingFicheCount === 0;
+            pendingAiBadge.setAttribute('role', 'status');
+            pendingAiBadge.setAttribute('aria-live', 'polite');
+            pendingAiBadge.setAttribute('aria-label', pendingFicheCount + ' fiche(s) en attente de correction IA');
+            card.append(pendingAiBadge);
 
-                var pendingCvCount = Object.keys(candidateCvs).length;
-                var pendingCvBadge = node('span', 'og-dashboard-ai-pending-badge og-dashboard-cv-pending-badge');
-                pendingCvBadge.textContent = String(pendingCvCount);
-                pendingCvBadge.hidden = pendingCvCount === 0;
-                pendingCvBadge.setAttribute('role', 'status');
-                pendingCvBadge.setAttribute('aria-live', 'polite');
-                pendingCvBadge.setAttribute('aria-label', pendingCvCount + ' CV déposé(s)');
-                card.append(pendingCvBadge);
-            }
+            var pendingCvCount = Object.keys(candidateCvs).length;
+            var pendingCvBadge = node('span', 'og-dashboard-ai-pending-badge og-dashboard-cv-pending-badge');
+            pendingCvBadge.textContent = String(pendingCvCount);
+            pendingCvBadge.hidden = pendingCvCount === 0;
+            pendingCvBadge.setAttribute('role', 'status');
+            pendingCvBadge.setAttribute('aria-live', 'polite');
+            pendingCvBadge.setAttribute('aria-label', pendingCvCount + ' CV déposé(s)');
+            card.append(pendingCvBadge);
             card.append(node('strong', 'og-dashboard-metric-value', String(metric[1])));
             card.append(node('small', '', metric[2]));
             metricsNode.append(card);
@@ -3308,7 +3306,8 @@
         });
         var cvRequest = idsRequest.then(function (ids) {
             if (!ids.length) return [];
-            return api('doctrine_candidate_cvs?select=candidate_id,storage_path,original_filename,uploaded_at&candidate_id=in.(' + ids.join(',') + ')');
+            return api('doctrine_candidate_cvs?select=candidate_id,storage_path,original_filename,uploaded_at&candidate_id=in.(' +
+                ids.map(encodeURIComponent).join(',') + ')&order=uploaded_at.desc');
         });
         var reviewRequest = candidateRequest.then(function (payload) {
             var submissionIds = (payload.candidates || []).reduce(function (all, candidate) {
