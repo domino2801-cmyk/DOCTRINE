@@ -711,5 +711,6 @@ test("la correction IA exploite obligatoirement le dossier d’exercice et les r
     assert.match(correctionAiFunction, /referenceDocuments = subjectReferences\.concat\(juryReferences\)/);
     assert.match(correctionAiFunction, /reference_sources: referenceSources/);
     assert.match(correctionAiFunction, /contrôler le travail aux constats récurrents, aux exigences méthodologiques et aux attentes explicites des jurys/);
-    assert.match(correctionAiFunction, /Le rapport du jury BM4 2023 inaccessible/);
+    assert.match(correctionAiFunction, /inaccessible dans Google Drive/);
+    assert.match(correctionAiFunction, /n’est pas un PDF exploitable/);
 });
