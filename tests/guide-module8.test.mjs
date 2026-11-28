@@ -218,6 +218,7 @@ test("la correction Gemini est disponible pour les deux types de fiches avec val
     assert.match(aiFunction, /isCorrectionFileName/);
     assert.match(aiFunction, /corrig[eé]/);
     assert.match(aiFunction, /referenceDocuments\.map/);
+    assert.match(aiFunction, /referenceWrittenBytes,[\s\S]*referenceDocuments, analysisPrompt, responseSchema/);
     assert.match(aiFunction, /RÉFÉRENTIEL DOCUMENTAIRE OBLIGATOIRE/);
     assert.match(aiFunction, /contrôle complet/);
     assert.match(aiFunction, /dossier incomplet/);
