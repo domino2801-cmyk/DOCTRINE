@@ -24,6 +24,7 @@
     var loading = false;
     var moduleEventsAvailable = true;
     var candidateCvs = Object.create(null);
+    var adminCohortAssignments = [];
     var cvStatusAvailable = true;
     var progressRefreshTimer = null;
     var progressRefreshInFlight = false;
@@ -829,27 +830,105 @@
         var nextButton = node('button', 'og-candidate-stepper-arrow', '›');
         nextButton.type = 'button'; nextButton.setAttribute('aria-label', 'Candidat suivant');
         navigator.append(previousButton, current, nextButton); group.append(navigator); sidebar.append(group);
+        var activeCandidates = regularCandidates.slice();
         var selectedIndex = 0;
         function showCandidate(index) {
-            if (!regularCandidates.length) {
+            if (!activeCandidates.length) {
                 currentName.textContent = 'Aucun candidat'; currentStatus.textContent = 'Aucun compte à afficher'; currentPosition.textContent = 'Candidat 0 / 0';
                 previousButton.disabled = true; nextButton.disabled = true;
                 detail.replaceChildren(node('p', 'og-qcm-empty', 'Aucun candidat n’est disponible.')); return;
             }
-            selectedIndex = Math.max(0, Math.min(index, regularCandidates.length - 1));
-            var candidate = regularCandidates[selectedIndex]; var identity = candidate.candidate || {};
+            selectedIndex = Math.max(0, Math.min(index, activeCandidates.length - 1));
+            var candidate = activeCandidates[selectedIndex]; var identity = candidate.candidate || {};
             var dossierCount = submissions(candidate).length;
             var followUp = candidateFollowUpStatus(candidate);
             currentName.textContent = identity.pseudo || identity.name || identity.email || 'Pseudo non renseigné';
             currentStatus.className = 'og-candidate-stepper-status og-candidate-follow-up-status ' + followUp.className;
             currentStatus.hidden = dossierCount === 0;
             currentStatus.textContent = '';
-            currentPosition.textContent = 'Candidat ' + (selectedIndex + 1) + ' / ' + regularCandidates.length;
-            previousButton.disabled = selectedIndex === 0; nextButton.disabled = selectedIndex === regularCandidates.length - 1;
+            currentPosition.textContent = 'Candidat ' + (selectedIndex + 1) + ' / ' + activeCandidates.length;
+            previousButton.disabled = selectedIndex === 0; nextButton.disabled = selectedIndex === activeCandidates.length - 1;
             renderCandidateProfileDetail(detail, candidate);
         }
         previousButton.addEventListener('click', function () { showCandidate(selectedIndex - 1); });
         nextButton.addEventListener('click', function () { showCandidate(selectedIndex + 1); });
+        if (dashboardMode === 'admin') {
+            var cohortSection = node('section', 'og-dashboard-admin-cohorts');
+            cohortSection.append(node('h3', 'og-dashboard-candidate-group-heading', 'COHORTES PAR OFFICIER GUIDE'));
+            var candidateById = new Map(regularCandidates.map(function (candidate) {
+                return [String(candidate.candidate && candidate.candidate.id || ''), candidate];
+            }));
+            var cohortMap = new Map();
+            (Array.isArray(adminCohortAssignments) ? adminCohortAssignments : []).forEach(function (assignment) {
+                var candidate = candidateById.get(String(assignment.candidate_id || ''));
+                if (!candidate || !assignment.guide_id) return;
+                var key = String(assignment.guide_id);
+                if (!cohortMap.has(key)) cohortMap.set(key, {
+                    guideId: key,
+                    pseudo: assignment.guide_pseudo || assignment.guide_name || assignment.guide_email || 'Officier Guide',
+                    candidates: []
+                });
+                cohortMap.get(key).candidates.push(candidate);
+            });
+            var cohortGroups = Array.from(cohortMap.values()).sort(function (first, second) {
+                return first.pseudo.localeCompare(second.pseudo, 'fr', { sensitivity: 'base' });
+            });
+            cohortGroups.forEach(function (cohort) {
+                cohort.candidates.sort(function (first, second) {
+                    var a = first.candidate || {}; var b = second.candidate || {};
+                    return String(a.pseudo || a.name || a.email || '').localeCompare(
+                        String(b.pseudo || b.name || b.email || ''), 'fr', { sensitivity: 'base' });
+                });
+                var cohortDetails = node('details', 'og-dashboard-candidate-group og-dashboard-admin-cohort');
+                cohortDetails.append(node('summary', 'og-dashboard-candidate-group-heading',
+                    'COHORTE — ' + cohort.pseudo + ' (' + cohort.candidates.length + ')'));
+                var cohortList = node('nav', 'og-qcm-candidate-list');
+                cohortList.setAttribute('aria-label', 'Candidats de la cohorte ' + cohort.pseudo);
+                cohort.candidates.forEach(function (candidate, index) {
+                    var identity = candidate.candidate || {};
+                    var button = node('button', 'og-qcm-candidate-button');
+                    button.type = 'button';
+                    button.append(node('strong', '', identity.pseudo || identity.name || identity.email || 'Pseudo non renseigné'));
+                    button.append(node('span', '', identity.email || identity.grade || 'Candidat'));
+                    button.addEventListener('click', function () {
+                        activeCandidates = cohort.candidates;
+                        showCandidate(index);
+                    });
+                    cohortList.append(button);
+                });
+                cohortDetails.append(cohortList);
+                cohortSection.append(cohortDetails);
+            });
+            if (!cohortGroups.length) cohortSection.append(node('p', 'og-qcm-empty',
+                'Aucun candidat n’est actuellement rattaché à un Officier Guide.'));
+            sidebar.append(cohortSection);
+            var unassigned = regularCandidates.filter(function (candidate) {
+                return !(Array.isArray(adminCohortAssignments) ? adminCohortAssignments : []).some(function (assignment) {
+                    return String(assignment.candidate_id || '') === String(candidate.candidate && candidate.candidate.id || '');
+                });
+            });
+            var unassignedGroup = node('details', 'og-dashboard-candidate-group og-dashboard-admin-unassigned');
+            unassignedGroup.append(node('summary', 'og-dashboard-candidate-group-heading',
+                'CANDIDATS SANS COHORTE — ' + unassigned.length));
+            var unassignedList = node('nav', 'og-qcm-candidate-list');
+            unassignedList.setAttribute('aria-label', 'Candidats sans cohorte');
+            unassigned.forEach(function (candidate, index) {
+                var identity = candidate.candidate || {};
+                var button = node('button', 'og-qcm-candidate-button');
+                button.type = 'button';
+                button.append(node('strong', '', identity.pseudo || identity.name || identity.email || 'Pseudo non renseigné'));
+                button.append(node('span', '', identity.email || 'Candidat non rattaché'));
+                button.addEventListener('click', function () {
+                    activeCandidates = unassigned;
+                    showCandidate(index);
+                });
+                unassignedList.append(button);
+            });
+            if (!unassigned.length) unassignedList.append(node('p', 'og-qcm-empty',
+                'Tous les candidats sont rattachés à une cohorte.'));
+            unassignedGroup.append(unassignedList);
+            sidebar.append(unassignedGroup);
+        }
         if (dashboardMode === 'admin') {
             var ogGroup = node('details', 'og-dashboard-candidate-group og-dashboard-admin-og-group');
             ogGroup.append(node('summary', 'og-dashboard-candidate-group-heading', 'OFFICIERS GUIDES — ' + ogCandidates.length + ' compte(s)'));
@@ -3321,7 +3400,10 @@
         var blockedAccountsRequest = dashboardMode === 'admin'
             ? api('rpc/get_admin_blocked_accounts', { method: 'POST', body: {} })
             : Promise.resolve(null);
-        Promise.allSettled([candidateRequest, courseRequest, progressRequest, cvRequest, reviewRequest, blockedAccountsRequest, inactivityEmailsRequest]).then(function (results) {
+        var cohortAssignmentsRequest = dashboardMode === 'admin'
+            ? api('rpc/get_admin_candidate_cohorts', { method: 'POST', body: {} })
+            : Promise.resolve([]);
+        Promise.allSettled([candidateRequest, courseRequest, progressRequest, cvRequest, reviewRequest, blockedAccountsRequest, inactivityEmailsRequest, cohortAssignmentsRequest]).then(function (results) {
             if (results[0].status === 'fulfilled') {
                 candidates = Array.isArray(results[0].value.candidates) ? results[0].value.candidates : [];
             } else {
@@ -3355,6 +3437,11 @@
                     candidates.forEach(function (candidate) { candidate.qcmInactivityEmail = null; });
                     console.warn('Historique des rappels QCM indisponible : aucun pseudo ne sera coloré sur cette base.',
                         results[6] && results[6].reason);
+                }
+                adminCohortAssignments = results[7] && results[7].status === 'fulfilled' && Array.isArray(results[7].value)
+                    ? results[7].value : [];
+                if (!adminCohortAssignments.length && results[7] && results[7].status === 'rejected') {
+                    console.warn('Répartition des cohortes indisponible :', results[7].reason);
                 }
             }
             if (results[4].status === 'fulfilled') {
