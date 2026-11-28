@@ -698,3 +698,18 @@ test("Gemini doit rédiger toutes les corrections écrites et orales en françai
     assert.match(correctionAiFunction, /const ORAL_RUBRIC_PROMPT = \[/);
     assert.match(correctionAiFunction, /courte citation originale d’un document peut rester dans sa langue, avec une explication en français/i);
 });
+
+
+test("la correction IA exploite obligatoirement le dossier d’exercice et les rapports des jurys 2023, 2024 et 2025", () => {
+    assert.match(correctionAiFunction, /const JURY_REFERENCE_FILES = \[/);
+    assert.match(correctionAiFunction, /year: "2023", id: "1NTokt0W6_EfUxgC6jHrC0kjZe2pr1mNu"/);
+    assert.match(correctionAiFunction, /year: "2024", id: "1avqwK8RYtifPxRm5IJst6vp2bThdusMu"/);
+    assert.match(correctionAiFunction, /year: "2025", id: "1EYf-cJLYYcpaQtyXI39UClwfXZe6nSxy"/);
+    assert.match(correctionAiFunction, /async function getJuryReferenceDocuments/);
+    assert.match(correctionAiFunction, /getSubjectReferenceDocuments\(Number\(submission\.dossier\)\)/);
+    assert.match(correctionAiFunction, /juryReferences = await getJuryReferenceDocuments\(\)/);
+    assert.match(correctionAiFunction, /referenceDocuments = subjectReferences\.concat\(juryReferences\)/);
+    assert.match(correctionAiFunction, /reference_sources: referenceSources/);
+    assert.match(correctionAiFunction, /contrôler le travail aux constats récurrents, aux exigences méthodologiques et aux attentes explicites des jurys/);
+    assert.match(correctionAiFunction, /Le rapport du jury BM4 2023 inaccessible/);
+});
