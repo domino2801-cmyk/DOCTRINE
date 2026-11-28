@@ -2486,9 +2486,9 @@
         async function runAi() {
             correction.disabled = true;
             correction.textContent = 'Analyse Gemini en cours…';
-            status.textContent = 'Transmission du PDF à Google Gemini…';
+            status.textContent = 'Transmission de la fiche, du dossier d’exercice et des rapports du jury 2023, 2024 et 2025 à Google Gemini…';
             aiPanel.hidden = false;
-            aiPanel.replaceChildren(node('p', '', 'Analyse du document par Google Gemini…'));
+            aiPanel.replaceChildren(node('p', '', 'Analyse croisée de la fiche avec le dossier d’exercice et les trois rapports officiels du jury…'));
             try {
                 var suggestion = await functionsApi('/functions/v1/correct-fiche-ai', {
                     method: 'POST', body: { submission_id: submission.id }
