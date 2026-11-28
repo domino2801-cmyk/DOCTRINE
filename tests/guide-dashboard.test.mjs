@@ -446,6 +446,16 @@ test('les cartes proposition et support oral affichent les commentaires complets
 });
 
 
+test('la correction IA affiche une pastille rouge pour les fiches proposition et oral en attente', () => {
+    assert.match(script, /function pendingAiCorrectionCount\(candidate\)/);
+    assert.match(script, /submission\.submission_type !== 'proposition' && submission\.submission_type !== 'support_oral'/);
+    assert.match(script, /review\.status === 'en_attente'/);
+    assert.match(script, /og-dashboard-ai-pending-badge/);
+    assert.match(script, /pendingBadge\.hidden = pendingCount === 0/);
+    assert.match(css, /\.og-dashboard-ai-pending-badge \{[^}]*background:#c93636/s);
+    assert.match(css, /\.og-dashboard-ai-pending-badge\[hidden\] \{ display:none; \}/);
+});
+
 test('la correction IA est placée sous Dossier et documents demandés dans la fiche candidat', () => {
     const start = script.indexOf('function renderCandidateProfileDetail(target, candidate)');
     const end = script.indexOf('function openGuideCandidates()', start);
