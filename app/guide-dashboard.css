@@ -1212,3 +1212,37 @@ body.og-guide-entry-only #guideDashboardNav > button {
 .og-dashboard-candidates-tracking > .og-dashboard-metric-label {
     padding-right:78px;
 }
+
+
+/* Cohortes Officier Guide dans la colonne latérale du suivi global administrateur. */
+.og-dashboard-admin-cohorts {
+    display:grid;
+    gap:8px;
+    min-width:0;
+}
+.og-dashboard-admin-cohorts > .og-dashboard-candidate-group-heading {
+    margin:4px 0 2px;
+}
+.og-dashboard-admin-cohort,
+.og-dashboard-admin-unassigned {
+    min-width:0;
+    border:1px solid var(--og-border, #d8dee8);
+    border-radius:10px;
+    background:var(--og-surface, #fff);
+    overflow:hidden;
+}
+.og-dashboard-admin-cohort > summary,
+.og-dashboard-admin-unassigned > summary {
+    cursor:pointer;
+    padding:11px 12px;
+    font-weight:800;
+    overflow-wrap:anywhere;
+}
+.og-dashboard-admin-cohort[open] > summary,
+.og-dashboard-admin-unassigned[open] > summary {
+    border-bottom:1px solid var(--og-border, #d8dee8);
+}
+.og-dashboard-admin-cohort .og-qcm-candidate-list,
+.og-dashboard-admin-unassigned .og-qcm-candidate-list {
+    padding:6px;
+}
